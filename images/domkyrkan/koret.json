@@ -1,0 +1,120 @@
+{
+	"type": "equirectangular",
+	"panorama": "/images/domkyrkan/low/koret.jpg",
+	"autoLoad": true,
+	"autoRotate": -5,
+	"horizonRoll": 0.8,
+	"hotSpotDebug": false,
+	"hotSpots": [
+		{
+			"pitch": 13.054766643292918,
+			"yaw": -1.5869819111444174,
+			"type": "info",
+			"text": "Altartavlan med motiv från Golgata är målad av David von Cöln.",
+			"URL": ""
+		},
+		{
+			"pitch": 5.183464507684119,
+			"yaw": -0.07006419758945055,
+			"type": "info",
+			"text": "Det gamla högaltaret tillverkades 1728, men är inte längre i bruk.",
+			"URL": ""
+		},
+		{
+			"pitch": 36.66351245415244,
+			"yaw": -0.07006419758945055,
+			"type": "info",
+			"text": "Medaljongerna i absidrundeln är målade år 1905 av Caleb Altin och föreställer Moses, Elia, Johannes döparen, Paulus och Petrus.",
+			"URL": ""
+		},
+		{
+			"pitch": -7.89475322904724,
+			"yaw": -0.07006419758945055,
+			"type": "info",
+			"text": "Centralaltaret tillverkades vid renoveringen 2011. Altaret är i ek med en glasskiva i lamellteknik med fem ingjutna silverkors.",
+			"URL": ""
+		},
+		{
+			"pitch": 0.2733265543246547,
+			"yaw": 66.82189468689197,
+			"type": "scene",
+			"text": "Till Johanneskapellet",
+			"URL": "/johanneskapellet.html",
+			"attributes": {
+				"target": "_self"
+			}
+		},
+		{
+			"pitch": -2.2972513273458546,
+			"yaw": -77.3063047627038,
+			"type": "scene",
+			"text": "Till Mariakapellet",
+			"URL": "/mariakapellet.html",
+			"attributes": {
+				"target": "_self"
+			}
+		},
+		{
+			"pitch": -3.2607219829747827,
+			"yaw": 179.99943636423228,
+			"type": "scene",
+			"text": "Till Entrén",
+			"URL": "/entren.html",
+			"attributes": {
+				"target": "_self"
+			}
+		},
+		{
+			"pitch": 18.849517958899842,
+			"yaw": 126.43673627707864,
+			"type": "info",
+			"text": "Söråkersikonen",
+			"URL": "https://www.svenskakyrkan.se/filer/gratis_domkyrkan_2018.pdf?id=1836964",
+			"attributes": {
+				"target": "_blank"
+			}
+		},
+		{
+			"pitch": 41.25516608485256,
+			"yaw": -64.80925412510035,
+			"type": "info",
+			"text": "Votivskeppet",
+			"URL": ""
+		},
+		{
+			"pitch": 3.4937141272027206,
+			"yaw": 160.30580431738943,
+			"type": "info",
+			"text": "Tolv marmorerade pelare, sex på vardera sida om mittången, symboliserar de tolv apostlarna som bär upp Kristi kyrka.",
+			"URL": ""
+		},
+		{
+			"pitch": 2.1435699081810893,
+			"yaw": -160.3167453287181,
+			"type": "info",
+			"text": "Tolv marmorerade pelare, sex på vardera sida om mittången, symboliserar de tolv apostlarna som bär upp Kristi kyrka.",
+			"URL": ""
+		},
+		{
+			"pitch": 28.206497340950353,
+			"yaw": -132.62919635458272,
+			"type": "info",
+			"text": "Predikstolen är byggd i tidstypisk 1800-tals stil.",
+			"URL": ""
+		},
+		{
+			"pitch": 22.441660360050882,
+			"yaw": -179.48562247807197,
+			"type": "info",
+			"text": "De fyra ljuskronorna är från 1600-talet och har haft dramatiska öden; 1720 packades de ner i kistor och sänktes i Södra sundet för att de skulle skyddas från de ryska trupperna, men ryssarna dök aldrig upp förrän året därpå – kronorna fick i all hast packas ner igen och sänkas i en bisättningsgrav.",
+			"URL": ""
+		},
+		{
+			"pitch": 52.18243704704808,
+			"yaw": -1.6395681716210015,
+			"type": "info",
+			"text": "De fyra ljuskronorna är från 1600-talet och har haft dramatiska öden; 1720 packades de ner i kistor och sänktes i Södra sundet för att de skulle skyddas från de ryska trupperna, men ryssarna dök aldrig upp förrän året därpå – kronorna fick i all hast packas ner igen och sänkas i en bisättningsgrav.",
+			"URL": ""
+		}
+	]
+}

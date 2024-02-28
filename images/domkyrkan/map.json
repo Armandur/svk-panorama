@@ -1,0 +1,25 @@
+{
+	"panoramas": [
+	  {
+		"id": "entren",
+		"position": { "x": 90, "y": 75 },
+		"link": "/entren.html"
+	  },
+	  {
+		"id": "koret",
+		"position": { "x": 200, "y": 75 },
+		"link": "/index.html"
+	  },
+	  {
+		"id": "mariakapellet",
+		"position": { "x": 215, "y": 35 },
+		"link": "/mariakapellet.html"
+	  },
+	  {
+		"id": "johanneskapellet",
+		"position": { "x": 215, "y": 120 },
+		"link": "/johanneskapellet.html"
+	  }
+	]
+  }
+  

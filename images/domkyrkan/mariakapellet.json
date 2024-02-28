@@ -1,0 +1,37 @@
+{
+	"type": "equirectangular",
+	"panorama": "/images/domkyrkan/low/mariakapellet.jpg",
+	"autoLoad": true,
+	"autoRotate": -5,
+	"horizonRoll": 0.8,
+	"hotSpotDebug": false,
+	"hotSpots": [
+		{
+			"pitch": -7.944448667742642,
+			"yaw": -3.3594231600340843,
+			"type": "info",
+			"text": "Samiska altarbrunet",
+			"URL": ""
+		},
+		{
+			"pitch": 6.040482218998507,
+			"yaw": 97.03927813543847,
+			"type": "info",
+			"text": "Biskopsstaven",
+			"URL": "https://www.svenskakyrkan.se/harnosandsstift/biskopsstaven-kraklan",
+			"attributes": {
+				"target": "_blank"
+			}
+		},
+		{
+			"pitch": -0.4794264371766004,
+			"yaw": -178.243464977318,
+			"type": "scene",
+			"text": "Till koret",
+			"URL": "/",
+			"attributes": {
+				"target": "_self"
+			}
+		}
+	]
+}

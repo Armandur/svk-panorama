@@ -1,0 +1,27 @@
+{
+	"type": "equirectangular",
+	"panorama": "/images/domkyrka/low/johanneskapellet.jpg",
+	"autoLoad": true,
+	"autoRotate": -5,
+	"horizonRoll": 1,
+	"hotSpotDebug": false,
+	"hotSpots": [
+		{
+			"pitch": -7.89475322904724,
+			"yaw": -0.07006419758945055,
+			"type": "info",
+			"text": "Barnens altarskåp",
+			"URL": ""
+		},
+		{
+			"pitch": -0.4794264371766004,
+			"yaw": -178.243464977318,
+			"type": "scene",
+			"text": "Till koret",
+			"URL": "/",
+			"attributes": {
+				"target": "_self"
+			}
+		}
+	]
+}

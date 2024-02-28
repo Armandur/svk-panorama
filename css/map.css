@@ -1,0 +1,82 @@
+ #map-container {
+     position: fixed;
+     top: 5px;
+     /* Adjust as needed */
+     right: 5px;
+     /* Adjust as needed */
+     z-index: 9999;
+     /* Ensure it's above other content */
+     display: none;
+     /* Hidden by default */
+ }
+
+ #map {
+     width: 300px;
+     /* Adjust as needed */
+     height: auto;
+     /* Adjust as needed */
+ }
+
+ .panorama-button {
+     position: absolute;
+     border-radius: 50%;
+     background-color: #666;
+     /* Grey color */
+     width: 15px;
+     /* Adjust button size as needed */
+     height: 15px;
+     /* Adjust button size as needed */
+     transition: background-color 0.3s ease;
+     /* Add fade effect */
+ }
+
+ .panorama-button:hover {
+     background-color: #999;
+ }
+
+ .current {
+     background-color: darkred;
+ }
+
+ #close-btn {
+     position: absolute;
+     top: 5px;
+     right: 5px;
+     width: 20px;
+     /* Square button size */
+     height: 20px;
+     /* Square button size */
+     font-size: 14px;
+     /* Adjust font size for smaller button */
+     color: #000;
+     background-color: #fff;
+     /* Semi-transparent black background */
+     border: 1px solid #ddd;
+     border-radius: 3px;
+     cursor: pointer;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     z-index: 9999;
+ }
+
+ #close-btn:hover {
+     background-color: #f8f8f8;
+ }
+
+ #show-map-btn {
+     position: fixed;
+     top: 5px;
+     right: 5px;
+     padding: 5px 10px;
+     color: #000;
+     background-color: #fff;
+     border: 1px solid #ddd;
+     border-radius: 3px;
+     cursor: pointer;
+     z-index: 9999;
+ }
+
+ #show-map-btn:hover {
+     background-color: #f8f8f8;
+ }
