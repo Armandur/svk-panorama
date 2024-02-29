@@ -1,6 +1,6 @@
 {
 	"type": "equirectangular",
-    "panorama": "/images/domkyrkan/low/entrén.jpg",
+    "panorama": "/images/domkyrkan/low/mittgången.jpg",
     "autoLoad": true,
     "autoRotate": -5,
     "horizonRoll": 0.8,
@@ -10,8 +10,18 @@
             "pitch": 0.5343548909521205,
             "yaw": 1.3533913953043424,
             "type": "scene",
-            "text": "Till mittgången",
+            "text": "Till koret",
             "URL": "/",
+            "attributes": {
+                "target": "_self"
+            }
+        },
+		{
+            "pitch": 0.5343548909521205,
+            "yaw": 1.3533913953043424,
+            "type": "scene",
+            "text": "Till entrén",
+            "URL": "/entren.html",
             "attributes": {
                 "target": "_self"
             }
