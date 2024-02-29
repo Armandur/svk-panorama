@@ -6,6 +6,11 @@
 		"link": "/entren.html"
 	  },
 	  {
+		"id": "mittgangen",
+		"position": { "x": 145, "y": 75 },
+		"link": "/mittgangen.html"
+	  },
+	  {
 		"id": "koret",
 		"position": { "x": 200, "y": 75 },
 		"link": "/index.html"
