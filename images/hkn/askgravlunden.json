@@ -1,0 +1,9 @@
+{
+	"type": "equirectangular",
+    "panorama": "/images/hkn/askgravlunden.jpg",
+    "autoLoad": true,
+    "autoRotate": -5,
+    "horizonRoll": 0,
+    "hotSpotDebug": false,
+    "hotSpots": []
+}
