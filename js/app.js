@@ -35,9 +35,8 @@ function loadPanorama(panoramaData, mapData) {
 
     // When finished loading a scene
     viewer.on('load', function () {
-      console.log("Loaded scene: " + currentScene);
-
       if (data.default.myHotSpotDebug) {
+        console.log("Loaded scene: " + currentScene);
         document.querySelector('.pnlm-sprite.pnlm-hot-spot-debug-indicator').style.display = 'block';
 
         viewer.on('mouseup', function () {
@@ -68,8 +67,11 @@ function loadPanorama(panoramaData, mapData) {
       }
 
       window.history.pushState({}, '', url);
-      console.log(`Loading scene: ${sceneID}`);
       currentScene = sceneID;
+
+      if (data.default.myHotSpotDebug) {
+        console.log(`Loading scene: ${sceneID}`);
+      }
 
       loadMap(viewer, currentScene, mapData); //sceneID sets what dot to have the :current-class
     });
@@ -85,7 +87,10 @@ function loadPanorama(panoramaData, mapData) {
 
       if (newSceneId && newSceneId !== currentScene) {
         viewer.loadScene(newSceneId); // Load the new scene based on URL
-        console.log(`Back button pressed, loading scene: ${newSceneId}`);
+
+        if (data.default.myHotSpotDebug) {
+          console.log(`Back button pressed, loading scene: ${newSceneId}`);
+        }
 
         // Update the map button's :current class
         loadMap(viewer, newSceneId, mapData);
