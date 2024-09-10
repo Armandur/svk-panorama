@@ -564,7 +564,7 @@
 		},
 		"22": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/askgravlunden.jpg",
+			"panorama": "/images/hkn/22.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
