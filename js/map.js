@@ -1,8 +1,9 @@
 function loadMap(viewer, current, json) {
-    fetch(json)
+    const timestamp = new Date().getTime(); //Don't cache the jsons
+    fetch(json + "?t=" + timestamp)
         .then(response => response.json())
         .then(data => {
-			console.log(data);
+			//console.log(data);
             data.scenes.forEach(scene => {  // Changed to scenes
                 const button = document.createElement('a');
                 button.className = 'map-button';  // Changed class to map-button
@@ -16,7 +17,7 @@ function loadMap(viewer, current, json) {
                     
                     if (scene.id !== current) {
                         viewer.loadScene(scene.id);  // Load the new scene
-                        console.log(`Cliked scene: ${scene.id} on map`);
+                        console.log(`Clicked scene: ${scene.id} on map`);
                     }
                 });
 
