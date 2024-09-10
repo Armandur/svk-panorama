@@ -3,7 +3,7 @@
         "autoLoad": true,
         "autoRotate": -2,
         "sceneFadeDuration": 500,
-        "myHotSpotDebug": true,
+        "myHotSpotDebug": false,
         "firstScene": "1"
     },
     
