@@ -1,6 +1,6 @@
 {
 	"type": "equirectangular",
-	"panorama": "/images/domkyrkan/low/mariakapellet.jpg",
+	"panorama": "/images/domkyrkan/medium/mariakapellet.jpg",
 	"autoLoad": true,
 	"autoRotate": -5,
 	"horizonRoll": 0.8,
@@ -28,7 +28,7 @@
 			"yaw": -178.243464977318,
 			"type": "scene",
 			"text": "Till koret",
-			"URL": "/",
+			"URL": "/dk/dk/",
 			"attributes": {
 				"target": "_self"
 			}

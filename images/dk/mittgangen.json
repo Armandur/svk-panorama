@@ -1,0 +1,40 @@
+{
+	"type": "equirectangular",
+    "panorama": "/images/domkyrkan/medium/mittgången.jpg",
+    "autoLoad": true,
+    "autoRotate": -5,
+    "horizonRoll": 0.8,
+    "hotSpotDebug": false,
+    "hotSpots": [
+        {
+            "pitch": -3.3266901358586978,
+            "yaw": 0.6729707656954469,
+            "type": "scene",
+            "text": "Till koret",
+            "URL": "/dk/dk/",
+            "attributes": {
+                "target": "_self"
+            }
+        },
+		{
+            "pitch": -0.9722222222222232,
+            "yaw": 180.56917769063466,
+            "type": "scene",
+            "text": "Till entrén",
+            "URL": "/dk/dk/entren.html",
+            "attributes": {
+                "target": "_self"
+            }
+        },
+		{
+            "pitch": 22.77777777777778,
+            "yaw": 180.56917769063466,
+            "type": "scene",
+            "text": "Till orgelläktaren",
+            "URL": "/dk/dk/orgellaktaren.html",
+            "attributes": {
+                "target": "_self"
+            }
+        }
+    ]
+}

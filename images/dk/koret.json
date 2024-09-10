@@ -1,6 +1,6 @@
 {
 	"type": "equirectangular",
-	"panorama": "/images/domkyrkan/low/koret.jpg",
+	"panorama": "/images/domkyrkan/medium/koret.jpg",
 	"autoLoad": true,
 	"autoRotate": -5,
 	"horizonRoll": 0.8,
@@ -39,7 +39,7 @@
 			"yaw": 66.82189468689197,
 			"type": "scene",
 			"text": "Till Johanneskapellet",
-			"URL": "/johanneskapellet.html",
+			"URL": "/dk/dk/johanneskapellet.html",
 			"attributes": {
 				"target": "_self"
 			}
@@ -49,17 +49,17 @@
 			"yaw": -77.3063047627038,
 			"type": "scene",
 			"text": "Till Mariakapellet",
-			"URL": "/mariakapellet.html",
+			"URL": "/dk/dk/mariakapellet.html",
 			"attributes": {
 				"target": "_self"
 			}
 		},
 		{
-			"pitch": -3.2607219829747827,
+			"pitch": -6.2607219829747827,
 			"yaw": 179.99943636423228,
 			"type": "scene",
 			"text": "Till mittgången",
-			"URL": "/mittgangen.html",
+			"URL": "/dk/dk/mittgangen.html",
 			"attributes": {
 				"target": "_self"
 			}

@@ -17,7 +17,14 @@
      /* Adjust as needed */
  }
 
- .panorama-button {
+ #map2 {
+    width: 400px;
+    /* Adjust as needed */
+    height: auto;
+    /* Adjust as needed */
+}
+
+ .map-button {
      position: absolute;
      border-radius: 50%;
      background-color: #666;
@@ -30,8 +37,9 @@
      /* Add fade effect */
  }
 
- .panorama-button:hover {
+ .map-button:hover {
      background-color: #999;
+     cursor: pointer;
  }
 
  .current {

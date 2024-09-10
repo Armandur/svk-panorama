@@ -1,0 +1,35 @@
+{
+	"panoramas": [
+	  {
+		"id": "entren",
+		"position": { "x": 85, "y": 75 },
+		"link": "/dk/dk/entren.html"
+	  },
+	  {
+		"id": "mittgangen",
+		"position": { "x": 135, "y": 75 },
+		"link": "/dk/dk/mittgangen.html"
+	  },
+	  {
+		"id": "koret",
+		"position": { "x": 200, "y": 75 },
+		"link": "/dk/dk/index.html"
+	  },
+	  {
+		"id": "mariakapellet",
+		"position": { "x": 215, "y": 35 },
+		"link": "/dk/dk/mariakapellet.html"
+	  },
+	  {
+		"id": "johanneskapellet",
+		"position": { "x": 215, "y": 120 },
+		"link": "/dk/dk/johanneskapellet.html"
+	  },
+	  {
+		"id": "orgellaktaren",
+		"position": { "x": 65, "y": 75 },
+		"link": "/dk/dk/orgellaktaren.html"
+	  }
+	]
+  }
+  

@@ -1,27 +1,27 @@
 {
 	"type": "equirectangular",
-    "panorama": "/images/domkyrkan/low/mittgången.jpg",
+    "panorama": "/images/domkyrkan/medium/orgelläktaren.jpg",
     "autoLoad": true,
     "autoRotate": -5,
     "horizonRoll": 0.8,
     "hotSpotDebug": false,
     "hotSpots": [
         {
-            "pitch": 0.5343548909521205,
-            "yaw": 1.3533913953043424,
+            "pitch": -32.8,
+            "yaw": 1.0245490511855635,
             "type": "scene",
-            "text": "Till koret",
-            "URL": "/",
+            "text": "Till mittgången",
+            "URL": "/dk/dk/mittgangen.html",
             "attributes": {
                 "target": "_self"
             }
         },
-		{
-            "pitch": 0.5343548909521205,
-            "yaw": 1.3533913953043424,
+        {
+            "pitch": -12.3,
+            "yaw": 1.0245490511855635,
             "type": "scene",
-            "text": "Till entrén",
-            "URL": "/entren.html",
+            "text": "Till koret",
+            "URL": "/dk/dk/",
             "attributes": {
                 "target": "_self"
             }

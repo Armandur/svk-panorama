@@ -1,0 +1,30 @@
+{
+	"type": "equirectangular",
+    "panorama": "/images/domkyrkan/medium/entrén.jpg",
+    "autoLoad": true,
+    "autoRotate": -5,
+    "horizonRoll": 0.8,
+    "hotSpotDebug": false,
+    "hotSpots": [
+        {
+            "pitch": -13.287876542966647,
+            "yaw": 1.0245490511855635,
+            "type": "scene",
+            "text": "Till mittgången",
+            "URL": "/dk/dk/mittgangen.html",
+            "attributes": {
+                "target": "_self"
+            }
+        },
+        {
+            "pitch": 0.5166208288350038,
+            "yaw": 1.0245490511855635,
+            "type": "scene",
+            "text": "Till koret",
+            "URL": "/dk/dk/",
+            "attributes": {
+                "target": "_self"
+            }
+        }
+    ]
+}

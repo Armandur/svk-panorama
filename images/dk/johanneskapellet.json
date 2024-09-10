@@ -1,6 +1,6 @@
 {
 	"type": "equirectangular",
-	"panorama": "/images/domkyrka/low/johanneskapellet.jpg",
+	"panorama": "/images/domkyrkan/medium/johanneskapellet.jpg",
 	"autoLoad": true,
 	"autoRotate": -5,
 	"horizonRoll": 1,
@@ -18,7 +18,7 @@
 			"yaw": -178.243464977318,
 			"type": "scene",
 			"text": "Till koret",
-			"URL": "/",
+			"URL": "/dk/dk",
 			"attributes": {
 				"target": "_self"
 			}
