@@ -3,7 +3,7 @@
         "autoLoad": true,
         "autoRotate": -2,
         "sceneFadeDuration": 500,
-        "myHotSpotDebug": true,
+        "myHotSpotDebug": false,
         "firstScene": "1"
     },
     
@@ -11,6 +11,7 @@
         "1": {
             "type": "equirectangular",
             "panorama": "/images/hkg/1.jpg",
+            "title": "Härnösands gamla kyrkogård",
             "hotSpots": [
                 {
                     "pitch": 0.2923738837182192,

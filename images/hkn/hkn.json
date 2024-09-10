@@ -11,6 +11,7 @@
 			"type": "equirectangular",
 			"panorama": "/images/hkn/1.jpg",
 			"horizonRoll": 0,
+			"title": "Härnösands nya kyrkogård",
 			"hotSpots": [
 				{
 					"pitch": -1,
