@@ -6,7 +6,6 @@
         "myHotSpotDebug": false,
         "firstScene": "1"
     },
-    
     "scenes": {
         "1": {
             "type": "equirectangular",

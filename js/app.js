@@ -31,7 +31,7 @@ function loadPanorama(panoramaData, mapData) {
 
     // Initialize the pannellum viewer
     const viewer = pannellum.viewer('panorama', data);
-    loadMap(viewer, currentScene, mapData); //currentScene sets what dot to have the :current-class
+    loadMap(viewer, currentScene, mapData, data.default.myHotSpotDebug); //currentScene sets what dot to have the :current-class
 
     // When finished loading a scene
     viewer.on('load', function () {
@@ -73,7 +73,7 @@ function loadPanorama(panoramaData, mapData) {
         console.log(`Loading scene: ${sceneID}`);
       }
 
-      loadMap(viewer, currentScene, mapData); //sceneID sets what dot to have the :current-class
+      loadMap(viewer, currentScene, mapData, data.default.myHotSpotDebug); //sceneID sets what dot to have the :current-class
     });
 
     //Handling for backing and loading scene when that happens
@@ -93,7 +93,7 @@ function loadPanorama(panoramaData, mapData) {
         }
 
         // Update the map button's :current class
-        loadMap(viewer, newSceneId, mapData);
+        loadMap(viewer, newSceneId, mapData, data.default.myHotSpotDebug);
 
         currentScene = newSceneId; // Update current scene to reflect the URL change
       }
