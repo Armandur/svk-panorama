@@ -36,18 +36,18 @@ function loadMap(viewer, current, json, debug = false) {
     if (debug) {
         document.getElementById('map2').addEventListener('click', function (event) {
             const mapContainer = document.getElementById('map-container');
-
+            
             // Calculate the position relative to the map container
             const rect = mapContainer.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
-
+        
             // Log the coordinates in the console
             console.log(`Clicked coordinates: X: ${x}, Y: ${y}`);
-
+            
             // Optionally: Output the coordinates in a format ready to copy into the JSON
             console.log(
-                `
+            `
             {
                 "id": "", 
                 "position": { "x": ${Math.round(x)}, "y": ${Math.round(y)} }
