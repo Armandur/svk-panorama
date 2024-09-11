@@ -1,4 +1,4 @@
-function loadMap(viewer, current, json) {
+function loadMap(viewer, current, json, debug = false) {
     const timestamp = new Date().getTime(); //Don't cache the jsons
     fetch(json + "?t=" + timestamp)
         .then(response => response.json())
@@ -32,6 +32,28 @@ function loadMap(viewer, current, json) {
         .catch(error => {
             console.error('Error loading map data:', error);
         });
+
+    if (debug) {
+        document.getElementById('map2').addEventListener('click', function (event) {
+            const mapContainer = document.getElementById('map-container');
+            
+            // Calculate the position relative to the map container
+            const rect = mapContainer.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+        
+            // Log the coordinates in the console
+            console.log(`Clicked coordinates: X: ${x}, Y: ${y}`);
+            
+            // Optionally: Output the coordinates in a format ready to copy into the JSON
+            console.log(
+            `
+            {
+                "id": "", 
+                "position": { "x": ${Math.round(x)}, "y": ${Math.round(y)} }
+            },`);
+        });
+    }
 }
 
 // Function to update the current button when the scene changes
