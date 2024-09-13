@@ -39,18 +39,38 @@ function loadPanorama(panoramaData, mapData) {
         console.log("Loaded scene: " + currentScene);
         document.querySelector('.pnlm-sprite.pnlm-hot-spot-debug-indicator').style.display = 'block';
 
+        let isDragging = false;
         viewer.on('mouseup', function () {
+          isDragging = false;
+
           console.log(
             `
         {
-          "pitch": ${viewer.getPitch()},
-          "yaw": ${viewer.getYaw()},
+          "pitch": ${viewer.getPitch().toFixed(2)},
+          "yaw": ${viewer.getYaw().toFixed(2)},
           "type": "scene",
           "sceneId": ""
         },
         `
           );
-        })
+        });
+
+        viewer.on('mousedown', function() {
+          isDragging = true;
+        });
+
+        const infoBox = document.getElementById('pitchYawInfo');
+        infoBox.style.display = 'block';
+        infoBox.innerHTML = `${currentScene}<br>"targetPitch": ${viewer.getPitch().toFixed(2)},<br>"targetYaw": ${viewer.getYaw().toFixed(2)}`;
+
+        window.addEventListener('mousemove', function(event) {
+          if (isDragging) {
+              const pitch = viewer.getPitch();
+              const yaw = viewer.getYaw();
+              
+              infoBox.innerHTML = `${currentScene}<br>"targetPitch": ${pitch.toFixed(2)},<br>"targetYaw": ${yaw.toFixed(2)}`;
+          }
+        });
       }
     });
 
