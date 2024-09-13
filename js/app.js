@@ -94,6 +94,8 @@ function loadPanorama(panoramaData, mapData) {
       }
 
       loadMap(viewer, currentScene, mapData, data.default.myHotSpotDebug); //sceneID sets what dot to have the :current-class
+
+      viewer.stopAutoRotate(); // Don't autorotae when we load a new scene from inside a tour.
     });
 
     //Handling for backing and loading scene when that happens
