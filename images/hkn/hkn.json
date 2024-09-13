@@ -2,6 +2,7 @@
 	"default": {
 		"autoLoad": true,
 		"autoRotate": -2,
+		"autoRotateInactivityDelay": 2000,
 		"sceneFadeDuration": 700,
 		"myHotSpotDebug": false,
 		"firstScene": "1"
