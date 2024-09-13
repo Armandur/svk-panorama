@@ -367,7 +367,7 @@
 					"pitch": 1.954843639769427,
 					"yaw": -59.79765758314613,
 					"type": "scene",
-					"sceneId": "33"
+					"sceneId": "34"
 				}
 			]
 		},
@@ -405,7 +405,7 @@
 					"pitch": -2.383823749955921,
 					"yaw": -93.82048355599841,
 					"type": "scene",
-					"sceneId": "16"
+					"sceneId": "15"
 				}
 			]
 		},
@@ -413,6 +413,7 @@
 			"type": "equirectangular",
 			"panorama": "/images/hkn/17.jpg",
 			"horizonRoll": 0,
+			"yaw": -190,
 			"hotSpots": [
 				{
 					"pitch": -0.20334227923226322,
@@ -498,9 +499,10 @@
 			"type": "equirectangular",
 			"panorama": "/images/hkn/19.jpg",
 			"horizonRoll": 0,
+			"yaw": -180,
 			"hotSpots": [
 				{
-					"pitch": 4.924332254128182,
+					"pitch": 2.924332254128182,
 					"yaw": -150.9899061987132,
 					"type": "scene",
 					"sceneId": "20"
@@ -535,6 +537,27 @@
 					"yaw": -64.56435668068809,
 					"type": "scene",
 					"sceneId": "21"
+				},
+				{
+					"pitch": -8.360971549553046,
+					"yaw": 31.574332997824285,
+					"type": "scene",
+					"sceneId": "20b"
+				}
+				  
+			]
+		},
+		"20b": {
+			"type": "equirectangular",
+			"panorama": "/images/hkn/20b.jpg",
+			"title": "Nya askgravlunden",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -6.232139425800403,
+					"yaw": -142,
+					"type": "scene",
+					"sceneId": "20"
 				}
 			]
 		},
@@ -542,38 +565,40 @@
 			"type": "equirectangular",
 			"panorama": "/images/hkn/21.jpg",
 			"horizonRoll": 0,
+			"yaw": 220,
 			"hotSpots": [
 				{
-					"pitch": -2.942349568197797,
-					"yaw": 41.5250326646227,
+					"pitch": -2.1090601529200277,
+					"yaw": 74.31169722887796,
 					"type": "scene",
 					"sceneId": "20"
 				},
 				{
-					"pitch": -3.3767899198862388,
-					"yaw": 139.32934599878615,
+					"pitch": -5.759121770866086,
+					"yaw": 175.38674816871605,
 					"type": "scene",
 					"sceneId": "23"
 				},
 				{
-					"pitch": -5.0310639642088155,
-					"yaw": -153.23034076739168,
-					"type": "scene",
-					"sceneId": "22"
+				  "pitch": -6.390525289590358,
+				  "yaw": -112.39595978983823,
+				  "type": "scene",
+				  "sceneId": "22"
 				}
 			]
 		},
 		"22": {
 			"type": "equirectangular",
 			"panorama": "/images/hkn/22.jpg",
+			"title": "Gamla askgravlunden",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
-					"pitch": -7.294877497524698,
-					"yaw": -89.81097043536136,
+					"pitch": -8.065588168188444,
+					"yaw": -85.44585380204308,
 					"type": "scene",
 					"sceneId": "21"
-				}
+				  }
 			]
 		},
 		"23": {
@@ -605,6 +630,7 @@
 			"type": "equirectangular",
 			"panorama": "/images/hkn/24.jpg",
 			"horizonRoll": 0,
+			"yaw": 34,
 			"hotSpots": [
 				{
 					"pitch": -2.826022113690447,
@@ -617,6 +643,31 @@
 					"yaw": -46.49083067051305,
 					"type": "scene",
 					"sceneId": "23"
+				},
+				{
+					"pitch": -6.936867276047194,
+					"yaw": 131.61184015193282,
+					"type": "scene",
+					"sceneId": "24b"
+				}
+			]
+		},
+		"24b": {
+			"type": "equirectangular",
+			"panorama": "/images/hkn/24b.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -1.7920040983518883,
+					"yaw": 2.6599810985918566,
+					"type": "scene",
+					"sceneId": "24"
+				},
+				{
+					"pitch": -7.411070967551346,
+					"yaw": 160.90730727774132,
+					"type": "scene",
+					"sceneId": "25"
 				}
 			]
 		},
@@ -648,6 +699,12 @@
 					"yaw": 55.62407026061385,
 					"type": "scene",
 					"sceneId": "30"
+				},
+				{
+					"pitch": -1.2563113738973097,
+					"yaw": -147.4203136465224,
+					"type": "scene",
+					"sceneId": "24b"
 				}
 			]
 		},
@@ -829,7 +886,7 @@
 					"pitch": -1.5543780079103564,
 					"yaw": -0.0805032186679,
 					"type": "scene",
-					"sceneId": "14"
+					"sceneId": "34"
 				},
 				{
 					"pitch": -0.43157945738457304,
@@ -848,6 +905,25 @@
 					"yaw": -92.32837799483798,
 					"type": "scene",
 					"sceneId": "17"
+				}
+			]
+		},
+		"34": {
+			"type": "equirectangular",
+			"panorama": "/images/hkn/34.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -5.661444275577736,
+					"yaw": 0.9639828799186034,
+					"type": "scene",
+					"sceneId": "14"
+				},
+				{
+					"pitch": -0.9210273906727474,
+					"yaw": -178.9230042534018,
+					"type": "scene",
+					"sceneId": "33"
 				}
 			]
 		},
