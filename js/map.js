@@ -50,7 +50,7 @@ function loadMap(viewer, current, json, debug = false) {
             `
             {
                 "id": "", 
-                "position": { "x": ${Math.round(x-5)}, "y": ${Math.round(y-5)} }
+                "position": { "x": ${x-5}, "y": ${y-5} }
             },`);
         });
     }

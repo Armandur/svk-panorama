@@ -29,7 +29,8 @@
 					"pitch": 3.5,
 					"yaw": -84,
 					"type": "scene",
-					"sceneId": "38"
+					"sceneId": "38",
+					"targetYaw": 83
 				}
 			]
 		},
@@ -42,7 +43,8 @@
 					"pitch": 1.65,
 					"yaw": -153,
 					"type": "scene",
-					"sceneId": "1"
+					"sceneId": "1",
+					"targetYaw": -84
 				},
 				{
 					"pitch": 0.8,
@@ -61,7 +63,9 @@
 					"pitch": 2.148840347766418,
 					"yaw": -27.081327516181886,
 					"type": "scene",
-					"sceneId": "5"
+					"sceneId": "5",
+					"targetPitch": -5.18,
+					"targetYaw": 106.88
 				},
 				{
 					"pitch": 0.6878040240769882,
@@ -73,7 +77,9 @@
 					"pitch": -0.15028320722119703,
 					"yaw": -163.1671428368462,
 					"type": "scene",
-					"sceneId": "2"
+					"sceneId": "2",
+					"targetPitch": 0.17,
+					"targetYaw": -159.8
 				}
 			]
 		},
@@ -92,13 +98,17 @@
 					"pitch": -1.56734756335331,
 					"yaw": -69.37481805544962,
 					"type": "scene",
-					"sceneId": "3"
+					"sceneId": "3",
+					"targetPitch": -1.01,
+					"targetYaw": -176.37
 				},
 				{
 					"pitch": 1.77788910086596,
 					"yaw": 49.11204878742922,
 					"type": "scene",
-					"sceneId": "13"
+					"sceneId": "13",
+					"targetPitch": -0.34,
+					"targetYaw": -114.03
 				}
 			]
 		},
@@ -117,19 +127,24 @@
 					"pitch": 0.6220906623547298,
 					"yaw": 68.06896238586512,
 					"type": "scene",
-					"sceneId": "12"
+					"sceneId": "12",
+					"targetYaw": 166,
+					"targetPitch": 2.8
 				},
 				{
 					"pitch": -1.6709392035756954,
 					"yaw": -60.4608660904446,
 					"type": "scene",
-					"sceneId": "6"
+					"sceneId": "6",
+					"targetYaw": 21
 				},
 				{
 					"pitch": -3.992173431551671,
 					"yaw": -112.4995040223638,
 					"type": "scene",
-					"sceneId": "3"
+					"sceneId": "3",
+					"targetPitch": -1.01,
+					"targetYaw": -176.37
 				}
 			]
 		},
@@ -142,13 +157,15 @@
 					"pitch": -0.7863630871794189,
 					"yaw": 178.09690730137868,
 					"type": "scene",
-					"sceneId": "5"
+					"sceneId": "5",
+					"targetYaw": 103
 				},
 				{
 					"pitch": 1.5752444269669705,
 					"yaw": 33.24757342191265,
 					"type": "scene",
-					"sceneId": "7"
+					"sceneId": "7",
+					"targetYaw": -85
 				}
 			]
 		},
@@ -161,19 +178,23 @@
 					"pitch": -1.1173286455103582,
 					"yaw": -177.82556902933965,
 					"type": "scene",
-					"sceneId": "1"
+					"sceneId": "1",
+					"targetPitch": -1.51,
+					"targetYaw": -176.85
 				},
 				{
 					"pitch": 3.645837580918542,
 					"yaw": -69.9107802362472,
 					"type": "scene",
-					"sceneId": "8"
+					"sceneId": "8",
+					"targetYaw": 175
 				},
 				{
 					"pitch": -6.698933759349555,
 					"yaw": 74.73876986614232,
 					"type": "scene",
-					"sceneId": "6"
+					"sceneId": "6",
+					"targetYaw": -170
 				}
 			]
 		},
@@ -181,18 +202,21 @@
 			"type": "equirectangular",
 			"panorama": "/images/hkn/8.jpg",
 			"horizonRoll": 0,
+			"yaw": -108,
 			"hotSpots": [
 				{
 					"pitch": 1.6969179137909258,
 					"yaw": -172.48715654833563,
 					"type": "scene",
-					"sceneId": "9"
+					"sceneId": "9",
+					"targetYaw": 90
 				},
 				{
 					"pitch": -5.313313505960184,
 					"yaw": -36.098916643157736,
 					"type": "scene",
-					"sceneId": "7"
+					"sceneId": "7",
+					"targetYaw": 86
 				}
 			]
 		},
@@ -205,25 +229,32 @@
 					"pitch": -1.8606636963103815,
 					"yaw": -105.0425810853468,
 					"type": "scene",
-					"sceneId": "8"
+					"sceneId": "8",
+					"targetYaw": -33,
+					"targetPitch": -6
 				},
 				{
 					"pitch": -0.5638983585410207,
 					"yaw": -86.53783560466417,
 					"type": "scene",
-					"sceneId": "37"
+					"sceneId": "37",
+					"targetYaw": -72
 				},
 				{
 					"pitch": -0.3304351654674514,
 					"yaw": 0.14258759371296037,
 					"type": "scene",
-					"sceneId": "35"
+					"sceneId": "35",
+					"targetPitch": 0.90,
+					"targetYaw": -179.26
 				},
 				{
 					"pitch": -1.66203487921203,
 					"yaw": 102.8313207195365,
 					"type": "scene",
-					"sceneId": "10"
+					"sceneId": "10",
+					"targetPitch": -1.43,
+					"targetYaw": 20.95
 				}
 			]
 		},
@@ -236,13 +267,17 @@
 					"pitch": -2.8191853191028504,
 					"yaw": 172.5280331265078,
 					"type": "scene",
-					"sceneId": "10"
+					"sceneId": "9",
+					"targetPitch": -1.19,
+					"targetYaw": -95.81
 				},
 				{
 					"pitch": -2.4157772452086177,
 					"yaw": 28.105086931113874,
 					"type": "scene",
-					"sceneId": "11"
+					"sceneId": "11",
+					"targetPitch": -3.79,
+					"targetYaw": -81.83
 				}
 			]
 		},
@@ -255,7 +290,9 @@
 					"pitch": 0.7006458437980625,
 					"yaw": 70.64463854362032,
 					"type": "scene",
-					"sceneId": "10"
+					"sceneId": "10",
+					"targetPitch": -2.16,
+					"targetYaw": 177.29
 				},
 				{
 					"pitch": -4.555782357146061,
@@ -280,7 +317,9 @@
 					"pitch": -5.262347908951049,
 					"yaw": 13.450164503909832,
 					"type": "scene",
-					"sceneId": "5"
+					"sceneId": "5",
+					"targetYaw": -78,
+					"targetPitch": -4
 				},
 				{
 					"pitch": -2.99718815797315,
@@ -292,7 +331,9 @@
 					"pitch": 1.8859454873653734,
 					"yaw": 159.5403259061501,
 					"type": "scene",
-					"sceneId": "11"
+					"sceneId": "11",
+					"targetPitch": -0.11,
+					"targetYaw": 89.06
 				}
 			]
 		},
@@ -305,13 +346,17 @@
 					"pitch": 2.797968973117288,
 					"yaw": -113.83354476066933,
 					"type": "scene",
-					"sceneId": "13b"
+					"sceneId": "13b",
+					"targetPitch": -0.48,
+					"targetYaw": 100.94
 				},
 				{
 					"pitch": -3.1533370816409163,
 					"yaw": 174.15439292952652,
 					"type": "scene",
-					"sceneId": "12"
+					"sceneId": "12",
+					"targetPitch": -3.37,
+					"targetYaw": 89.84
 				},
 				{
 					"pitch": -5.5894551862289195,
@@ -330,13 +375,17 @@
 					"pitch": -3.1671901530770556,
 					"yaw": -55.722285284221016,
 					"type": "scene",
-					"sceneId": "13"
+					"sceneId": "13",
+					"targetPitch": -5.97,
+					"targetYaw": 62.85
 				},
 				{
 					"pitch": -0.4336835999279469,
 					"yaw": 97.84275033552274,
 					"type": "scene",
-					"sceneId": "14"
+					"sceneId": "14",
+					"targetPitch": -1.08,
+					"targetYaw": -61.61
 				}
 			]
 		},
@@ -344,6 +393,7 @@
 			"type": "equirectangular",
 			"panorama": "/images/hkn/14.jpg",
 			"horizonRoll": 0,
+			"yaw": 27.36,
 			"hotSpots": [
 				{
 					"pitch": -3.490599466904114,
@@ -355,19 +405,24 @@
 					"pitch": -1.2360128862516735,
 					"yaw": 27.62105016202679,
 					"type": "scene",
-					"sceneId": "15"
+					"sceneId": "15",
+					"targetPitch": 1.33,
+					"targetYaw": 123.12
 				},
 				{
 					"pitch": -3.7733360040002846,
 					"yaw": 142.6903351062665,
 					"type": "scene",
-					"sceneId": "13b"
+					"sceneId": "13b",
+					"targetPitch": -3.33,
+					"targetYaw": -58.35
 				},
 				{
 					"pitch": 1.954843639769427,
 					"yaw": -59.79765758314613,
 					"type": "scene",
-					"sceneId": "34"
+					"sceneId": "34",
+					"targetYaw": -179.12
 				}
 			]
 		},
@@ -380,13 +435,17 @@
 					"pitch": 1.4177298902585758,
 					"yaw": 123.19798130810148,
 					"type": "scene",
-					"sceneId": "16"
+					"sceneId": "16",
+					"targetPitch": -2.96,
+					"targetYaw": 85.35
 				},
 				{
 					"pitch": -3.860401445690826,
 					"yaw": -0.07592953116250101,
 					"type": "scene",
-					"sceneId": "14"
+					"sceneId": "14",
+					"targetPitch": -3.83,
+					"targetYaw": -152.58
 				}
 			]
 		},
@@ -399,7 +458,9 @@
 					"pitch": -2.861430581845485,
 					"yaw": 85.3503814897615,
 					"type": "scene",
-					"sceneId": "17"
+					"sceneId": "17",
+					"targetPitch": -1.84,
+					"targetYaw": -79.53
 				},
 				{
 					"pitch": -2.383823749955921,
@@ -419,19 +480,25 @@
 					"pitch": -0.20334227923226322,
 					"yaw": 123.43031710927607,
 					"type": "scene",
-					"sceneId": "16"
+					"sceneId": "16",
+					"targetPitch": -2.29,
+					"targetYaw": -93.24
 				},
 				{
 					"pitch": 1.6577138031448457,
 					"yaw": -172.46708254020473,
 					"type": "scene",
-					"sceneId": "33"
+					"sceneId": "33",
+					"targetPitch": -1.34,
+					"targetYaw": 87.30
 				},
 				{
 					"pitch": -0.19265594874059477,
 					"yaw": -87.47884692410958,
 					"type": "scene",
-					"sceneId": "18"
+					"sceneId": "18",
+					"targetPitch": -2.53,
+					"targetYaw": 99.38
 				}
 			]
 		},
@@ -444,19 +511,25 @@
 					"pitch": -3.30042242706997,
 					"yaw": -90.55574627973158,
 					"type": "scene",
-					"sceneId": "17"
+					"sceneId": "17",
+					"targetPitch": -0.24,
+					"targetYaw": 123.43
 				},
 				{
 					"pitch": 1.0659500843530978,
 					"yaw": 4.74755574388837,
 					"type": "scene",
-					"sceneId": "32"
+					"sceneId": "32",
+					"targetPitch": -2.51,
+					"targetYaw": -179.82
 				},
 				{
 					"pitch": 1.202800795624932,
 					"yaw": 116.11107085068329,
 					"type": "scene",
-					"sceneId": "19"
+					"sceneId": "19",
+					"targetPitch": 2.78,
+					"targetYaw": -150.74
 				},
 				{
 					"pitch": -5.467966279574829,
@@ -505,13 +578,17 @@
 					"pitch": 2.924332254128182,
 					"yaw": -150.9899061987132,
 					"type": "scene",
-					"sceneId": "20"
+					"sceneId": "20",
+					"targetPitch": -2.56,
+					"targetYaw": -64.54
 				},
 				{
 					"pitch": -2.563655940581389,
 					"yaw": 115.69810404857702,
 					"type": "scene",
-					"sceneId": "18"
+					"sceneId": "18",
+					"targetPitch": -3.37,
+					"targetYaw": -90.60
 				},
 				{
 					"pitch": -3.9093534063941506,
@@ -524,19 +601,24 @@
 		"20": {
 			"type": "equirectangular",
 			"panorama": "/images/hkn/20.jpg",
+			"title": "Nya askgravlunden",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
 					"pitch": -2.167115459278227,
 					"yaw": 126.22606637624926,
 					"type": "scene",
-					"sceneId": "19"
+					"sceneId": "19",
+					"targetPitch": -2.74,
+					"targetYaw": 115.38
 				},
 				{
 					"pitch": -2.3559364530592513,
 					"yaw": -64.56435668068809,
 					"type": "scene",
-					"sceneId": "21"
+					"sceneId": "21",
+					"targetPitch": -5.90,
+					"targetYaw": 175.60
 				},
 				{
 					"pitch": -8.360971549553046,
@@ -571,7 +653,9 @@
 					"pitch": -2.1090601529200277,
 					"yaw": 74.31169722887796,
 					"type": "scene",
-					"sceneId": "20"
+					"sceneId": "20",
+					"targetPitch": -2.04,
+					"targetYaw": 125.88
 				},
 				{
 					"pitch": -5.759121770866086,
@@ -597,7 +681,9 @@
 					"pitch": -8.065588168188444,
 					"yaw": -85.44585380204308,
 					"type": "scene",
-					"sceneId": "21"
+					"sceneId": "21",
+					"targetPitch": -6.99,
+					"targetYaw": 127.92
 				  }
 			]
 		},
@@ -616,13 +702,17 @@
 					"pitch": -1.5782092213316083,
 					"yaw": -0.1896591244760657,
 					"type": "scene",
-					"sceneId": "31"
+					"sceneId": "32",
+					"targetPitch": -3.32,
+					"targetYaw": 91.28
 				},
 				{
 					"pitch": 1.5791915490655923,
 					"yaw": 102.68124451102528,
 					"type": "scene",
-					"sceneId": "24"
+					"sceneId": "24",
+					"targetPitch": -7.28,
+					"targetYaw": 130.96
 				}
 			]
 		},
@@ -642,13 +732,17 @@
 					"pitch": 1.15470468361455,
 					"yaw": -46.49083067051305,
 					"type": "scene",
-					"sceneId": "23"
+					"sceneId": "23",
+					"targetPitch": -2.71,
+					"targetYaw": -80.72
 				},
 				{
 					"pitch": -6.936867276047194,
 					"yaw": 131.61184015193282,
 					"type": "scene",
-					"sceneId": "24b"
+					"sceneId": "24b",
+					"targetPitch": -4.95,
+					"targetYaw": 169.20
 				}
 			]
 		},
@@ -667,7 +761,9 @@
 					"pitch": -7.411070967551346,
 					"yaw": 160.90730727774132,
 					"type": "scene",
-					"sceneId": "25"
+					"sceneId": "25",
+					"targetPitch": -4.29,
+					"targetYaw": 55.76
 				}
 			]
 		},
@@ -686,19 +782,25 @@
 					"pitch": 0.6531873905651333,
 					"yaw": -101.53659286870618,
 					"type": "scene",
-					"sceneId": "24"
+					"sceneId": "24",
+					"targetPitch": 1.09,
+					"targetYaw": -46.40
 				},
 				{
 					"pitch": -3.1257680958232212,
 					"yaw": 145.39382915740305,
 					"type": "scene",
-					"sceneId": "26"
+					"sceneId": "26",
+					"targetPitch": -2.11,
+					"targetYaw": 165.03
 				},
 				{
 					"pitch": -5.5641419261631295,
 					"yaw": 55.62407026061385,
 					"type": "scene",
-					"sceneId": "30"
+					"sceneId": "30",
+					"targetPitch": -6.32,
+					"targetYaw": 146.99
 				},
 				{
 					"pitch": -1.2563113738973097,
@@ -717,13 +819,17 @@
 					"pitch": -1.4061240602034566,
 					"yaw": -14.247436487951632,
 					"type": "scene",
-					"sceneId": "25"
+					"sceneId": "25",
+					"targetPitch": -0.35,
+					"targetYaw": -34.50
 				},
 				{
 					"pitch": -1.980755787863437,
 					"yaw": 165.39734592129207,
 					"type": "scene",
-					"sceneId": "27"
+					"sceneId": "27",
+					"targetPitch": -1.90,
+					"targetYaw": 147.78
 				}
 			]
 		},
@@ -742,7 +848,9 @@
 					"pitch": -4.248628644784365,
 					"yaw": 57.1259097103931,
 					"type": "scene",
-					"sceneId": "28"
+					"sceneId": "28",
+					"targetPitch": -5.83,
+					"targetYaw": 99.36
 				}
 			]
 		},
@@ -767,7 +875,9 @@
 					"pitch": -6.749839916428209,
 					"yaw": 99.90749750070086,
 					"type": "scene",
-					"sceneId": "36"
+					"sceneId": "36",
+					"targetPitch": -6.03,
+					"targetYaw": 170.61
 				}
 			]
 		},
@@ -786,7 +896,9 @@
 					"pitch": 1.1510160497969286,
 					"yaw": -65.5405320166609,
 					"type": "scene",
-					"sceneId": "30"
+					"sceneId": "30",
+					"targetPitch": -2.26,
+					"targetYaw": 57.28
 				}
 			]
 		},
@@ -799,7 +911,9 @@
 					"pitch": -1.6175655512663847,
 					"yaw": 57.5853914639946,
 					"type": "scene",
-					"sceneId": "31"
+					"sceneId": "31",
+					"targetPitch": -2.85,
+					"targetYaw": 121.08
 				},
 				{
 					"pitch": -8.50163323466615,
@@ -811,13 +925,17 @@
 					"pitch": -2.9218111399454534,
 					"yaw": -122.23466444390738,
 					"type": "scene",
-					"sceneId": "29"
+					"sceneId": "29",
+					"targetPitch": -5.83,
+					"targetYaw": 114.99
 				},
 				{
 					"pitch": 2.1766229169711826,
 					"yaw": -30.303599414390874,
 					"type": "scene",
-					"sceneId": "25"
+					"sceneId": "25",
+					"targetPitch": -2.07,
+					"targetYaw": -125.05
 				}
 			]
 		},
@@ -830,13 +948,17 @@
 					"pitch": 1.1485832443846957,
 					"yaw": 31.812869362817764,
 					"type": "scene",
-					"sceneId": "32"
+					"sceneId": "32",
+					"targetPitch": -1.30,
+					"targetYaw": -87.54
 				},
 				{
 					"pitch": -1.205604143307718,
 					"yaw": -59.421721962789206,
 					"type": "scene",
-					"sceneId": "30"
+					"sceneId": "30",
+					"targetPitch": -3.02,
+					"targetYaw": -122.15
 				},
 				{
 					"pitch": -4.8295028730873915,
@@ -855,25 +977,33 @@
 					"pitch": -1.6699879369659285,
 					"yaw": -0.26862586899483176,
 					"type": "scene",
-					"sceneId": "18"
+					"sceneId": "18",
+					"targetPitch": -7.58,
+					"targetYaw": -169.94
 				},
 				{
 					"pitch": -1.4378144023496953,
 					"yaw": -87.80919182790365,
 					"type": "scene",
-					"sceneId": "23"
+					"sceneId": "23",
+					"targetPitch": -0.49,
+					"targetYaw": -157.42
 				},
 				{
 					"pitch": -4.710498725844332,
 					"yaw": 91.52505915519953,
 					"type": "scene",
-					"sceneId": "31"
+					"sceneId": "31",
+					"targetPitch": -4.80,
+					"targetYaw": -148.44
 				},
 				{
 					"pitch": -2.4782833894371734,
 					"yaw": -179.8303895420771,
 					"type": "scene",
-					"sceneId": "25"
+					"sceneId": "25",
+					"targetPitch": -3.08,
+					"targetYaw": 145.48
 				}
 			]
 		},
@@ -892,13 +1022,17 @@
 					"pitch": -0.43157945738457304,
 					"yaw": 88.14145607117325,
 					"type": "scene",
-					"sceneId": "35"
+					"sceneId": "35",
+					"targetPitch": -1.08,
+					"targetYaw": 87.39
 				},
 				{
 					"pitch": 0.7716490207058861,
 					"yaw": 177.0358967012321,
 					"type": "scene",
-					"sceneId": "31"
+					"sceneId": "31",
+					"targetPitch": 0.75,
+					"targetYaw": 31.70
 				},
 				{
 					"pitch": 0.1138629285007774,
@@ -917,13 +1051,16 @@
 					"pitch": -5.661444275577736,
 					"yaw": 0.9639828799186034,
 					"type": "scene",
-					"sceneId": "14"
+					"sceneId": "14",
+					"targetYaw": 121.13
 				},
 				{
 					"pitch": -0.9210273906727474,
 					"yaw": -178.9230042534018,
 					"type": "scene",
-					"sceneId": "33"
+					"sceneId": "33",
+					"targetPitch": 0.16,
+					"targetYaw": 176.83
 				}
 			]
 		},
@@ -936,13 +1073,17 @@
 					"pitch": -1.050536208801567,
 					"yaw": -0.32761542020773504,
 					"type": "scene",
-					"sceneId": "9"
+					"sceneId": "9",
+					"targetPitch": -1.53,
+					"targetYaw": 177.12
 				},
 				{
 					"pitch": 0.37930541693727093,
 					"yaw": -178.9119036533632,
 					"type": "scene",
-					"sceneId": "30"
+					"sceneId": "30",
+					"targetPitch": 1.81,
+					"targetYaw": -33.04
 				},
 				{
 					"pitch": -1.426383962831621,
@@ -961,19 +1102,24 @@
 					"pitch": 0.7596569554673458,
 					"yaw": 3.990886950606523,
 					"type": "scene",
-					"sceneId": "28"
+					"sceneId": "28",
+					"targetPitch": 1.68,
+					"targetYaw": -77.10
 				},
 				{
 					"pitch": -1.645829056315625,
 					"yaw": 128.95248371628304,
 					"type": "scene",
-					"sceneId": "37"
+					"sceneId": "37",
+					"targetYaw": 100
 				},
 				{
 					"pitch": -4.914552099317592,
 					"yaw": -175.56495256136031,
 					"type": "scene",
-					"sceneId": "38"
+					"sceneId": "38",
+					"targetYaw": -96,
+					"targetPitch": -12
 				}
 			]
 		},
@@ -981,6 +1127,7 @@
 			"type": "equirectangular",
 			"panorama": "/images/hkn/37.jpg",
 			"horizonRoll": 0,
+			"yaw": 100,
 			"hotSpots": [
 				{
 					"pitch": 1.6924759129996083,
@@ -992,7 +1139,8 @@
 					"pitch": -1.676445100658089,
 					"yaw": 92.18617031833719,
 					"type": "scene",
-					"sceneId": "9"
+					"sceneId": "9",
+					"targetYaw": 88
 				}
 			]
 		},
@@ -1001,12 +1149,14 @@
 			"panorama": "/images/hkn/38.jpg",
 			"horizonRoll": -8,
 			"horizonPitch": -8,
+			"yaw": -180,
 			"hotSpots": [
 				{
 					"pitch": -13.597570663370988,
 					"yaw": -96.58692439624701,
 					"type": "scene",
-					"sceneId": "1"
+					"sceneId": "1",
+					"targetYaw": 85
 				},
 				{
 					"pitch": 9.16415309858024,

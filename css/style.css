@@ -24,3 +24,17 @@
  .pnlm-scene > span {
     visibility: visible !important;
 }
+
+#pitchYawInfo {
+    position: fixed;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    z-index: 9999;
+    display: none; /* Hide initially */
+}
