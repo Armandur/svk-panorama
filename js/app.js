@@ -38,13 +38,13 @@ function loadPanorama(panoramaData, mapData) {
       //When finished loading, start preloading scenes linked to from this scene.
       const currentConfig = viewer.getConfig();
       let nextUrls = [];
-      console.log(currentConfig);
+      //console.log(currentConfig);
       for (hotspot in currentConfig.hotSpots)
       {
         if (currentConfig.hotSpots[hotspot].sceneId) //Only if hotSpot has a sceneId (and thus is of type scene, not info)
         {
-          console.log(currentConfig.hotSpots[hotspot].sceneId);
-          console.log(currentConfig.scenes[currentConfig.hotSpots[hotspot].sceneId]);
+          //console.log(currentConfig.hotSpots[hotspot].sceneId);
+          //console.log(currentConfig.scenes[currentConfig.hotSpots[hotspot].sceneId]);
           nextUrls.push(currentConfig.scenes[currentConfig.hotSpots[hotspot].sceneId].panorama);
         }
       }
