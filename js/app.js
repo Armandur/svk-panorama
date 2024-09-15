@@ -35,7 +35,28 @@ function loadPanorama(panoramaData, mapData) {
 
     // When finished loading a scene
     viewer.on('load', function () {
+      //When finished loading, start preloading scenes linked to from this scene.
+      const currentConfig = viewer.getConfig();
+      let nextUrls = [];
+      
+      for (hotspot in currentConfig.hotSpots)
+      {
+        //console.log(currentConfig.hotSpots[hotspot].sceneId);
+        //console.log(currentConfig.scenes[currentConfig.hotSpots[hotspot].sceneId].panorama);
+        nextUrls.push(currentConfig.scenes[currentConfig.hotSpots[hotspot].sceneId].panorama);
+      }
+
+      function preLoadImage(url)  {
+        const img = new Image();
+        img.src = url;
+        //console.log("Preloaded url: " + url);
+      }
+
+      nextUrls.forEach(url => preLoadImage(url));
+
       if (data.default.myHotSpotDebug) {
+        //console.log(currentConfig);
+
         console.log("Loaded scene: " + currentScene);
         document.querySelector('.pnlm-sprite.pnlm-hot-spot-debug-indicator').style.display = 'block';
 
