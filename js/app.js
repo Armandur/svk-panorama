@@ -15,7 +15,7 @@ function loadJSON(path, callback) {
     });
 }
 
-var addedListeners = false;
+var addedListeners = [];
 
 // Function to load the panorama and map data
 function loadPanorama(panoramaData, mapData) {
@@ -213,23 +213,21 @@ function loadPanorama(panoramaData, mapData) {
         }
       }
 
-      function resetEventListeners() {
-        console.log("Reset listeners");
 
-        // Add the new event listeners
+      // Add the new event listeners
+      if (!('keydown' in addedListeners)) {
         window.addEventListener('keydown', handleKeyDown);
+        addedListeners.push('keydown');
+      }
+
+      if (!('keyup' in addedListeners)) {
         window.addEventListener('keyup', handleKeyUp);
-
-        viewer.off('mouseup');
-        viewer.off('mousedown');
-        viewer.off('zoomchange');
+        addedListeners.push('keyup');
       }
 
-      if(!addedListeners)
-      {
-        resetEventListeners();
-        addedListeners = true;
-      }
+      viewer.off('mouseup');
+      viewer.off('mousedown');
+      viewer.off('zoomchange');
 
       let closenessThreshold = 2; // Remove hotspots this close to cursor
 
@@ -311,8 +309,8 @@ function loadPanorama(panoramaData, mapData) {
         isDragging = true;
       });
 
-      let pitch = viewer.getPitch().toFixed(2);
-      let yaw = viewer.getYaw().toFixed(2);
+      let pitch = parseFloat(viewer.getPitch().toFixed(2));
+      let yaw = parseFloat(viewer.getYaw().toFixed(2));
       let hFov = viewer.getHfov();
 
       pitchYawInfoBox.style.display = 'block';
@@ -327,13 +325,16 @@ function loadPanorama(panoramaData, mapData) {
         loadJSONViewer("#configInfo", scenesJSON);
       }
 
-      window.addEventListener('mousemove', function (event) {
-        if (isDragging) {
-          pitch = viewer.getPitch();
-          yaw = viewer.getYaw();
-          updateInfoBox();
-        }
-      });
+      if (!('mousemove' in addedListeners)) {
+        window.addEventListener('mousemove', function (event) {
+          if (isDragging) {
+            pitch = parseFloat(viewer.getPitch().toFixed(2));
+            yaw = parseFloat(viewer.getYaw().toFixed(2));
+            updateInfoBox();
+          }
+        });
+        addedListeners.push('mousemove');
+      }
 
       viewer.on("zoomchange", function (newHfov) {
         hFov = parseFloat(newHfov.toFixed(2)); // Store the new hFov value
