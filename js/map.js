@@ -1,3 +1,6 @@
+var mapClickEventListenerAdded = false;
+var mapDebugListenerAdded = false;
+
 function loadMap(viewer, current, json, debug = false) {
     const timestamp = new Date().getTime(); //Don't cache the jsons
     fetch(json + "?t=" + timestamp)
@@ -12,14 +15,18 @@ function loadMap(viewer, current, json, debug = false) {
                 button.dataset.id = scene.id;
 
                 // Click event to load the selected scene in the viewer
-                button.addEventListener('click', function (event) {
-                    event.preventDefault();  // Prevent the default anchor action
 
-                    if (scene.id !== current) {
-                        viewer.loadScene(scene.id);  // Load the new scene
-                        console.log(`Clicked scene: ${scene.id} on map`);
-                    }
-                });
+                if (mapClickEventListenerAdded) {
+                    button.addEventListener('click', function (event) {
+                        event.preventDefault();  // Prevent the default anchor action
+    
+                        if (scene.id !== current) {
+                            viewer.loadScene(scene.id);  // Load the new scene
+                            console.log(`Clicked scene: ${scene.id} on map`);
+                        }
+                    });
+                    mapClickEventListenerAdded = true;
+                }
 
                 // Add .current class if it's the current scene
                 if (scene.id === current) {
@@ -33,7 +40,7 @@ function loadMap(viewer, current, json, debug = false) {
             console.error('Error loading map data:', error);
         });
 
-    if (debug) {
+    if (debug && !mapDebugListenerAdded) {
         document.getElementById('map2').addEventListener('click', function (event) {
             const mapContainer = document.getElementById('map-container');
             
@@ -53,6 +60,7 @@ function loadMap(viewer, current, json, debug = false) {
                 "position": { "x": ${x-5}, "y": ${y-5} }
             },`);
         });
+        mapDebugListenerAdded = true;
     }
 }
 
