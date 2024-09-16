@@ -143,7 +143,6 @@ function loadPanorama(panoramaData, mapData) {
       function handleKeyDown(event) {
         if (event.key === 'h' || event.key === 'H') {
           isHKeyDown = true;
-          hasPressedH = true; // "H" has been pressed at least once
         }
       }
 
@@ -169,6 +168,8 @@ function loadPanorama(panoramaData, mapData) {
       let closenessThreshold = 2; // Remove hotspots this close to cursor
 
       viewer.on('mouseup', function () {
+        isDragging = false;
+
         let hotspotConfig = {
           "pitch": parseFloat(viewer.getPitch().toFixed(2)),
           "yaw": parseFloat(viewer.getYaw().toFixed(2)),
