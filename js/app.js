@@ -128,16 +128,24 @@ function loadPanorama(panoramaData, mapData) {
 
       let isDragging = false;
       let isHKeyDown = false;
+      let isIKeyDown = false;
 
       function handleKeyDown(event) {
         if (event.key === 'h' || event.key === 'H') {
           isHKeyDown = true;
+        }
+        if (event.key === 'i' || event.key === 'I') {
+          isIKeyDown = true;
         }
       }
 
       function handleKeyUp(event) {
         if (event.key === 'h' || event.key === 'H') {
           isHKeyDown = false;
+        }
+
+        if (event.key === 'i' || event.key === 'I') {
+          isIKeyDown = false;
         }
 
         // console.log current hotspots in scene
@@ -241,7 +249,7 @@ function loadPanorama(panoramaData, mapData) {
         };
 
         // Only add/remove the hotspot if the "H" key is held down
-        if (isHKeyDown) {
+        if (isHKeyDown || isIKeyDown) {
           let currentHotspots = viewer.getConfig().hotSpots;
           let closestHotspot = null;
           let closestDistance = Infinity;
@@ -281,6 +289,10 @@ function loadPanorama(panoramaData, mapData) {
             hotspotConfig.id = newId;
             hotspotConfig.text = "" + newId;
 
+            if (isIKeyDown) {
+              hotspotConfig.type = "info";
+              delete hotspotConfig.sceneId;
+            }
             // Add the new hotspot with a unique ID
             viewer.addHotSpot(hotspotConfig);
             //console.log("Added new hotspot with ID:", hotspotConfig.id);
