@@ -117,7 +117,6 @@ function loadPanorama(panoramaData, mapData) {
         document.body.appendChild(pitchYawInfoBox);
       }
       pitchYawInfoBox.style.display = 'block';
-      pitchYawInfoBox.innerHTML = `${currentScene}<br>"targetPitch": ${viewer.getPitch().toFixed(2)},<br>"targetYaw": ${viewer.getYaw().toFixed(2)}`;
 
       // Dynamically create and append scenesInfo pre element
       let configInfoBox = document.getElementById('configInfo');
