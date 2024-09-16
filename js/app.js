@@ -148,6 +148,47 @@ function loadPanorama(panoramaData, mapData) {
           isIKeyDown = false;
         }
 
+        // Go back one scene
+        if (event.key === 'j' || event.key === 'J') {
+          var next = getSceneKey(currentScene, 'previous');
+          console.log(next);
+          viewer.loadScene(next)
+        }
+
+        // Go forward one scene
+        if (event.key === 'k' || event.key === 'k') {
+          var next= getSceneKey(currentScene, 'next');
+          console.log(next);
+          viewer.loadScene(next)
+        }
+
+        function getSceneKey(currentSceneId, direction = 'next') {
+          const scenes = viewer.getConfig().scenes;
+          // Convert scenes object to an array
+          const sceneEntries = Object.entries(scenes);
+          // Find the index of the current sceneId
+          const currentIndex = sceneEntries.findIndex(([sceneId, sceneData]) => sceneId === currentSceneId);
+
+          // Calculate the next or previous index based on direction
+          let newIndex;
+          if (direction === 'next') {
+            newIndex = (currentIndex + 1) % sceneEntries.length; // Wrap around if needed
+          } else if (direction === 'previous') {
+            newIndex = (currentIndex - 1 + sceneEntries.length) % sceneEntries.length; // Wrap around backwards
+          } else {
+            throw new Error('Invalid direction. Use "next" or "previous".');
+          }
+          // Return the sceneId (key) of the next or previous scene
+          return sceneEntries[newIndex][0]; // The key is the first element of the entry
+        }
+
+        // Example usage
+        const currentSceneId = "1"; // Replace with the current sceneId
+        const nextSceneKey = getSceneKey(currentSceneId, 'next'); // For the next scene
+        const previousSceneKey = getSceneKey(currentSceneId, 'previous');
+
+
+
         // console.log current hotspots in scene
         if (event.key === 'e' || event.key === 'E') {
           let currentHotspots = viewer.getConfig().hotSpots;
