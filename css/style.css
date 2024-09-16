@@ -38,3 +38,22 @@
     z-index: 9999;
     display: none; /* Hide initially */
 }
+
+#scenesInfo {
+    position: fixed;
+    top: 10px; /* Keep 10px from the top */
+    right: 10px;
+    bottom: 10px; /* Keep 10px from the bottom */
+    transform: none; /* No need for translateY since we're managing top/bottom */
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 10px 10px 20px; /* Increased left padding to 20px */
+    border-radius: 5px;
+    font-size: clamp(12px, 1.5vw, 16px); /* Shrinks the text when necessary */
+    z-index: 9999;
+    display: block; /* Initially visible */
+    max-height: calc(100vh - 20px); /* Keeps div within screen height */
+    max-width: calc(100vw - 20px); /* Ensures div doesn't overflow horizontally */
+    overflow: auto; /* Allows scrolling if content exceeds max height/width */
+    box-sizing: border-box; /* Ensures padding is included in the total width/height */
+}
