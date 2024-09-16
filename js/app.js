@@ -155,26 +155,38 @@ function loadPanorama(panoramaData, mapData) {
         if (event.key === 'e' || event.key === 'E') {
           let currentHotspots = viewer.getConfig().hotSpots;
 
+          // Don't reference since we want to remove some properties etc for export.
+          let clonedHotspots = JSON.parse(JSON.stringify(currentHotspots));
+
           // Debug mode adds the hotSpot ID to text property, and saves orig in existingText
           // put this back for export
-          currentHotspots.forEach(hotspot => {
+          clonedHotspots.forEach(hotspot => {
             if (hotspot.hasOwnProperty('existingText')) {
               hotspot.text = hotspot.existingText;
               delete hotspot.existingText;
             }
+            else {
+              delete hotspot.text;
+            }
+
+            if (hotspot.hasOwnProperty('div')) {
+              delete hotspot.div;
+            }
           });
-          console.log(JSON.stringify(currentHotspots, null, 2));
+          console.log(JSON.stringify(clonedHotspots, null, '\t'));
         }
 
         // download a export.json of the current total config
         if (event.key === 'f' || event.key === 'F') {
 
           let currentConfig = viewer.getConfig();
+          // Don't reference since we want to remove some properties etc for export.
+          let clonedConfig = JSON.parse(JSON.stringify(currentConfig));
 
           // Debug mode adds the hotSpot ID to text property, and saves orig in existingText
           // put this back for export
-          Object.keys(currentConfig.scenes).forEach(sceneId => {
-            const scene = currentConfig.scenes[sceneId];
+          Object.keys(clonedConfig.scenes).forEach(sceneId => {
+            const scene = clonedConfig.scenes[sceneId];
             // Check if the scene has hotSpots
             if (scene.hotSpots && Array.isArray(scene.hotSpots)) {
               scene.hotSpots.forEach(hotspot => {
@@ -182,16 +194,23 @@ function loadPanorama(panoramaData, mapData) {
                   hotspot.text = hotspot.existingText;
                   delete hotspot.existingText;
                 }
+                else {
+                  delete hotspot.text;
+                }
+
+                if (hotspot.hasOwnProperty('div')) {
+                  delete hotspot.div;
+                }
               });
             }
           });
 
           const config = {
-            default: currentConfig.default,
-            scenes: currentConfig.scenes
+            default: clonedConfig.default,
+            scenes: clonedConfig.scenes
           };
 
-          const jsonStr = JSON.stringify(config, null, 2);
+          const jsonStr = JSON.stringify(config, null, '\t');
           const blob = new Blob([jsonStr], {type: "application/json"});
 
           const link = document.createElement('a');
