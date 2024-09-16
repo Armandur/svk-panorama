@@ -43,7 +43,7 @@ function loadMap(viewer, current, json, debug = false) {
             const y = event.clientY - rect.top;
         
             // Log the coordinates in the console
-            console.log(`Clicked coordinates: X: ${x-5}, Y: ${y-5}`);
+            //console.log(`Clicked coordinates: X: ${x-5}, Y: ${y-5}`);
             
             // Optionally: Output the coordinates in a format ready to copy into the JSON
             console.log(

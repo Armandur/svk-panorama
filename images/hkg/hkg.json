@@ -3,7 +3,7 @@
         "autoLoad": true,
         "autoRotate": -2,
         "sceneFadeDuration": 500,
-        "myHotSpotDebug": false,
+        "editorMode": false,
         "firstScene": "1"
     },
     "scenes": {

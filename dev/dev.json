@@ -4,7 +4,7 @@
 		"autoRotate": -2,
 		"autoRotateInactivityDelay": 20000,
 		"sceneFadeDuration": 700,
-		"myHotSpotDebug": true,
+		"editorMode": true,
 		"firstScene": "1"
 	},
 	"scenes": {

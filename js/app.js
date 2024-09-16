@@ -36,7 +36,7 @@ function loadPanorama(panoramaData, mapData) {
         if (scene.hotSpots && Array.isArray(scene.hotSpots)) {
           scene.hotSpots.forEach((hotspot, index) => {
             hotspot.id = index; // Assign 'id' property as the array index
-            if (data.default.myHotSpotDebug) {
+            if (data.default.editorMode) {
               let existingText = hotspot.text;
               hotspot.text = "" + index;
               if (existingText) {
@@ -51,7 +51,7 @@ function loadPanorama(panoramaData, mapData) {
 
     // Initialize the pannellum viewer
     const viewer = pannellum.viewer('panorama', data);
-    loadMap(viewer, currentScene, mapData, data.default.myHotSpotDebug); //currentScene sets what dot to have the :current-class
+    loadMap(viewer, currentScene, mapData, data.default.editorMode); //currentScene sets what dot to have the :current-class
 
     // When finished loading a scene
     viewer.on('load', function () {
@@ -74,7 +74,7 @@ function loadPanorama(panoramaData, mapData) {
 
         img.onload = function () {
           // This code runs when the image has fully loaded
-          if (data.default.myHotSpotDebug) {
+          if (data.default.editorMode) {
             console.log("Preloaded url: " + url);
           }
         };
@@ -89,8 +89,8 @@ function loadPanorama(panoramaData, mapData) {
 
       nextUrls.forEach(url => preLoadImage(url));
 
-      if (data.default.myHotSpotDebug) {
-        debugMode();
+      if (data.default.editorMode) {
+        editorMode();
       }
     });
 
@@ -101,7 +101,7 @@ function loadPanorama(panoramaData, mapData) {
       });
     }
 
-    function debugMode() {
+    function editorMode() {
       console.log("Loaded scene: " + currentScene);
       document.querySelector('.pnlm-sprite.pnlm-hot-spot-debug-indicator').style.display = 'block';
 
