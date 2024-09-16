@@ -151,8 +151,12 @@ function loadPanorama(panoramaData, mapData) {
           isHKeyDown = false;
         }
 
+        // console.log current hotspots in scene
         if (event.key === 'e' || event.key === 'E') {
           let currentHotspots = viewer.getConfig().hotSpots;
+
+          // Debug mode adds the hotSpot ID to text property, and saves orig in existingText
+          // put this back for export
           currentHotspots.forEach(hotspot => {
             if (hotspot.hasOwnProperty('existingText')) {
               hotspot.text = hotspot.existingText;
@@ -160,6 +164,43 @@ function loadPanorama(panoramaData, mapData) {
             }
           });
           console.log(JSON.stringify(currentHotspots, null, 2));
+        }
+
+        // download a export.json of the current total config
+        if (event.key === 'f' || event.key === 'F') {
+
+          let currentConfig = viewer.getConfig();
+
+          // Debug mode adds the hotSpot ID to text property, and saves orig in existingText
+          // put this back for export
+          Object.keys(currentConfig.scenes).forEach(sceneId => {
+            const scene = currentConfig.scenes[sceneId];
+            // Check if the scene has hotSpots
+            if (scene.hotSpots && Array.isArray(scene.hotSpots)) {
+              scene.hotSpots.forEach(hotspot => {
+                if (hotspot.hasOwnProperty('existingText')) {
+                  hotspot.text = hotspot.existingText;
+                  delete hotspot.existingText;
+                }
+              });
+            }
+          });
+
+          const config = {
+            default: currentConfig.default,
+            scenes: currentConfig.scenes
+          };
+
+          const jsonStr = JSON.stringify(config, null, 2);
+          const blob = new Blob([jsonStr], {type: "application/json"});
+
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = "export.json";
+
+          document.body.appendChild(link);
+          link.click();          
+          document.body.removeChild(link);
         }
       }
 
@@ -202,9 +243,15 @@ function loadPanorama(panoramaData, mapData) {
           if (closestDistance < closenessThreshold) {
             // Remove the closest hotspot by its id
             result = viewer.removeHotSpot(closestHotspot.id);
-            console.log(`Removed hotspot with ID: ${closestHotspot.id}`);
-            console.log(result);
-            hasPressedH = false;
+            if (result)
+            {
+              console.log(`Removed hotspot with ID: ${closestHotspot.id}`);
+            }
+            else
+            {
+              console.log(`Failed to remove hotspot with ID: ${closestHotspot.id}`);
+            }
+            
           } else {
             // Generate a unique ID for the new hotspot
             let existingIds = currentHotspots.map(hotspot => hotspot.id);
@@ -216,7 +263,7 @@ function loadPanorama(panoramaData, mapData) {
 
             // Add the new hotspot with a unique ID
             viewer.addHotSpot(hotspotConfig);
-            console.log("Added new hotspot with ID:", hotspotConfig.id);
+            //console.log("Added new hotspot with ID:", hotspotConfig.id);
           }
         }
         updateConfigInfoBox();
