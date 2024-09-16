@@ -1,4 +1,3 @@
-var mapClickEventListenerAdded = false;
 var mapDebugListenerAdded = false;
 
 function loadMap(viewer, current, json, debug = false) {
@@ -15,26 +14,22 @@ function loadMap(viewer, current, json, debug = false) {
                 button.dataset.id = scene.id;
 
                 // Click event to load the selected scene in the viewer
+                button.addEventListener('click', function (event) {
+                    event.preventDefault();  // Prevent the default anchor action
 
-                if (mapClickEventListenerAdded) {
-                    button.addEventListener('click', function (event) {
-                        event.preventDefault();  // Prevent the default anchor action
-    
-                        if (scene.id !== current) {
-                            viewer.loadScene(scene.id);  // Load the new scene
-                            console.log(`Clicked scene: ${scene.id} on map`);
-                        }
-                    });
-                    mapClickEventListenerAdded = true;
-                }
+                    if (scene.id !== current) {
+                        viewer.loadScene(scene.id);  // Load the new scene
+                        if (debug) { console.log(`Clicked scene: ${scene.id} on map`); }
+                    }
+                });
 
                 // Add .current class if it's the current scene
                 if (scene.id === current) {
                     button.classList.add('current');
                 }
-
                 document.getElementById('map-container').appendChild(button);
             });
+
         })
         .catch(error => {
             console.error('Error loading map data:', error);
@@ -43,21 +38,21 @@ function loadMap(viewer, current, json, debug = false) {
     if (debug && !mapDebugListenerAdded) {
         document.getElementById('map2').addEventListener('click', function (event) {
             const mapContainer = document.getElementById('map-container');
-            
+
             // Calculate the position relative to the map container
             const rect = mapContainer.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
-        
+
             // Log the coordinates in the console
             //console.log(`Clicked coordinates: X: ${x-5}, Y: ${y-5}`);
-            
+
             // Optionally: Output the coordinates in a format ready to copy into the JSON
             console.log(
-            `
+                `
             {
                 "id": "", 
-                "position": { "x": ${x-5}, "y": ${y-5} }
+                "position": { "x": ${x - 5}, "y": ${y - 5} }
             },`);
         });
         mapDebugListenerAdded = true;
