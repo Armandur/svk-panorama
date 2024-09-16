@@ -126,6 +126,28 @@ function loadPanorama(panoramaData, mapData) {
         document.body.appendChild(configInfoBox);
       }
 
+      // Dynamically create and append scenesInfo div element
+      let helpInfoBox = document.getElementById('helpInfo');
+      if (!helpInfoBox) {
+        helpInfoBox = document.createElement('div');
+        helpInfoBox.id = 'helpInfo';
+        document.body.appendChild(helpInfoBox);
+
+        helpInfoBox.innerHTML = 
+        `
+        <ul>
+        <li>Hold <b>H/I</b>, drag and release to add/remove Hotspots for scenes (<b>H</b>) and info (<b>I</b>). Closest when released will be removed.</li>
+        <li>Press <b>E</b> to log the current scenes hotspots to the browsers console.</li>
+        <li>Press <b>F</b> to export the current config (including dynamically added/removed hotspots) to export.json</li>
+        <li>Before you have linked up your hotspots in your json you can change scenes with <b>J</b> and <b>K</b>.</li>
+        <li>Clicking on the map will log a preformatted snippet with the clicked position for your map.json file.</li>
+        <li>The topmost box with info about targetPitch and Yaw can be used to add those parameters to the hotspots to keep the viewer in the correct direction when traversing the tour. </li>
+        <li>The leftmost box can be used to browse the current config as well as other info</li>
+        </ul>
+        `;
+      }
+
+
       let isDragging = false;
       let isHKeyDown = false;
       let isIKeyDown = false;
@@ -151,14 +173,12 @@ function loadPanorama(panoramaData, mapData) {
         // Go back one scene
         if (event.key === 'j' || event.key === 'J') {
           var next = getSceneKey(currentScene, 'previous');
-          console.log(next);
           viewer.loadScene(next)
         }
 
         // Go forward one scene
         if (event.key === 'k' || event.key === 'k') {
-          var next= getSceneKey(currentScene, 'next');
-          console.log(next);
+          var next = getSceneKey(currentScene, 'next');
           viewer.loadScene(next)
         }
 
@@ -181,13 +201,6 @@ function loadPanorama(panoramaData, mapData) {
           // Return the sceneId (key) of the next or previous scene
           return sceneEntries[newIndex][0]; // The key is the first element of the entry
         }
-
-        // Example usage
-        const currentSceneId = "1"; // Replace with the current sceneId
-        const nextSceneKey = getSceneKey(currentSceneId, 'next'); // For the next scene
-        const previousSceneKey = getSceneKey(currentSceneId, 'previous');
-
-
 
         // console.log current hotspots in scene
         if (event.key === 'e' || event.key === 'E') {
@@ -368,7 +381,7 @@ function loadPanorama(panoramaData, mapData) {
       pitchYawInfoBox.style.display = 'block';
 
       function updateInfoBox() {
-        pitchYawInfoBox.innerHTML = `Current scene: ${currentScene}<br>hFov: ${hFov}<br>"targetPitch": ${pitch},<br>"targetYaw": ${yaw}`;
+        pitchYawInfoBox.innerHTML = `Current scene: ${currentScene}<br>hFov: ${hFov}<br><br>"targetPitch": ${pitch},<br>"targetYaw": ${yaw}<br>"sceneId": ""`;
       }
 
       function updateConfigInfoBox() {
