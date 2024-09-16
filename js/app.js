@@ -102,6 +102,8 @@ function loadPanorama(panoramaData, mapData) {
     }
 
     function editorMode() {
+      viewer.stopAutoRotate();
+      
       console.log("Loaded scene: " + currentScene);
       document.querySelector('.pnlm-sprite.pnlm-hot-spot-debug-indicator').style.display = 'block';
 
@@ -361,11 +363,16 @@ function loadPanorama(panoramaData, mapData) {
       loadMap(viewer, currentScene, mapData, data.default.myHotSpotDebug); //sceneID sets what dot to have the :current-class
 
       viewer.stopAutoRotate(); // Don't autorotate when we load a new scene from inside a tour.
-      var delayInMilliseconds = 2000; //2 second
+      
+      // Don't need to autorotate in editorMode
+      if (!data.default.editorMode)
+      {
+        var delayInMilliseconds = 2000; //2 second
 
-      setTimeout(function () {
-        viewer.startAutoRotate(); // wait, then start autoRotate
-      }, delayInMilliseconds);
+        setTimeout(function () {
+          viewer.startAutoRotate(); // wait, then start autoRotate
+        }, delayInMilliseconds);
+      }
     });
 
     //Handling for backing and loading scene when that happens
