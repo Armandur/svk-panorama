@@ -870,7 +870,9 @@
 					"pitch": -0.8313970884681467,
 					"yaw": 8.564876628730985,
 					"type": "scene",
-					"sceneId": "29"
+					"sceneId": "29",
+					"targetPitch": 1.09,
+					"targetYaw": -65.57
 				},
 				{
 					"pitch": -6.749839916428209,
