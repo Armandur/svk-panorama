@@ -15,6 +15,8 @@ function loadJSON(path, callback) {
     });
 }
 
+var addedListeners = false;
+
 // Function to load the panorama and map data
 function loadPanorama(panoramaData, mapData) {
   const urlParams = new URLSearchParams(window.location.search);
@@ -103,7 +105,7 @@ function loadPanorama(panoramaData, mapData) {
 
     function editorMode() {
       viewer.stopAutoRotate();
-      
+
       console.log("Loaded scene: " + currentScene);
       document.querySelector('.pnlm-sprite.pnlm-hot-spot-debug-indicator').style.display = 'block';
 
@@ -118,25 +120,11 @@ function loadPanorama(panoramaData, mapData) {
       pitchYawInfoBox.innerHTML = `${currentScene}<br>"targetPitch": ${viewer.getPitch().toFixed(2)},<br>"targetYaw": ${viewer.getYaw().toFixed(2)}`;
 
       // Dynamically create and append scenesInfo pre element
-      let scenesInfoBox = document.getElementById('scenesInfo');
-      if (!scenesInfoBox) {
-        scenesInfoBox = document.createElement('pre');
-        scenesInfoBox.id = 'scenesInfo';
-        document.body.appendChild(scenesInfoBox);
-      }
-
-      function resetEventListeners() {
-        // Remove existing listeners if they exist
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-
-        // Add the new event listeners
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
-
-        viewer.off('mouseup');
-        viewer.off('mousedown');
-        viewer.off('zoomchange');
+      let configInfoBox = document.getElementById('configInfo');
+      if (!configInfoBox) {
+        configInfoBox = document.createElement('pre');
+        configInfoBox.id = 'configInfo';
+        document.body.appendChild(configInfoBox);
       }
 
       let isDragging = false;
@@ -213,19 +201,35 @@ function loadPanorama(panoramaData, mapData) {
           };
 
           const jsonStr = JSON.stringify(config, null, '\t');
-          const blob = new Blob([jsonStr], {type: "application/json"});
+          const blob = new Blob([jsonStr], { type: "application/json" });
 
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
           link.download = "export.json";
 
           document.body.appendChild(link);
-          link.click();          
+          link.click();
           document.body.removeChild(link);
         }
       }
 
-      resetEventListeners();
+      function resetEventListeners() {
+        console.log("Reset listeners");
+
+        // Add the new event listeners
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+
+        viewer.off('mouseup');
+        viewer.off('mousedown');
+        viewer.off('zoomchange');
+      }
+
+      if(!addedListeners)
+      {
+        resetEventListeners();
+        addedListeners = true;
+      }
 
       let closenessThreshold = 2; // Remove hotspots this close to cursor
 
@@ -264,15 +268,13 @@ function loadPanorama(panoramaData, mapData) {
           if (closestDistance < closenessThreshold) {
             // Remove the closest hotspot by its id
             result = viewer.removeHotSpot(closestHotspot.id);
-            if (result)
-            {
-              console.log(`Removed hotspot with ID: ${closestHotspot.id}`);
+            if (result) {
+              //console.log(`Removed hotspot with ID: ${closestHotspot.id}`);
             }
-            else
-            {
+            else {
               console.log(`Failed to remove hotspot with ID: ${closestHotspot.id}`);
             }
-            
+
           } else {
             // Generate a unique ID for the new hotspot
             let existingIds = currentHotspots.map(hotspot => hotspot.id);
@@ -309,20 +311,20 @@ function loadPanorama(panoramaData, mapData) {
         isDragging = true;
       });
 
-      let pitch = viewer.getPitch();
-      let yaw = viewer.getYaw();
+      let pitch = viewer.getPitch().toFixed(2);
+      let yaw = viewer.getYaw().toFixed(2);
       let hFov = viewer.getHfov();
 
       pitchYawInfoBox.style.display = 'block';
 
       function updateInfoBox() {
-        pitchYawInfoBox.innerHTML = `Current scene: ${currentScene}<br>hFov: ${hFov}<br>"targetPitch": ${viewer.getPitch().toFixed(2)},<br>"targetYaw": ${viewer.getYaw().toFixed(2)}`;
+        pitchYawInfoBox.innerHTML = `Current scene: ${currentScene}<br>hFov: ${hFov}<br>"targetPitch": ${pitch},<br>"targetYaw": ${yaw}`;
       }
 
       function updateConfigInfoBox() {
         let scenesJSON = viewer.getConfig();
         pitchYawInfoBox.style.display = 'block';
-        loadJSONViewer("#scenesInfo", scenesJSON);
+        loadJSONViewer("#configInfo", scenesJSON);
       }
 
       window.addEventListener('mousemove', function (event) {
@@ -360,13 +362,12 @@ function loadPanorama(panoramaData, mapData) {
         console.log(`Loading scene: ${sceneID}`);
       }
 
-      loadMap(viewer, currentScene, mapData, data.default.myHotSpotDebug); //sceneID sets what dot to have the :current-class
+      loadMap(viewer, currentScene, mapData, data.default.editorMode); //sceneID sets what dot to have the :current-class
 
       viewer.stopAutoRotate(); // Don't autorotate when we load a new scene from inside a tour.
-      
+
       // Don't need to autorotate in editorMode
-      if (!data.default.editorMode)
-      {
+      if (!data.default.editorMode) {
         var delayInMilliseconds = 2000; //2 second
 
         setTimeout(function () {

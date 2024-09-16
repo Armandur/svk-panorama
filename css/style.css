@@ -39,7 +39,7 @@
     display: none; /* Hide initially */
 }
 
-#scenesInfo {
+#configInfo {
     position: fixed;
     top: 10px; /* Keep 10px from the top */
     left: 50px;
