@@ -55,8 +55,9 @@ function loadPanorama(panoramaData, mapData) {
     const viewer = pannellum.viewer('panorama', data);
     loadMap(viewer, currentScene, mapData, data.default.editorMode); //currentScene sets what dot to have the :current-class
 
-    // When finished loading a scene
     viewer.on('load', function () {
+      console.log("Current listeners " + addedListeners);
+
       //When finished loading, start preloading scenes linked to from this scene.
       const currentConfig = viewer.getConfig();
       let nextUrls = [];
@@ -276,14 +277,16 @@ function loadPanorama(panoramaData, mapData) {
 
 
       // Add the new event listeners
-      if (!('keydown' in addedListeners)) {
+      if (!(addedListeners.includes('keydown'))) {
         window.addEventListener('keydown', handleKeyDown);
         addedListeners.push('keydown');
+       //console.log('keydown listener added');
       }
 
-      if (!('keyup' in addedListeners)) {
+      if (!(addedListeners.includes('keyup'))) {
         window.addEventListener('keyup', handleKeyUp);
         addedListeners.push('keyup');
+        //console.log('keyup listener added');
       }
 
       viewer.off('mouseup');
@@ -390,7 +393,7 @@ function loadPanorama(panoramaData, mapData) {
         loadJSONViewer("#configInfo", scenesJSON);
       }
 
-      if (!('mousemove' in addedListeners)) {
+      if (!(addedListeners.includes('mousemove'))) {
         window.addEventListener('mousemove', function (event) {
           if (isDragging) {
             pitch = parseFloat(viewer.getPitch().toFixed(2));
@@ -398,7 +401,9 @@ function loadPanorama(panoramaData, mapData) {
             updateInfoBox();
           }
         });
+
         addedListeners.push('mousemove');
+        //console.log('mousemove listener added');
       }
 
       viewer.on("zoomchange", function (newHfov) {
