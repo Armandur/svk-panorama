@@ -1,0 +1,614 @@
+{
+	"default": {
+		"autoLoad": true,
+		"autoRotate": -2,
+		"autoRotateInactivityDelay": 2000,
+		"sceneFadeDuration": 700,
+		"editorMode": true,
+		"firstScene": "30"
+	},
+	"scenes": {
+		"27": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/27.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -0.86,
+					"yaw": 0.2,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -6.64,
+					"yaw": -82.64,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				},
+				{
+					"pitch": 1.9,
+					"yaw": 97.17,
+					"type": "scene",
+					"sceneId": "",
+					"id": 2
+				},
+				{
+					"pitch": -5.57,
+					"yaw": -173.86,
+					"type": "scene",
+					"sceneId": "",
+					"id": 3
+				}
+			]
+		},
+		"28": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/28.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -5.71,
+					"yaw": 0.37,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -0.92,
+					"yaw": 91.89,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"29": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/29.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -6.15,
+					"yaw": -0.09,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -2.19,
+					"yaw": 171.97,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"30": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/30.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -6.15,
+					"yaw": 2.01,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				},
+				{
+					"pitch": -8.13,
+					"yaw": -87.94,
+					"type": "scene",
+					"sceneId": "",
+					"id": 2
+				},
+				{
+					"pitch": -9.55,
+					"yaw": 99.77,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -13.6,
+					"yaw": -171.62,
+					"type": "scene",
+					"sceneId": "",
+					"id": 3
+				}
+			]
+		},
+		"31": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/31.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -11.12,
+					"yaw": -1.27,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -5.94,
+					"yaw": -90.39,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				},
+				{
+					"pitch": -3.11,
+					"yaw": -178.84,
+					"type": "scene",
+					"sceneId": "",
+					"id": 2
+				},
+				{
+					"pitch": -6.85,
+					"yaw": 134.17,
+					"type": "scene",
+					"sceneId": "",
+					"id": 3
+				}
+			]
+		},
+		"32": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/32.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -10.88,
+					"yaw": -64.15,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -10.15,
+					"yaw": -19.43,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"33": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/33.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -9.95,
+					"yaw": 170.44,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -2.58,
+					"yaw": -123.61,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"34": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/34.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -6.38,
+					"yaw": -0.14,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -2.33,
+					"yaw": 178.22,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				},
+				{
+					"pitch": -5.51,
+					"yaw": -91.73,
+					"type": "scene",
+					"sceneId": "",
+					"id": 2
+				}
+			]
+		},
+		"35": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/35.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -7.21,
+					"yaw": -0.33,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": 0.03,
+					"yaw": 179.63,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"36": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/36.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -4.5,
+					"yaw": -88.36,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -0.67,
+					"yaw": 177.32,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"37": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/37.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -3.87,
+					"yaw": 0.09,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -8,
+					"yaw": 88.98,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				},
+				{
+					"pitch": -2.14,
+					"yaw": 178.08,
+					"type": "scene",
+					"sceneId": "",
+					"id": 2
+				},
+				{
+					"pitch": -2.67,
+					"yaw": -88.96,
+					"type": "scene",
+					"sceneId": "",
+					"id": 3
+				}
+			]
+		},
+		"38": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/38.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -4.43,
+					"yaw": 0.89,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": 4.01,
+					"yaw": 112.3,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"39": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/39.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": 1.39,
+					"yaw": 0.05,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -8.4,
+					"yaw": 88.29,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				},
+				{
+					"pitch": -16.03,
+					"yaw": 179.51,
+					"type": "scene",
+					"sceneId": "",
+					"id": 2
+				}
+			]
+		},
+		"40": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/40.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -2.31,
+					"yaw": -0.38,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -6.74,
+					"yaw": -84.6,
+					"type": "scene",
+					"sceneId": "",
+					"id": 2
+				},
+				{
+					"pitch": 1.21,
+					"yaw": 97.79,
+					"type": "scene",
+					"sceneId": "",
+					"id": 3
+				},
+				{
+					"pitch": -13.9,
+					"yaw": -165.24,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"41": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/41.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -10.96,
+					"yaw": 0.09,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": 1.58,
+					"yaw": 80.17,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				},
+				{
+					"pitch": -7.26,
+					"yaw": 179.87,
+					"type": "scene",
+					"sceneId": "",
+					"id": 2
+				},
+				{
+					"pitch": -8.88,
+					"yaw": -94.94,
+					"type": "scene",
+					"sceneId": "",
+					"id": 3
+				}
+			]
+		},
+		"42": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/42.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -2.24,
+					"yaw": -0.28,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -5.76,
+					"yaw": -179.72,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"43": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/43.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": 0.12,
+					"yaw": -0.42,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -2.52,
+					"yaw": -107.68,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"29b": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/29b.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -13.21,
+					"yaw": 5.58,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -4.61,
+					"yaw": -179.14,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				},
+				{
+					"pitch": -6.25,
+					"yaw": -94.33,
+					"type": "scene",
+					"sceneId": "",
+					"id": 2
+				}
+			]
+		},
+		"30b": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/30b.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -5.08,
+					"yaw": 0.61,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -2.42,
+					"yaw": -177.93,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"37b": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/37b.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -2.98,
+					"yaw": -0.33,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				}
+			]
+		},
+		"39b": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/39b.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": 1.02,
+					"yaw": 0.57,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -9.31,
+					"yaw": -179.04,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"40b": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/40b.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -4.05,
+					"yaw": -0.42,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -5.38,
+					"yaw": -174.66,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"41b": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/41b.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": 1.24,
+					"yaw": 1.64,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -8.31,
+					"yaw": -179.5,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		},
+		"43b": {
+			"type": "equirectangular",
+			"panorama": "/images/sa/43b.jpg",
+			"horizonRoll": 0,
+			"hotSpots": [
+				{
+					"pitch": -5.95,
+					"yaw": 0.52,
+					"type": "scene",
+					"sceneId": "",
+					"id": 0
+				},
+				{
+					"pitch": -1.58,
+					"yaw": -178.49,
+					"type": "scene",
+					"sceneId": "",
+					"id": 1
+				}
+			]
+		}
+	}
+}
