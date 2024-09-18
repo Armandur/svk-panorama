@@ -56,8 +56,6 @@ function loadPanorama(panoramaData, mapData) {
     loadMap(viewer, currentScene, mapData, data.default.editorMode); //currentScene sets what dot to have the :current-class
 
     viewer.on('load', function () {
-      console.log("Current listeners " + addedListeners);
-
       //When finished loading, start preloading scenes linked to from this scene.
       const currentConfig = viewer.getConfig();
       let nextUrls = [];
@@ -94,6 +92,7 @@ function loadPanorama(panoramaData, mapData) {
 
       if (data.default.editorMode) {
         editorMode();
+        console.log("Current listeners: [" + addedListeners + "]");
       }
     });
 
@@ -134,16 +133,16 @@ function loadPanorama(panoramaData, mapData) {
         helpInfoBox.id = 'helpInfo';
         document.body.appendChild(helpInfoBox);
 
-        helpInfoBox.innerHTML = 
-        `
+        helpInfoBox.innerHTML =
+          `
         <ul>
         <li>Hold <b>H/I</b>, drag and release to add/remove Hotspots for scenes (<b>H</b>) and info (<b>I</b>). Closest when released will be removed.</li>
         <li>Press <b>E</b> to log the current scenes hotspots to the browsers console.</li>
-        <li>Press <b>F</b> to export the current config (including dynamically added/removed hotspots) to export.json</li>
+        <li><b>Clicking on the map</b> will add the current scenes button to the map, if it isn't there already. Clicking somewhere else moves it.</li>
+        <li>Press <b>F</b> to export the current tour-config (including dynamically added/removed hotspots) and the map buttons to config_export.json & map_export.json</li>
         <li>Before you have linked up your hotspots in your json you can change scenes with <b>J</b> and <b>K</b>.</li>
-        <li>Clicking on the map will log a preformatted snippet with the clicked position for your map.json file.</li>
         <li>The topmost box with info about targetPitch and Yaw can be used to add those parameters to the hotspots to keep the viewer in the correct direction when traversing the tour. </li>
-        <li>The leftmost box can be used to browse the current config as well as other info</li>
+        <li>The leftmost box can be used to browse the current config.</li>
         </ul>
         `;
       }
@@ -267,7 +266,7 @@ function loadPanorama(panoramaData, mapData) {
 
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
-          link.download = "export.json";
+          link.download = "config_export.json";
 
           document.body.appendChild(link);
           link.click();
@@ -280,7 +279,7 @@ function loadPanorama(panoramaData, mapData) {
       if (!(addedListeners.includes('keydown'))) {
         window.addEventListener('keydown', handleKeyDown);
         addedListeners.push('keydown');
-       //console.log('keydown listener added');
+        //console.log('keydown listener added');
       }
 
       if (!(addedListeners.includes('keyup'))) {
