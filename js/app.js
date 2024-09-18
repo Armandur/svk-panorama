@@ -392,7 +392,9 @@ function loadPanorama(panoramaData, mapData) {
         loadJSONViewer("#configInfo", scenesJSON);
       }
 
-      if (!(addedListeners.includes('mousemove'))) {
+
+      // TODO Why did this stop working? Works as expected if commented out.
+      //if (!(addedListeners.includes('mousemove'))) {
         window.addEventListener('mousemove', function (event) {
           if (isDragging) {
             pitch = parseFloat(viewer.getPitch().toFixed(2));
@@ -401,9 +403,9 @@ function loadPanorama(panoramaData, mapData) {
           }
         });
 
-        addedListeners.push('mousemove');
+        //addedListeners.push('mousemove');
         //console.log('mousemove listener added');
-      }
+      //}
 
       viewer.on("zoomchange", function (newHfov) {
         hFov = parseFloat(newHfov.toFixed(2)); // Store the new hFov value
