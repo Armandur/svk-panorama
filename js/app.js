@@ -406,6 +406,10 @@ function loadPanorama(panoramaData, mapData) {
               hotspot.text = hotspot.existingText;
               delete hotspot.existingText;
             }
+            // Keep text for info hotspots that don't have existingText (newly created ones)
+            else if (hotspot.type === "info" && hotspot.text) {
+              // Keep the text as is
+            }
             else {
               delete hotspot.text;
             }
@@ -434,6 +438,10 @@ function loadPanorama(panoramaData, mapData) {
                 if (hotspot.hasOwnProperty('existingText')) {
                   hotspot.text = hotspot.existingText;
                   delete hotspot.existingText;
+                }
+                // Keep text for info hotspots that don't have existingText (newly created ones)
+                else if (hotspot.type === "info" && hotspot.text) {
+                  // Keep the text as is
                 }
                 else {
                   delete hotspot.text;
