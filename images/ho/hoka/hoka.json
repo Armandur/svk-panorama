@@ -1,0 +1,27 @@
+{
+	"default": {
+		"autoLoad": true,
+		"autoRotate": -2,
+		"sceneFadeDuration": 500,
+		"editorMode": false,
+		"firstScene": "1"
+	},
+	"scenes": {
+		"1": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hoka/1.jpg",
+			"hotSpots": [
+				{
+					"yaw": 180,
+					"pitch": -25,
+					"type": "scene",
+					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=16",
+					"attributes": {
+						"target": "_self"
+					},
+					"id": 1
+				}
+			]
+		}
+	}
+}

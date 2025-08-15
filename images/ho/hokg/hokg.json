@@ -3,7 +3,7 @@
 		"autoLoad": true,
 		"autoRotate": -2,
 		"sceneFadeDuration": 500,
-		"editorMode": true,
+		"editorMode": false,
 		"firstScene": "1"
 	},
 	"scenes": {
@@ -44,6 +44,16 @@
 					"type": "scene",
 					"sceneId": "2",
 					"id": 2
+				},
+				{
+					"pitch": 0.15,
+					"yaw": -119.62,
+					"type": "scene",
+					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hoga.html?scene=1",
+					"attributes": {
+						"target": "_self"
+					},					
+					"id": 3
 				}
 			]
 		},
@@ -1745,6 +1755,13 @@
 					"type": "scene",
 					"sceneId": "57",
 					"id": 2
+				},
+				{
+					"pitch": -6.24,
+					"yaw": 0,
+					"type": "scene",
+					"sceneId": "60",
+					"id": 3
 				}
 			]
 		},

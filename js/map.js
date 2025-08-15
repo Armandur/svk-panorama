@@ -112,16 +112,16 @@ function mapEditorMode(viewer) {
     document.getElementById('map2').addEventListener('click', function (event) {
         // Handle click and calculate x, y
 
-        const mapXCssOffset = 5; //Offset of map from browser edge in CSS
-        const mapYCssOffset = 5;
+            const mapXCssOffset = 5; //Offset of map from browser edge in CSS
+            const mapYCssOffset = 5;
 
         const mapContainer = document.getElementById('map-container');
         const rect = mapContainer.getBoundingClientRect();
 
-        let x = parseFloat((event.clientX - rect.left - mapXCssOffset).toFixed(2));
-        let y = parseFloat((event.clientY - rect.top - mapYCssOffset).toFixed(2));
+            let x = parseFloat((event.clientX - rect.left - mapXCssOffset).toFixed(2));
+            let y = parseFloat((event.clientY - rect.top - mapYCssOffset).toFixed(2));
 
-        console.log(x + " " + y);
+            console.log(x + " " + y);
 
         handleMapUpdate(viewer, x, y);
     });

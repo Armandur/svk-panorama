@@ -16,12 +16,20 @@ function loadJSON(path, callback) {
 }
 
 var addedListeners = [];
+var editorModeInitialized = false;
+var currentEditorModeListeners = {
+  keydown: null,
+  keyup: null,
+  mousemove: null,
+  mouseup: null,
+  mousedown: null,
+  zoomchange: null
+};
 
 // Function to load the panorama and map data
 function loadPanorama(panoramaData, mapData) {
   const urlParams = new URLSearchParams(window.location.search);
   var currentScene = urlParams.get('scene');  // Changed to use 'scene'
-  // Load the map JSON data and create the map
   // Load panorama JSON data
   loadJSON(panoramaData, function (data) {
     if (currentScene && data.scenes && data.scenes.hasOwnProperty(currentScene)) {
@@ -31,29 +39,61 @@ function loadPanorama(panoramaData, mapData) {
       currentScene = data.default["firstScene"];
     }
 
-    // Loop through each scene and assign an 'id' to each hotspot based on its index
-    for (let sceneKey in data.scenes) {
-      if (data.scenes.hasOwnProperty(sceneKey)) {
-        let scene = data.scenes[sceneKey];
-        if (scene.hotSpots && Array.isArray(scene.hotSpots)) {
-          scene.hotSpots.forEach((hotspot, index) => {
-            hotspot.id = index; // Assign 'id' property as the array index
-            if (data.default.editorMode) {
-              let existingText = hotspot.text;
-              hotspot.text = "" + index;
-              if (existingText) {
-                hotspot.text = hotspot.text + "<br>" + existingText;
-                hotspot.existingText = existingText;
-              }
-            }
-          });
-        }
-      }
-    }
+         // Function to normalize yaw to -180 to +180 range
+     function normalizeYaw(yaw) {
+       while (yaw > 180) {
+         yaw -= 360;
+       }
+       while (yaw < -180) {
+         yaw += 360;
+       }
+       return yaw;
+     }
+
+     // Loop through each scene and assign an 'id' to each hotspot based on its index
+     for (let sceneKey in data.scenes) {
+       if (data.scenes.hasOwnProperty(sceneKey)) {
+         let scene = data.scenes[sceneKey];
+         if (scene.hotSpots && Array.isArray(scene.hotSpots)) {
+           scene.hotSpots.forEach((hotspot, index) => {
+             hotspot.id = index; // Assign 'id' property as the array index
+             
+             // Normalize yaw values to -180 to +180 range
+             if (hotspot.yaw !== undefined) {
+               const oldYaw = hotspot.yaw;
+               hotspot.yaw = normalizeYaw(hotspot.yaw);
+               if (oldYaw !== hotspot.yaw) {
+                 console.log(`Normalized yaw in scene ${sceneKey}, hotspot ${index}: ${oldYaw} → ${hotspot.yaw}`);
+               }
+             }
+             
+             if (data.default.editorMode) {
+               let existingText = hotspot.text;
+               let tooltipText = "" + index;
+               
+               // Add sceneId to tooltip if it exists
+               if (hotspot.sceneId) {
+                 tooltipText += " → " + hotspot.sceneId;
+               }
+               
+               hotspot.text = tooltipText;
+               if (existingText) {
+                 hotspot.text = hotspot.text + "<br>" + existingText;
+                 hotspot.existingText = existingText;
+               }
+             }
+           });
+         }
+       }
+     }
 
     // Initialize the pannellum viewer
     const viewer = pannellum.viewer('panorama', data);
-    loadMap(viewer, currentScene, mapData, data.default.editorMode); //currentScene sets what dot to have the :current-class
+    
+    // Only load map if mapData is provided
+    if (mapData) {
+      loadMap(viewer, currentScene, mapData, data.default.editorMode); //currentScene sets what dot to have the :current-class
+    }
 
     viewer.on('load', function () {
       //When finished loading, start preloading scenes linked to from this scene.
@@ -92,22 +132,62 @@ function loadPanorama(panoramaData, mapData) {
 
       if (data.default.editorMode) {
         editorMode();
-        console.log("Current listeners: [" + addedListeners + "]");
+        
       }
     });
 
-    function loadJSONViewer(div, data) {
-      $(div).jsonViewer(data, {
-        rootCollapsable: false,
-        collapsed: true
-      });
-    }
+         function loadJSONViewer(div, data) {
+       $(div).jsonViewer(data, {
+         rootCollapsable: false,
+         collapsed: true
+       });
+     }
 
-    function editorMode() {
-      viewer.stopAutoRotate();
+     function removeEditorModeListeners() {
+       // Remove window event listeners
+       if (currentEditorModeListeners.keydown) {
+         window.removeEventListener('keydown', currentEditorModeListeners.keydown);
+         currentEditorModeListeners.keydown = null;
+       }
+       if (currentEditorModeListeners.keyup) {
+         window.removeEventListener('keyup', currentEditorModeListeners.keyup);
+         currentEditorModeListeners.keyup = null;
+       }
+       if (currentEditorModeListeners.mousemove) {
+         window.removeEventListener('mousemove', currentEditorModeListeners.mousemove);
+         currentEditorModeListeners.mousemove = null;
+       }
+       
+       // Remove viewer event listeners
+       if (currentEditorModeListeners.mouseup) {
+         viewer.off('mouseup', currentEditorModeListeners.mouseup);
+         currentEditorModeListeners.mouseup = null;
+       }
+       if (currentEditorModeListeners.mousedown) {
+         viewer.off('mousedown', currentEditorModeListeners.mousedown);
+         currentEditorModeListeners.mousedown = null;
+       }
+       if (currentEditorModeListeners.zoomchange) {
+         viewer.off('zoomchange', currentEditorModeListeners.zoomchange);
+         currentEditorModeListeners.zoomchange = null;
+       }
+     }
 
-      console.log("Loaded scene: " + currentScene);
-      document.querySelector('.pnlm-sprite.pnlm-hot-spot-debug-indicator').style.display = 'block';
+             function editorMode() {
+        // Remove any existing editor mode listeners first
+        removeEditorModeListeners();
+        
+        viewer.stopAutoRotate();
+       
+       viewer.stopAutoRotate();
+
+       console.log("Loaded scene: " + currentScene);
+       
+       // Remove any existing debug indicator and recreate it
+       let debugIndicator = document.querySelector('.pnlm-sprite.pnlm-hot-spot-debug-indicator');
+       if (debugIndicator) {
+         debugIndicator.style.display = 'block';
+       }
 
       // Dynamically create and append pitchYawInfo div
       let pitchYawInfoBox = document.getElementById('pitchYawInfo');
@@ -137,6 +217,7 @@ function loadPanorama(panoramaData, mapData) {
           `
         <ul>
         <li>Hold <b>H/I</b>, drag and release to add/remove Hotspots for scenes (<b>H</b>) and info (<b>I</b>). Closest when released will be removed.</li>
+        <li>Hold <b>Q</b>, drag and release to move existing hotspots to a new position.</li>
         <li>Press <b>E</b> to log the current scenes hotspots to the browsers console.</li>
         <li><b>Clicking on the map</b> will add the current scenes button to the map, if it isn't there already. Clicking somewhere else moves it.</li>
         <li>Press <b>F</b> to export the current tour-config (including dynamically added/removed hotspots) and the map buttons to config_export.json & map_export.json</li>
@@ -151,6 +232,8 @@ function loadPanorama(panoramaData, mapData) {
       let isDragging = false;
       let isHKeyDown = false;
       let isIKeyDown = false;
+      let isQKeyDown = false;
+      let draggedHotspot = null;
 
       function handleKeyDown(event) {
         if (event.key === 'h' || event.key === 'H') {
@@ -158,6 +241,9 @@ function loadPanorama(panoramaData, mapData) {
         }
         if (event.key === 'i' || event.key === 'I') {
           isIKeyDown = true;
+        }
+        if (event.key === 'q' || event.key === 'Q') {
+          isQKeyDown = true;
         }
       }
 
@@ -168,6 +254,11 @@ function loadPanorama(panoramaData, mapData) {
 
         if (event.key === 'i' || event.key === 'I') {
           isIKeyDown = false;
+        }
+
+        if (event.key === 'q' || event.key === 'Q') {
+          isQKeyDown = false;
+          draggedHotspot = null;
         }
 
         // Go back one scene
@@ -275,55 +366,68 @@ function loadPanorama(panoramaData, mapData) {
       }
 
 
-      // Add the new event listeners
-      if (!(addedListeners.includes('keydown'))) {
+                           // Store and add event listeners
+        currentEditorModeListeners.keydown = handleKeyDown;
+        currentEditorModeListeners.keyup = handleKeyUp;
         window.addEventListener('keydown', handleKeyDown);
-        addedListeners.push('keydown');
-        //console.log('keydown listener added');
-      }
-
-      if (!(addedListeners.includes('keyup'))) {
         window.addEventListener('keyup', handleKeyUp);
-        addedListeners.push('keyup');
-        //console.log('keyup listener added');
-      }
-
-      viewer.off('mouseup');
-      viewer.off('mousedown');
-      viewer.off('zoomchange');
 
       let closenessThreshold = 2; // Remove hotspots this close to cursor
 
-      viewer.on('mouseup', function () {
+             const mouseupHandler = function () {
         isDragging = false;
 
-        let hotspotConfig = {
-          "pitch": parseFloat(viewer.getPitch().toFixed(2)),
-          "yaw": parseFloat(viewer.getYaw().toFixed(2)),
-          "type": "scene",
-          "sceneId": ""
-        };
-
-        // Only add/remove the hotspot if the "H" key is held down
-        if (isHKeyDown || isIKeyDown) {
+        // If we were dragging a hotspot, update its position
+        if (draggedHotspot) {
+          let newPitch = parseFloat(viewer.getPitch().toFixed(2));
+          let newYaw = parseFloat(viewer.getYaw().toFixed(2));
+          
+          // Remove the old hotspot
+          viewer.removeHotSpot(draggedHotspot.id);
+          
+          // Create new hotspot config with updated position
+          let updatedHotspot = {
+            ...draggedHotspot,
+            pitch: newPitch,
+            yaw: newYaw
+          };
+          
+          // Add the updated hotspot back
+          viewer.addHotSpot(updatedHotspot);
+          
+          draggedHotspot = null;
+        }
+        // Only add/remove the hotspot if the "H" or "I" key is held down
+        else if (isHKeyDown || isIKeyDown) {
+          let hotspotConfig = {
+            "pitch": parseFloat(viewer.getPitch().toFixed(2)),
+            "yaw": parseFloat(viewer.getYaw().toFixed(2)),
+            "type": "scene",
+            "sceneId": ""
+          };
           let currentHotspots = viewer.getConfig().hotSpots;
           let closestHotspot = null;
           let closestDistance = Infinity;
 
-          // Calculate the distance between the new hotspot and each current hotspot
-          currentHotspots.forEach((hotspot, index) => {
-            let pitchDiff = Math.abs(hotspot.pitch - hotspotConfig.pitch);
-            let yawDiff = Math.abs(hotspot.yaw - hotspotConfig.yaw);
+                     // Calculate the distance between the new hotspot and each current hotspot
+           currentHotspots.forEach((hotspot, index) => {
+             let pitchDiff = Math.abs(hotspot.pitch - hotspotConfig.pitch);
+             
+             // Handle yaw wrapping (360 degrees)
+             let yawDiff = Math.abs(hotspot.yaw - hotspotConfig.yaw);
+             if (yawDiff > 180) {
+               yawDiff = 360 - yawDiff; // Take the shorter path around the circle
+             }
 
-            // Simple Euclidean-like distance (in this context)
-            let distance = Math.sqrt(pitchDiff ** 2 + yawDiff ** 2);
+             // Simple Euclidean-like distance (in this context)
+             let distance = Math.sqrt(pitchDiff ** 2 + yawDiff ** 2);
 
-            // Check if this hotspot is closer than the closest we've found
-            if (distance < closestDistance) {
-              closestDistance = distance;
-              closestHotspot = hotspot;
-            }
-          });
+             // Check if this hotspot is closer than the closest we've found
+             if (distance < closestDistance) {
+               closestDistance = distance;
+               closestHotspot = hotspot;
+             }
+           });
 
           // If the closest hotspot is within the threshold
           if (closestDistance < closenessThreshold) {
@@ -341,9 +445,16 @@ function loadPanorama(panoramaData, mapData) {
             let existingIds = currentHotspots.map(hotspot => hotspot.id);
             let newId = findNextAvailableId(existingIds);
 
-            // Assign the new ID to the hotspot config
-            hotspotConfig.id = newId;
-            hotspotConfig.text = "" + newId;
+                         // Assign the new ID to the hotspot config
+             hotspotConfig.id = newId;
+             let tooltipText = "" + newId;
+             
+             // Add sceneId to tooltip if it exists
+             if (hotspotConfig.sceneId) {
+               tooltipText += " → " + hotspotConfig.sceneId;
+             }
+             
+             hotspotConfig.text = tooltipText;
 
             if (isIKeyDown) {
               hotspotConfig.type = "info";
@@ -355,7 +466,11 @@ function loadPanorama(panoramaData, mapData) {
           }
         }
         updateConfigInfoBox();
-      });
+      };
+      
+      // Store and add mouseup listener
+      currentEditorModeListeners.mouseup = mouseupHandler;
+      viewer.on('mouseup', mouseupHandler);
 
       // Function to find the next available ID
       function findNextAvailableId(existingIds) {
@@ -372,9 +487,49 @@ function loadPanorama(panoramaData, mapData) {
         return existingIds.length;
       }
 
-      viewer.on('mousedown', function () {
+      const mousedownHandler = function () {
         isDragging = true;
-      });
+        
+                 // If Q key is held down, find the closest hotspot to start dragging
+         if (isQKeyDown) {
+           let currentHotspots = viewer.getConfig().hotSpots;
+           let closestHotspot = null;
+           let closestDistance = Infinity;
+           let currentPitch = parseFloat(viewer.getPitch().toFixed(2));
+           let currentYaw = parseFloat(viewer.getYaw().toFixed(2));
+
+           
+
+                       // Calculate the distance between the current position and each hotspot
+            currentHotspots.forEach((hotspot, index) => {
+              let pitchDiff = Math.abs(hotspot.pitch - currentPitch);
+              
+              // Handle yaw wrapping (360 degrees)
+              let yawDiff = Math.abs(hotspot.yaw - currentYaw);
+              if (yawDiff > 180) {
+                yawDiff = 360 - yawDiff; // Take the shorter path around the circle
+              }
+              
+              let distance = Math.sqrt(pitchDiff ** 2 + yawDiff ** 2);
+
+              
+
+              if (distance < closestDistance) {
+                closestDistance = distance;
+                closestHotspot = hotspot;
+              }
+            });
+
+                       // If we found a hotspot within reasonable distance, start dragging it
+            if (closestDistance < 20) { // Larger threshold for dragging
+              draggedHotspot = closestHotspot;
+            }
+         }
+      };
+      
+      // Store and add mousedown listener
+      currentEditorModeListeners.mousedown = mousedownHandler;
+      viewer.on('mousedown', mousedownHandler);
 
       let pitch = parseFloat(viewer.getPitch().toFixed(2));
       let yaw = parseFloat(viewer.getYaw().toFixed(2));
@@ -393,24 +548,24 @@ function loadPanorama(panoramaData, mapData) {
       }
 
 
-      // TODO Why did this stop working? Works as expected if commented out.
-      //if (!(addedListeners.includes('mousemove'))) {
-        window.addEventListener('mousemove', function (event) {
-          if (isDragging) {
-            pitch = parseFloat(viewer.getPitch().toFixed(2));
-            yaw = parseFloat(viewer.getYaw().toFixed(2));
-            updateInfoBox();
-          }
-        });
+       function handleMouseMove(event) {
+         if (isDragging) {
+           pitch = parseFloat(viewer.getPitch().toFixed(2));
+           yaw = parseFloat(viewer.getYaw().toFixed(2));
+           updateInfoBox();
+         }
+       }
 
-        //addedListeners.push('mousemove');
-        //console.log('mousemove listener added');
-      //}
-
-      viewer.on("zoomchange", function (newHfov) {
+      const zoomchangeHandler = function (newHfov) {
         hFov = parseFloat(newHfov.toFixed(2)); // Store the new hFov value
         updateInfoBox();
-      });
+      };
+
+      // Store and add mousemove and zoomchange listeners
+      currentEditorModeListeners.mousemove = handleMouseMove;
+      currentEditorModeListeners.zoomchange = zoomchangeHandler;
+      window.addEventListener('mousemove', handleMouseMove);
+      viewer.on("zoomchange", zoomchangeHandler);
 
       updateConfigInfoBox();
     }
@@ -445,6 +600,14 @@ function loadPanorama(panoramaData, mapData) {
         setTimeout(function () {
           viewer.startAutoRotate(); // wait, then start autoRotate
         }, delayInMilliseconds);
+      }
+      
+      // Re-enable editormode for new scene if in editormode
+      if (data.default.editorMode) {
+        // Wait a bit for the scene to fully load, then re-enable editormode
+        setTimeout(function() {
+          editorMode();
+        }, 100);
       }
     });
 

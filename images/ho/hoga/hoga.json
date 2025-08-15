@@ -1,0 +1,335 @@
+{
+	"default": {
+		"autoLoad": true,
+		"autoRotate": -2,
+		"sceneFadeDuration": 500,
+		"editorMode": false,
+		"firstScene": "1"
+	},
+	"scenes": {
+		"1": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hoga/1.jpg",
+			"hotSpots": [
+				{
+					"pitch": 6.57,
+					"yaw": -120.3,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 1
+				},
+				{
+					"pitch": -11.85,
+					"yaw": 88.96,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 0
+				},
+				{
+					"pitch": -19.24,
+					"yaw": 0.17,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 2
+				}
+			]
+		},
+		"2": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hoga/2.jpg",
+			"hotSpots": [
+				{
+					"pitch": 33.93,
+					"yaw": 179.66,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 0
+				},
+				{
+					"pitch": 31.68,
+					"yaw": -66.03,
+					"type": "scene",
+					"sceneId": "5",
+					"id": 1
+				},
+				{
+					"pitch": -21.15,
+					"yaw": -0.47,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 2
+				},
+				{
+					"pitch": -23.12,
+					"yaw": 179.96,
+					"type": "scene",
+					"sceneId": "1",
+					"id": 3
+				}
+			]
+		},
+		"3": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hoga/3.jpg",
+			"hotSpots": [
+				{
+					"pitch": 10.38,
+					"yaw": -131.71,
+					"type": "scene",
+					"sceneId": "5",
+					"id": 0
+				},
+				{
+					"pitch": -26.36,
+					"yaw": 179.66,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 1
+				}
+			]
+		},
+		"4": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hoga/4.jpg",
+			"hotSpots": [
+				{
+					"pitch": -5.56,
+					"yaw": -30.89,
+					"type": "scene",
+					"sceneId": "5",
+					"id": 0
+				},
+				{
+					"pitch": -27.12,
+					"yaw": -117.97,
+					"type": "scene",
+					"sceneId": "1",
+					"id": 1
+				},
+				{
+					"pitch": -44.12,
+					"yaw": -0.59,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 2
+				}
+			]
+		},
+		"5": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hoga/5.jpg",
+			"hotSpots": [
+				{
+					"pitch": -6.66,
+					"yaw": 9.17,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 0
+				},
+				{
+					"pitch": -30.12,
+					"yaw": 6.9,
+					"type": "scene",
+					"sceneId": "1",
+					"id": 1
+				},
+				{
+					"pitch": -48.17,
+					"yaw": -147.61,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 2
+				}
+			]
+		},
+		"6": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hoga/6.jpg",
+			"hotSpots": [
+				{
+					"pitch": -1.79,
+					"yaw": 123.72,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 1
+				},
+				{
+					"pitch": -6.57,
+					"yaw": 158.02,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 2
+				},
+				{
+					"pitch": -15.03,
+					"yaw": -107.72,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 0
+				},
+				{
+					"pitch": -1.96,
+					"yaw": -0.04,
+					"type": "scene",
+					"sceneId": "1",
+					"id": 3
+				},
+                {
+                    "pitch": -5.97,
+                    "yaw": 179.2,
+                    "type": "scene",
+                    "sceneId": "10",
+                    "id": 4
+                }
+			]
+		},
+		"7": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hoga/7.jpg",
+			"hotSpots": [
+				{
+					"pitch": -1.16,
+					"yaw": 18.37,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 1
+				},
+				{
+					"pitch": -3.59,
+					"yaw": 43.62,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 0
+				},
+				{
+					"pitch": -9.34,
+					"yaw": -12.65,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 2
+				}
+			]
+		},
+		"8": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hoga/8.jpg",
+			"hotSpots": [
+                    {
+                        "pitch": -0.93,
+                        "yaw": 0.07,
+                        "type": "scene",
+                        "URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=1",
+                        "attributes": {
+                            "target": "_self"
+                        },
+                        "id": 1
+                    },
+                    {
+                        "pitch": -4.42,
+                        "yaw": 177.68,
+                        "type": "scene",
+                        "sceneId": "7",
+                        "id": 4
+                    },
+                    {
+                        "pitch": -5.12,
+                        "yaw": -171.14,
+                        "type": "scene",
+                        "sceneId": "6",
+                        "id": 3
+                    },
+                    {
+                        "pitch": -15.09,
+                        "yaw": 2.45,
+                        "type": "scene",
+                        "sceneId": "10",
+                        "id": 2
+                    },
+                    {
+                        "pitch": -6.89,
+                        "yaw": 125.08,
+                        "type": "scene",
+                        "sceneId": "9",
+                        "id": 0
+                    }
+			]
+		},
+		"9": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hoga/9.jpg",
+			"hotSpots": [
+				{
+					"pitch": -5.3,
+					"yaw": 2.89,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 0
+				},
+				{
+					"pitch": -4.97,
+					"yaw": 100.72,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 1
+				}
+			]
+		},
+		"10": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hoga/10.jpg",
+			"hotSpots": [
+                {
+                    "pitch": 0.55,
+                    "yaw": 146.18,
+                    "type": "scene",
+                    "URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=1",
+                    "attributes": {
+                        "target": "_self"
+                    },
+                    "id": 2
+                },
+                {
+                    "pitch": 0.4,
+                    "yaw": -67.19,
+                    "type": "scene",
+                    "sceneId": "9",
+                    "id": 0
+                },
+                {
+                    "pitch": -7.6,
+                    "yaw": 1.33,
+                    "type": "scene",
+                    "sceneId": "11",
+                    "id": 1
+                },
+                {
+                    "pitch": 6.92,
+                    "yaw": -38.87,
+                    "type": "scene",
+                    "sceneId": "8",
+                    "id": 3
+                }
+            ]
+		},
+		"11": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hoga/11.jpg",
+			"hotSpots": [
+				{
+					"pitch": -27.64,
+					"yaw": -178.99,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 0
+				},
+				{
+					"pitch": 6.91,
+					"yaw": -68.04,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 1
+				}
+			]
+		}
+	}
+}

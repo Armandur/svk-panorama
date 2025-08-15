@@ -1,0 +1,274 @@
+{
+	"default": {
+		"autoLoad": true,
+		"autoRotate": -2,
+		"sceneFadeDuration": 500,
+		"editorMode": false,
+		"firstScene": "6"
+	},
+	"scenes": {
+		"1": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hony/1.jpg",
+			"hotSpots": [
+				{
+					"pitch": -7.88,
+					"yaw": -0.59,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 0
+				},
+				{
+					"pitch": -16.57,
+					"yaw": 176.11,
+					"type": "scene",
+                    "URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=11",
+					"attributes": {
+						"target": "_self"
+					},
+					"id": 1
+				}
+			]
+		},
+		"2": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hony/2.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.46,
+					"yaw": -136.7,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 0
+				},
+				{
+					"pitch": -7.95,
+					"yaw": 0.03,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 1
+				},
+				{
+					"pitch": -15.76,
+					"yaw": 178.56,
+					"type": "scene",
+					"sceneId": "1",
+					"id": 2
+				},
+				{
+					"pitch": -27.28,
+					"yaw": 90.82,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 3
+				}
+			]
+		},
+		"3": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hony/3.jpg",
+			"hotSpots": [
+				{
+					"pitch": -23.94,
+					"yaw": -102.42,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 0
+				}
+			]
+		},
+		"4": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hony/4.jpg",
+			"hotSpots": [
+				{
+					"pitch": 19.24,
+					"yaw": -179.53,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 1
+				},
+				{
+					"pitch": 16,
+					"yaw": -31.54,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 2
+				},
+				{
+					"pitch": -8.51,
+					"yaw": -179.72,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 3
+				},
+				{
+					"pitch": -9.22,
+					"yaw": -0.4,
+					"type": "scene",
+					"sceneId": "5",
+					"id": 0
+				},
+				{
+					"pitch": -4.38,
+					"yaw": 90.58,
+					"type": "scene",
+                    "URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=12",
+					"attributes": {
+						"target": "_self"
+					},
+					"id": 4
+				}
+			]
+		},
+		"5": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hony/5.jpg",
+			"hotSpots": [
+				{
+					"pitch": 16.55,
+					"yaw": -95.78,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 0
+				},
+				{
+					"pitch": -10.7,
+					"yaw": 179.54,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 1
+				},
+				{
+					"pitch": -21.77,
+					"yaw": -0.26,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 2
+				}
+			]
+		},
+		"6": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hony/6.jpg",
+			"hotSpots": [
+				{
+					"pitch": -26.3,
+					"yaw": -179.7,
+					"type": "scene",
+					"sceneId": "5",
+					"id": 0
+				},
+				{
+					"pitch": 6.43,
+					"yaw": -119.24,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 1
+				},
+				{
+					"pitch": -8.9,
+					"yaw": -179.84,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 2
+				}
+			]
+		},
+		"7": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hony/7.jpg",
+			"hotSpots": [
+				{
+					"pitch": 2.68,
+					"yaw": 30.75,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 0
+				},
+				{
+					"pitch": 0,
+					"yaw": -135,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 1
+				},
+				{
+					"pitch": -22.6,
+					"yaw": 17.7,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 2
+				},
+				{
+					"pitch": -29.91,
+					"yaw": -87.21,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 3
+				},
+				{
+					"pitch": -38.37,
+					"yaw": -59.76,
+					"type": "scene",
+					"sceneId": "5",
+					"id": 4
+				}
+			]
+		},
+		"8": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hony/8.jpg",
+			"hotSpots": [
+				{
+					"pitch": -1.51,
+					"yaw": -16.64,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 0
+				},
+				{
+					"pitch": -17.33,
+					"yaw": -123.2,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 3
+				},
+				{
+					"pitch": -22.82,
+					"yaw": 124.4,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 2
+				},
+				{
+					"pitch": -29.68,
+					"yaw": -2.3,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 1
+				}
+			]
+		},
+		"9": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hony/9.jpg",
+			"hotSpots": [
+				{
+					"pitch": -32.85,
+					"yaw": 153.68,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 1
+				},
+				{
+					"pitch": -21.75,
+					"yaw": 69.18,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 0
+				}
+			]
+		}
+	}
+}
