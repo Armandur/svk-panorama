@@ -51,7 +51,7 @@
 					"yaw": -15.77,
 					"type": "info",
 					"id": 4,
-					"text": "Vid restaureringen 1936 införskaffades nya bänkar, målningsarbetet utfördes av målarmäsaren Arvid Johansson i Dal."
+					"text": "Vid restaureringen 1936 införskaffades nya bänkar, målningsarbetet utfördes av målarmästaren Arvid Johansson i Dal."
 				}
 			]
 		},
@@ -99,7 +99,7 @@
 					"yaw": -68.04,
 					"type": "info",
 					"id": 6,
-					"text": "Vid restaureringen 1936 införskaffades nya bänkar, målningsarbetet utfördes av målarmäsaren Arvid Johansson i Dal."
+					"text": "Vid restaureringen 1936 införskaffades nya bänkar, målningsarbetet utfördes av målarmästaren Arvid Johansson i Dal."
 				},
 				{
 					"pitch": -13.65,
@@ -387,6 +387,13 @@
 			"panorama": "/images/ho/hoga/11.jpg",
 			"hotSpots": [
 				{
+					"pitch": 6.91,
+					"yaw": -68.04,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 1
+				},
+				{
 					"pitch": -27.64,
 					"yaw": -178.99,
 					"type": "scene",
@@ -394,11 +401,32 @@
 					"id": 0
 				},
 				{
-					"pitch": 6.91,
-					"yaw": -68.04,
-					"type": "scene",
-					"sceneId": "9",
-					"id": 1
+					"pitch": -27.17,
+					"yaw": -12.45,
+					"type": "info",
+					"id": 2,
+					"text": "Föddes i Flattom i Högsjö 27 . 9 1855"
+				},
+				{
+					"pitch": -15.7,
+					"yaw": -0.3,
+					"type": "info",
+					"id": 3,
+					"text": "Olof Högberg"
+				},
+				{
+					"pitch": -29.19,
+					"yaw": 19.31,
+					"type": "info",
+					"id": 4,
+					"text": "Skildrade nordsvenska öden ur hävd och sägen."
+				},
+				{
+					"pitch": -20.83,
+					"yaw": 31.45,
+					"type": "info",
+					"id": 5,
+					"text": "Norrlandsförbundet, Folkrörelserna i Ångermanland och Högsjöbor reste stenen 1955."
 				}
 			]
 		}
