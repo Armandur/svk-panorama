@@ -4,7 +4,7 @@
 		"autoRotate": -2,
 		"sceneFadeDuration": 500,
 		"editorMode": false,
-		"firstScene": "6"
+		"firstScene": "1"
 	},
 	"scenes": {
 		"1": {
@@ -22,11 +22,25 @@
 					"pitch": -16.57,
 					"yaw": 176.11,
 					"type": "scene",
-                    "URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=11",
+					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=11",
 					"attributes": {
 						"target": "_self"
 					},
 					"id": 1
+				},
+				{
+					"pitch": 4.53,
+					"yaw": 170.84,
+					"type": "info",
+					"id": 2,
+					"text": "Kyrkportarna är från 1790-talet och är snidade av bildhuggaren Pehr Westman, Hemsön"
+				},
+				{
+					"pitch": 46.97,
+					"yaw": -72.8,
+					"type": "info",
+					"id": 3,
+					"text": "Tornuret är en gåva till församlingen från kapten J.M. Nordstrand på Åbord.  Den stora kyrkklockan kommer från Högsjö gamla kyrka och är samma klocka som löstes ut vid klocksatten 1531 och brandsakdades vid rysshärjningarna 1721.  Två gånger omgjuten låter den ännu sin malm ljuda över Mörtsjöns vatten."
 				}
 			]
 		},
@@ -86,38 +100,59 @@
 					"yaw": -179.53,
 					"type": "scene",
 					"sceneId": "8",
-					"id": 1
+					"id": 0
 				},
 				{
 					"pitch": 16,
 					"yaw": -31.54,
 					"type": "scene",
 					"sceneId": "7",
-					"id": 2
+					"id": 1
+				},
+				{
+					"pitch": -4.38,
+					"yaw": 90.58,
+					"type": "scene",
+					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=12",
+					"attributes": {
+						"target": "_self"
+					},
+					"id": 4
 				},
 				{
 					"pitch": -8.51,
 					"yaw": -179.72,
 					"type": "scene",
 					"sceneId": "2",
-					"id": 3
+					"id": 2
 				},
 				{
 					"pitch": -9.22,
 					"yaw": -0.4,
 					"type": "scene",
 					"sceneId": "5",
-					"id": 0
+					"id": 3
 				},
 				{
-					"pitch": -4.38,
-					"yaw": 90.58,
-					"type": "scene",
-                    "URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=12",
-					"attributes": {
-						"target": "_self"
-					},
-					"id": 4
+					"pitch": 22.53,
+					"yaw": -164.11,
+					"type": "info",
+					"id": 7,
+					"text": "Läktarorgeln är byggd 1908 av Setterqvist & Son i Örebro, med en fasad från 1848 av J.G. Ek, Torpshammar. Orgeln restaurerades 1990 av Johannes Menzel Orgelbyggeri AB. Orgeln har 14 stämmor, 2 manualer och pedal."
+				},
+				{
+					"pitch": 5.81,
+					"yaw": 10.98,
+					"type": "info",
+					"id": 8,
+					"text": "Kyrkan var långt ifrån färdig vid invignigen 2 november 1789, först i mitten av 1800-talet fick kyrkorummet sin slutliga gestaltning i nyklassicistisk stil genom Olof Hofréns utförande av ny altaruppsats och predikstol."
+				},
+				{
+					"pitch": 8.1,
+					"yaw": -37.22,
+					"type": "info",
+					"id": 5,
+					"text": "Predikstolen är från mitten av 1800-talet och är, tillsammans med altaruppsatsen, utformad av Olof Hofrén."
 				}
 			]
 		},
@@ -145,6 +180,13 @@
 					"type": "scene",
 					"sceneId": "6",
 					"id": 2
+				},
+				{
+					"pitch": 11.77,
+					"yaw": 29.69,
+					"type": "info",
+					"id": 3,
+					"text": "Kyrkan var långt ifrån färdig vid invignigen 2 november 1789, först i mitten av 1800-talet fick kyrkorummet sin slutliga gestaltning i nyklassicistisk stil genom Olof Hofréns utförande av ny altaruppsats och predikstol."
 				}
 			]
 		},
@@ -213,6 +255,14 @@
 					"type": "scene",
 					"sceneId": "5",
 					"id": 4
+				},
+				{
+					"pitch": -44,
+					"yaw": 69.22,
+					"type": "scene",
+					"id": 5,
+					"text": "Klicka här för att läsa historien om den sjuarmade ljusstaken i predikstolen.",
+					"URL": "https://www.svenskakyrkan.se/platser/7640-hogsjo-forsamling-predikstolen-hogsjo-kyrka"
 				}
 			]
 		},
@@ -232,7 +282,7 @@
 					"yaw": -123.2,
 					"type": "scene",
 					"sceneId": "2",
-					"id": 3
+					"id": 1
 				},
 				{
 					"pitch": -22.82,
@@ -246,7 +296,14 @@
 					"yaw": -2.3,
 					"type": "scene",
 					"sceneId": "4",
-					"id": 1
+					"id": 3
+				},
+				{
+					"pitch": 35.25,
+					"yaw": -157.84,
+					"type": "info",
+					"id": 4,
+					"text": "Läktarorgeln är byggd 1908 av Setterqvist & Son i Örebro, med en fasad från 1848 av J.G. Ek, Torpshammar. Orgeln restaurerades 1990 av Johannes Menzel Orgelbyggeri AB. Orgeln har 14 stämmor, 2 manualer och pedal."
 				}
 			]
 		},
@@ -255,18 +312,25 @@
 			"panorama": "/images/ho/hony/9.jpg",
 			"hotSpots": [
 				{
-					"pitch": -32.85,
-					"yaw": 153.68,
-					"type": "scene",
-					"sceneId": "2",
-					"id": 1
-				},
-				{
 					"pitch": -21.75,
 					"yaw": 69.18,
 					"type": "scene",
 					"sceneId": "8",
+					"id": 1
+				},
+				{
+					"pitch": -32.85,
+					"yaw": 153.68,
+					"type": "scene",
+					"sceneId": "2",
 					"id": 0
+				},
+				{
+					"pitch": -31.99,
+					"yaw": 6.26,
+					"type": "info",
+					"id": 2,
+					"text": "Här går det fortfarande att manuellt trampa luft till orgeln om det skulle behövas."
 				}
 			]
 		}

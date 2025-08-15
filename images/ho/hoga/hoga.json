@@ -16,21 +16,42 @@
 					"yaw": -120.3,
 					"type": "scene",
 					"sceneId": "4",
-					"id": 1
+					"id": 0
+				},
+				{
+					"pitch": -4.93,
+					"yaw": 7.55,
+					"type": "info",
+					"id": 1,
+					"text": "Två s.k. obelisker eller pyramider. De markerar slutet på bänkkvarteren och begynnelsen av koret."
+				},
+				{
+					"pitch": -5.22,
+					"yaw": -7.6,
+					"type": "info",
+					"id": 5,
+					"text": "1936 renoverades predikstol, altaruppsats, pyramider och korskrank av Sven Dalén."
 				},
 				{
 					"pitch": -11.85,
 					"yaw": 88.96,
 					"type": "scene",
 					"sceneId": "6",
-					"id": 0
+					"id": 2
 				},
 				{
 					"pitch": -19.24,
 					"yaw": 0.17,
 					"type": "scene",
 					"sceneId": "2",
-					"id": 2
+					"id": 3
+				},
+				{
+					"pitch": -23.54,
+					"yaw": -15.77,
+					"type": "info",
+					"id": 4,
+					"text": "Vid restaureringen 1936 införskaffades nya bänkar, målningsarbetet utfördes av målarmäsaren Arvid Johansson i Dal."
 				}
 			]
 		},
@@ -53,18 +74,46 @@
 					"id": 1
 				},
 				{
+					"pitch": 13.28,
+					"yaw": -72.74,
+					"type": "info",
+					"id": 2,
+					"text": "1936 renoverades predikstol, altaruppsats, pyramider och korskrank av Sven Dalén."
+				},
+				{
 					"pitch": -21.15,
 					"yaw": -0.47,
 					"type": "scene",
 					"sceneId": "3",
-					"id": 2
+					"id": 4
 				},
 				{
 					"pitch": -23.12,
 					"yaw": 179.96,
 					"type": "scene",
 					"sceneId": "1",
-					"id": 3
+					"id": 5
+				},
+				{
+					"pitch": -23.72,
+					"yaw": -68.04,
+					"type": "info",
+					"id": 6,
+					"text": "Vid restaureringen 1936 införskaffades nya bänkar, målningsarbetet utfördes av målarmäsaren Arvid Johansson i Dal."
+				},
+				{
+					"pitch": -13.65,
+					"yaw": 20.12,
+					"type": "info",
+					"id": 3,
+					"text": "1936 renoverades predikstol, altaruppsats, pyramider och korskrank av Sven Dalén."
+				},
+				{
+					"pitch": -13.81,
+					"yaw": -19.32,
+					"type": "info",
+					"id": 7,
+					"text": "Två s.k. obelisker eller pyramider. De markerar slutet på bänkkvarteren och begynnelsen av koret."
 				}
 			]
 		},
@@ -112,6 +161,20 @@
 					"type": "scene",
 					"sceneId": "2",
 					"id": 2
+				},
+				{
+					"pitch": -32.61,
+					"yaw": -176.49,
+					"type": "info",
+					"id": 3,
+					"text": "Vid kyrkans restaurering 1936 iordningställdes orgeln av orgelbyggaren J. A. Jonsson från Duvbo. Till sin hjälp hade han och församlingen den lände orgelexperten dr Bertil Wester"
+				},
+				{
+					"pitch": -16.03,
+					"yaw": -40.96,
+					"type": "info",
+					"id": 4,
+					"text": "1936 renoverades predikstol, altaruppsats, pyramider och korskrank av Sven Dalén."
 				}
 			]
 		},
@@ -139,6 +202,13 @@
 					"type": "scene",
 					"sceneId": "3",
 					"id": 2
+				},
+				{
+					"pitch": 1.53,
+					"yaw": 29.74,
+					"type": "info",
+					"id": 3,
+					"text": "Vid kyrkans restaurering 1936 iordningställdes orgeln av orgelbyggaren J. A. Jonsson från Duvbo. Till sin hjälp hade han och församlingen den lände orgelexperten dr Bertil Wester"
 				}
 			]
 		},
@@ -151,20 +221,6 @@
 					"yaw": 123.72,
 					"type": "scene",
 					"sceneId": "8",
-					"id": 1
-				},
-				{
-					"pitch": -6.57,
-					"yaw": 158.02,
-					"type": "scene",
-					"sceneId": "9",
-					"id": 2
-				},
-				{
-					"pitch": -15.03,
-					"yaw": -107.72,
-					"type": "scene",
-					"sceneId": "7",
 					"id": 0
 				},
 				{
@@ -172,15 +228,29 @@
 					"yaw": -0.04,
 					"type": "scene",
 					"sceneId": "1",
+					"id": 1
+				},
+				{
+					"pitch": -5.97,
+					"yaw": 179.2,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 2
+				},
+				{
+					"pitch": -6.57,
+					"yaw": 158.02,
+					"type": "scene",
+					"sceneId": "9",
 					"id": 3
 				},
-                {
-                    "pitch": -5.97,
-                    "yaw": 179.2,
-                    "type": "scene",
-                    "sceneId": "10",
-                    "id": 4
-                }
+				{
+					"pitch": -15.03,
+					"yaw": -107.72,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 4
+				}
 			]
 		},
 		"7": {
@@ -192,14 +262,14 @@
 					"yaw": 18.37,
 					"type": "scene",
 					"sceneId": "8",
-					"id": 1
+					"id": 0
 				},
 				{
 					"pitch": -3.59,
 					"yaw": 43.62,
 					"type": "scene",
 					"sceneId": "9",
-					"id": 0
+					"id": 1
 				},
 				{
 					"pitch": -9.34,
@@ -214,44 +284,45 @@
 			"type": "equirectangular",
 			"panorama": "/images/ho/hoga/8.jpg",
 			"hotSpots": [
-                    {
-                        "pitch": -0.93,
-                        "yaw": 0.07,
-                        "type": "scene",
-                        "URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=1",
-                        "attributes": {
-                            "target": "_self"
-                        },
-                        "id": 1
-                    },
-                    {
-                        "pitch": -4.42,
-                        "yaw": 177.68,
-                        "type": "scene",
-                        "sceneId": "7",
-                        "id": 4
-                    },
-                    {
-                        "pitch": -5.12,
-                        "yaw": -171.14,
-                        "type": "scene",
-                        "sceneId": "6",
-                        "id": 3
-                    },
-                    {
-                        "pitch": -15.09,
-                        "yaw": 2.45,
-                        "type": "scene",
-                        "sceneId": "10",
-                        "id": 2
-                    },
-                    {
-                        "pitch": -6.89,
-                        "yaw": 125.08,
-                        "type": "scene",
-                        "sceneId": "9",
-                        "id": 0
-                    }
+				{
+					"pitch": -0.53,
+					"yaw": -2.84,
+					"type": "scene",
+					"text": "Här - rakt över Mörtsjön - ser man Högsjö nya kyrka",
+					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=1",
+					"attributes": {
+						"target": "_self"
+					},
+					"id": 0
+				},
+				{
+					"pitch": -4.42,
+					"yaw": 177.68,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 1
+				},
+				{
+					"pitch": -5.12,
+					"yaw": -171.14,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 2
+				},
+				{
+					"pitch": -6.89,
+					"yaw": 125.08,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 3
+				},
+				{
+					"pitch": -15.09,
+					"yaw": 2.45,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 4
+				}
 			]
 		},
 		"9": {
@@ -278,38 +349,38 @@
 			"type": "equirectangular",
 			"panorama": "/images/ho/hoga/10.jpg",
 			"hotSpots": [
-                {
-                    "pitch": 0.55,
-                    "yaw": 146.18,
-                    "type": "scene",
-                    "URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=1",
-                    "attributes": {
-                        "target": "_self"
-                    },
-                    "id": 2
-                },
-                {
-                    "pitch": 0.4,
-                    "yaw": -67.19,
-                    "type": "scene",
-                    "sceneId": "9",
-                    "id": 0
-                },
-                {
-                    "pitch": -7.6,
-                    "yaw": 1.33,
-                    "type": "scene",
-                    "sceneId": "11",
-                    "id": 1
-                },
-                {
-                    "pitch": 6.92,
-                    "yaw": -38.87,
-                    "type": "scene",
-                    "sceneId": "8",
-                    "id": 3
-                }
-            ]
+				{
+					"pitch": 0.55,
+					"yaw": 146.18,
+					"type": "scene",
+					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=1",
+					"attributes": {
+						"target": "_self"
+					},
+					"id": 0
+				},
+				{
+					"pitch": 0.4,
+					"yaw": -67.19,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 1
+				},
+				{
+					"pitch": -7.6,
+					"yaw": 1.33,
+					"type": "scene",
+					"sceneId": "11",
+					"id": 2
+				},
+				{
+					"pitch": 6.92,
+					"yaw": -38.87,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 3
+				}
+			]
 		},
 		"11": {
 			"type": "equirectangular",

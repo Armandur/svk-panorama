@@ -25,35 +25,50 @@
 			"panorama": "/images/ho/hokg/1.jpg",
 			"hotSpots": [
 				{
+					"pitch": 0.16,
+					"yaw": 11.63,
+					"type": "info",
+					"id": 4,
+					"text": "De smidda järngrindarna kommer från Utansjös järnbruk som anlades 1738.  Att järnbruket förlades där kom att avgöra den nya kyrkans placering."
+				},
+				{
+					"pitch": 0.15,
+					"yaw": -119.62,
+					"type": "scene",
+					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hoga.html?scene=8",
+					"text": "Här - rakt över Mörtsjön - skymtar man Högsjö gamla kyrka",
+					"attributes": {
+						"target": "_self"
+					},
+					"id": 0
+				},
+				{
 					"pitch": -1.21,
 					"yaw": -159.8,
 					"type": "scene",
 					"sceneId": "0",
-					"id": 0
+					"id": 1
 				},
 				{
 					"pitch": -2.42,
 					"yaw": 68.07,
 					"type": "scene",
 					"sceneId": "14b",
-					"id": 1
+					"id": 2
 				},
 				{
 					"pitch": -8.72,
 					"yaw": -0.29,
 					"type": "scene",
 					"sceneId": "2",
-					"id": 2
+					"id": 3
 				},
 				{
-					"pitch": 0.15,
-					"yaw": -119.62,
-					"type": "scene",
-					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hoga.html?scene=1",
-					"attributes": {
-						"target": "_self"
-					},					
-					"id": 3
+					"pitch": -6.3,
+					"yaw": -29.16,
+					"type": "info",
+					"id": 5,
+					"text": "Högsjö nya kyrka är en \"getingkyrka\" och är murad av traktens gnejs och tegel. Högsjö nya kyrka uppfördes av byggmästare Simon Geting efter ritningar av byggmästare Per Hagmansson. Kyrkan var långt ifrån färdig vid invigningen 2 november 1789, först i mitten av 1800-talet fick kyrkorummet sin slutliga gestaltning i nyklassicistisk stil genom Olof Hofréns utförande av ny altaruppsats och predikstol."
 				}
 			]
 		},
@@ -298,25 +313,32 @@
 			"panorama": "/images/ho/hokg/11.jpg",
 			"hotSpots": [
 				{
-					"pitch": -4.61,
-					"yaw": 0.75,
-					"type": "scene",
-					"sceneId": "10",
-					"id": 0
+					"pitch": 77.52,
+					"yaw": 70.8,
+					"type": "info",
+					"id": 7,
+					"text": "Tornuret är en gåva till församlingen från kapten J.M. Nordstrand på Åbord"
 				},
 				{
-					"pitch": -6.48,
-					"yaw": -146.86,
-					"type": "scene",
-					"sceneId": "2",
-					"id": 1
+					"pitch": 71.39,
+					"yaw": 71.23,
+					"type": "info",
+					"id": 6,
+					"text": "Den stora kyrkklockan kommer från Högsjö gamla kyrka och är samma klocka som löstes ut vid klocksatten 1531 och brandsakdades vid rysshärjningarna 1721.  Två gånger omgjuten låter den ännu sin malm ljuda över Mörtsjöns vatten."
 				},
 				{
-					"pitch": -7.9,
-					"yaw": 112.98,
-					"type": "scene",
-					"sceneId": "12",
-					"id": 2
+					"pitch": 31.02,
+					"yaw": 66.37,
+					"type": "info",
+					"id": 0,
+					"text": "Gustaf IIIs sextonde regerings år 1788. \"Herre wår Gud! Hör tin tjenares och tina folks Israels bön thom the gör görande wender i thetta rum och hör thet, ther tu bor i himmelen; och när tu thet hörer, war nådelig. 1 kon. bok: 8 cap: 30 v.\""
+				},
+				{
+					"pitch": 9.76,
+					"yaw": 68.7,
+					"type": "info",
+					"id": 1,
+					"text": "Kyrkportarna är från 1790-talet och är snidade av bildhuggaren Pehr Westman, Hemsön."
 				},
 				{
 					"pitch": 4.22,
@@ -326,7 +348,42 @@
 					"attributes": {
 						"target": "_self"
 					},
+					"id": 2
+				},
+				{
+					"pitch": -4.61,
+					"yaw": 0.75,
+					"type": "scene",
+					"sceneId": "10",
 					"id": 3
+				},
+				{
+					"pitch": -6.48,
+					"yaw": -146.86,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 4
+				},
+				{
+					"pitch": -7.9,
+					"yaw": 112.98,
+					"type": "scene",
+					"sceneId": "12",
+					"id": 5
+				},
+				{
+					"pitch": 15.95,
+					"yaw": 94.61,
+					"type": "info",
+					"id": 8,
+					"text": "Högsjö nya kyrka är en \"getingkyrka\" och är murad av traktens gnejs och tegel. Högsjö nya kyrka uppfördes av byggmästare Simon Geting efter ritningar av byggmästare Per Hagmansson."
+				},
+				{
+					"pitch": 30.95,
+					"yaw": 79.38,
+					"type": "info",
+					"id": 9,
+					"text": "Kyrkan var långt ifrån färdig vid invigningen 2 november 1789, först i mitten av 1800-talet fick kyrkorummet sin slutliga gestaltning i nyklassicistisk stil genom Olof Hofréns utförande av ny altaruppsats och predikstol."
 				}
 			]
 		},
@@ -431,6 +488,20 @@
 					"type": "scene",
 					"sceneId": "14",
 					"id": 1
+				},
+				{
+					"pitch": 45.36,
+					"yaw": 87.49,
+					"type": "info",
+					"id": 2,
+					"text": "Tornuret är en gåva till församlingen från kapten J.M. Nordstrand på Åbord."
+				},
+				{
+					"pitch": 35.22,
+					"yaw": 91.37,
+					"type": "info",
+					"id": 3,
+					"text": "Den stora kyrkklockan kommer från Högsjö gamla kyrka och är samma klocka som löstes ut vid klocksatten 1531 och brandsakdades vid rysshärjningarna 1721.  Två gånger omgjuten låter den ännu sin malm ljuda över Mörtsjöns vatten."
 				}
 			]
 		},
@@ -438,6 +509,16 @@
 			"type": "equirectangular",
 			"panorama": "/images/ho/hokg/16.jpg",
 			"hotSpots": [
+				{
+					"pitch": -1.4,
+					"yaw": -60.16,
+					"type": "scene",
+					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hoka.html",
+					"attributes": {
+						"target": "_self"
+					},
+					"id": 2
+				},
 				{
 					"pitch": -9.2,
 					"yaw": 118.17,
@@ -453,14 +534,11 @@
 					"id": 1
 				},
 				{
-					"pitch": -1.4,
-					"yaw": -60.16,
-					"type": "scene",
-					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hoka.html",
-					"attributes": {
-						"target": "_self"
-					},
-					"id": 2
+					"pitch": 0.29,
+					"yaw": -70.28,
+					"type": "info",
+					"id": 3,
+					"text": "Högsjö gravkapell är byggt 1955 och är ritat av arkitekt K M Westerberg. Kapellet används både för begravningar i svenska kyrkans ordning, borgerliga ceremonier och andra trosuppfattningar."
 				}
 			]
 		},
@@ -1532,6 +1610,13 @@
 					"type": "scene",
 					"sceneId": "56",
 					"id": 4
+				},
+				{
+					"pitch": -1.02,
+					"yaw": 22.95,
+					"type": "info",
+					"id": 5,
+					"text": "\"Här trivs våra Pollinerare och vi får njuta av en ängsmark\" - Nellie, 10 år."
 				}
 			]
 		},
@@ -1802,6 +1887,7 @@
 		"61": {
 			"type": "equirectangular",
 			"panorama": "/images/ho/hokg/61.jpg",
+			"title": "Minneslunden",
 			"hotSpots": [
 				{
 					"pitch": -7.15,
@@ -1823,6 +1909,13 @@
 					"type": "scene",
 					"sceneId": "60",
 					"id": 2
+				},
+				{
+					"pitch": -5.53,
+					"yaw": 2.94,
+					"type": "info",
+					"id": 3,
+					"text": "En minneslund är ett gemensamt, anonymt gravskick. Askan efter den avlidne nedsätts utan att anhöriga närvar och utan att askans exakta placering registreras."
 				}
 			]
 		},
@@ -1856,6 +1949,7 @@
 		"63": {
 			"type": "equirectangular",
 			"panorama": "/images/ho/hokg/63.jpg",
+			"title": "Askgravlunden",
 			"hotSpots": [
 				{
 					"pitch": -10.26,
@@ -1870,12 +1964,20 @@
 					"type": "scene",
 					"sceneId": "63b",
 					"id": 1
+				},
+				{
+					"pitch": -8.98,
+					"yaw": -24.6,
+					"type": "info",
+					"id": 2,
+					"text": "Askgravlunden i Högsjö invigdes 1 september 2019. Askgravlunden är planerad av Anna Johansson och hon har inspirerats av traktens omgivningar, t.ex. tidigare Utansjö bruk. Mila marktjänster utförde anläggningsarbetet."
 				}
 			]
 		},
 		"64": {
 			"type": "equirectangular",
 			"panorama": "/images/ho/hokg/64.jpg",
+			"title": "Askgravlunden",
 			"hotSpots": [
 				{
 					"pitch": -7.04,
@@ -2126,6 +2228,13 @@
 					"type": "scene",
 					"sceneId": "51",
 					"id": 3
+				},
+				{
+					"pitch": -8.26,
+					"yaw": -139.38,
+					"type": "info",
+					"id": 4,
+					"text": "Fyra insektshotell för att erbjuda pollinerande insekter en skyddad bostad för larver en plats de kan övervintra."
 				}
 			]
 		},
@@ -2139,12 +2248,20 @@
 					"type": "scene",
 					"sceneId": "59",
 					"id": 0
+				},
+				{
+					"pitch": -24.2,
+					"yaw": 1.16,
+					"type": "info",
+					"id": 1,
+					"text": "Bonden och Statsministern Thorbjörn Fälldin, ★ 1926, 🕆 2016"
 				}
 			]
 		},
 		"61b": {
 			"type": "equirectangular",
 			"panorama": "/images/ho/hokg/61b.jpg",
+			"title": "Minneslunden",
 			"hotSpots": [
 				{
 					"pitch": -3.47,
@@ -2179,6 +2296,7 @@
 		"61c": {
 			"type": "equirectangular",
 			"panorama": "/images/ho/hokg/61c.jpg",
+			"title": "Minneslunden",
 			"hotSpots": [
 				{
 					"pitch": -6.19,
@@ -2246,6 +2364,7 @@
 		"63b": {
 			"type": "equirectangular",
 			"panorama": "/images/ho/hokg/63b.jpg",
+			"title": "Askgravlunden",
 			"hotSpots": [
 				{
 					"pitch": -7.05,
@@ -2267,6 +2386,13 @@
 					"type": "scene",
 					"sceneId": "63",
 					"id": 2
+				},
+				{
+					"pitch": -39.88,
+					"yaw": -86.31,
+					"type": "info",
+					"id": 3,
+					"text": "En Askgravlund är en gemensam begravingsplats där efter flera döda finns.  Anhöriga får delta vid gravsättningen och kan välja att få en namnplakett uppsatt."
 				}
 			]
 		}

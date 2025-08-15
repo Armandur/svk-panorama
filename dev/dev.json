@@ -7,202 +7,273 @@
 		"firstScene": "1"
 	},
 	"scenes": {
-		"0": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/0.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.93,
-					"yaw": 116.8,
-					"type": "scene",
-					"sceneId": "1",
-					"id": 0
-				}
-			]
-		},
 		"1": {
 			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/1.jpg",
+			"panorama": "/images/ho/hoga/1.jpg",
 			"hotSpots": [
 				{
-					"pitch": -1.21,
-					"yaw": -159.8,
+					"pitch": 6.57,
+					"yaw": -120.3,
 					"type": "scene",
-					"sceneId": "0",
+					"sceneId": "4",
 					"id": 0
 				},
 				{
-					"pitch": -2.42,
-					"yaw": 68.07,
-					"type": "scene",
-					"sceneId": "14b",
-					"id": 1
+					"pitch": -4.93,
+					"yaw": 7.55,
+					"type": "info",
+					"id": 1,
+					"text": "Två s.k. obelisker eller pyramider. De markerar slutet på bänkkvarteren och begynnelsen av koret."
 				},
 				{
-					"pitch": -8.72,
-					"yaw": -0.29,
+					"pitch": -5.22,
+					"yaw": -7.6,
+					"type": "info",
+					"id": 5,
+					"text": "1936 renoverades predikstol, altaruppsats, pyramider och korskrank av Sven Dalén."
+				},
+				{
+					"pitch": -11.85,
+					"yaw": 88.96,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 2
+				},
+				{
+					"pitch": -19.24,
+					"yaw": 0.17,
 					"type": "scene",
 					"sceneId": "2",
-					"id": 2
+					"id": 3
+				},
+				{
+					"pitch": -23.54,
+					"yaw": -15.77,
+					"type": "info",
+					"id": 4,
+					"text": "Vid restaureringen 1936 införskaffades nya bänkar, målningsarbetet utfördes av målarmäsaren Arvid Johansson i Dal."
 				}
 			]
 		},
 		"2": {
 			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/2.jpg",
+			"panorama": "/images/ho/hoga/2.jpg",
 			"hotSpots": [
 				{
-					"pitch": -0.84,
-					"yaw": 0.45,
+					"pitch": 33.93,
+					"yaw": 179.66,
 					"type": "scene",
-					"sceneId": "11",
+					"sceneId": "4",
 					"id": 0
 				},
 				{
-					"pitch": -3.55,
-					"yaw": 58.56,
+					"pitch": 31.68,
+					"yaw": -66.03,
 					"type": "scene",
-					"sceneId": "15",
+					"sceneId": "5",
 					"id": 1
 				},
 				{
-					"pitch": -5.19,
-					"yaw": -109.51,
-					"type": "scene",
-					"sceneId": "3",
-					"id": 2
+					"pitch": 13.28,
+					"yaw": -72.74,
+					"type": "info",
+					"id": 2,
+					"text": "1936 renoverades predikstol, altaruppsats, pyramider och korskrank av Sven Dalén."
 				},
 				{
-					"pitch": -20.58,
-					"yaw": 163.85,
+					"pitch": -21.15,
+					"yaw": -0.47,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 4
+				},
+				{
+					"pitch": -23.12,
+					"yaw": 179.96,
 					"type": "scene",
 					"sceneId": "1",
-					"id": 3
+					"id": 5
+				},
+				{
+					"pitch": -23.72,
+					"yaw": -68.04,
+					"type": "info",
+					"id": 6,
+					"text": "Vid restaureringen 1936 införskaffades nya bänkar, målningsarbetet utfördes av målarmäsaren Arvid Johansson i Dal."
+				},
+				{
+					"pitch": -13.65,
+					"yaw": 20.12,
+					"type": "info",
+					"id": 3,
+					"text": "1936 renoverades predikstol, altaruppsats, pyramider och korskrank av Sven Dalén."
+				},
+				{
+					"pitch": -13.81,
+					"yaw": -19.32,
+					"type": "info",
+					"id": 7,
+					"text": "Två s.k. obelisker eller pyramider. De markerar slutet på bänkkvarteren och begynnelsen av koret."
 				}
 			]
 		},
 		"3": {
 			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/3.jpg",
+			"panorama": "/images/ho/hoga/3.jpg",
 			"hotSpots": [
 				{
-					"pitch": -1.59,
-					"yaw": 75.29,
+					"pitch": 10.38,
+					"yaw": -131.71,
 					"type": "scene",
-					"sceneId": "8",
+					"sceneId": "5",
 					"id": 0
 				},
 				{
-					"pitch": -1.6,
-					"yaw": -179.28,
+					"pitch": -26.36,
+					"yaw": 179.66,
 					"type": "scene",
 					"sceneId": "2",
 					"id": 1
-				},
-				{
-					"pitch": -8.61,
-					"yaw": -0.22,
-					"type": "scene",
-					"sceneId": "4",
-					"id": 2
 				}
 			]
 		},
 		"4": {
 			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/4.jpg",
+			"panorama": "/images/ho/hoga/4.jpg",
 			"hotSpots": [
 				{
-					"pitch": -2.26,
-					"yaw": 74.58,
+					"pitch": -5.56,
+					"yaw": -30.89,
 					"type": "scene",
-					"sceneId": "7",
+					"sceneId": "5",
 					"id": 0
 				},
 				{
-					"pitch": -2.81,
-					"yaw": 179.28,
+					"pitch": -27.12,
+					"yaw": -117.97,
 					"type": "scene",
-					"sceneId": "3",
+					"sceneId": "1",
 					"id": 1
 				},
 				{
-					"pitch": -7.85,
-					"yaw": -0.18,
+					"pitch": -44.12,
+					"yaw": -0.59,
 					"type": "scene",
-					"sceneId": "5",
+					"sceneId": "2",
 					"id": 2
+				},
+				{
+					"pitch": -32.61,
+					"yaw": -176.49,
+					"type": "info",
+					"id": 3,
+					"text": "Vid kyrkans restaurering 1936 iordningställdes orgeln av orgelbyggaren J. A. Jonsson från Duvbo. Till sin hjälp hade han och församlingen den lände orgelexperten dr Bertil Wester"
+				},
+				{
+					"pitch": -16.03,
+					"yaw": -40.96,
+					"type": "info",
+					"id": 4,
+					"text": "1936 renoverades predikstol, altaruppsats, pyramider och korskrank av Sven Dalén."
 				}
 			]
 		},
 		"5": {
 			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/5.jpg",
+			"panorama": "/images/ho/hoga/5.jpg",
 			"hotSpots": [
 				{
-					"pitch": 0,
-					"yaw": 0,
+					"pitch": -6.66,
+					"yaw": 9.17,
 					"type": "scene",
 					"sceneId": "4",
 					"id": 0
 				},
 				{
-					"pitch": -1.64,
-					"yaw": 179.78,
+					"pitch": -30.12,
+					"yaw": 6.9,
 					"type": "scene",
-					"sceneId": "",
+					"sceneId": "1",
 					"id": 1
 				},
 				{
-					"pitch": -3.97,
-					"yaw": 75.77,
+					"pitch": -48.17,
+					"yaw": -147.61,
 					"type": "scene",
-					"sceneId": "6",
+					"sceneId": "3",
 					"id": 2
+				},
+				{
+					"pitch": 1.53,
+					"yaw": 29.74,
+					"type": "info",
+					"id": 3,
+					"text": "Vid kyrkans restaurering 1936 iordningställdes orgeln av orgelbyggaren J. A. Jonsson från Duvbo. Till sin hjälp hade han och församlingen den lände orgelexperten dr Bertil Wester"
 				}
 			]
 		},
 		"6": {
 			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/6.jpg",
+			"panorama": "/images/ho/hoga/6.jpg",
 			"hotSpots": [
 				{
-					"pitch": -13.11,
-					"yaw": 101.04,
-					"type": "scene",
-					"sceneId": "5",
-					"id": 0
-				},
-				{
-					"pitch": -3.38,
-					"yaw": 0.1,
-					"type": "scene",
-					"sceneId": "7",
-					"id": 1
-				}
-			]
-		},
-		"7": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/7.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.73,
-					"yaw": 0.35,
+					"pitch": -1.79,
+					"yaw": 123.72,
 					"type": "scene",
 					"sceneId": "8",
 					"id": 0
 				},
 				{
-					"pitch": -9.11,
-					"yaw": 103.48,
+					"pitch": -1.96,
+					"yaw": -0.04,
 					"type": "scene",
-					"sceneId": "4",
+					"sceneId": "1",
 					"id": 1
 				},
 				{
-					"pitch": -9.43,
-					"yaw": -178.98,
+					"pitch": -5.97,
+					"yaw": 179.2,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 2
+				},
+				{
+					"pitch": -6.57,
+					"yaw": 158.02,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 3
+				},
+				{
+					"pitch": -15.03,
+					"yaw": -107.72,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 4
+				}
+			]
+		},
+		"7": {
+			"type": "equirectangular",
+			"panorama": "/images/ho/hoga/7.jpg",
+			"hotSpots": [
+				{
+					"pitch": -1.16,
+					"yaw": 18.37,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 0
+				},
+				{
+					"pitch": -3.59,
+					"yaw": 43.62,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 1
+				},
+				{
+					"pitch": -9.34,
+					"yaw": -12.65,
 					"type": "scene",
 					"sceneId": "6",
 					"id": 2
@@ -211,2045 +282,123 @@
 		},
 		"8": {
 			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/8.jpg",
+			"panorama": "/images/ho/hoga/8.jpg",
 			"hotSpots": [
 				{
-					"pitch": -1.98,
-					"yaw": 0.28,
+					"pitch": -0.53,
+					"yaw": -2.84,
 					"type": "scene",
-					"sceneId": "9",
+					"text": "Här - rakt över Mörtsjön - ser man Högsjö nya kyrka",
+					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=1",
+					"attributes": {
+						"target": "_self"
+					},
 					"id": 0
 				},
 				{
-					"pitch": -6.84,
-					"yaw": 95.72,
+					"pitch": -4.42,
+					"yaw": 177.68,
 					"type": "scene",
-					"sceneId": "3",
+					"sceneId": "7",
 					"id": 1
 				},
 				{
-					"pitch": -7.96,
-					"yaw": -177.69,
+					"pitch": -5.12,
+					"yaw": -171.14,
 					"type": "scene",
-					"sceneId": "7",
+					"sceneId": "6",
 					"id": 2
+				},
+				{
+					"pitch": -6.89,
+					"yaw": 125.08,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 3
+				},
+				{
+					"pitch": -15.09,
+					"yaw": 2.45,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 4
 				}
 			]
 		},
 		"9": {
 			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/9.jpg",
+			"panorama": "/images/ho/hoga/9.jpg",
 			"hotSpots": [
 				{
-					"pitch": -6.37,
-					"yaw": -177.58,
+					"pitch": -5.3,
+					"yaw": 2.89,
 					"type": "scene",
-					"sceneId": "8",
+					"sceneId": "6",
 					"id": 0
 				},
 				{
-					"pitch": -5.01,
-					"yaw": 2.38,
+					"pitch": -4.97,
+					"yaw": 100.72,
 					"type": "scene",
-					"sceneId": "10",
+					"sceneId": "8",
 					"id": 1
 				}
 			]
 		},
 		"10": {
 			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/10.jpg",
+			"panorama": "/images/ho/hoga/10.jpg",
 			"hotSpots": [
 				{
-					"pitch": -6.65,
-					"yaw": 0.45,
+					"pitch": 0.55,
+					"yaw": 146.18,
 					"type": "scene",
-					"sceneId": "16",
+					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=1",
+					"attributes": {
+						"target": "_self"
+					},
 					"id": 0
 				},
 				{
-					"pitch": -7.28,
-					"yaw": -91.37,
+					"pitch": 0.4,
+					"yaw": -67.19,
 					"type": "scene",
 					"sceneId": "9",
 					"id": 1
 				},
 				{
-					"pitch": -10.55,
-					"yaw": -175.76,
+					"pitch": -7.6,
+					"yaw": 1.33,
 					"type": "scene",
 					"sceneId": "11",
 					"id": 2
+				},
+				{
+					"pitch": 6.92,
+					"yaw": -38.87,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 3
 				}
 			]
 		},
 		"11": {
 			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/11.jpg",
+			"panorama": "/images/ho/hoga/11.jpg",
 			"hotSpots": [
 				{
-					"pitch": -4.61,
-					"yaw": 0.75,
+					"pitch": -27.64,
+					"yaw": -178.99,
 					"type": "scene",
 					"sceneId": "10",
 					"id": 0
 				},
 				{
-					"pitch": -6.48,
-					"yaw": -146.86,
+					"pitch": 6.91,
+					"yaw": -68.04,
 					"type": "scene",
-					"sceneId": "2",
+					"sceneId": "9",
 					"id": 1
-				},
-				{
-					"pitch": -7.9,
-					"yaw": 112.98,
-					"type": "scene",
-					"sceneId": "12",
-					"id": 2
-				},
-				{
-					"pitch": 4.22,
-					"yaw": 73.07,
-					"type": "scene",
-					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hony.html?scene=1",
-					"attributes": {
-						"target": "_self"
-					},
-					"id": 3
-				}
-			]
-		},
-		"12": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/12.jpg",
-			"hotSpots": [
-				{
-					"pitch": -5.99,
-					"yaw": -174.9,
-					"type": "scene",
-					"sceneId": "11",
-					"id": 0
-				},
-				{
-					"pitch": -6.35,
-					"yaw": -3.54,
-					"type": "scene",
-					"sceneId": "13",
-					"id": 1
-				},
-				{
-					"pitch": -9.49,
-					"yaw": 90.31,
-					"type": "scene",
-					"sceneId": "14",
-					"id": 2
-				},
-				{
-					"pitch": -1.55,
-					"yaw": -90.03,
-					"type": "scene",
-					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hony.html?scene=4",
-					"attributes": {
-						"target": "_self"
-					},
-					"id": 3
-				}
-			]
-		},
-		"13": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/13.jpg",
-			"hotSpots": [
-				{
-					"pitch": -3.38,
-					"yaw": 177.48,
-					"type": "scene",
-					"sceneId": "12",
-					"id": 0
-				},
-				{
-					"pitch": -22.74,
-					"yaw": -3.06,
-					"type": "scene",
-					"sceneId": "23",
-					"id": 1
-				}
-			]
-		},
-		"14": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/14.jpg",
-			"hotSpots": [
-				{
-					"pitch": -2.48,
-					"yaw": 0.23,
-					"type": "scene",
-					"sceneId": "12",
-					"id": 0
-				},
-				{
-					"pitch": -5.17,
-					"yaw": -89.22,
-					"type": "scene",
-					"sceneId": "15",
-					"id": 1
-				},
-				{
-					"pitch": -19.08,
-					"yaw": 177.04,
-					"type": "scene",
-					"sceneId": "14b",
-					"id": 2
-				}
-			]
-		},
-		"15": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/15.jpg",
-			"hotSpots": [
-				{
-					"pitch": -5.8,
-					"yaw": 0.54,
-					"type": "scene",
-					"sceneId": "2",
-					"id": 0
-				},
-				{
-					"pitch": -6.61,
-					"yaw": 176.8,
-					"type": "scene",
-					"sceneId": "14",
-					"id": 1
-				}
-			]
-		},
-		"16": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/16.jpg",
-			"hotSpots": [
-				{
-					"pitch": -9.2,
-					"yaw": 118.17,
-					"type": "scene",
-					"sceneId": "10",
-					"id": 0
-				},
-				{
-					"pitch": -14.3,
-					"yaw": -0.04,
-					"type": "scene",
-					"sceneId": "17",
-					"id": 1
-				},
-				{
-					"pitch": -1.4,
-					"yaw": -60.16,
-					"type": "scene",
-					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hoka.html",
-					"attributes": {
-						"target": "_self"
-					},
-					"id": 2
-				}
-			]
-		},
-		"17": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/17.jpg",
-			"hotSpots": [
-				{
-					"pitch": 3.64,
-					"yaw": 178.04,
-					"type": "scene",
-					"sceneId": "16",
-					"id": 0
-				},
-				{
-					"pitch": -5.08,
-					"yaw": -83.83,
-					"type": "scene",
-					"sceneId": "70",
-					"id": 1
-				},
-				{
-					"pitch": -5.89,
-					"yaw": 57.55,
-					"type": "scene",
-					"sceneId": "17b",
-					"id": 2
-				},
-				{
-					"pitch": -13.42,
-					"yaw": -0.56,
-					"type": "scene",
-					"sceneId": "18",
-					"id": 3
-				}
-			]
-		},
-		"18": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/18.jpg",
-			"hotSpots": [
-				{
-					"pitch": 5.71,
-					"yaw": 178.6,
-					"type": "scene",
-					"sceneId": "17",
-					"id": 0
-				},
-				{
-					"pitch": -5,
-					"yaw": 84.59,
-					"type": "scene",
-					"sceneId": "19",
-					"id": 1
-				},
-				{
-					"pitch": -6.37,
-					"yaw": 0.39,
-					"type": "scene",
-					"sceneId": "46",
-					"id": 2
-				},
-				{
-					"pitch": -11.43,
-					"yaw": -95.03,
-					"type": "scene",
-					"sceneId": "43",
-					"id": 3
-				}
-			]
-		},
-		"19": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/19.jpg",
-			"hotSpots": [
-				{
-					"pitch": 6.15,
-					"yaw": 62.21,
-					"type": "scene",
-					"sceneId": "17b",
-					"id": 0
-				},
-				{
-					"pitch": -4.71,
-					"yaw": -0.24,
-					"type": "scene",
-					"sceneId": "20",
-					"id": 1
-				},
-				{
-					"pitch": -5.54,
-					"yaw": -179.41,
-					"type": "scene",
-					"sceneId": "18",
-					"id": 2
-				},
-				{
-					"pitch": -6.93,
-					"yaw": -84.13,
-					"type": "scene",
-					"sceneId": "47",
-					"id": 3
-				}
-			]
-		},
-		"20": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/20.jpg",
-			"hotSpots": [
-				{
-					"pitch": -5.23,
-					"yaw": -0.13,
-					"type": "scene",
-					"sceneId": "21",
-					"id": 0
-				},
-				{
-					"pitch": -5.64,
-					"yaw": -179.7,
-					"type": "scene",
-					"sceneId": "19",
-					"id": 1
-				},
-				{
-					"pitch": -7.24,
-					"yaw": -85.51,
-					"type": "scene",
-					"sceneId": "48",
-					"id": 2
-				}
-			]
-		},
-		"21": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/21.jpg",
-			"hotSpots": [
-				{
-					"pitch": -2.96,
-					"yaw": -58.87,
-					"type": "scene",
-					"sceneId": "23",
-					"id": 0
-				},
-				{
-					"pitch": -5.75,
-					"yaw": 0.29,
-					"type": "scene",
-					"sceneId": "20",
-					"id": 1
-				},
-				{
-					"pitch": -6.83,
-					"yaw": 95.85,
-					"type": "scene",
-					"sceneId": "49",
-					"id": 2
-				},
-				{
-					"pitch": -10.26,
-					"yaw": 179.28,
-					"type": "scene",
-					"sceneId": "22",
-					"id": 3
-				}
-			]
-		},
-		"22": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/22.jpg",
-			"hotSpots": [
-				{
-					"pitch": -7.17,
-					"yaw": 94.04,
-					"type": "scene",
-					"sceneId": "25",
-					"id": 0
-				},
-				{
-					"pitch": -10.4,
-					"yaw": 1.2,
-					"type": "scene",
-					"sceneId": "21",
-					"id": 1
-				},
-				{
-					"pitch": -13.68,
-					"yaw": 179.55,
-					"type": "scene",
-					"sceneId": "24",
-					"id": 2
-				}
-			]
-		},
-		"23": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/23.jpg",
-			"hotSpots": [
-				{
-					"pitch": 2.19,
-					"yaw": -179.2,
-					"type": "scene",
-					"sceneId": "13",
-					"id": 0
-				},
-				{
-					"pitch": -7.19,
-					"yaw": -101.38,
-					"type": "scene",
-					"sceneId": "17b",
-					"id": 1
-				},
-				{
-					"pitch": -20.8,
-					"yaw": 9.21,
-					"type": "scene",
-					"sceneId": "21",
-					"id": 2
-				}
-			]
-		},
-		"24": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/24.jpg",
-			"hotSpots": [
-				{
-					"pitch": 0.11,
-					"yaw": -83.33,
-					"type": "scene",
-					"sceneId": "14b",
-					"id": 0
-				},
-				{
-					"pitch": -2.63,
-					"yaw": 97.01,
-					"type": "scene",
-					"sceneId": "50",
-					"id": 1
-				},
-				{
-					"pitch": -11.19,
-					"yaw": 0.82,
-					"type": "scene",
-					"sceneId": "22",
-					"id": 2
-				}
-			]
-		},
-		"25": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/25.jpg",
-			"hotSpots": [
-				{
-					"pitch": -0.34,
-					"yaw": 179.73,
-					"type": "scene",
-					"sceneId": "22",
-					"id": 0
-				},
-				{
-					"pitch": -6.84,
-					"yaw": 0.93,
-					"type": "scene",
-					"sceneId": "26",
-					"id": 1
-				},
-				{
-					"pitch": -10.57,
-					"yaw": -101.92,
-					"type": "scene",
-					"sceneId": "49",
-					"id": 2
-				}
-			]
-		},
-		"26": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/26.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.44,
-					"yaw": -88.07,
-					"type": "scene",
-					"sceneId": "25",
-					"id": 0
-				},
-				{
-					"pitch": -8.65,
-					"yaw": -0.08,
-					"type": "scene",
-					"sceneId": "27",
-					"id": 1
-				}
-			]
-		},
-		"27": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/27.jpg",
-			"hotSpots": [
-				{
-					"pitch": -5.15,
-					"yaw": -0.82,
-					"type": "scene",
-					"sceneId": "30",
-					"id": 0
-				},
-				{
-					"pitch": -10.01,
-					"yaw": -88.58,
-					"type": "scene",
-					"sceneId": "28",
-					"id": 1
-				},
-				{
-					"pitch": -11.62,
-					"yaw": 82.95,
-					"type": "scene",
-					"sceneId": "56",
-					"id": 2
-				},
-				{
-					"pitch": -12.27,
-					"yaw": -178.46,
-					"type": "scene",
-					"sceneId": "26",
-					"id": 3
-				}
-			]
-		},
-		"28": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/28.jpg",
-			"hotSpots": [
-				{
-					"pitch": -4.11,
-					"yaw": -0.03,
-					"type": "scene",
-					"sceneId": "29",
-					"id": 0
-				},
-				{
-					"pitch": -13.31,
-					"yaw": 89.14,
-					"type": "scene",
-					"sceneId": "27",
-					"id": 1
-				},
-				{
-					"pitch": -3.12,
-					"yaw": -91.24,
-					"type": "scene",
-					"sceneId": "49",
-					"id": 2
-				}
-			]
-		},
-		"29": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/29.jpg",
-			"hotSpots": [
-				{
-					"pitch": -5.89,
-					"yaw": -179.5,
-					"type": "scene",
-					"sceneId": "28",
-					"id": 0
-				},
-				{
-					"pitch": -5.58,
-					"yaw": -0.65,
-					"type": "scene",
-					"sceneId": "32",
-					"id": 1
-				},
-				{
-					"pitch": -3.85,
-					"yaw": -90.32,
-					"type": "scene",
-					"sceneId": "48",
-					"id": 2
-				},
-				{
-					"pitch": -13.35,
-					"yaw": 90.37,
-					"type": "scene",
-					"sceneId": "30",
-					"id": 3
-				}
-			]
-		},
-		"30": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/30.jpg",
-			"hotSpots": [
-				{
-					"pitch": -5.21,
-					"yaw": -0.52,
-					"type": "scene",
-					"sceneId": "31",
-					"id": 0
-				},
-				{
-					"pitch": -5.58,
-					"yaw": -179.42,
-					"type": "scene",
-					"sceneId": "27",
-					"id": 1
-				},
-				{
-					"pitch": -10.29,
-					"yaw": -87.9,
-					"type": "scene",
-					"sceneId": "29",
-					"id": 2
-				},
-				{
-					"pitch": -11.01,
-					"yaw": 73.69,
-					"type": "scene",
-					"sceneId": "57",
-					"id": 3
-				}
-			]
-		},
-		"31": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/31.jpg",
-			"hotSpots": [
-				{
-					"pitch": -5.17,
-					"yaw": 179.62,
-					"type": "scene",
-					"sceneId": "30",
-					"id": 0
-				},
-				{
-					"pitch": -5.34,
-					"yaw": 0.55,
-					"type": "scene",
-					"sceneId": "34",
-					"id": 1
-				},
-				{
-					"pitch": -10.56,
-					"yaw": 71.92,
-					"type": "scene",
-					"sceneId": "59",
-					"id": 2
-				},
-				{
-					"pitch": -10.84,
-					"yaw": -90.44,
-					"type": "scene",
-					"sceneId": "32",
-					"id": 3
-				}
-			]
-		},
-		"32": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/32.jpg",
-			"hotSpots": [
-				{
-					"pitch": -5.63,
-					"yaw": 178.3,
-					"type": "scene",
-					"sceneId": "29",
-					"id": 0
-				},
-				{
-					"pitch": -4.08,
-					"yaw": 0.53,
-					"type": "scene",
-					"sceneId": "33",
-					"id": 1
-				},
-				{
-					"pitch": -10.95,
-					"yaw": 88.25,
-					"type": "scene",
-					"sceneId": "31",
-					"id": 2
-				},
-				{
-					"pitch": -5.18,
-					"yaw": -90.48,
-					"type": "scene",
-					"sceneId": "47",
-					"id": 3
-				}
-			]
-		},
-		"33": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/33.jpg",
-			"hotSpots": [
-				{
-					"pitch": -5.6,
-					"yaw": 90.6,
-					"type": "scene",
-					"sceneId": "32",
-					"id": 0
-				},
-				{
-					"pitch": -14.27,
-					"yaw": -1.47,
-					"type": "scene",
-					"sceneId": "34",
-					"id": 1
-				},
-				{
-					"pitch": -10.96,
-					"yaw": -90.25,
-					"type": "scene",
-					"sceneId": "37",
-					"id": 2
-				},
-				{
-					"pitch": -2.02,
-					"yaw": 179.85,
-					"type": "scene",
-					"sceneId": "46",
-					"id": 3
-				}
-			]
-		},
-		"34": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/34.jpg",
-			"hotSpots": [
-				{
-					"pitch": -4.28,
-					"yaw": 88.36,
-					"type": "scene",
-					"sceneId": "31",
-					"id": 0
-				},
-				{
-					"pitch": -4.97,
-					"yaw": -92.5,
-					"type": "scene",
-					"sceneId": "35",
-					"id": 1
-				},
-				{
-					"pitch": -9.46,
-					"yaw": 177.54,
-					"type": "scene",
-					"sceneId": "33",
-					"id": 2
-				},
-				{
-					"pitch": -10.33,
-					"yaw": -1.19,
-					"type": "scene",
-					"sceneId": "60",
-					"id": 3
-				}
-			]
-		},
-		"35": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/35.jpg",
-			"hotSpots": [
-				{
-					"pitch": -5.87,
-					"yaw": -179.49,
-					"type": "scene",
-					"sceneId": "34",
-					"id": 0
-				},
-				{
-					"pitch": -4.36,
-					"yaw": 0.2,
-					"type": "scene",
-					"sceneId": "38",
-					"id": 1
-				},
-				{
-					"pitch": -11.23,
-					"yaw": -88.93,
-					"type": "scene",
-					"sceneId": "36",
-					"id": 2
-				}
-			]
-		},
-		"36": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/36.jpg",
-			"hotSpots": [
-				{
-					"pitch": -4.16,
-					"yaw": -89.65,
-					"type": "scene",
-					"sceneId": "44",
-					"id": 0
-				},
-				{
-					"pitch": -4.89,
-					"yaw": 0.61,
-					"type": "scene",
-					"sceneId": "39",
-					"id": 1
-				},
-				{
-					"pitch": -10.41,
-					"yaw": -179.99,
-					"type": "scene",
-					"sceneId": "37",
-					"id": 2
-				},
-				{
-					"pitch": -12.55,
-					"yaw": 91.06,
-					"type": "scene",
-					"sceneId": "35",
-					"id": 3
-				}
-			]
-		},
-		"37": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/37.jpg",
-			"hotSpots": [
-				{
-					"pitch": -2.43,
-					"yaw": -89.89,
-					"type": "scene",
-					"sceneId": "45",
-					"id": 0
-				},
-				{
-					"pitch": -10.61,
-					"yaw": 1.46,
-					"type": "scene",
-					"sceneId": "36",
-					"id": 1
-				},
-				{
-					"pitch": -10.5,
-					"yaw": 179.02,
-					"type": "scene",
-					"sceneId": "33",
-					"id": 2
-				}
-			]
-		},
-		"38": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/38.jpg",
-			"hotSpots": [
-				{
-					"pitch": -4.87,
-					"yaw": 179.38,
-					"type": "scene",
-					"sceneId": "66",
-					"id": 0
-				},
-				{
-					"pitch": -4.92,
-					"yaw": -89.13,
-					"type": "scene",
-					"sceneId": "35",
-					"id": 1
-				},
-				{
-					"pitch": -12.46,
-					"yaw": 0.2,
-					"type": "scene",
-					"sceneId": "39",
-					"id": 2
-				}
-			]
-		},
-		"39": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/39.jpg",
-			"hotSpots": [
-				{
-					"pitch": -3.11,
-					"yaw": -0.07,
-					"type": "scene",
-					"sceneId": "40",
-					"id": 0
-				},
-				{
-					"pitch": -5.68,
-					"yaw": -88.45,
-					"type": "scene",
-					"sceneId": "36",
-					"id": 1
-				},
-				{
-					"pitch": -14.17,
-					"yaw": -178.65,
-					"type": "scene",
-					"sceneId": "38",
-					"id": 2
-				}
-			]
-		},
-		"40": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/40.jpg",
-			"hotSpots": [
-				{
-					"pitch": -3.5,
-					"yaw": 0.26,
-					"type": "scene",
-					"sceneId": "41",
-					"id": 0
-				},
-				{
-					"pitch": -5.3,
-					"yaw": -87.67,
-					"type": "scene",
-					"sceneId": "44",
-					"id": 1
-				},
-				{
-					"pitch": -5.84,
-					"yaw": -177.72,
-					"type": "scene",
-					"sceneId": "39",
-					"id": 2
-				}
-			]
-		},
-		"41": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/41.jpg",
-			"hotSpots": [
-				{
-					"pitch": 1.77,
-					"yaw": 128.65,
-					"type": "scene",
-					"sceneId": "70",
-					"id": 0
-				},
-				{
-					"pitch": -6.16,
-					"yaw": 1.78,
-					"type": "scene",
-					"sceneId": "42",
-					"id": 1
-				},
-				{
-					"pitch": -8.53,
-					"yaw": -109.81,
-					"type": "scene",
-					"sceneId": "40",
-					"id": 2
-				}
-			]
-		},
-		"42": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/42.jpg",
-			"hotSpots": [
-				{
-					"pitch": -6.95,
-					"yaw": -85.3,
-					"type": "scene",
-					"sceneId": "44",
-					"id": 0
-				},
-				{
-					"pitch": -8.48,
-					"yaw": -177.5,
-					"type": "scene",
-					"sceneId": "41",
-					"id": 1
-				},
-				{
-					"pitch": -10.52,
-					"yaw": -0.8,
-					"type": "scene",
-					"sceneId": "43",
-					"id": 2
-				}
-			]
-		},
-		"43": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/43.jpg",
-			"hotSpots": [
-				{
-					"pitch": -6.04,
-					"yaw": -84.23,
-					"type": "scene",
-					"sceneId": "45",
-					"id": 0
-				},
-				{
-					"pitch": -9.16,
-					"yaw": 0.04,
-					"type": "scene",
-					"sceneId": "18",
-					"id": 1
-				},
-				{
-					"pitch": -11.02,
-					"yaw": -179.02,
-					"type": "scene",
-					"sceneId": "42",
-					"id": 2
-				}
-			]
-		},
-		"44": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/44.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.49,
-					"yaw": -179.32,
-					"type": "scene",
-					"sceneId": "42",
-					"id": 0
-				},
-				{
-					"pitch": -5.53,
-					"yaw": 0.19,
-					"type": "scene",
-					"sceneId": "36",
-					"id": 1
-				},
-				{
-					"pitch": -5.7,
-					"yaw": -87.76,
-					"type": "scene",
-					"sceneId": "40",
-					"id": 2
-				},
-				{
-					"pitch": -9.94,
-					"yaw": 91.12,
-					"type": "scene",
-					"sceneId": "45",
-					"id": 3
-				}
-			]
-		},
-		"45": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/45.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.48,
-					"yaw": 179.95,
-					"type": "scene",
-					"sceneId": "43",
-					"id": 0
-				},
-				{
-					"pitch": -6.11,
-					"yaw": 0.27,
-					"type": "scene",
-					"sceneId": "37",
-					"id": 1
-				},
-				{
-					"pitch": -8.84,
-					"yaw": 87.84,
-					"type": "scene",
-					"sceneId": "46",
-					"id": 2
-				},
-				{
-					"pitch": -11.64,
-					"yaw": -88.86,
-					"type": "scene",
-					"sceneId": "44",
-					"id": 3
-				}
-			]
-		},
-		"46": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/46.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.14,
-					"yaw": -179.98,
-					"type": "scene",
-					"sceneId": "18",
-					"id": 0
-				},
-				{
-					"pitch": -5.22,
-					"yaw": 90.78,
-					"type": "scene",
-					"sceneId": "47",
-					"id": 1
-				},
-				{
-					"pitch": -5.5,
-					"yaw": 0.13,
-					"type": "scene",
-					"sceneId": "33",
-					"id": 2
-				},
-				{
-					"pitch": -11.01,
-					"yaw": -89.85,
-					"type": "scene",
-					"sceneId": "45",
-					"id": 3
-				}
-			]
-		},
-		"47": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/47.jpg",
-			"hotSpots": [
-				{
-					"pitch": -0.92,
-					"yaw": 179.96,
-					"type": "scene",
-					"sceneId": "19",
-					"id": 0
-				},
-				{
-					"pitch": -3.83,
-					"yaw": 91.99,
-					"type": "scene",
-					"sceneId": "48",
-					"id": 1
-				},
-				{
-					"pitch": -5.79,
-					"yaw": -87.07,
-					"type": "scene",
-					"sceneId": "46",
-					"id": 2
-				},
-				{
-					"pitch": -6.49,
-					"yaw": 0.29,
-					"type": "scene",
-					"sceneId": "32",
-					"id": 3
-				}
-			]
-		},
-		"48": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/48.jpg",
-			"hotSpots": [
-				{
-					"pitch": -0.39,
-					"yaw": 179.84,
-					"type": "scene",
-					"sceneId": "20",
-					"id": 0
-				},
-				{
-					"pitch": -3.57,
-					"yaw": 91.81,
-					"type": "scene",
-					"sceneId": "49",
-					"id": 1
-				},
-				{
-					"pitch": -6.6,
-					"yaw": -90.08,
-					"type": "scene",
-					"sceneId": "47",
-					"id": 2
-				},
-				{
-					"pitch": -6.91,
-					"yaw": -0.07,
-					"type": "scene",
-					"sceneId": "29",
-					"id": 3
-				}
-			]
-		},
-		"49": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/49.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.18,
-					"yaw": -178.61,
-					"type": "scene",
-					"sceneId": "21",
-					"id": 0
-				},
-				{
-					"pitch": -6.49,
-					"yaw": -90.65,
-					"type": "scene",
-					"sceneId": "48",
-					"id": 1
-				},
-				{
-					"pitch": -7.31,
-					"yaw": 0.08,
-					"type": "scene",
-					"sceneId": "28",
-					"id": 2
-				},
-				{
-					"pitch": -11.31,
-					"yaw": 77.07,
-					"type": "scene",
-					"sceneId": "25",
-					"id": 3
-				}
-			]
-		},
-		"50": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/50.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.08,
-					"yaw": -89.49,
-					"type": "scene",
-					"sceneId": "24",
-					"id": 0
-				},
-				{
-					"pitch": -3.17,
-					"yaw": -0.07,
-					"type": "scene",
-					"sceneId": "51",
-					"id": 1
-				}
-			]
-		},
-		"51": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/51.jpg",
-			"hotSpots": [
-				{
-					"pitch": -0.86,
-					"yaw": 44.81,
-					"type": "scene",
-					"sceneId": "55b",
-					"id": 0
-				},
-				{
-					"pitch": -0.97,
-					"yaw": 89.26,
-					"type": "scene",
-					"sceneId": "55",
-					"id": 1
-				},
-				{
-					"pitch": -3.2,
-					"yaw": -0.25,
-					"type": "scene",
-					"sceneId": "52",
-					"id": 2
-				},
-				{
-					"pitch": -4.44,
-					"yaw": 179.37,
-					"type": "scene",
-					"sceneId": "50",
-					"id": 3
-				},
-				{
-					"pitch": -4.92,
-					"yaw": -90.21,
-					"type": "scene",
-					"sceneId": "56",
-					"id": 4
-				}
-			]
-		},
-		"52": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/52.jpg",
-			"hotSpots": [
-				{
-					"pitch": -7.2,
-					"yaw": -178.4,
-					"type": "scene",
-					"sceneId": "51",
-					"id": 0
-				},
-				{
-					"pitch": -3.9,
-					"yaw": 0.89,
-					"type": "scene",
-					"sceneId": "53",
-					"id": 1
-				},
-				{
-					"pitch": -6.67,
-					"yaw": -77.38,
-					"type": "scene",
-					"sceneId": "58",
-					"id": 2
-				}
-			]
-		},
-		"53": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/53.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.33,
-					"yaw": 120.13,
-					"type": "scene",
-					"sceneId": "54",
-					"id": 0
-				},
-				{
-					"pitch": -4.06,
-					"yaw": 162.04,
-					"type": "scene",
-					"sceneId": "55b",
-					"id": 1
-				},
-				{
-					"pitch": -6.55,
-					"yaw": -1.93,
-					"type": "scene",
-					"sceneId": "61b",
-					"id": 2
-				},
-				{
-					"pitch": -7.92,
-					"yaw": -148.24,
-					"type": "scene",
-					"sceneId": "52",
-					"id": 3
-				}
-			]
-		},
-		"54": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/54.jpg",
-			"hotSpots": [
-				{
-					"pitch": -4.04,
-					"yaw": 0.45,
-					"type": "scene",
-					"sceneId": "55",
-					"id": 0
-				},
-				{
-					"pitch": -4.65,
-					"yaw": 92.4,
-					"type": "scene",
-					"sceneId": "53",
-					"id": 1
-				},
-				{
-					"pitch": -5.14,
-					"yaw": 49.56,
-					"type": "scene",
-					"sceneId": "55b",
-					"id": 2
-				}
-			]
-		},
-		"55": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/55.jpg",
-			"hotSpots": [
-				{
-					"pitch": -0.43,
-					"yaw": 90.72,
-					"type": "scene",
-					"sceneId": "54",
-					"id": 0
-				},
-				{
-					"pitch": -3.15,
-					"yaw": 44.32,
-					"type": "scene",
-					"sceneId": "55b",
-					"id": 1
-				},
-				{
-					"pitch": -4.91,
-					"yaw": 0.22,
-					"type": "scene",
-					"sceneId": "51",
-					"id": 2
-				}
-			]
-		},
-		"56": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/56.jpg",
-			"hotSpots": [
-				{
-					"pitch": -2.27,
-					"yaw": 91.12,
-					"type": "scene",
-					"sceneId": "51",
-					"id": 0
-				},
-				{
-					"pitch": -3.65,
-					"yaw": -95.32,
-					"type": "scene",
-					"sceneId": "27",
-					"id": 1
-				},
-				{
-					"pitch": -4.81,
-					"yaw": -0.88,
-					"type": "scene",
-					"sceneId": "57",
-					"id": 2
-				}
-			]
-		},
-		"57": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/57.jpg",
-			"hotSpots": [
-				{
-					"pitch": -3.25,
-					"yaw": 91.53,
-					"type": "scene",
-					"sceneId": "58",
-					"id": 0
-				},
-				{
-					"pitch": -4.12,
-					"yaw": 0.26,
-					"type": "scene",
-					"sceneId": "59",
-					"id": 1
-				},
-				{
-					"pitch": -4.66,
-					"yaw": -109.2,
-					"type": "scene",
-					"sceneId": "30",
-					"id": 2
-				},
-				{
-					"pitch": -6.18,
-					"yaw": 178.66,
-					"type": "scene",
-					"sceneId": "56",
-					"id": 3
-				}
-			]
-		},
-		"58": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/58.jpg",
-			"hotSpots": [
-				{
-					"pitch": 0,
-					"yaw": 0,
-					"type": "scene",
-					"sceneId": "52",
-					"id": 0
-				},
-				{
-					"pitch": 0,
-					"yaw": 180,
-					"type": "scene",
-					"sceneId": "57",
-					"id": 1
-				}
-			]
-		},
-		"59": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/59.jpg",
-			"hotSpots": [
-				{
-					"pitch": -4.29,
-					"yaw": -89.79,
-					"type": "scene",
-					"sceneId": "31",
-					"id": 0
-				},
-				{
-					"pitch": -5.8,
-					"yaw": 60.55,
-					"type": "scene",
-					"sceneId": "59b",
-					"id": 1
-				},
-				{
-					"pitch": -6.24,
-					"yaw": 179.98,
-					"type": "scene",
-					"sceneId": "57",
-					"id": 2
-				}
-			]
-		},
-		"60": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/60.jpg",
-			"hotSpots": [
-				{
-					"pitch": -2.52,
-					"yaw": -92.01,
-					"type": "scene",
-					"sceneId": "",
-					"id": 0
-				},
-				{
-					"pitch": -4.45,
-					"yaw": 179,
-					"type": "scene",
-					"sceneId": "34",
-					"id": 1
-				},
-				{
-					"pitch": -4.93,
-					"yaw": -0.94,
-					"type": "scene",
-					"sceneId": "61",
-					"id": 2
-				},
-				{
-					"pitch": -6.19,
-					"yaw": 89.32,
-					"type": "scene",
-					"sceneId": "59",
-					"id": 3
-				}
-			]
-		},
-		"61": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/61.jpg",
-			"hotSpots": [
-				{
-					"pitch": -7.15,
-					"yaw": -65.25,
-					"type": "scene",
-					"sceneId": "61c",
-					"id": 0
-				},
-				{
-					"pitch": -9.01,
-					"yaw": 64.53,
-					"type": "scene",
-					"sceneId": "61b",
-					"id": 1
-				},
-				{
-					"pitch": -9.07,
-					"yaw": -179.82,
-					"type": "scene",
-					"sceneId": "60",
-					"id": 2
-				}
-			]
-		},
-		"62": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/62.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.26,
-					"yaw": -151.12,
-					"type": "scene",
-					"sceneId": "63b",
-					"id": 0
-				},
-				{
-					"pitch": -15.3,
-					"yaw": 53.47,
-					"type": "scene",
-					"sceneId": "61c",
-					"id": 1
-				},
-				{
-					"pitch": -17.86,
-					"yaw": -3.4,
-					"type": "scene",
-					"sceneId": "62b",
-					"id": 2
-				}
-			]
-		},
-		"63": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/63.jpg",
-			"hotSpots": [
-				{
-					"pitch": -10.26,
-					"yaw": 24.04,
-					"type": "scene",
-					"sceneId": "64",
-					"id": 0
-				},
-				{
-					"pitch": -10.63,
-					"yaw": -47.87,
-					"type": "scene",
-					"sceneId": "63b",
-					"id": 1
-				}
-			]
-		},
-		"64": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/64.jpg",
-			"hotSpots": [
-				{
-					"pitch": -7.04,
-					"yaw": -29.57,
-					"type": "scene",
-					"sceneId": "63",
-					"id": 0
-				},
-				{
-					"pitch": -8.25,
-					"yaw": 6.2,
-					"type": "scene",
-					"sceneId": "63b",
-					"id": 1
-				},
-				{
-					"pitch": -9.04,
-					"yaw": -179.9,
-					"type": "scene",
-					"sceneId": "66",
-					"id": 2
-				}
-			]
-		},
-		"65": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/65.jpg",
-			"hotSpots": [
-				{
-					"pitch": -5.69,
-					"yaw": -124.09,
-					"type": "scene",
-					"sceneId": "66",
-					"id": 0
-				},
-				{
-					"pitch": -8.4,
-					"yaw": -1.39,
-					"type": "scene",
-					"sceneId": "67",
-					"id": 1
-				}
-			]
-		},
-		"66": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/66.jpg",
-			"hotSpots": [
-				{
-					"pitch": 0.53,
-					"yaw": 88.8,
-					"type": "scene",
-					"sceneId": "64",
-					"id": 0
-				},
-				{
-					"pitch": -1.63,
-					"yaw": -0.04,
-					"type": "scene",
-					"sceneId": "65",
-					"id": 1
-				},
-				{
-					"pitch": -5.26,
-					"yaw": 179.52,
-					"type": "scene",
-					"sceneId": "60",
-					"id": 2
-				},
-				{
-					"pitch": -10.34,
-					"yaw": -92.86,
-					"type": "scene",
-					"sceneId": "38",
-					"id": 3
-				}
-			]
-		},
-		"67": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/67.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.78,
-					"yaw": -0.05,
-					"type": "scene",
-					"sceneId": "68",
-					"id": 0
-				},
-				{
-					"pitch": -2.93,
-					"yaw": -152.82,
-					"type": "scene",
-					"sceneId": "65",
-					"id": 1
-				}
-			]
-		},
-		"68": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/68.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.3,
-					"yaw": 0.23,
-					"type": "scene",
-					"sceneId": "69",
-					"id": 0
-				},
-				{
-					"pitch": -3.14,
-					"yaw": -179.94,
-					"type": "scene",
-					"sceneId": "67",
-					"id": 1
-				}
-			]
-		},
-		"69": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/69.jpg",
-			"hotSpots": [
-				{
-					"pitch": -5.42,
-					"yaw": -5.51,
-					"type": "scene",
-					"sceneId": "70",
-					"id": 0
-				},
-				{
-					"pitch": -6.69,
-					"yaw": -148.22,
-					"type": "scene",
-					"sceneId": "68",
-					"id": 1
-				}
-			]
-		},
-		"70": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/70.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.67,
-					"yaw": 1.38,
-					"type": "scene",
-					"sceneId": "17",
-					"id": 0
-				},
-				{
-					"pitch": -6.62,
-					"yaw": 174.57,
-					"type": "scene",
-					"sceneId": "69",
-					"id": 1
-				},
-				{
-					"pitch": -9.89,
-					"yaw": -68.99,
-					"type": "scene",
-					"sceneId": "41",
-					"id": 2
-				}
-			]
-		},
-		"14b": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/14b.jpg",
-			"hotSpots": [
-				{
-					"pitch": -0.21,
-					"yaw": 1.05,
-					"type": "scene",
-					"sceneId": "14",
-					"id": 0
-				},
-				{
-					"pitch": -1.53,
-					"yaw": -79.65,
-					"type": "scene",
-					"sceneId": "1",
-					"id": 1
-				},
-				{
-					"pitch": -4.92,
-					"yaw": 80.47,
-					"type": "scene",
-					"sceneId": "24",
-					"id": 2
-				}
-			]
-		},
-		"17b": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/17b.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.07,
-					"yaw": 162.31,
-					"type": "scene",
-					"sceneId": "17",
-					"id": 0
-				},
-				{
-					"pitch": -3.42,
-					"yaw": 3.83,
-					"type": "scene",
-					"sceneId": "23",
-					"id": 1
-				},
-				{
-					"pitch": -22.06,
-					"yaw": -99.53,
-					"type": "scene",
-					"sceneId": "19",
-					"id": 2
-				}
-			]
-		},
-		"55b": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/55b.jpg",
-			"hotSpots": [
-				{
-					"pitch": -3.44,
-					"yaw": -0.02,
-					"type": "scene",
-					"sceneId": "54",
-					"id": 0
-				},
-				{
-					"pitch": -4.04,
-					"yaw": -97.79,
-					"type": "scene",
-					"sceneId": "53",
-					"id": 1
-				},
-				{
-					"pitch": -4.57,
-					"yaw": 83.68,
-					"type": "scene",
-					"sceneId": "55",
-					"id": 2
-				},
-				{
-					"pitch": -4.98,
-					"yaw": 179.45,
-					"type": "scene",
-					"sceneId": "51",
-					"id": 3
-				}
-			]
-		},
-		"59b": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/59b.jpg",
-			"hotSpots": [
-				{
-					"pitch": -11.28,
-					"yaw": -89.84,
-					"type": "scene",
-					"sceneId": "59",
-					"id": 0
-				}
-			]
-		},
-		"61b": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/61b.jpg",
-			"hotSpots": [
-				{
-					"pitch": -3.47,
-					"yaw": 48.33,
-					"type": "scene",
-					"sceneId": "61c",
-					"id": 0
-				},
-				{
-					"pitch": -6.26,
-					"yaw": 141.98,
-					"type": "scene",
-					"sceneId": "62c",
-					"id": 1
-				},
-				{
-					"pitch": -7.25,
-					"yaw": -52.58,
-					"type": "scene",
-					"sceneId": "61",
-					"id": 2
-				},
-				{
-					"pitch": -14.71,
-					"yaw": -164.54,
-					"type": "scene",
-					"sceneId": "53",
-					"id": 3
-				}
-			]
-		},
-		"61c": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/61c.jpg",
-			"hotSpots": [
-				{
-					"pitch": -6.19,
-					"yaw": -137.34,
-					"type": "scene",
-					"sceneId": "62",
-					"id": 0
-				},
-				{
-					"pitch": -8.39,
-					"yaw": -50.9,
-					"type": "scene",
-					"sceneId": "61b",
-					"id": 1
-				},
-				{
-					"pitch": -10.25,
-					"yaw": 61.81,
-					"type": "scene",
-					"sceneId": "61",
-					"id": 2
-				}
-			]
-		},
-		"62b": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/62b.jpg",
-			"hotSpots": [
-				{
-					"pitch": -5.71,
-					"yaw": 116.58,
-					"type": "scene",
-					"sceneId": "62",
-					"id": 0
-				},
-				{
-					"pitch": -7.98,
-					"yaw": 6.1,
-					"type": "scene",
-					"sceneId": "62c",
-					"id": 1
-				}
-			]
-		},
-		"62c": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/62c.jpg",
-			"hotSpots": [
-				{
-					"pitch": -1.98,
-					"yaw": -6.11,
-					"type": "scene",
-					"sceneId": "62b",
-					"id": 0
-				},
-				{
-					"pitch": -5.54,
-					"yaw": -87.6,
-					"type": "scene",
-					"sceneId": "61b",
-					"id": 1
-				}
-			]
-		},
-		"63b": {
-			"type": "equirectangular",
-			"panorama": "/images/ho/hokg/63b.jpg",
-			"hotSpots": [
-				{
-					"pitch": -7.05,
-					"yaw": 170.05,
-					"type": "scene",
-					"sceneId": "62",
-					"id": 0
-				},
-				{
-					"pitch": -10.09,
-					"yaw": -79.11,
-					"type": "scene",
-					"sceneId": "64",
-					"id": 1
-				},
-				{
-					"pitch": -14.07,
-					"yaw": 0.73,
-					"type": "scene",
-					"sceneId": "63",
-					"id": 2
 				}
 			]
 		}
