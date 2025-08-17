@@ -317,6 +317,7 @@ function loadPanorama(panoramaData, mapData) {
         <li><b>Clicking on the map</b> will add the current scenes button to the map, if it isn't there already. Clicking somewhere else moves it.</li>
         <li>Press <b>F</b> to export the current tour-config (including dynamically added/removed hotspots) and the map buttons to config_export.json & map_export.json</li>
         <li>Before you have linked up your hotspots in your json you can change scenes with <b>J</b> and <b>K</b>.</li>
+        <li>Press <b>L</b> to toggle the tour selector menu.</li>
         <li>The topmost box with info about targetPitch and Yaw can be used to add those parameters to the hotspots to keep the viewer in the correct direction when traversing the tour. </li>
         <li>The leftmost box can be used to browse the current config.</li>
         </ul>

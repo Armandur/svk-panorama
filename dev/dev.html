@@ -83,14 +83,15 @@
 </head>
 <body>
 	<div id="tour-selector">
-		<h3>Välj Tur</h3>
+		<h3>Select Tour</h3>
+		<p style="font-size: 12px; margin: 0 0 10px 0; color: #ccc;">Press L to show/hide</p>
 		<select id="tour-dropdown">
-			<option value="">Laddar turer...</option>
+			<option value="">Loading tours...</option>
 		</select>
-		<button onclick="loadSelectedTour()">Ladda Tur</button>
-		<button onclick="refreshTourList()">Uppdatera Lista</button>
+		<button onclick="loadSelectedTour()">Load Tour</button>
+		<button onclick="refreshTourList()">Refresh List</button>
 		<div id="current-tour-info">
-			<strong>Aktuell tur:</strong> Ingen vald
+			<strong>Current tour:</strong> None selected
 		</div>
 	</div>
 
@@ -109,6 +110,12 @@
 				jsonPath: "/dev/dev.json",
 				mapPath: "/dev/map.json",
 				mapImage: "/images/he/hekg/map.png"
+			},
+			{
+				name: "vikg.json",
+				jsonPath: "/images/vi/vikg/vikg.json",
+				mapPath: "/images/vi/vikg/map.json",
+				mapImage: "/images/vi/vikg/map.png"
 			},
 			{
 				name: "hekg.json",
@@ -201,7 +208,7 @@
 		// Funktion för att populera dropdown-menyn
 		function populateTourDropdown() {
 			const dropdown = document.getElementById('tour-dropdown');
-			dropdown.innerHTML = '<option value="">Välj en tur...</option>';
+			dropdown.innerHTML = '<option value="">Select a tour...</option>';
 			
 			availableTours.forEach((tour, index) => {
 				const option = document.createElement('option');
@@ -217,7 +224,7 @@
 			const selectedIndex = dropdown.value;
 			
 			if (selectedIndex === '') {
-				alert('Välj en tur först!');
+				alert('Please select a tour first!');
 				return;
 			}
 			
@@ -239,16 +246,16 @@
 		function updateTourInfo(tour) {
 			const infoDiv = document.getElementById('current-tour-info');
 			infoDiv.innerHTML = `
-				<strong>Aktuell tur:</strong> ${tour.name}<br>
+				<strong>Current tour:</strong> ${tour.name}<br>
 				<strong>JSON:</strong> ${tour.jsonPath}<br>
-				<strong>Karta:</strong> ${tour.mapPath}
+				<strong>Map:</strong> ${tour.mapPath}
 			`;
 		}
 
 		// Funktion för att uppdatera turlistan
 		function refreshTourList() {
 			populateTourDropdown();
-			alert('Turlista uppdaterad!');
+			alert('Tour list updated!');
 		}
 
 		// Ladda dropdown när sidan laddas
