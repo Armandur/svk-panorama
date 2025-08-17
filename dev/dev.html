@@ -235,11 +235,19 @@
 			const mapImage = document.getElementById('map2');
 			mapImage.src = tour.mapImage;
 			
+			// Återställ mapSpots för att ladda ny kartdata
+			if (typeof mapSpots !== 'undefined') {
+				mapSpots = null;
+			}
+			
 			// Ladda panorama (redigeringsläge aktiveras automatiskt i app.js för dev.html)
 			loadPanorama(tour.jsonPath, tour.mapPath);
 			
 			// Uppdatera info
 			updateTourInfo(tour);
+			
+			// Spara vald tur i URL
+			saveTourToURL(tour.name);
 		}
 
 		// Funktion för att uppdatera tur-information
@@ -256,6 +264,29 @@
 		function refreshTourList() {
 			populateTourDropdown();
 			alert('Tour list updated!');
+		}
+
+		// Funktion för att spara vald tur i URL
+		function saveTourToURL(tourName) {
+			const url = new URL(window.location);
+			url.searchParams.set('tour', tourName);
+			window.history.replaceState({}, '', url);
+		}
+
+		// Funktion för att ladda tur från URL
+		function loadTourFromURL() {
+			const urlParams = new URLSearchParams(window.location.search);
+			const tourName = urlParams.get('tour');
+			
+			if (tourName) {
+				const tourIndex = availableTours.findIndex(tour => tour.name === tourName);
+				if (tourIndex !== -1) {
+					document.getElementById('tour-dropdown').value = tourIndex;
+					loadSelectedTour();
+					return true;
+				}
+			}
+			return false;
 		}
 
 		// Ladda dropdown när sidan laddas
@@ -280,11 +311,14 @@
 			}
 		});
 
-		// Ladda standardtur (HEKG) när sidan laddas
+		// Ladda tur när sidan laddas
 		window.addEventListener('load', function() {
-			// Sätt HEKG som standard
-			document.getElementById('tour-dropdown').value = '0';
-			loadSelectedTour();
+			// Försök ladda tur från URL först
+			if (!loadTourFromURL()) {
+				// Om ingen tur i URL, ladda standardtur (dev.json)
+				document.getElementById('tour-dropdown').value = '0';
+				loadSelectedTour();
+			}
 		});
 	</script>
 </body>

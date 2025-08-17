@@ -309,8 +309,9 @@ function loadPanorama(panoramaData, mapData) {
           `
         <ul>
         <li>Hold <b>H/I</b>, drag and release to add/remove Hotspots for scenes (<b>H</b>) and info (<b>I</b>). Closest when released will be removed.</li>
+        <li>When creating scene hotspots with <b>H</b>, you will be prompted to enter the target scene ID. A back-connection will be automatically created.</li>
         <li>When creating info hotspots with <b>I</b>, you will be prompted to enter text for the hotspot.</li>
-        <li>Press <b>R</b> to edit the closest info hotspot near your current view position.</li>
+        <li>Press <b>R</b> to edit the closest hotspot near your current view position (info hotspots: edit text, scene hotspots: edit target scene ID).</li>
         <li>Press <b>T</b> to toggle all info boxes (pitch/yaw, JSON viewer, and help) on/off.</li>
         <li>Hold <b>Q</b>, drag and release to move existing hotspots to a new position.</li>
         <li>Press <b>E</b> to log the current scenes hotspots to the browsers console.</li>
@@ -345,8 +346,9 @@ function loadPanorama(panoramaData, mapData) {
         if (event.key === 'q' || event.key === 'Q') {
           isQKeyDown = true;
         }
+
         if (event.key === 'r' || event.key === 'R') {
-          // Edit mode for hotspots - find closest info hotspot and edit it
+          // Edit mode for hotspots - find closest hotspot and edit it
           let currentHotspots = viewer.getConfig().hotSpots;
           let currentPitch = parseFloat(viewer.getPitch().toFixed(2));
           let currentYaw = parseFloat(viewer.getYaw().toFixed(2));
@@ -355,58 +357,117 @@ function loadPanorama(panoramaData, mapData) {
           let closestDistance = Infinity;
           
           currentHotspots.forEach((hotspot) => {
-            if (hotspot.type === "info") {
-              let pitchDiff = Math.abs(hotspot.pitch - currentPitch);
-              let yawDiff = Math.abs(hotspot.yaw - currentYaw);
-              if (yawDiff > 180) {
-                yawDiff = 360 - yawDiff;
-              }
-              let distance = Math.sqrt(pitchDiff ** 2 + yawDiff ** 2);
-              
-              if (distance < closestDistance && distance < 15) { // Within 15 degrees
-                closestDistance = distance;
-                targetHotspot = hotspot;
-              }
+            let pitchDiff = Math.abs(hotspot.pitch - currentPitch);
+            let yawDiff = Math.abs(hotspot.yaw - currentYaw);
+            if (yawDiff > 180) {
+              yawDiff = 360 - yawDiff;
+            }
+            let distance = Math.sqrt(pitchDiff ** 2 + yawDiff ** 2);
+            
+            if (distance < closestDistance && distance < 15) { // Within 15 degrees
+              closestDistance = distance;
+              targetHotspot = hotspot;
             }
           });
           
           if (targetHotspot) {
-            console.log("Editing info hotspot:", targetHotspot.id);
+            console.log("Editing hotspot:", targetHotspot.id, "type:", targetHotspot.type);
             
-            // Get current text (remove debug info if present)
-            let currentText = targetHotspot.text || "";
-            if (targetHotspot.existingText) {
-              currentText = targetHotspot.existingText;
-            }
-            
-            // Remove debug prefix if present (ID → sceneId format)
-            if (currentText.includes(" → ")) {
-              currentText = currentText.split(" → ")[1] || "";
-            }
-            
-            // Show prompt with current text
-            let newText = prompt("Redigera text för info hotspot:", currentText);
-            if (newText !== null) {
-              if (newText.trim() !== "") {
-                // Update the hotspot text
-                targetHotspot.text = newText.trim();
-                if (targetHotspot.existingText) {
-                  targetHotspot.existingText = newText.trim();
-                }
-                
-                // Remove and re-add the hotspot to update the display
-                viewer.removeHotSpot(targetHotspot.id);
-                viewer.addHotSpot(targetHotspot);
-                console.log("Hotspot updated with new text:", newText.trim());
-              } else {
-                // Remove hotspot if text is empty
-                viewer.removeHotSpot(targetHotspot.id);
-                console.log("Hotspot removed due to empty text");
+            if (targetHotspot.type === "info") {
+              // Edit info hotspot
+              let currentText = targetHotspot.text || "";
+              if (targetHotspot.existingText) {
+                currentText = targetHotspot.existingText;
               }
-              updateConfigInfoBox();
+              
+              // Remove debug prefix if present (ID → sceneId format)
+              if (currentText.includes(" → ")) {
+                currentText = currentText.split(" → ")[1] || "";
+              }
+              
+              let newText = prompt("Redigera text för info hotspot:", currentText);
+              if (newText !== null) {
+                if (newText.trim() !== "") {
+                  // Update the hotspot text
+                  targetHotspot.text = newText.trim();
+                  if (targetHotspot.existingText) {
+                    targetHotspot.existingText = newText.trim();
+                  }
+                  
+                  // Remove and re-add the hotspot to update the display
+                  viewer.removeHotSpot(targetHotspot.id);
+                  viewer.addHotSpot(targetHotspot);
+                  console.log("Info hotspot updated with new text:", newText.trim());
+                } else {
+                  // Remove hotspot if text is empty
+                  viewer.removeHotSpot(targetHotspot.id);
+                  console.log("Info hotspot removed due to empty text");
+                }
+                updateConfigInfoBox();
+              }
+            } else if (targetHotspot.type === "scene") {
+              // Edit scene hotspot
+              let currentSceneId = targetHotspot.sceneId || "";
+              let newSceneId = prompt("Redigera scene ID för scene hotspot:", currentSceneId);
+              
+              if (newSceneId !== null) {
+                if (newSceneId.trim() !== "") {
+                  newSceneId = newSceneId.trim();
+                  
+                  // Check if target scene exists
+                  const config = viewer.getConfig();
+                  if (!config.scenes[newSceneId]) {
+                    alert(`Scene "${newSceneId}" finns inte!`);
+                    return;
+                  }
+
+                  // Check if connection already exists (excluding current one)
+                  const existingConnection = currentHotspots.find(hs => 
+                    hs.type === "scene" && hs.sceneId === newSceneId && hs.id !== targetHotspot.id
+                  );
+                  
+                  if (existingConnection) {
+                    alert(`Anslutning till scene "${newSceneId}" finns redan!`);
+                    return;
+                  }
+
+                  // Remove old back-connection if it exists
+                  if (currentSceneId && config.scenes[currentSceneId]) {
+                    removeBackConnection(currentSceneId, currentScene);
+                  }
+
+                  // Update scene hotspot
+                  targetHotspot.sceneId = newSceneId;
+                  targetHotspot.text = "" + targetHotspot.id + " → " + newSceneId;
+                  
+                  // Create new back-connection
+                  createBackConnection(newSceneId, currentScene);
+                  
+                  // Remove and re-add the hotspot to update the display
+                  viewer.removeHotSpot(targetHotspot.id);
+                  viewer.addHotSpot(targetHotspot);
+                  console.log("Scene hotspot updated to connect to:", newSceneId);
+                                 } else {
+                   // Remove hotspot if scene ID is empty
+                   if (currentSceneId && config.scenes[currentSceneId]) {
+                     const removeBackConnection = confirm(
+                       `Ta bort scene hotspot.\n\n` +
+                       `Vill du också ta bort motsvarande tillbaka-anslutning från scene "${currentSceneId}"?\n\n` +
+                       `OK = Ta bort båda\nAvbryt = Ta bara bort denna hotspot`
+                     );
+                     
+                     if (removeBackConnection) {
+                       removeBackConnection(currentSceneId, currentScene);
+                     }
+                   }
+                   viewer.removeHotSpot(targetHotspot.id);
+                   console.log("Scene hotspot removed due to empty scene ID");
+                 }
+                updateConfigInfoBox();
+              }
             }
           } else {
-            console.log("No info hotspot found nearby");
+            console.log("No hotspot found nearby");
           }
         }
         
@@ -542,6 +603,9 @@ function loadPanorama(panoramaData, mapData) {
             }
           });
 
+          // Always set editorMode to false in export
+          clonedConfig.default.editorMode = false;
+
           const config = {
             default: clonedConfig.default,
             scenes: clonedConfig.scenes
@@ -589,6 +653,22 @@ function loadPanorama(panoramaData, mapData) {
             yaw: newYaw
           };
           
+          // Update targetPitch and targetYaw for scene hotspots if they exist
+          if (updatedHotspot.type === "scene" && updatedHotspot.sceneId) {
+            const targetValues = calculateTargetValues(updatedHotspot, currentScene, viewer.getConfig());
+            if (targetValues) {
+              updatedHotspot.targetPitch = targetValues.targetPitch;
+              updatedHotspot.targetYaw = targetValues.targetYaw;
+            }
+            
+            // Update text attribute to show new position with target values
+            let textContent = "" + updatedHotspot.id + " → " + updatedHotspot.sceneId;
+            if (updatedHotspot.targetPitch !== undefined && updatedHotspot.targetYaw !== undefined) {
+              textContent += ` (targetPitch: ${updatedHotspot.targetPitch}, targetYaw: ${updatedHotspot.targetYaw})`;
+            }
+            updatedHotspot.text = textContent;
+          }
+          
           // Add the updated hotspot back
           viewer.addHotSpot(updatedHotspot);
           
@@ -628,10 +708,23 @@ function loadPanorama(panoramaData, mapData) {
 
           // If the closest hotspot is within the threshold
           if (closestDistance < closenessThreshold) {
+            // Check if it's a scene hotspot and ask about back-connection
+            if (closestHotspot.type === "scene" && closestHotspot.sceneId) {
+              const removeBackConnection = confirm(
+                `Ta bort hotspot till scene "${closestHotspot.sceneId}".\n\n` +
+                `Vill du också ta bort motsvarande tillbaka-anslutning från scene "${closestHotspot.sceneId}"?\n\n` +
+                `OK = Ta bort båda\nAvbryt = Ta bara bort denna hotspot`
+              );
+              
+                             if (removeBackConnection) {
+                 removeBackConnection(closestHotspot.sceneId, currentScene);
+               }
+            }
+            
             // Remove the closest hotspot by its id
             result = viewer.removeHotSpot(closestHotspot.id);
             if (result) {
-              //console.log(`Removed hotspot with ID: ${closestHotspot.id}`);
+              console.log(`Removed hotspot with ID: ${closestHotspot.id}`);
             }
             else {
               console.log(`Failed to remove hotspot with ID: ${closestHotspot.id}`);
@@ -666,6 +759,53 @@ function loadPanorama(panoramaData, mapData) {
               } else {
                 // If user cancels or enters empty text, remove the hotspot and reset I key state
                 isIKeyDown = false;
+                return;
+              }
+            } else if (isHKeyDown) {
+              // Prompt user for scene ID for scene hotspots
+              let sceneId = prompt("Ange scene ID att ansluta till:");
+              if (sceneId !== null && sceneId.trim() !== "") {
+                sceneId = sceneId.trim();
+                
+                // Check if target scene exists
+                const config = viewer.getConfig();
+                if (!config.scenes[sceneId]) {
+                  alert(`Scene "${sceneId}" finns inte!`);
+                  isHKeyDown = false;
+                  return;
+                }
+
+                // Check if connection already exists
+                const existingConnection = currentHotspots.find(hs => 
+                  hs.type === "scene" && hs.sceneId === sceneId
+                );
+                
+                if (existingConnection) {
+                  alert(`Anslutning till scene "${sceneId}" finns redan!`);
+                  isHKeyDown = false;
+                  return;
+                }
+
+                hotspotConfig.sceneId = sceneId;
+                
+                // Calculate and set targetPitch and targetYaw
+                const targetValues = calculateTargetValues(hotspotConfig, currentScene, config);
+                if (targetValues) {
+                  hotspotConfig.targetPitch = targetValues.targetPitch;
+                  hotspotConfig.targetYaw = targetValues.targetYaw;
+                  hotspotConfig.text = "" + newId + " → " + sceneId + ` (targetPitch: ${targetValues.targetPitch}, targetYaw: ${targetValues.targetYaw})`;
+                } else {
+                  hotspotConfig.text = "" + newId + " → " + sceneId;
+                }
+                
+                // Create back-connection in target scene
+                createBackConnection(sceneId, currentScene);
+                
+                // Reset H key state after successful creation
+                isHKeyDown = false;
+              } else {
+                // If user cancels or enters empty scene ID, remove the hotspot and reset H key state
+                isHKeyDown = false;
                 return;
               }
             }
@@ -802,6 +942,120 @@ function loadPanorama(panoramaData, mapData) {
         // If no IDs are missing, return the next largest integer
         return existingIds.length;
       }
+
+      function createSceneHotspot(targetSceneId) {
+        // Check if target scene exists
+        const config = viewer.getConfig();
+        if (!config.scenes[targetSceneId]) {
+          alert(`Scene "${targetSceneId}" does not exist!`);
+          return;
+        }
+
+        // Check if connection already exists
+        const currentHotspots = config.hotSpots;
+        const existingConnection = currentHotspots.find(hs => 
+          hs.type === "scene" && hs.sceneId === targetSceneId
+        );
+        
+        if (existingConnection) {
+          alert(`Connection to scene "${targetSceneId}" already exists!`);
+          return;
+        }
+
+        // Get current position
+        const currentPitch = parseFloat(viewer.getPitch().toFixed(2));
+        const currentYaw = parseFloat(viewer.getYaw().toFixed(2));
+        
+        // Find next available ID
+        const existingIds = currentHotspots.map(hs => hs.id);
+        const newId = findNextAvailableId(existingIds);
+
+        // Create new scene hotspot
+        const newHotspot = {
+          pitch: currentPitch,
+          yaw: currentYaw,
+          type: "scene",
+          sceneId: targetSceneId,
+          id: newId
+        };
+
+        // Add hotspot to current scene
+        viewer.addHotSpot(newHotspot);
+        console.log(`Created scene hotspot to "${targetSceneId}" at position (${currentPitch}, ${currentYaw})`);
+
+        // Create back-connection in target scene
+        createBackConnection(targetSceneId, currentScene);
+
+        // Update config display
+        updateConfigInfoBox();
+      }
+
+      function createBackConnection(targetSceneId, sourceSceneId) {
+        const config = viewer.getConfig();
+        const targetScene = config.scenes[targetSceneId];
+        
+        if (!targetScene.hotSpots) {
+          targetScene.hotSpots = [];
+        }
+
+        // Check if back-connection already exists
+        const existingBackConnection = targetScene.hotSpots.find(hs => 
+          hs.type === "scene" && hs.sceneId === sourceSceneId
+        );
+        
+        if (existingBackConnection) {
+          console.log(`Back-connection from "${targetSceneId}" to "${sourceSceneId}" already exists`);
+          return;
+        }
+
+        // Find next available ID in target scene
+        const existingIds = targetScene.hotSpots.map(hs => hs.id);
+        const newId = findNextAvailableId(existingIds);
+
+        // Find available yaw position (start at 0, then 15, 30, etc.)
+        let yawPosition = 0;
+        const existingYaws = targetScene.hotSpots.map(hs => hs.yaw);
+        
+        while (existingYaws.includes(yawPosition)) {
+          yawPosition += 15;
+        }
+
+        // Create back-connection hotspot
+        const backHotspot = {
+          pitch: 0,
+          yaw: yawPosition,
+          type: "scene",
+          sceneId: sourceSceneId,
+          id: newId,
+          text: "" + newId + " → " + sourceSceneId
+        };
+
+        // Add to target scene's hotspots array
+        targetScene.hotSpots.push(backHotspot);
+        
+        console.log(`Created back-connection from "${targetSceneId}" to "${sourceSceneId}" at yaw ${yawPosition}`);
+      }
+
+      function removeBackConnection(targetSceneId, sourceSceneId) {
+        const config = viewer.getConfig();
+        const targetScene = config.scenes[targetSceneId];
+        
+        if (!targetScene || !targetScene.hotSpots) {
+          return;
+        }
+
+        // Find and remove the back-connection
+        const backConnectionIndex = targetScene.hotSpots.findIndex(hs => 
+          hs.type === "scene" && hs.sceneId === sourceSceneId
+        );
+        
+        if (backConnectionIndex !== -1) {
+          targetScene.hotSpots.splice(backConnectionIndex, 1);
+          console.log(`Removed back-connection from "${targetSceneId}" to "${sourceSceneId}"`);
+        }
+      }
+
+
 
       const mousedownHandler = function () {
         isDragging = true;
