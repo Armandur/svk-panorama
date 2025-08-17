@@ -26,13 +26,23 @@ var currentEditorModeListeners = {
   zoomchange: null,
   click: null
 };
+var viewer = null; // Global viewer variable
 
 // Function to load the panorama and map data
 function loadPanorama(panoramaData, mapData) {
   const urlParams = new URLSearchParams(window.location.search);
   var currentScene = urlParams.get('scene');  // Changed to use 'scene'
+  
+  // Check if we're on dev.html and force editor mode
+  const isDevPage = window.location.pathname.includes('dev.html');
+  
   // Load panorama JSON data
   loadJSON(panoramaData, function (data) {
+    // Force editor mode if we're on dev.html
+    if (isDevPage) {
+      data.default.editorMode = true;
+    }
+    
     if (currentScene && data.scenes && data.scenes.hasOwnProperty(currentScene)) {
       data.default["firstScene"] = currentScene;
     }
@@ -49,6 +59,48 @@ function loadPanorama(panoramaData, mapData) {
          yaw += 360;
        }
        return yaw;
+     }
+
+     // Function to calculate targetPitch and targetYaw for hotspots
+     function calculateTargetValues(hotspot, sceneKey, data) {
+       if (hotspot.type === 'scene' && hotspot.sceneId) {
+         // Always set targetPitch to 0 (horizon level)
+         let targetPitch = 0;
+         
+         // Calculate targetYaw based on hotspot position relative to other hotspots
+         let targetYaw = calculateTargetYawFromPosition(hotspot, sceneKey, data);
+         
+         return {
+           targetPitch: targetPitch,
+           targetYaw: Math.round(targetYaw * 100) / 100
+         };
+       }
+       return null;
+     }
+     
+     // Function to calculate targetYaw based on hotspot position
+     function calculateTargetYawFromPosition(hotspot, sceneKey, data) {
+       const currentScene = data.scenes[sceneKey];
+       const targetScene = data.scenes[hotspot.sceneId];
+       
+       if (!currentScene || !targetScene || !currentScene.hotSpots || !targetScene.hotSpots) {
+         return hotspot.yaw; // Fallback to current yaw
+       }
+       
+       // Find the corresponding hotspot in the target scene that points back to current scene
+       const backHotspot = targetScene.hotSpots.find(hs => hs.sceneId === sceneKey);
+       
+       if (backHotspot) {
+         // Use the opposite direction of the back hotspot
+         let targetYaw = backHotspot.yaw + 180;
+         if (targetYaw > 180) {
+           targetYaw -= 360;
+         }
+         return targetYaw;
+       }
+       
+       // If no back hotspot found, use current hotspot yaw
+       return hotspot.yaw;
      }
 
      // Loop through each scene and assign an 'id' to each hotspot based on its index
@@ -68,6 +120,18 @@ function loadPanorama(panoramaData, mapData) {
                }
              }
              
+             // Add targetPitch and targetYaw if they don't exist (always, not just in editor mode)
+             if (hotspot.type === 'scene' && !hotspot.hasOwnProperty('targetPitch') && !hotspot.hasOwnProperty('targetYaw')) {
+               const targetValues = calculateTargetValues(hotspot, sceneKey, data);
+               if (targetValues) {
+                 hotspot.targetPitch = targetValues.targetPitch;
+                 hotspot.targetYaw = targetValues.targetYaw;
+                 if (data.default.editorMode) {
+                   console.log(`Added target values for scene ${sceneKey}, hotspot ${index}: targetPitch=${targetValues.targetPitch}, targetYaw=${targetValues.targetYaw}`);
+                 }
+               }
+             }
+             
              if (data.default.editorMode) {
                let existingText = hotspot.text;
                let tooltipText = "" + index;
@@ -75,6 +139,17 @@ function loadPanorama(panoramaData, mapData) {
                // Add sceneId to tooltip if it exists
                if (hotspot.sceneId) {
                  tooltipText += " → " + hotspot.sceneId;
+               }
+               
+               // Add target values to tooltip if they exist
+               if (hotspot.targetPitch !== undefined || hotspot.targetYaw !== undefined) {
+                 tooltipText += "<br>Target: ";
+                 if (hotspot.targetPitch !== undefined) {
+                   tooltipText += `P:${hotspot.targetPitch.toFixed(1)}`;
+                 }
+                 if (hotspot.targetYaw !== undefined) {
+                   tooltipText += ` Y:${hotspot.targetYaw.toFixed(1)}`;
+                 }
                }
                
                hotspot.text = tooltipText;
@@ -88,8 +163,13 @@ function loadPanorama(panoramaData, mapData) {
        }
      }
 
+    // Destroy existing viewer if it exists
+    if (viewer) {
+      viewer.destroy();
+    }
+    
     // Initialize the pannellum viewer
-    const viewer = pannellum.viewer('panorama', data);
+    viewer = pannellum.viewer('panorama', data);
     
     // Only load map if mapData is provided
     if (mapData) {
@@ -159,22 +239,29 @@ function loadPanorama(panoramaData, mapData) {
          currentEditorModeListeners.mousemove = null;
        }
        
-       // Remove viewer event listeners
-       if (currentEditorModeListeners.mouseup) {
-         viewer.off('mouseup', currentEditorModeListeners.mouseup);
-         currentEditorModeListeners.mouseup = null;
-       }
-       if (currentEditorModeListeners.mousedown) {
-         viewer.off('mousedown', currentEditorModeListeners.mousedown);
-         currentEditorModeListeners.mousedown = null;
-       }
-       if (currentEditorModeListeners.zoomchange) {
-         viewer.off('zoomchange', currentEditorModeListeners.zoomchange);
-         currentEditorModeListeners.zoomchange = null;
-       }
-       if (currentEditorModeListeners.click) {
-         viewer.off('click', currentEditorModeListeners.click);
-         currentEditorModeListeners.click = null;
+       // Remove viewer event listeners only if viewer exists and is not destroyed
+       if (viewer && typeof viewer.off === 'function') {
+         try {
+           if (currentEditorModeListeners.mouseup) {
+             viewer.off('mouseup', currentEditorModeListeners.mouseup);
+             currentEditorModeListeners.mouseup = null;
+           }
+           if (currentEditorModeListeners.mousedown) {
+             viewer.off('mousedown', currentEditorModeListeners.mousedown);
+             currentEditorModeListeners.mousedown = null;
+           }
+           if (currentEditorModeListeners.zoomchange) {
+             viewer.off('zoomchange', currentEditorModeListeners.zoomchange);
+             currentEditorModeListeners.zoomchange = null;
+           }
+           if (currentEditorModeListeners.click) {
+             viewer.off('click', currentEditorModeListeners.click);
+             currentEditorModeListeners.click = null;
+           }
+         } catch (error) {
+           // Viewer might be destroyed, ignore errors
+           console.log('Viewer event listeners already removed or viewer destroyed');
+         }
        }
      }
 

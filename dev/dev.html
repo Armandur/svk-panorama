@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEV</title>
+    <title>DEV - Panorama Editor</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
     <link rel="stylesheet" href="/css/style.css"/>
@@ -14,16 +14,271 @@
 
 	<script type="text/javascript" src="/js/map.js"></script>
     <script type="text/javascript" src="/js/app.js"></script>
+    
+         <style>
+         #tour-selector {
+             position: fixed;
+             top: 20px;
+             right: 20px;
+             z-index: 1000;
+             background: rgba(0, 0, 0, 0.8);
+             color: white;
+             padding: 15px;
+             border-radius: 8px;
+             font-family: Arial, sans-serif;
+             min-width: 300px;
+             display: none;
+         }
+        
+        #tour-selector h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+        
+        #tour-selector select {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            background: white;
+            color: black;
+            margin-bottom: 10px;
+        }
+        
+        #tour-selector button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        
+        #tour-selector button:hover {
+            background: #0056b3;
+        }
+        
+        #current-tour-info {
+            font-size: 12px;
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        .tour-option {
+            padding: 5px 0;
+        }
+        
+        .tour-name {
+            font-weight: bold;
+        }
+        
+        .tour-path {
+            font-size: 11px;
+            color: #ccc;
+        }
+    </style>
 </head>
 <body>
+	<div id="tour-selector">
+		<h3>Välj Tur</h3>
+		<select id="tour-dropdown">
+			<option value="">Laddar turer...</option>
+		</select>
+		<button onclick="loadSelectedTour()">Ladda Tur</button>
+		<button onclick="refreshTourList()">Uppdatera Lista</button>
+		<div id="current-tour-info">
+			<strong>Aktuell tur:</strong> Ingen vald
+		</div>
+	</div>
+
 	<div id="show-map-btn" onclick="showMap()">Karta</div>
 	<div id="map-container">
 		<span id="close-btn" onclick="closeMap()">X</span>
-		<img id="map2" src="/images/ho/hoga/map.png" alt="Map Image">
+		<img id="map2" src="" alt="Map Image">
 	</div>
 	<div id="panorama"></div>
+	
 	<script>
-		loadPanorama("/dev/dev.json", "/images/ho/hoga/map.json");
+		// Lista över tillgängliga turer
+		const availableTours = [
+			{
+				name: "dev.json",
+				jsonPath: "/dev/dev.json",
+				mapPath: "/dev/map.json",
+				mapImage: "/images/he/hekg/map.png"
+			},
+			{
+				name: "hekg.json",
+				jsonPath: "/images/he/hekg/hekg.json",
+				mapPath: "/images/he/hekg/map.json",
+				mapImage: "/images/he/hekg/map.png"
+			},
+			{
+				name: "hkn.json",
+				jsonPath: "/images/hkn/hkn.json",
+				mapPath: "/images/hkn/map.json",
+				mapImage: "/images/hkn/map.png"
+			},
+			{
+				name: "hkg.json",
+				jsonPath: "/images/hkg/hkg.json",
+				mapPath: "/images/hkg/map.json",
+				mapImage: "/images/hkg/map.png"
+			},
+			{
+				name: "hoga.json",
+				jsonPath: "/images/ho/hoga/hoga.json",
+				mapPath: "/images/ho/hoga/map.json",
+				mapImage: "/images/ho/hoga/map.png"
+			},
+			{
+				name: "hokg.json",
+				jsonPath: "/images/ho/hokg/hokg.json",
+				mapPath: "/images/ho/hokg/map.json",
+				mapImage: "/images/ho/hokg/map.png"
+			},
+			{
+				name: "hoka.json",
+				jsonPath: "/images/ho/hoka/hoka.json",
+				mapPath: "/images/ho/hoka/map.json",
+				mapImage: "/images/ho/hoka/map.png"
+			},
+			{
+				name: "hony.json",
+				jsonPath: "/images/ho/hony/hony.json",
+				mapPath: "/images/ho/hony/map.json",
+				mapImage: "/images/ho/hony/map.png"
+			},
+			{
+				name: "sa.json",
+				jsonPath: "/images/sa/sa.json",
+				mapPath: "/images/sa/map.json",
+				mapImage: "/images/sa/map.png"
+			},
+			{
+				name: "entren.json",
+				jsonPath: "/images/domkyrkan/entren.json",
+				mapPath: "/images/domkyrkan/map.json",
+				mapImage: "/images/domkyrkan/map.png"
+			},
+			{
+				name: "johanneskapellet.json",
+				jsonPath: "/images/domkyrkan/johanneskapellet.json",
+				mapPath: "/images/domkyrkan/map.json",
+				mapImage: "/images/domkyrkan/map.png"
+			},
+			{
+				name: "mariakapellet.json",
+				jsonPath: "/images/domkyrkan/mariakapellet.json",
+				mapPath: "/images/domkyrkan/map.json",
+				mapImage: "/images/domkyrkan/map.png"
+			},
+			{
+				name: "mittgangen.json",
+				jsonPath: "/images/domkyrkan/mittgangen.json",
+				mapPath: "/images/domkyrkan/map.json",
+				mapImage: "/images/domkyrkan/map.png"
+			},
+			{
+				name: "orgellaktaren.json",
+				jsonPath: "/images/domkyrkan/orgellaktaren.json",
+				mapPath: "/images/domkyrkan/map.json",
+				mapImage: "/images/domkyrkan/map.png"
+			},
+			{
+				name: "koret.json",
+				jsonPath: "/images/domkyrkan/koret.json",
+				mapPath: "/images/domkyrkan/map.json",
+				mapImage: "/images/domkyrkan/map.png"
+			}
+		];
+
+		let currentTour = null;
+
+		// Funktion för att populera dropdown-menyn
+		function populateTourDropdown() {
+			const dropdown = document.getElementById('tour-dropdown');
+			dropdown.innerHTML = '<option value="">Välj en tur...</option>';
+			
+			availableTours.forEach((tour, index) => {
+				const option = document.createElement('option');
+				option.value = index;
+				option.textContent = tour.name;
+				dropdown.appendChild(option);
+			});
+		}
+
+		// Funktion för att ladda vald tur
+		function loadSelectedTour() {
+			const dropdown = document.getElementById('tour-dropdown');
+			const selectedIndex = dropdown.value;
+			
+			if (selectedIndex === '') {
+				alert('Välj en tur först!');
+				return;
+			}
+			
+			const tour = availableTours[selectedIndex];
+			currentTour = tour;
+			
+			// Uppdatera karta
+			const mapImage = document.getElementById('map2');
+			mapImage.src = tour.mapImage;
+			
+			// Ladda panorama (redigeringsläge aktiveras automatiskt i app.js för dev.html)
+			loadPanorama(tour.jsonPath, tour.mapPath);
+			
+			// Uppdatera info
+			updateTourInfo(tour);
+		}
+
+		// Funktion för att uppdatera tur-information
+		function updateTourInfo(tour) {
+			const infoDiv = document.getElementById('current-tour-info');
+			infoDiv.innerHTML = `
+				<strong>Aktuell tur:</strong> ${tour.name}<br>
+				<strong>JSON:</strong> ${tour.jsonPath}<br>
+				<strong>Karta:</strong> ${tour.mapPath}
+			`;
+		}
+
+		// Funktion för att uppdatera turlistan
+		function refreshTourList() {
+			populateTourDropdown();
+			alert('Turlista uppdaterad!');
+		}
+
+		// Ladda dropdown när sidan laddas
+		document.addEventListener('DOMContentLoaded', function() {
+			populateTourDropdown();
+		});
+
+		// Funktion för att visa/dölja tur-väljaren
+		function toggleTourSelector() {
+			const selector = document.getElementById('tour-selector');
+			if (selector.style.display === 'none' || selector.style.display === '') {
+				selector.style.display = 'block';
+			} else {
+				selector.style.display = 'none';
+			}
+		}
+
+		// Lägg till event listener för L-tangenten
+		document.addEventListener('keydown', function(event) {
+			if (event.key.toLowerCase() === 'l') {
+				toggleTourSelector();
+			}
+		});
+
+		// Ladda standardtur (HEKG) när sidan laddas
+		window.addEventListener('load', function() {
+			// Sätt HEKG som standard
+			document.getElementById('tour-dropdown').value = '0';
+			loadSelectedTour();
+		});
 	</script>
 </body>
 </html>
