@@ -4,7 +4,7 @@
 		"autoRotate": -2,
 		"sceneFadeDuration": 500,
 		"editorMode": false,
-		"firstScene": "1"
+		"firstScene": "0"
 	},
 	"scenes": {
 		"0": {
@@ -16,7 +16,9 @@
 					"yaw": 116.8,
 					"type": "scene",
 					"sceneId": "1",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 20.2
 				}
 			]
 		},
@@ -28,7 +30,7 @@
 					"pitch": 0.16,
 					"yaw": 11.63,
 					"type": "info",
-					"id": 4,
+					"id": 0,
 					"text": "De smidda järngrindarna kommer från Utansjös järnbruk som anlades 1738.  Att järnbruket förlades där kom att avgöra den nya kyrkans placering."
 				},
 				{
@@ -40,28 +42,25 @@
 					"attributes": {
 						"target": "_self"
 					},
-					"id": 0
+					"id": 1
 				},
 				{
 					"pitch": -1.21,
 					"yaw": -159.8,
 					"type": "scene",
 					"sceneId": "0",
-					"id": 1
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -63.2
 				},
 				{
 					"pitch": -2.42,
 					"yaw": 68.07,
 					"type": "scene",
 					"sceneId": "14b",
-					"id": 2
-				},
-				{
-					"pitch": -8.72,
-					"yaw": -0.29,
-					"type": "scene",
-					"sceneId": "2",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 100.35
 				},
 				{
 					"pitch": -6.3,
@@ -69,6 +68,15 @@
 					"type": "info",
 					"id": 5,
 					"text": "Högsjö nya kyrka är en \"getingkyrka\" och är murad av traktens gnejs och tegel. Högsjö nya kyrka uppfördes av byggmästare Simon Geting efter ritningar av byggmästare Per Hagmansson. Kyrkan var långt ifrån färdig vid invigningen 2 november 1789, först i mitten av 1800-talet fick kyrkorummet sin slutliga gestaltning i nyklassicistisk stil genom Olof Hofréns utförande av ny altaruppsats och predikstol."
+				},
+				{
+					"pitch": -8.72,
+					"yaw": -0.29,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": -16.15
 				}
 			]
 		},
@@ -81,28 +89,36 @@
 					"yaw": 0.45,
 					"type": "scene",
 					"sceneId": "11",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 33.14
 				},
 				{
 					"pitch": -3.55,
 					"yaw": 58.56,
 					"type": "scene",
 					"sceneId": "15",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -179.46
 				},
 				{
 					"pitch": -5.19,
 					"yaw": -109.51,
 					"type": "scene",
 					"sceneId": "3",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 0.72
 				},
 				{
 					"pitch": -20.58,
 					"yaw": 163.85,
 					"type": "scene",
 					"sceneId": "1",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 179.71
 				}
 			]
 		},
@@ -115,21 +131,27 @@
 					"yaw": 75.29,
 					"type": "scene",
 					"sceneId": "8",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -84.28
 				},
 				{
 					"pitch": -1.6,
 					"yaw": -179.28,
 					"type": "scene",
 					"sceneId": "2",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 70.49
 				},
 				{
 					"pitch": -8.61,
 					"yaw": -0.22,
 					"type": "scene",
 					"sceneId": "4",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -0.72
 				}
 			]
 		},
@@ -142,21 +164,27 @@
 					"yaw": 74.58,
 					"type": "scene",
 					"sceneId": "7",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -76.52
 				},
 				{
 					"pitch": -2.81,
 					"yaw": 179.28,
 					"type": "scene",
 					"sceneId": "3",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 179.78
 				},
 				{
 					"pitch": -7.85,
 					"yaw": -0.18,
 					"type": "scene",
 					"sceneId": "5",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 180
 				}
 			]
 		},
@@ -169,7 +197,9 @@
 					"yaw": 0,
 					"type": "scene",
 					"sceneId": "4",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 179.82
 				},
 				{
 					"pitch": -1.64,
@@ -183,7 +213,9 @@
 					"yaw": 75.77,
 					"type": "scene",
 					"sceneId": "6",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -78.96
 				}
 			]
 		},
@@ -196,14 +228,18 @@
 					"yaw": 101.04,
 					"type": "scene",
 					"sceneId": "5",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -104.23
 				},
 				{
 					"pitch": -3.38,
 					"yaw": 0.1,
 					"type": "scene",
 					"sceneId": "7",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 1.02
 				}
 			]
 		},
@@ -216,21 +252,27 @@
 					"yaw": 0.35,
 					"type": "scene",
 					"sceneId": "8",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 2.31
 				},
 				{
 					"pitch": -9.11,
 					"yaw": 103.48,
 					"type": "scene",
 					"sceneId": "4",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -105.42
 				},
 				{
 					"pitch": -9.43,
 					"yaw": -178.98,
 					"type": "scene",
 					"sceneId": "6",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -179.9
 				}
 			]
 		},
@@ -243,21 +285,27 @@
 					"yaw": 0.28,
 					"type": "scene",
 					"sceneId": "9",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 2.42
 				},
 				{
 					"pitch": -6.84,
 					"yaw": 95.72,
 					"type": "scene",
 					"sceneId": "3",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -104.71
 				},
 				{
 					"pitch": -7.96,
 					"yaw": -177.69,
 					"type": "scene",
 					"sceneId": "7",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -179.65
 				}
 			]
 		},
@@ -270,14 +318,18 @@
 					"yaw": -177.58,
 					"type": "scene",
 					"sceneId": "8",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.72
 				},
 				{
 					"pitch": -5.01,
 					"yaw": 2.38,
 					"type": "scene",
 					"sceneId": "10",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 88.63
 				}
 			]
 		},
@@ -290,21 +342,27 @@
 					"yaw": 0.45,
 					"type": "scene",
 					"sceneId": "16",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -61.83
 				},
 				{
 					"pitch": -7.28,
 					"yaw": -91.37,
 					"type": "scene",
 					"sceneId": "9",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -177.62
 				},
 				{
 					"pitch": -10.55,
 					"yaw": -175.76,
 					"type": "scene",
 					"sceneId": "11",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -179.25
 				}
 			]
 		},
@@ -316,60 +374,29 @@
 					"pitch": 77.52,
 					"yaw": 70.8,
 					"type": "info",
-					"id": 7,
+					"id": 0,
 					"text": "Tornuret är en gåva till församlingen från kapten J.M. Nordstrand på Åbord"
 				},
 				{
 					"pitch": 71.39,
 					"yaw": 71.23,
 					"type": "info",
-					"id": 6,
+					"id": 1,
 					"text": "Den stora kyrkklockan kommer från Högsjö gamla kyrka och är samma klocka som löstes ut vid klocksatten 1531 och brandsakdades vid rysshärjningarna 1721.  Två gånger omgjuten låter den ännu sin malm ljuda över Mörtsjöns vatten."
 				},
 				{
 					"pitch": 31.02,
 					"yaw": 66.37,
 					"type": "info",
-					"id": 0,
+					"id": 2,
 					"text": "Gustaf IIIs sextonde regerings år 1788. \"Herre wår Gud! Hör tin tjenares och tina folks Israels bön thom the gör görande wender i thetta rum och hör thet, ther tu bor i himmelen; och när tu thet hörer, war nådelig. 1 kon. bok: 8 cap: 30 v.\""
 				},
 				{
-					"pitch": 9.76,
-					"yaw": 68.7,
+					"pitch": 30.95,
+					"yaw": 79.38,
 					"type": "info",
-					"id": 1,
-					"text": "Kyrkportarna är från 1790-talet och är snidade av bildhuggaren Pehr Westman, Hemsön."
-				},
-				{
-					"pitch": 4.22,
-					"yaw": 73.07,
-					"type": "scene",
-					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hony.html?scene=1",
-					"attributes": {
-						"target": "_self"
-					},
-					"id": 2
-				},
-				{
-					"pitch": -4.61,
-					"yaw": 0.75,
-					"type": "scene",
-					"sceneId": "10",
-					"id": 3
-				},
-				{
-					"pitch": -6.48,
-					"yaw": -146.86,
-					"type": "scene",
-					"sceneId": "2",
-					"id": 4
-				},
-				{
-					"pitch": -7.9,
-					"yaw": 112.98,
-					"type": "scene",
-					"sceneId": "12",
-					"id": 5
+					"id": 9,
+					"text": "Kyrkan var långt ifrån färdig vid invigningen 2 november 1789, först i mitten av 1800-talet fick kyrkorummet sin slutliga gestaltning i nyklassicistisk stil genom Olof Hofréns utförande av ny altaruppsats och predikstol."
 				},
 				{
 					"pitch": 15.95,
@@ -379,11 +406,48 @@
 					"text": "Högsjö nya kyrka är en \"getingkyrka\" och är murad av traktens gnejs och tegel. Högsjö nya kyrka uppfördes av byggmästare Simon Geting efter ritningar av byggmästare Per Hagmansson."
 				},
 				{
-					"pitch": 30.95,
-					"yaw": 79.38,
+					"pitch": 9.76,
+					"yaw": 68.7,
 					"type": "info",
-					"id": 9,
-					"text": "Kyrkan var långt ifrån färdig vid invigningen 2 november 1789, först i mitten av 1800-talet fick kyrkorummet sin slutliga gestaltning i nyklassicistisk stil genom Olof Hofréns utförande av ny altaruppsats och predikstol."
+					"id": 3,
+					"text": "Kyrkportarna är från 1790-talet och är snidade av bildhuggaren Pehr Westman, Hemsön."
+				},
+				{
+					"pitch": -4.61,
+					"yaw": 0.75,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 5,
+					"targetPitch": 0,
+					"targetYaw": 4.24
+				},
+				{
+					"pitch": -6.48,
+					"yaw": -146.86,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 6,
+					"targetPitch": 0,
+					"targetYaw": -179.55
+				},
+				{
+					"pitch": -7.9,
+					"yaw": 112.98,
+					"type": "scene",
+					"sceneId": "12",
+					"id": 7,
+					"targetPitch": 0,
+					"targetYaw": 5.1
+				},
+				{
+					"pitch": 4.22,
+					"yaw": 73.07,
+					"type": "scene",
+					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hony.html?scene=1",
+					"attributes": {
+						"target": "_self"
+					},
+					"id": 4
 				}
 			]
 		},
@@ -396,21 +460,27 @@
 					"yaw": -174.9,
 					"type": "scene",
 					"sceneId": "11",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -67.02
 				},
 				{
 					"pitch": -6.35,
 					"yaw": -3.54,
 					"type": "scene",
 					"sceneId": "13",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -2.52
 				},
 				{
 					"pitch": -9.49,
 					"yaw": 90.31,
 					"type": "scene",
 					"sceneId": "14",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -179.77
 				},
 				{
 					"pitch": -1.55,
@@ -433,14 +503,18 @@
 					"yaw": 177.48,
 					"type": "scene",
 					"sceneId": "12",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 176.46
 				},
 				{
 					"pitch": -22.74,
 					"yaw": -3.06,
 					"type": "scene",
 					"sceneId": "23",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 0.8
 				}
 			]
 		},
@@ -453,21 +527,27 @@
 					"yaw": 0.23,
 					"type": "scene",
 					"sceneId": "12",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -89.69
 				},
 				{
 					"pitch": -5.17,
 					"yaw": -89.22,
 					"type": "scene",
 					"sceneId": "15",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -3.2
 				},
 				{
 					"pitch": -19.08,
 					"yaw": 177.04,
 					"type": "scene",
 					"sceneId": "14b",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -178.95
 				}
 			]
 		},
@@ -480,14 +560,18 @@
 					"yaw": 0.54,
 					"type": "scene",
 					"sceneId": "2",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -121.44
 				},
 				{
 					"pitch": -6.61,
 					"yaw": 176.8,
 					"type": "scene",
 					"sceneId": "14",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 90.78
 				},
 				{
 					"pitch": 45.36,
@@ -510,6 +594,31 @@
 			"panorama": "/images/ho/hokg/16.jpg",
 			"hotSpots": [
 				{
+					"pitch": 0.29,
+					"yaw": -70.28,
+					"type": "info",
+					"id": 3,
+					"text": "Högsjö gravkapell är byggt 1955 och är ritat av arkitekt K M Westerberg. Kapellet används både för begravningar i svenska kyrkans ordning, borgerliga ceremonier och andra trosuppfattningar."
+				},
+				{
+					"pitch": -9.2,
+					"yaw": 118.17,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -179.55
+				},
+				{
+					"pitch": -14.3,
+					"yaw": -0.04,
+					"type": "scene",
+					"sceneId": "17",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -1.96
+				},
+				{
 					"pitch": -1.4,
 					"yaw": -60.16,
 					"type": "scene",
@@ -517,28 +626,7 @@
 					"attributes": {
 						"target": "_self"
 					},
-					"id": 2
-				},
-				{
-					"pitch": -9.2,
-					"yaw": 118.17,
-					"type": "scene",
-					"sceneId": "10",
 					"id": 0
-				},
-				{
-					"pitch": -14.3,
-					"yaw": -0.04,
-					"type": "scene",
-					"sceneId": "17",
-					"id": 1
-				},
-				{
-					"pitch": 0.29,
-					"yaw": -70.28,
-					"type": "info",
-					"id": 3,
-					"text": "Högsjö gravkapell är byggt 1955 och är ritat av arkitekt K M Westerberg. Kapellet används både för begravningar i svenska kyrkans ordning, borgerliga ceremonier och andra trosuppfattningar."
 				}
 			]
 		},
@@ -551,28 +639,36 @@
 					"yaw": 178.04,
 					"type": "scene",
 					"sceneId": "16",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 179.96
 				},
 				{
 					"pitch": -5.08,
 					"yaw": -83.83,
 					"type": "scene",
 					"sceneId": "70",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -178.62
 				},
 				{
 					"pitch": -5.89,
 					"yaw": 57.55,
 					"type": "scene",
 					"sceneId": "17b",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -17.69
 				},
 				{
 					"pitch": -13.42,
 					"yaw": -0.56,
 					"type": "scene",
 					"sceneId": "18",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -1.4
 				}
 			]
 		},
@@ -585,28 +681,36 @@
 					"yaw": 178.6,
 					"type": "scene",
 					"sceneId": "17",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 179.44
 				},
 				{
 					"pitch": -5,
 					"yaw": 84.59,
 					"type": "scene",
 					"sceneId": "19",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 0.59
 				},
 				{
 					"pitch": -6.37,
 					"yaw": 0.39,
 					"type": "scene",
 					"sceneId": "46",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 0.02
 				},
 				{
 					"pitch": -11.43,
 					"yaw": -95.03,
 					"type": "scene",
 					"sceneId": "43",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -179.96
 				}
 			]
 		},
@@ -619,28 +723,36 @@
 					"yaw": 62.21,
 					"type": "scene",
 					"sceneId": "17b",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 80.47
 				},
 				{
 					"pitch": -4.71,
 					"yaw": -0.24,
 					"type": "scene",
 					"sceneId": "20",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 0.3
 				},
 				{
 					"pitch": -5.54,
 					"yaw": -179.41,
 					"type": "scene",
 					"sceneId": "18",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -95.41
 				},
 				{
 					"pitch": -6.93,
 					"yaw": -84.13,
 					"type": "scene",
 					"sceneId": "47",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -0.04
 				}
 			]
 		},
@@ -653,21 +765,27 @@
 					"yaw": -0.13,
 					"type": "scene",
 					"sceneId": "21",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.71
 				},
 				{
 					"pitch": -5.64,
 					"yaw": -179.7,
 					"type": "scene",
 					"sceneId": "19",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 179.76
 				},
 				{
 					"pitch": -7.24,
 					"yaw": -85.51,
 					"type": "scene",
 					"sceneId": "48",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -0.16
 				}
 			]
 		},
@@ -680,28 +798,36 @@
 					"yaw": -58.87,
 					"type": "scene",
 					"sceneId": "23",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -170.79
 				},
 				{
 					"pitch": -5.75,
 					"yaw": 0.29,
 					"type": "scene",
 					"sceneId": "20",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 179.87
 				},
 				{
 					"pitch": -6.83,
 					"yaw": 95.85,
 					"type": "scene",
 					"sceneId": "49",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 1.39
 				},
 				{
 					"pitch": -10.26,
 					"yaw": 179.28,
 					"type": "scene",
 					"sceneId": "22",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -178.8
 				}
 			]
 		},
@@ -714,21 +840,27 @@
 					"yaw": 94.04,
 					"type": "scene",
 					"sceneId": "25",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -0.27
 				},
 				{
 					"pitch": -10.4,
 					"yaw": 1.2,
 					"type": "scene",
 					"sceneId": "21",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -0.72
 				},
 				{
 					"pitch": -13.68,
 					"yaw": 179.55,
 					"type": "scene",
 					"sceneId": "24",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -179.18
 				}
 			]
 		},
@@ -741,21 +873,27 @@
 					"yaw": -179.2,
 					"type": "scene",
 					"sceneId": "13",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 176.94
 				},
 				{
 					"pitch": -7.19,
 					"yaw": -101.38,
 					"type": "scene",
 					"sceneId": "17b",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -176.17
 				},
 				{
 					"pitch": -20.8,
 					"yaw": 9.21,
 					"type": "scene",
 					"sceneId": "21",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 121.13
 				}
 			]
 		},
@@ -768,21 +906,27 @@
 					"yaw": -83.33,
 					"type": "scene",
 					"sceneId": "14b",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -99.53
 				},
 				{
 					"pitch": -2.63,
 					"yaw": 97.01,
 					"type": "scene",
 					"sceneId": "50",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 90.51
 				},
 				{
 					"pitch": -11.19,
 					"yaw": 0.82,
 					"type": "scene",
 					"sceneId": "22",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -0.45
 				}
 			]
 		},
@@ -795,21 +939,27 @@
 					"yaw": 179.73,
 					"type": "scene",
 					"sceneId": "22",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -85.96
 				},
 				{
 					"pitch": -6.84,
 					"yaw": 0.93,
 					"type": "scene",
 					"sceneId": "26",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 91.93
 				},
 				{
 					"pitch": -10.57,
 					"yaw": -101.92,
 					"type": "scene",
 					"sceneId": "49",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -102.93
 				}
 			]
 		},
@@ -822,14 +972,18 @@
 					"yaw": -88.07,
 					"type": "scene",
 					"sceneId": "25",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.07
 				},
 				{
 					"pitch": -8.65,
 					"yaw": -0.08,
 					"type": "scene",
 					"sceneId": "27",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 1.54
 				}
 			]
 		},
@@ -842,28 +996,36 @@
 					"yaw": -0.82,
 					"type": "scene",
 					"sceneId": "30",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 0.58
 				},
 				{
 					"pitch": -10.01,
 					"yaw": -88.58,
 					"type": "scene",
 					"sceneId": "28",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -90.86
 				},
 				{
 					"pitch": -11.62,
 					"yaw": 82.95,
 					"type": "scene",
 					"sceneId": "56",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 84.68
 				},
 				{
 					"pitch": -12.27,
 					"yaw": -178.46,
 					"type": "scene",
 					"sceneId": "26",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 179.92
 				}
 			]
 		},
@@ -876,21 +1038,27 @@
 					"yaw": -0.03,
 					"type": "scene",
 					"sceneId": "29",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 0.5
 				},
 				{
 					"pitch": -13.31,
 					"yaw": 89.14,
 					"type": "scene",
 					"sceneId": "27",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 91.42
 				},
 				{
 					"pitch": -3.12,
 					"yaw": -91.24,
 					"type": "scene",
 					"sceneId": "49",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -179.92
 				}
 			]
 		},
@@ -903,28 +1071,36 @@
 					"yaw": -179.5,
 					"type": "scene",
 					"sceneId": "28",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 179.97
 				},
 				{
 					"pitch": -5.58,
 					"yaw": -0.65,
 					"type": "scene",
 					"sceneId": "32",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -1.7
 				},
 				{
 					"pitch": -3.85,
 					"yaw": -90.32,
 					"type": "scene",
 					"sceneId": "48",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 179.93
 				},
 				{
 					"pitch": -13.35,
 					"yaw": 90.37,
 					"type": "scene",
 					"sceneId": "30",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 92.1
 				}
 			]
 		},
@@ -937,28 +1113,36 @@
 					"yaw": -0.52,
 					"type": "scene",
 					"sceneId": "31",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -0.38
 				},
 				{
 					"pitch": -5.58,
 					"yaw": -179.42,
 					"type": "scene",
 					"sceneId": "27",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 179.18
 				},
 				{
 					"pitch": -10.29,
 					"yaw": -87.9,
 					"type": "scene",
 					"sceneId": "29",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -89.63
 				},
 				{
 					"pitch": -11.01,
 					"yaw": 73.69,
 					"type": "scene",
 					"sceneId": "57",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 70.8
 				}
 			]
 		},
@@ -971,28 +1155,36 @@
 					"yaw": 179.62,
 					"type": "scene",
 					"sceneId": "30",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 179.48
 				},
 				{
 					"pitch": -5.34,
 					"yaw": 0.55,
 					"type": "scene",
 					"sceneId": "34",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -91.64
 				},
 				{
 					"pitch": -10.56,
 					"yaw": 71.92,
 					"type": "scene",
 					"sceneId": "59",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 90.21
 				},
 				{
 					"pitch": -10.84,
 					"yaw": -90.44,
 					"type": "scene",
 					"sceneId": "32",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -91.75
 				}
 			]
 		},
@@ -1005,28 +1197,36 @@
 					"yaw": 178.3,
 					"type": "scene",
 					"sceneId": "29",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 179.35
 				},
 				{
 					"pitch": -4.08,
 					"yaw": 0.53,
 					"type": "scene",
 					"sceneId": "33",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -89.4
 				},
 				{
 					"pitch": -10.95,
 					"yaw": 88.25,
 					"type": "scene",
 					"sceneId": "31",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 89.56
 				},
 				{
 					"pitch": -5.18,
 					"yaw": -90.48,
 					"type": "scene",
 					"sceneId": "47",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -179.71
 				}
 			]
 		},
@@ -1039,28 +1239,36 @@
 					"yaw": 90.6,
 					"type": "scene",
 					"sceneId": "32",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.47
 				},
 				{
 					"pitch": -14.27,
 					"yaw": -1.47,
 					"type": "scene",
 					"sceneId": "34",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -2.46
 				},
 				{
 					"pitch": -10.96,
 					"yaw": -90.25,
 					"type": "scene",
 					"sceneId": "37",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -0.98
 				},
 				{
 					"pitch": -2.02,
 					"yaw": 179.85,
 					"type": "scene",
 					"sceneId": "46",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -179.87
 				}
 			]
 		},
@@ -1073,28 +1281,36 @@
 					"yaw": 88.36,
 					"type": "scene",
 					"sceneId": "31",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.45
 				},
 				{
 					"pitch": -4.97,
 					"yaw": -92.5,
 					"type": "scene",
 					"sceneId": "35",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 0.51
 				},
 				{
 					"pitch": -9.46,
 					"yaw": 177.54,
 					"type": "scene",
 					"sceneId": "33",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 178.53
 				},
 				{
 					"pitch": -10.33,
 					"yaw": -1.19,
 					"type": "scene",
 					"sceneId": "60",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -1
 				}
 			]
 		},
@@ -1107,21 +1323,27 @@
 					"yaw": -179.49,
 					"type": "scene",
 					"sceneId": "34",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 87.5
 				},
 				{
 					"pitch": -4.36,
 					"yaw": 0.2,
 					"type": "scene",
 					"sceneId": "38",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 90.87
 				},
 				{
 					"pitch": -11.23,
 					"yaw": -88.93,
 					"type": "scene",
 					"sceneId": "36",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -88.94
 				}
 			]
 		},
@@ -1134,28 +1356,36 @@
 					"yaw": -89.65,
 					"type": "scene",
 					"sceneId": "44",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.81
 				},
 				{
 					"pitch": -4.89,
 					"yaw": 0.61,
 					"type": "scene",
 					"sceneId": "39",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 91.55
 				},
 				{
 					"pitch": -10.41,
 					"yaw": -179.99,
 					"type": "scene",
 					"sceneId": "37",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -178.54
 				},
 				{
 					"pitch": -12.55,
 					"yaw": 91.06,
 					"type": "scene",
 					"sceneId": "35",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 91.07
 				}
 			]
 		},
@@ -1168,21 +1398,27 @@
 					"yaw": -89.89,
 					"type": "scene",
 					"sceneId": "45",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.73
 				},
 				{
 					"pitch": -10.61,
 					"yaw": 1.46,
 					"type": "scene",
 					"sceneId": "36",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 0.01
 				},
 				{
 					"pitch": -10.5,
 					"yaw": 179.02,
 					"type": "scene",
 					"sceneId": "33",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 89.75
 				}
 			]
 		},
@@ -1195,21 +1431,27 @@
 					"yaw": 179.38,
 					"type": "scene",
 					"sceneId": "66",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 87.14
 				},
 				{
 					"pitch": -4.92,
 					"yaw": -89.13,
 					"type": "scene",
 					"sceneId": "35",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -179.8
 				},
 				{
 					"pitch": -12.46,
 					"yaw": 0.2,
 					"type": "scene",
 					"sceneId": "39",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 1.35
 				}
 			]
 		},
@@ -1222,21 +1464,27 @@
 					"yaw": -0.07,
 					"type": "scene",
 					"sceneId": "40",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 2.28
 				},
 				{
 					"pitch": -5.68,
 					"yaw": -88.45,
 					"type": "scene",
 					"sceneId": "36",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -179.39
 				},
 				{
 					"pitch": -14.17,
 					"yaw": -178.65,
 					"type": "scene",
 					"sceneId": "38",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -179.8
 				}
 			]
 		},
@@ -1249,21 +1497,27 @@
 					"yaw": 0.26,
 					"type": "scene",
 					"sceneId": "41",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 70.19
 				},
 				{
 					"pitch": -5.3,
 					"yaw": -87.67,
 					"type": "scene",
 					"sceneId": "44",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 92.24
 				},
 				{
 					"pitch": -5.84,
 					"yaw": -177.72,
 					"type": "scene",
 					"sceneId": "39",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 179.93
 				}
 			]
 		},
@@ -1276,21 +1530,27 @@
 					"yaw": 128.65,
 					"type": "scene",
 					"sceneId": "70",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 111.01
 				},
 				{
 					"pitch": -6.16,
 					"yaw": 1.78,
 					"type": "scene",
 					"sceneId": "42",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 2.5
 				},
 				{
 					"pitch": -8.53,
 					"yaw": -109.81,
 					"type": "scene",
 					"sceneId": "40",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -179.74
 				}
 			]
 		},
@@ -1303,21 +1563,27 @@
 					"yaw": -85.3,
 					"type": "scene",
 					"sceneId": "44",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 0.68
 				},
 				{
 					"pitch": -8.48,
 					"yaw": -177.5,
 					"type": "scene",
 					"sceneId": "41",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -178.22
 				},
 				{
 					"pitch": -10.52,
 					"yaw": -0.8,
 					"type": "scene",
 					"sceneId": "43",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 0.98
 				}
 			]
 		},
@@ -1330,21 +1596,27 @@
 					"yaw": -84.23,
 					"type": "scene",
 					"sceneId": "45",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -0.05
 				},
 				{
 					"pitch": -9.16,
 					"yaw": 0.04,
 					"type": "scene",
 					"sceneId": "18",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 84.97
 				},
 				{
 					"pitch": -11.02,
 					"yaw": -179.02,
 					"type": "scene",
 					"sceneId": "42",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 179.2
 				}
 			]
 		},
@@ -1357,28 +1629,36 @@
 					"yaw": -179.32,
 					"type": "scene",
 					"sceneId": "42",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 94.7
 				},
 				{
 					"pitch": -5.53,
 					"yaw": 0.19,
 					"type": "scene",
 					"sceneId": "36",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 90.35
 				},
 				{
 					"pitch": -5.7,
 					"yaw": -87.76,
 					"type": "scene",
 					"sceneId": "40",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 92.33
 				},
 				{
 					"pitch": -9.94,
 					"yaw": 91.12,
 					"type": "scene",
 					"sceneId": "45",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 91.14
 				}
 			]
 		},
@@ -1391,28 +1671,36 @@
 					"yaw": 179.95,
 					"type": "scene",
 					"sceneId": "43",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 95.77
 				},
 				{
 					"pitch": -6.11,
 					"yaw": 0.27,
 					"type": "scene",
 					"sceneId": "37",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 90.11
 				},
 				{
 					"pitch": -8.84,
 					"yaw": 87.84,
 					"type": "scene",
 					"sceneId": "46",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 90.15
 				},
 				{
 					"pitch": -11.64,
 					"yaw": -88.86,
 					"type": "scene",
 					"sceneId": "44",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -88.88
 				}
 			]
 		},
@@ -1425,28 +1713,36 @@
 					"yaw": -179.98,
 					"type": "scene",
 					"sceneId": "18",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.61
 				},
 				{
 					"pitch": -5.22,
 					"yaw": 90.78,
 					"type": "scene",
 					"sceneId": "47",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 92.93
 				},
 				{
 					"pitch": -5.5,
 					"yaw": 0.13,
 					"type": "scene",
 					"sceneId": "33",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -0.15
 				},
 				{
 					"pitch": -11.01,
 					"yaw": -89.85,
 					"type": "scene",
 					"sceneId": "45",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -92.16
 				}
 			]
 		},
@@ -1459,28 +1755,36 @@
 					"yaw": 179.96,
 					"type": "scene",
 					"sceneId": "19",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 95.87
 				},
 				{
 					"pitch": -3.83,
 					"yaw": 91.99,
 					"type": "scene",
 					"sceneId": "48",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 89.92
 				},
 				{
 					"pitch": -5.79,
 					"yaw": -87.07,
 					"type": "scene",
 					"sceneId": "46",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -89.22
 				},
 				{
 					"pitch": -6.49,
 					"yaw": 0.29,
 					"type": "scene",
 					"sceneId": "32",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 89.52
 				}
 			]
 		},
@@ -1493,28 +1797,36 @@
 					"yaw": 179.84,
 					"type": "scene",
 					"sceneId": "20",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 94.49
 				},
 				{
 					"pitch": -3.57,
 					"yaw": 91.81,
 					"type": "scene",
 					"sceneId": "49",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 89.35
 				},
 				{
 					"pitch": -6.6,
 					"yaw": -90.08,
 					"type": "scene",
 					"sceneId": "47",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -88.01
 				},
 				{
 					"pitch": -6.91,
 					"yaw": -0.07,
 					"type": "scene",
 					"sceneId": "29",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 89.68
 				}
 			]
 		},
@@ -1527,28 +1839,36 @@
 					"yaw": -178.61,
 					"type": "scene",
 					"sceneId": "21",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -84.15
 				},
 				{
 					"pitch": -6.49,
 					"yaw": -90.65,
 					"type": "scene",
 					"sceneId": "48",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -88.19
 				},
 				{
 					"pitch": -7.31,
 					"yaw": 0.08,
 					"type": "scene",
 					"sceneId": "28",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 88.76
 				},
 				{
 					"pitch": -11.31,
 					"yaw": 77.07,
 					"type": "scene",
 					"sceneId": "25",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 78.08
 				}
 			]
 		},
@@ -1561,14 +1881,18 @@
 					"yaw": -89.49,
 					"type": "scene",
 					"sceneId": "24",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -82.99
 				},
 				{
 					"pitch": -3.17,
 					"yaw": -0.07,
 					"type": "scene",
 					"sceneId": "51",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -0.63
 				}
 			]
 		},
@@ -1581,35 +1905,45 @@
 					"yaw": 44.81,
 					"type": "scene",
 					"sceneId": "55b",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -0.55
 				},
 				{
 					"pitch": -0.97,
 					"yaw": 89.26,
 					"type": "scene",
 					"sceneId": "55",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -179.78
 				},
 				{
 					"pitch": -3.2,
 					"yaw": -0.25,
 					"type": "scene",
 					"sceneId": "52",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 1.6
 				},
 				{
 					"pitch": -4.44,
 					"yaw": 179.37,
 					"type": "scene",
 					"sceneId": "50",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 179.93
 				},
 				{
 					"pitch": -4.92,
 					"yaw": -90.21,
 					"type": "scene",
 					"sceneId": "56",
-					"id": 4
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": -88.88
 				},
 				{
 					"pitch": -1.02,
@@ -1629,21 +1963,27 @@
 					"yaw": -178.4,
 					"type": "scene",
 					"sceneId": "51",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 179.75
 				},
 				{
 					"pitch": -3.9,
 					"yaw": 0.89,
 					"type": "scene",
 					"sceneId": "53",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 31.76
 				},
 				{
 					"pitch": -6.67,
 					"yaw": -77.38,
 					"type": "scene",
 					"sceneId": "58",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 180
 				}
 			]
 		},
@@ -1656,28 +1996,36 @@
 					"yaw": 120.13,
 					"type": "scene",
 					"sceneId": "54",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -87.6
 				},
 				{
 					"pitch": -4.06,
 					"yaw": 162.04,
 					"type": "scene",
 					"sceneId": "55b",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 82.21
 				},
 				{
 					"pitch": -6.55,
 					"yaw": -1.93,
 					"type": "scene",
 					"sceneId": "61b",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 15.46
 				},
 				{
 					"pitch": -7.92,
 					"yaw": -148.24,
 					"type": "scene",
 					"sceneId": "52",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -179.11
 				}
 			]
 		},
@@ -1690,21 +2038,27 @@
 					"yaw": 0.45,
 					"type": "scene",
 					"sceneId": "55",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -89.28
 				},
 				{
 					"pitch": -4.65,
 					"yaw": 92.4,
 					"type": "scene",
 					"sceneId": "53",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -59.87
 				},
 				{
 					"pitch": -5.14,
 					"yaw": 49.56,
 					"type": "scene",
 					"sceneId": "55b",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 179.98
 				}
 			]
 		},
@@ -1717,21 +2071,27 @@
 					"yaw": 90.72,
 					"type": "scene",
 					"sceneId": "54",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.55
 				},
 				{
 					"pitch": -3.15,
 					"yaw": 44.32,
 					"type": "scene",
 					"sceneId": "55b",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -96.32
 				},
 				{
 					"pitch": -4.91,
 					"yaw": 0.22,
 					"type": "scene",
 					"sceneId": "51",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -90.74
 				}
 			]
 		},
@@ -1744,21 +2104,27 @@
 					"yaw": 91.12,
 					"type": "scene",
 					"sceneId": "51",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 89.79
 				},
 				{
 					"pitch": -3.65,
 					"yaw": -95.32,
 					"type": "scene",
 					"sceneId": "27",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -97.05
 				},
 				{
 					"pitch": -4.81,
 					"yaw": -0.88,
 					"type": "scene",
 					"sceneId": "57",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -1.34
 				}
 			]
 		},
@@ -1771,28 +2137,36 @@
 					"yaw": 91.53,
 					"type": "scene",
 					"sceneId": "58",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 0
 				},
 				{
 					"pitch": -4.12,
 					"yaw": 0.26,
 					"type": "scene",
 					"sceneId": "59",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -0.02
 				},
 				{
 					"pitch": -4.66,
 					"yaw": -109.2,
 					"type": "scene",
 					"sceneId": "30",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -106.31
 				},
 				{
 					"pitch": -6.18,
 					"yaw": 178.66,
 					"type": "scene",
 					"sceneId": "56",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 179.12
 				}
 			]
 		},
@@ -1805,14 +2179,18 @@
 					"yaw": 0,
 					"type": "scene",
 					"sceneId": "52",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 102.62
 				},
 				{
 					"pitch": 0,
 					"yaw": 180,
 					"type": "scene",
 					"sceneId": "57",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -88.47
 				}
 			]
 		},
@@ -1825,28 +2203,36 @@
 					"yaw": -89.79,
 					"type": "scene",
 					"sceneId": "31",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -108.08
 				},
 				{
 					"pitch": -5.8,
 					"yaw": 60.55,
 					"type": "scene",
 					"sceneId": "59b",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 90.16
 				},
 				{
 					"pitch": -6.24,
 					"yaw": 179.98,
 					"type": "scene",
 					"sceneId": "57",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -179.74
 				},
 				{
 					"pitch": -6.24,
 					"yaw": 0,
 					"type": "scene",
 					"sceneId": "60",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -90.68
 				}
 			]
 		},
@@ -1866,21 +2252,27 @@
 					"yaw": 179,
 					"type": "scene",
 					"sceneId": "34",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 178.81
 				},
 				{
 					"pitch": -4.93,
 					"yaw": -0.94,
 					"type": "scene",
 					"sceneId": "61",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 0.18
 				},
 				{
 					"pitch": -6.19,
 					"yaw": 89.32,
 					"type": "scene",
 					"sceneId": "59",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 180
 				}
 			]
 		},
@@ -1894,21 +2286,27 @@
 					"yaw": -65.25,
 					"type": "scene",
 					"sceneId": "61c",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -118.19
 				},
 				{
 					"pitch": -9.01,
 					"yaw": 64.53,
 					"type": "scene",
 					"sceneId": "61b",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 127.42
 				},
 				{
 					"pitch": -9.07,
 					"yaw": -179.82,
 					"type": "scene",
 					"sceneId": "60",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 179.06
 				},
 				{
 					"pitch": -5.53,
@@ -1928,21 +2326,27 @@
 					"yaw": -151.12,
 					"type": "scene",
 					"sceneId": "63b",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -9.95
 				},
 				{
 					"pitch": -15.3,
 					"yaw": 53.47,
 					"type": "scene",
 					"sceneId": "61c",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 42.66
 				},
 				{
 					"pitch": -17.86,
 					"yaw": -3.4,
 					"type": "scene",
 					"sceneId": "62b",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -63.42
 				}
 			]
 		},
@@ -1956,14 +2360,18 @@
 					"yaw": 24.04,
 					"type": "scene",
 					"sceneId": "64",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 150.43
 				},
 				{
 					"pitch": -10.63,
 					"yaw": -47.87,
 					"type": "scene",
 					"sceneId": "63b",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -179.27
 				},
 				{
 					"pitch": -8.98,
@@ -1984,21 +2392,27 @@
 					"yaw": -29.57,
 					"type": "scene",
 					"sceneId": "63",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -155.96
 				},
 				{
 					"pitch": -8.25,
 					"yaw": 6.2,
 					"type": "scene",
 					"sceneId": "63b",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 100.89
 				},
 				{
 					"pitch": -9.04,
 					"yaw": -179.9,
 					"type": "scene",
 					"sceneId": "66",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -91.2
 				}
 			]
 		},
@@ -2011,14 +2425,18 @@
 					"yaw": -124.09,
 					"type": "scene",
 					"sceneId": "66",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 179.96
 				},
 				{
 					"pitch": -8.4,
 					"yaw": -1.39,
 					"type": "scene",
 					"sceneId": "67",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 27.18
 				}
 			]
 		},
@@ -2031,28 +2449,36 @@
 					"yaw": 88.8,
 					"type": "scene",
 					"sceneId": "64",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 0.1
 				},
 				{
 					"pitch": -1.63,
 					"yaw": -0.04,
 					"type": "scene",
 					"sceneId": "65",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 55.91
 				},
 				{
 					"pitch": -5.26,
 					"yaw": 179.52,
 					"type": "scene",
 					"sceneId": "60",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 179.52
 				},
 				{
 					"pitch": -10.34,
 					"yaw": -92.86,
 					"type": "scene",
 					"sceneId": "38",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -0.62
 				}
 			]
 		},
@@ -2065,14 +2491,18 @@
 					"yaw": -0.05,
 					"type": "scene",
 					"sceneId": "68",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 0.06
 				},
 				{
 					"pitch": -2.93,
 					"yaw": -152.82,
 					"type": "scene",
 					"sceneId": "65",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 178.61
 				}
 			]
 		},
@@ -2085,14 +2515,18 @@
 					"yaw": 0.23,
 					"type": "scene",
 					"sceneId": "69",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 31.78
 				},
 				{
 					"pitch": -3.14,
 					"yaw": -179.94,
 					"type": "scene",
 					"sceneId": "67",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 179.95
 				}
 			]
 		},
@@ -2105,14 +2539,18 @@
 					"yaw": -5.51,
 					"type": "scene",
 					"sceneId": "70",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -5.43
 				},
 				{
 					"pitch": -6.69,
 					"yaw": -148.22,
 					"type": "scene",
 					"sceneId": "68",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -179.77
 				}
 			]
 		},
@@ -2125,21 +2563,27 @@
 					"yaw": 1.38,
 					"type": "scene",
 					"sceneId": "17",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 96.17
 				},
 				{
 					"pitch": -6.62,
 					"yaw": 174.57,
 					"type": "scene",
 					"sceneId": "69",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 174.49
 				},
 				{
 					"pitch": -9.89,
 					"yaw": -68.99,
 					"type": "scene",
 					"sceneId": "41",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -51.35
 				}
 			]
 		},
@@ -2152,21 +2596,27 @@
 					"yaw": 1.05,
 					"type": "scene",
 					"sceneId": "14",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -2.96
 				},
 				{
 					"pitch": -1.53,
 					"yaw": -79.65,
 					"type": "scene",
 					"sceneId": "1",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -111.93
 				},
 				{
 					"pitch": -4.92,
 					"yaw": 80.47,
 					"type": "scene",
 					"sceneId": "24",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 96.67
 				}
 			]
 		},
@@ -2179,21 +2629,27 @@
 					"yaw": 162.31,
 					"type": "scene",
 					"sceneId": "17",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -122.45
 				},
 				{
 					"pitch": -3.42,
 					"yaw": 3.83,
 					"type": "scene",
 					"sceneId": "23",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 78.62
 				},
 				{
 					"pitch": -22.06,
 					"yaw": -99.53,
 					"type": "scene",
 					"sceneId": "19",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -117.79
 				}
 			]
 		},
@@ -2206,28 +2662,36 @@
 					"yaw": -0.02,
 					"type": "scene",
 					"sceneId": "54",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -130.44
 				},
 				{
 					"pitch": -4.04,
 					"yaw": -97.79,
 					"type": "scene",
 					"sceneId": "53",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -17.96
 				},
 				{
 					"pitch": -4.57,
 					"yaw": 83.68,
 					"type": "scene",
 					"sceneId": "55",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -135.68
 				},
 				{
 					"pitch": -4.98,
 					"yaw": 179.45,
 					"type": "scene",
 					"sceneId": "51",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -135.19
 				},
 				{
 					"pitch": -8.26,
@@ -2247,7 +2711,9 @@
 					"yaw": -89.84,
 					"type": "scene",
 					"sceneId": "59",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -119.45
 				},
 				{
 					"pitch": -24.2,
@@ -2268,28 +2734,36 @@
 					"yaw": 48.33,
 					"type": "scene",
 					"sceneId": "61c",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 129.1
 				},
 				{
 					"pitch": -6.26,
 					"yaw": 141.98,
 					"type": "scene",
 					"sceneId": "62c",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 92.4
 				},
 				{
 					"pitch": -7.25,
 					"yaw": -52.58,
 					"type": "scene",
 					"sceneId": "61",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -115.47
 				},
 				{
 					"pitch": -14.71,
 					"yaw": -164.54,
 					"type": "scene",
 					"sceneId": "53",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 178.07
 				}
 			]
 		},
@@ -2303,21 +2777,27 @@
 					"yaw": -137.34,
 					"type": "scene",
 					"sceneId": "62",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -126.53
 				},
 				{
 					"pitch": -8.39,
 					"yaw": -50.9,
 					"type": "scene",
 					"sceneId": "61b",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -131.67
 				},
 				{
 					"pitch": -10.25,
 					"yaw": 61.81,
 					"type": "scene",
 					"sceneId": "61",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 114.75
 				}
 			]
 		},
@@ -2330,14 +2810,18 @@
 					"yaw": 116.58,
 					"type": "scene",
 					"sceneId": "62",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 176.6
 				},
 				{
 					"pitch": -7.98,
 					"yaw": 6.1,
 					"type": "scene",
 					"sceneId": "62c",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 173.89
 				}
 			]
 		},
@@ -2350,14 +2834,18 @@
 					"yaw": -6.11,
 					"type": "scene",
 					"sceneId": "62b",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -173.9
 				},
 				{
 					"pitch": -5.54,
 					"yaw": -87.6,
 					"type": "scene",
 					"sceneId": "61b",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -38.02
 				}
 			]
 		},
@@ -2371,21 +2859,27 @@
 					"yaw": 170.05,
 					"type": "scene",
 					"sceneId": "62",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 28.88
 				},
 				{
 					"pitch": -10.09,
 					"yaw": -79.11,
 					"type": "scene",
 					"sceneId": "64",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -173.8
 				},
 				{
 					"pitch": -14.07,
 					"yaw": 0.73,
 					"type": "scene",
 					"sceneId": "63",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 132.13
 				},
 				{
 					"pitch": -39.88,

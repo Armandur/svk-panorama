@@ -16,7 +16,9 @@
 					"yaw": 176.53,
 					"type": "scene",
 					"sceneId": "2",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 1.17
 				}
 			]
 		},
@@ -29,14 +31,18 @@
 					"yaw": -178.83,
 					"type": "scene",
 					"sceneId": "1",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -3.47
 				},
 				{
 					"pitch": -18.59,
 					"yaw": 2.77,
 					"type": "scene",
 					"sceneId": "3",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -5.67
 				}
 			]
 		},
@@ -49,42 +55,61 @@
 					"yaw": -59.76,
 					"type": "scene",
 					"sceneId": "12",
-					"id": 4
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 102.6
 				},
 				{
 					"pitch": -4.56,
 					"yaw": -96.03,
 					"type": "scene",
 					"sceneId": "13",
-					"id": 5
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -163.65
 				},
 				{
 					"pitch": -5.89,
 					"yaw": 62.28,
 					"type": "scene",
 					"sceneId": "5",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 71.49
 				},
 				{
 					"pitch": -6.16,
 					"yaw": 84.72,
 					"type": "scene",
 					"sceneId": "4",
-					"id": 1
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 64.04
 				},
 				{
 					"pitch": -9.97,
 					"yaw": 28.43,
 					"type": "scene",
 					"sceneId": "6",
-					"id": 3
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": 4.92
 				},
 				{
 					"pitch": -10.74,
 					"yaw": 174.33,
 					"type": "scene",
 					"sceneId": "2",
-					"id": 0
+					"id": 5,
+					"targetPitch": 0,
+					"targetYaw": -177.23
+				},
+				{
+					"pitch": 19.24,
+					"yaw": -4.01,
+					"type": "info",
+					"id": 6,
+					"text": "1865 i Carl XV 6te regerings år fullbordades detta herrans hus"
 				}
 			]
 		},
@@ -97,21 +122,27 @@
 					"yaw": -115.96,
 					"type": "scene",
 					"sceneId": "3",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -95.28
 				},
 				{
 					"pitch": -5.3,
 					"yaw": -83.45,
 					"type": "scene",
 					"sceneId": "6",
-					"id": 2
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -91.3
 				},
 				{
 					"pitch": -12.04,
 					"yaw": -27.84,
 					"type": "scene",
 					"sceneId": "5",
-					"id": 1
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 1.1
 				}
 			]
 		},
@@ -124,35 +155,52 @@
 					"yaw": -108.51,
 					"type": "scene",
 					"sceneId": "3",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -117.72
 				},
 				{
 					"pitch": -5.11,
 					"yaw": -88.58,
 					"type": "scene",
 					"sceneId": "6",
-					"id": 2
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -120.93
 				},
 				{
 					"pitch": -9.88,
 					"yaw": -178.9,
 					"type": "scene",
 					"sceneId": "4",
-					"id": 1
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 152.16
 				},
 				{
 					"pitch": -10.25,
 					"yaw": 0.4,
 					"type": "scene",
 					"sceneId": "7",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 48.38
 				},
 				{
 					"pitch": -15.64,
 					"yaw": 89.25,
 					"type": "scene",
 					"sceneId": "14",
-					"id": 4
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": -174.99
+				},
+				{
+					"pitch": -9.31,
+					"yaw": -11.59,
+					"type": "info",
+					"id": 5,
+					"text": "Här vilar Olof Hansson, död år 1849, som skänkte kyrkklockan till Hemsö kyrka."
 				}
 			]
 		},
@@ -165,35 +213,45 @@
 					"yaw": 88.7,
 					"type": "scene",
 					"sceneId": "4",
-					"id": 1
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 96.55
 				},
 				{
 					"pitch": -6.25,
 					"yaw": -23.45,
 					"type": "scene",
 					"sceneId": "9",
-					"id": 4
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -34.72
 				},
 				{
 					"pitch": -6.78,
 					"yaw": -175.08,
 					"type": "scene",
 					"sceneId": "3",
-					"id": 0
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -151.57
 				},
 				{
 					"pitch": -7.11,
 					"yaw": 14.45,
 					"type": "scene",
 					"sceneId": "7",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 100.98
 				},
 				{
 					"pitch": -7.92,
 					"yaw": 59.07,
 					"type": "scene",
 					"sceneId": "5",
-					"id": 2
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": 91.42
 				}
 			]
 		},
@@ -206,35 +264,43 @@
 					"yaw": -79.02,
 					"type": "scene",
 					"sceneId": "6",
-					"id": 1
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -165.55
 				},
 				{
 					"pitch": -4.66,
 					"yaw": 48.71,
 					"type": "scene",
 					"sceneId": "8",
-					"id": 2
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -56.88
 				},
 				{
 					"pitch": -5.2,
 					"yaw": 10.7,
 					"type": "scene",
 					"sceneId": "9",
-					"id": 3
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -80.24
 				},
 				{
 					"pitch": -7.33,
 					"yaw": -131.62,
 					"type": "scene",
 					"sceneId": "5",
-					"id": 0
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -179.6
 				},
 				{
 					"pitch": -29.25,
 					"yaw": -55.07,
 					"type": "info",
 					"id": 4,
-					"text": "Här vilar"
+					"text": "Här vilar Olof Hansson, död år 1849, som skänkte kyrkklockan till Hemsö kyrka."
 				}
 			]
 		},
@@ -247,21 +313,27 @@
 					"yaw": 123.12,
 					"type": "scene",
 					"sceneId": "7",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -131.29
 				},
 				{
 					"pitch": -4.94,
 					"yaw": 171.78,
 					"type": "scene",
 					"sceneId": "9",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 175.35
 				},
 				{
 					"pitch": -6.2,
 					"yaw": -133.14,
 					"type": "scene",
 					"sceneId": "10",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 105.66
 				}
 			]
 		},
@@ -274,44 +346,55 @@
 					"yaw": 145.28,
 					"type": "scene",
 					"sceneId": "6",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 156.55
 				},
 				{
 					"pitch": -4.09,
 					"yaw": -138.99,
 					"type": "scene",
 					"sceneId": "11",
-					"id": 4
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 79.3
 				},
 				{
 					"pitch": -4.24,
 					"yaw": 99.76,
 					"type": "scene",
 					"sceneId": "7",
-					"id": 1
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -169.3
 				},
 				{
 					"pitch": -8.61,
 					"yaw": -66.47,
 					"type": "scene",
 					"sceneId": "10",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 164.66
 				},
 				{
 					"pitch": -8.96,
 					"yaw": -4.65,
 					"type": "scene",
 					"sceneId": "8",
-					"id": 2
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": -8.22
 				},
 				{
-					"pitch": -15.96,
-					"yaw": 9.51,
+					"pitch": -16.45,
+					"yaw": 6.14,
 					"type": "info",
 					"id": 5,
-					"text": "Minneslunden"
+					"text": "\"Herren är min herde, mig skall inget fattas, Han låter mig vila på gröna ängar, Han leder mig till vatten där jag finner ro. Ps. 23\" Välkommen till Hemsö kyrkas minneslund. Denna kulle är en stor gemensam grav, som ej bör beträdas. Smycka gärna med levande blommor i den anlagda rabatten. Ljus kan placeras på ljusbäraren.  - Hemsö kyrkoråd"
 				}
-			]
+			],
+			"title": "Minneslunden"
 		},
 		"10": {
 			"type": "equirectangular",
@@ -322,21 +405,27 @@
 					"yaw": 47.68,
 					"type": "scene",
 					"sceneId": "11",
-					"id": 2
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 39.58
 				},
 				{
 					"pitch": -6.73,
 					"yaw": -15.34,
 					"type": "scene",
 					"sceneId": "9",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 113.53
 				},
 				{
 					"pitch": -8.68,
 					"yaw": -74.34,
 					"type": "scene",
 					"sceneId": "8",
-					"id": 0
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 46.86
 				}
 			]
 		},
@@ -349,21 +438,27 @@
 					"yaw": 24.33,
 					"type": "scene",
 					"sceneId": "12",
-					"id": 2
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 0.44
 				},
 				{
 					"pitch": -8.33,
 					"yaw": -140.42,
 					"type": "scene",
 					"sceneId": "10",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -132.32
 				},
 				{
 					"pitch": -8.77,
 					"yaw": -100.7,
 					"type": "scene",
 					"sceneId": "9",
-					"id": 0
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 41.01
 				}
 			]
 		},
@@ -376,21 +471,27 @@
 					"yaw": 8.46,
 					"type": "scene",
 					"sceneId": "13",
-					"id": 2
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 143.04
 				},
 				{
 					"pitch": -5.38,
 					"yaw": -77.4,
 					"type": "scene",
 					"sceneId": "3",
-					"id": 0
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 120.24
 				},
 				{
 					"pitch": -5.8,
 					"yaw": -179.56,
 					"type": "scene",
 					"sceneId": "11",
-					"id": 1
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -155.67
 				}
 			]
 		},
@@ -403,14 +504,18 @@
 					"yaw": 16.35,
 					"type": "scene",
 					"sceneId": "3",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 83.97
 				},
 				{
 					"pitch": -8.29,
 					"yaw": -36.96,
 					"type": "scene",
 					"sceneId": "12",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -171.54
 				}
 			]
 		},
@@ -423,28 +528,36 @@
 					"yaw": 5.01,
 					"type": "scene",
 					"sceneId": "5",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -90.75
 				},
 				{
 					"pitch": -5.55,
 					"yaw": -174.63,
 					"type": "scene",
 					"sceneId": "22",
-					"id": 2
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 51.81
 				},
 				{
 					"pitch": -8.34,
 					"yaw": -84.13,
 					"type": "scene",
 					"sceneId": "15",
-					"id": 3
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 86.93
 				},
 				{
 					"pitch": -10.49,
 					"yaw": 96.8,
 					"type": "scene",
 					"sceneId": "21",
-					"id": 1
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -125.07
 				}
 			]
 		},
@@ -457,14 +570,18 @@
 					"yaw": -2.62,
 					"type": "scene",
 					"sceneId": "16",
-					"id": 1
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 32.74
 				},
 				{
 					"pitch": -12.87,
 					"yaw": -93.07,
 					"type": "scene",
 					"sceneId": "14",
-					"id": 0
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 95.87
 				}
 			]
 		},
@@ -477,21 +594,27 @@
 					"yaw": 33.14,
 					"type": "scene",
 					"sceneId": "17",
-					"id": 2
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 122.89
 				},
 				{
 					"pitch": -4.67,
 					"yaw": -147.26,
 					"type": "scene",
 					"sceneId": "15",
-					"id": 0
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 177.38
 				},
 				{
 					"pitch": -15.67,
 					"yaw": -56.8,
 					"type": "scene",
 					"sceneId": "22",
-					"id": 1
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -39.01
 				}
 			]
 		},
@@ -504,14 +627,18 @@
 					"yaw": -57.11,
 					"type": "scene",
 					"sceneId": "16",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -146.86
 				},
 				{
 					"pitch": -13.98,
 					"yaw": 34.34,
 					"type": "scene",
 					"sceneId": "18",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 91.44
 				}
 			]
 		},
@@ -524,21 +651,27 @@
 					"yaw": 1.08,
 					"type": "scene",
 					"sceneId": "22",
-					"id": 2
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -127.67
 				},
 				{
 					"pitch": -5.61,
 					"yaw": -88.56,
 					"type": "scene",
 					"sceneId": "17",
-					"id": 0
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -145.66
 				},
 				{
 					"pitch": -9.74,
 					"yaw": 91.81,
 					"type": "scene",
 					"sceneId": "19",
-					"id": 1
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 104.86
 				}
 			]
 		},
@@ -551,14 +684,18 @@
 					"yaw": 13.28,
 					"type": "scene",
 					"sceneId": "20",
-					"id": 1
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -28.42
 				},
 				{
 					"pitch": -5.91,
 					"yaw": -75.14,
 					"type": "scene",
 					"sceneId": "18",
-					"id": 0
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -88.19
 				}
 			]
 		},
@@ -571,21 +708,27 @@
 					"yaw": 151.58,
 					"type": "scene",
 					"sceneId": "19",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -166.72
 				},
 				{
 					"pitch": -3.49,
 					"yaw": -28.23,
 					"type": "scene",
 					"sceneId": "21",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 141.21
 				},
 				{
 					"pitch": -6.65,
 					"yaw": -117.53,
 					"type": "scene",
 					"sceneId": "22",
-					"id": 2
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 140.36
 				}
 			]
 		},
@@ -598,14 +741,18 @@
 					"yaw": 54.93,
 					"type": "scene",
 					"sceneId": "14",
-					"id": 0
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -83.2
 				},
 				{
 					"pitch": -6.8,
 					"yaw": -38.79,
 					"type": "scene",
 					"sceneId": "20",
-					"id": 1
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 151.77
 				}
 			]
 		},
@@ -618,28 +765,36 @@
 					"yaw": 52.33,
 					"type": "scene",
 					"sceneId": "18",
-					"id": 2
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -178.92
 				},
 				{
 					"pitch": -3.89,
 					"yaw": -128.19,
 					"type": "scene",
 					"sceneId": "14",
-					"id": 0
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 5.37
 				},
 				{
 					"pitch": -4.89,
 					"yaw": 140.99,
 					"type": "scene",
 					"sceneId": "16",
-					"id": 1
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 123.2
 				},
 				{
 					"pitch": -11.84,
 					"yaw": -39.64,
 					"type": "scene",
 					"sceneId": "20",
-					"id": 3
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 62.47
 				}
 			]
 		}

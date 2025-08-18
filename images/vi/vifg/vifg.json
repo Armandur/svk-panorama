@@ -1,0 +1,174 @@
+{
+	"default": {
+		"autoLoad": true,
+		"autoRotate": -2,
+		"sceneFadeDuration": 500,
+		"editorMode": false,
+		"firstScene": "1"
+	},
+	"scenes": {
+		"1": {
+			"type": "equirectangular",
+			"panorama": "/images/vi/vifg/1.jpg",
+			"hotSpots": [
+				{
+					"pitch": -8.16,
+					"yaw": -107.67,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -107.67
+				},
+				{
+					"pitch": -8.57,
+					"yaw": -0.72,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -0.72
+				},
+				{
+					"pitch": -9.28,
+					"yaw": 26.69,
+					"type": "scene",
+					"id": 2,
+					"URL": "https://panorama.svenskakyrkanharnosand.se/vi/vikg.html?scene=0",
+					"attributes": {
+						"target": "_self"
+					}
+				}
+			]
+		},
+		"2": {
+			"type": "equirectangular",
+			"panorama": "/images/vi/vifg/2.jpg",
+			"hotSpots": [
+				{
+					"pitch": -8.97,
+					"yaw": 135.63,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -165
+				},
+				{
+					"pitch": -9.16,
+					"yaw": -149.28,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -149.28
+				},
+				{
+					"pitch": -10.36,
+					"yaw": -58.94,
+					"type": "scene",
+					"sceneId": "1",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 179.28
+				},
+				{
+					"pitch": -10.47,
+					"yaw": 58.14,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 179.53
+				},
+				{
+					"pitch": -4.63,
+					"yaw": 31.36,
+					"type": "info",
+					"id": 4,
+					"text": "Bonad Viksjö kyrka"
+				},
+				{
+					"pitch": -1.92,
+					"yaw": 110.45,
+					"type": "info",
+					"id": 5,
+					"text": "Tavla Viksjö kyrka"
+				}
+			]
+		},
+		"3": {
+			"type": "equirectangular",
+			"panorama": "/images/vi/vifg/3.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.2,
+					"yaw": 162.02,
+					"type": "scene",
+					"sceneId": "1",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -153.09
+				},
+				{
+					"pitch": -4.25,
+					"yaw": -159.03,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 180
+				},
+				{
+					"pitch": -6.43,
+					"yaw": -163.04,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 30.72
+				},
+				{
+					"pitch": -6.49,
+					"yaw": 166.74,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 30.72
+				},
+				{
+					"pitch": -1.24,
+					"yaw": -136.29,
+					"type": "info",
+					"id": 4,
+					"text": "Tavla Viksjö kyrka"
+				}
+			]
+		},
+		"4": {
+			"type": "equirectangular",
+			"panorama": "/images/vi/vifg/4.jpg",
+			"hotSpots": [
+				{
+					"pitch": -7.81,
+					"yaw": -0.47,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -0.47
+				},
+				{
+					"pitch": -11.62,
+					"yaw": 142.3,
+					"type": "scene",
+					"sceneId": "1",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 72.33
+				}
+			]
+		}
+	}
+}

@@ -308,11 +308,13 @@ function loadPanorama(panoramaData, mapData) {
         helpInfoBox.innerHTML =
           `
         <ul>
-        <li>Hold <b>H/I</b>, drag and release to add/remove Hotspots for scenes (<b>H</b>) and info (<b>I</b>). Closest when released will be removed.</li>
+        <li>Hold <b>H/I/U</b>, drag and release to add/remove Hotspots for scenes (<b>H</b>), info (<b>I</b>), and URLs (<b>U</b>). Closest when released will be removed.</li>
         <li>When creating scene hotspots with <b>H</b>, you will be prompted to enter the target scene ID. A back-connection will be automatically created.</li>
         <li>When creating info hotspots with <b>I</b>, you will be prompted to enter text for the hotspot.</li>
+        <li>When creating URL hotspots with <b>U</b>, you will be prompted to enter URL and choose if it opens in same window.</li>
         <li>Press <b>R</b> to edit the closest hotspot near your current view position (info hotspots: edit text, scene hotspots: edit target scene ID).</li>
-        <li>Press <b>T</b> to toggle all info boxes (pitch/yaw, JSON viewer, and help) on/off.</li>
+        <li>Press <b>T</b> to add/edit text attribute to the closest hotspot, or title attribute to current scene if no hotspot is nearby.</li>
+        <li>Press <b>X</b> to toggle all info boxes (pitch/yaw, JSON viewer, and help) on/off.</li>
         <li>Hold <b>Q</b>, drag and release to move existing hotspots to a new position.</li>
         <li>Press <b>E</b> to log the current scenes hotspots to the browsers console.</li>
         <li><b>Clicking on the map</b> will add the current scenes button to the map, if it isn't there already. Clicking somewhere else moves it.</li>
@@ -330,6 +332,7 @@ function loadPanorama(panoramaData, mapData) {
       let isHKeyDown = false;
       let isIKeyDown = false;
       let isQKeyDown = false;
+      let isUKeyDown = false;
       let draggedHotspot = null;
       let isProcessingMouseUp = false;
       let lastClickTime = 0;
@@ -345,6 +348,32 @@ function loadPanorama(panoramaData, mapData) {
         }
         if (event.key === 'q' || event.key === 'Q') {
           isQKeyDown = true;
+        }
+        if (event.key === 'u' || event.key === 'U') {
+          isUKeyDown = true;
+        }
+        
+        // Toggle all info boxes visibility
+        if (event.key === 'x' || event.key === 'X') {
+          let pitchYawInfoBox = document.getElementById('pitchYawInfo');
+          let configInfoBox = document.getElementById('configInfo');
+          let helpInfoBox = document.getElementById('helpInfo');
+          
+          infoBoxesHidden = !infoBoxesHidden;
+          
+          if (infoBoxesHidden) {
+            // Hide all
+            if (pitchYawInfoBox) pitchYawInfoBox.style.display = 'none';
+            if (configInfoBox) configInfoBox.style.display = 'none';
+            if (helpInfoBox) helpInfoBox.style.display = 'none';
+            console.log("All info boxes hidden");
+          } else {
+            // Show all
+            if (pitchYawInfoBox) pitchYawInfoBox.style.display = 'block';
+            if (configInfoBox) configInfoBox.style.display = 'block';
+            if (helpInfoBox) helpInfoBox.style.display = 'block';
+            console.log("All info boxes shown");
+          }
         }
 
         if (event.key === 'r' || event.key === 'R') {
@@ -417,7 +446,7 @@ function loadPanorama(panoramaData, mapData) {
                   // Check if target scene exists
                   const config = viewer.getConfig();
                   if (!config.scenes[newSceneId]) {
-                    alert(`Scene "${newSceneId}" finns inte!`);
+                    alert(`Scene "${newSceneId}" does not exist!`);
                     return;
                   }
 
@@ -427,7 +456,7 @@ function loadPanorama(panoramaData, mapData) {
                   );
                   
                   if (existingConnection) {
-                    alert(`Anslutning till scene "${newSceneId}" finns redan!`);
+                    alert(`Connection to scene "${newSceneId}" already exists!`);
                     return;
                   }
 
@@ -451,9 +480,9 @@ function loadPanorama(panoramaData, mapData) {
                    // Remove hotspot if scene ID is empty
                    if (currentSceneId && config.scenes[currentSceneId]) {
                      const removeBackConnection = confirm(
-                       `Ta bort scene hotspot.\n\n` +
-                       `Vill du också ta bort motsvarande tillbaka-anslutning från scene "${currentSceneId}"?\n\n` +
-                       `OK = Ta bort båda\nAvbryt = Ta bara bort denna hotspot`
+                       `Remove scene hotspot.\n\n` +
+                       `Do you also want to remove the corresponding back-connection from scene "${currentSceneId}"?\n\n` +
+                       `OK = Remove both\nCancel = Remove only this hotspot`
                      );
                      
                      if (removeBackConnection) {
@@ -471,26 +500,65 @@ function loadPanorama(panoramaData, mapData) {
           }
         }
         
-        // Toggle all info boxes visibility
+        // Add text attribute to closest hotspot or title to current scene
         if (event.key === 't' || event.key === 'T') {
-          let pitchYawInfoBox = document.getElementById('pitchYawInfo');
-          let configInfoBox = document.getElementById('configInfo');
-          let helpInfoBox = document.getElementById('helpInfo');
+          let currentHotspots = viewer.getConfig().hotSpots;
+          let currentPitch = parseFloat(viewer.getPitch().toFixed(2));
+          let currentYaw = parseFloat(viewer.getYaw().toFixed(2));
           
-          infoBoxesHidden = !infoBoxesHidden;
+          let targetHotspot = null;
+          let closestDistance = Infinity;
           
-          if (infoBoxesHidden) {
-            // Hide all
-            if (pitchYawInfoBox) pitchYawInfoBox.style.display = 'none';
-            if (configInfoBox) configInfoBox.style.display = 'none';
-            if (helpInfoBox) helpInfoBox.style.display = 'none';
-            console.log("All info boxes hidden");
+          currentHotspots.forEach((hotspot) => {
+            let pitchDiff = Math.abs(hotspot.pitch - currentPitch);
+            let yawDiff = Math.abs(hotspot.yaw - currentYaw);
+            if (yawDiff > 180) {
+              yawDiff = 360 - yawDiff;
+            }
+            let distance = Math.sqrt(pitchDiff ** 2 + yawDiff ** 2);
+            
+            if (distance < closestDistance && distance < 15) { // Within 15 degrees
+              closestDistance = distance;
+              targetHotspot = hotspot;
+            }
+          });
+          
+          if (targetHotspot) {
+            // Edit hotspot text attribute
+            let currentText = targetHotspot.text || "";
+            let newText = prompt("Add text attribute to hotspot:", currentText);
+            if (newText !== null) {
+              if (newText.trim() !== "") {
+                targetHotspot.text = newText.trim();
+              } else {
+                // Remove text attribute if empty
+                delete targetHotspot.text;
+              }
+              
+              // Remove and re-add the hotspot to update the display
+              viewer.removeHotSpot(targetHotspot.id);
+              viewer.addHotSpot(targetHotspot);
+              console.log("Hotspot updated with text attribute:", newText.trim() || "removed");
+              updateConfigInfoBox();
+            }
           } else {
-            // Show all
-            if (pitchYawInfoBox) pitchYawInfoBox.style.display = 'block';
-            if (configInfoBox) configInfoBox.style.display = 'block';
-            if (helpInfoBox) helpInfoBox.style.display = 'block';
-            console.log("All info boxes shown");
+            // Edit scene title attribute
+            let config = viewer.getConfig();
+            let currentSceneId = viewer.getScene();
+            let currentScene = config.scenes[currentSceneId];
+            let currentTitle = currentScene.title || "";
+            let newTitle = prompt("Add title attribute to current scene:", currentTitle);
+            if (newTitle !== null) {
+              if (newTitle.trim() !== "") {
+                currentScene.title = newTitle.trim();
+              } else {
+                // Remove title attribute if empty
+                delete currentScene.title;
+              }
+              
+              console.log("Scene updated with title attribute:", newTitle.trim() || "removed");
+              updateConfigInfoBox();
+            }
           }
         }
       }
@@ -507,6 +575,9 @@ function loadPanorama(panoramaData, mapData) {
         if (event.key === 'q' || event.key === 'Q') {
           isQKeyDown = false;
           draggedHotspot = null;
+        }
+        if (event.key === 'u' || event.key === 'U') {
+          isUKeyDown = false;
         }
 
         // Go back one scene
@@ -674,8 +745,8 @@ function loadPanorama(panoramaData, mapData) {
           
           draggedHotspot = null;
         }
-        // Only add/remove the hotspot if the "H" or "I" key is held down
-        else if (isHKeyDown || isIKeyDown) {
+        // Only add/remove the hotspot if the "H", "I", or "U" key is held down
+        else if (isHKeyDown || isIKeyDown || isUKeyDown) {
           let hotspotConfig = {
             "pitch": parseFloat(viewer.getPitch().toFixed(2)),
             "yaw": parseFloat(viewer.getYaw().toFixed(2)),
@@ -711,9 +782,9 @@ function loadPanorama(panoramaData, mapData) {
             // Check if it's a scene hotspot and ask about back-connection
             if (closestHotspot.type === "scene" && closestHotspot.sceneId) {
               const removeBackConnection = confirm(
-                `Ta bort hotspot till scene "${closestHotspot.sceneId}".\n\n` +
-                `Vill du också ta bort motsvarande tillbaka-anslutning från scene "${closestHotspot.sceneId}"?\n\n` +
-                `OK = Ta bort båda\nAvbryt = Ta bara bort denna hotspot`
+                `Remove hotspot to scene "${closestHotspot.sceneId}".\n\n` +
+                `Do you also want to remove the corresponding back-connection from scene "${closestHotspot.sceneId}"?\n\n` +
+                `OK = Remove both\nCancel = Remove only this hotspot`
               );
               
                              if (removeBackConnection) {
@@ -757,8 +828,10 @@ function loadPanorama(panoramaData, mapData) {
                 // Reset I key state after successful creation
                 isIKeyDown = false;
               } else {
-                // If user cancels or enters empty text, remove the hotspot and reset I key state
+                // If user cancels or enters empty text, reset I key state and return
                 isIKeyDown = false;
+                updateConfigInfoBox();
+                isProcessingMouseUp = false;
                 return;
               }
             } else if (isHKeyDown) {
@@ -770,20 +843,31 @@ function loadPanorama(panoramaData, mapData) {
                 // Check if target scene exists
                 const config = viewer.getConfig();
                 if (!config.scenes[sceneId]) {
-                  alert(`Scene "${sceneId}" finns inte!`);
+                  alert(`Scene "${sceneId}" does not exist!`);
                   isHKeyDown = false;
+                  updateConfigInfoBox();
+                  isProcessingMouseUp = false;
                   return;
                 }
 
                 // Check if connection already exists
-                const existingConnection = currentHotspots.find(hs => 
+                const existingConnections = currentHotspots.filter(hs => 
                   hs.type === "scene" && hs.sceneId === sceneId
                 );
                 
-                if (existingConnection) {
-                  alert(`Anslutning till scene "${sceneId}" finns redan!`);
-                  isHKeyDown = false;
-                  return;
+                if (existingConnections.length > 0) {
+                  const addAnother = confirm(
+                    `There are already ${existingConnections.length} hotspot(s) to scene "${sceneId}".\n\n` +
+                    `Do you want to add another hotspot to this scene?\n\n` +
+                    `OK = Add hotspot\nCancel = Cancel`
+                  );
+                  
+                  if (!addAnother) {
+                    isHKeyDown = false;
+                    updateConfigInfoBox();
+                    isProcessingMouseUp = false;
+                    return;
+                  }
                 }
 
                 hotspotConfig.sceneId = sceneId;
@@ -798,14 +882,64 @@ function loadPanorama(panoramaData, mapData) {
                   hotspotConfig.text = "" + newId + " → " + sceneId;
                 }
                 
-                // Create back-connection in target scene
-                createBackConnection(sceneId, currentScene);
+                // Ask user if they want to create a back-connection
+                const shouldCreateBackConnection = confirm(
+                  `Do you want to create a "back"-hotspot from scene "${sceneId}" to this scene?\n\n` +
+                  `OK = Create back-hotspot\nCancel = Create only this hotspot`
+                );
+                
+                if (shouldCreateBackConnection) {
+                  // Create back-connection in target scene
+                  createBackConnection(sceneId, currentScene);
+                }
                 
                 // Reset H key state after successful creation
                 isHKeyDown = false;
               } else {
-                // If user cancels or enters empty scene ID, remove the hotspot and reset H key state
+                // If user cancels or enters empty scene ID, reset H key state and return
                 isHKeyDown = false;
+                updateConfigInfoBox();
+                isProcessingMouseUp = false;
+                return;
+              }
+            } else if (isUKeyDown) {
+              // Prompt user for URL for URL hotspots
+              let url = prompt("Enter URL for hotspot:");
+              if (url !== null && url.trim() !== "") {
+                url = url.trim();
+                
+                // Ensure URL has protocol
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                  url = 'https://' + url;
+                }
+                
+                // Ask user if link should open in same window
+                const openInSameWindow = confirm(
+                  `Should the link open in the same window?\n\n` +
+                  `OK = Open in same window\nCancel = Open in new window`
+                );
+                
+                hotspotConfig.type = "scene";
+                hotspotConfig.URL = url;
+                delete hotspotConfig.sceneId;
+                
+                // Set target attribute based on user choice
+                if (openInSameWindow) {
+                  hotspotConfig.attributes = {
+                    target: "_self"
+                  };
+                  hotspotConfig.text = "" + newId + " → " + url + " (same window)";
+                } else {
+                  hotspotConfig.text = "" + newId + " → " + url + " (new window)";
+                }
+                
+                // Reset U key state after successful creation
+                isUKeyDown = false;
+              } else {
+                // If user cancels or enters empty URL, reset U key state and return
+                isUKeyDown = false;
+                updateConfigInfoBox();
+                isProcessingMouseUp = false;
                 return;
               }
             }
@@ -1163,7 +1297,10 @@ function loadPanorama(panoramaData, mapData) {
         console.log(`Loading scene: ${sceneID}`);
       }
 
-      loadMap(viewer, currentScene, mapData, data.default.editorMode); //sceneID sets what dot to have the :current-class
+      if(mapData)
+      {
+        loadMap(viewer, currentScene, mapData, data.default.editorMode); //sceneID sets what dot to have the :current-class
+      }
 
       viewer.stopAutoRotate(); // Don't autorotate when we load a new scene from inside a tour.
 

@@ -112,6 +112,12 @@
 				mapImage: "/images/he/hekg/map.png"
 			},
 			{
+				name: "vifg.json",
+				jsonPath: "/images/vi/vifg/vifg.json",
+				mapPath: null,
+				mapImage: null
+			},
+			{
 				name: "vikg.json",
 				jsonPath: "/images/vi/vikg/vikg.json",
 				mapPath: "/images/vi/vikg/map.json",
@@ -233,7 +239,11 @@
 			
 			// Uppdatera karta
 			const mapImage = document.getElementById('map2');
-			mapImage.src = tour.mapImage;
+			if (tour.mapImage) {
+				mapImage.src = tour.mapImage;
+			} else {
+				mapImage.src = '';
+			}
 			
 			// Återställ mapSpots för att ladda ny kartdata
 			if (typeof mapSpots !== 'undefined') {
