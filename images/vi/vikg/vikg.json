@@ -2,9 +2,10 @@
 	"default": {
 		"autoLoad": true,
 		"autoRotate": -2,
-		"sceneFadeDuration": 500,
+		"autoRotateInactivityDelay": 2000,
+		"sceneFadeDuration": 1500,
 		"editorMode": false,
-		"firstScene": "15"
+		"firstScene": "1"
 	},
 	"scenes": {
 		"0": {

@@ -2,7 +2,8 @@
 	"default": {
 		"autoLoad": true,
 		"autoRotate": -2,
-		"sceneFadeDuration": 500,
+		"autoRotateInactivityDelay": 2000,
+		"sceneFadeDuration": 1500,
 		"editorMode": false,
 		"firstScene": "2"
 	},
@@ -50,6 +51,13 @@
 			"type": "equirectangular",
 			"panorama": "/images/he/hekg/3.jpg",
 			"hotSpots": [
+				{
+					"pitch": 19.24,
+					"yaw": -4.01,
+					"type": "info",
+					"id": 6,
+					"text": "1865 i Carl XV 6te regerings år fullbordades detta herrans hus"
+				},
 				{
 					"pitch": -4.08,
 					"yaw": -59.76,
@@ -105,11 +113,18 @@
 					"targetYaw": -177.23
 				},
 				{
-					"pitch": 19.24,
-					"yaw": -4.01,
+					"pitch": 19.71,
+					"yaw": 7.28,
 					"type": "info",
-					"id": 6,
-					"text": "1865 i Carl XV 6te regerings år fullbordades detta herrans hus"
+					"id": 8,
+					"text": "Någon stiftskollekt till förmån för bygget fick man ej, då bygget påbörjats utan godkända ritningar. Bland annat hade man bestämt att predikstolen skulle vara placerad över altaret. Även tornet byggdes efter stämmans egna önskemål och överensstämde ej med godkända ritningar. Omålad och oinvigd togs kyrkan i bruk första advent 1857 . Invigningen dröjde till 13 juni 1926, till stor del beroende på predikstolens placering."
+				},
+				{
+					"pitch": 20.07,
+					"yaw": -14.01,
+					"type": "info",
+					"id": 7,
+					"text": "Planeringen att bygga Hemsö kyrka inleddes år 1848. Bygget startade 1856 och slutfördes nio år senare, 1865. Planen var att bygga en sten- kyrka, men den omfattande kostnaden gjorde att man diskuterade en tegelkyrka då tegelbruk fanns på ön. Då även tegel skulle komma att bli för dyrt, föreslog häradshövding Bergström på Sanna en träkyrka varpå bygget inleddes av hemmansägare på ön."
 				}
 			]
 		},

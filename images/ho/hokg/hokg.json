@@ -2,7 +2,8 @@
 	"default": {
 		"autoLoad": true,
 		"autoRotate": -2,
-		"sceneFadeDuration": 500,
+		"autoRotateInactivityDelay": 2000,
+		"sceneFadeDuration": 1500,
 		"editorMode": false,
 		"firstScene": "0"
 	},
@@ -443,6 +444,7 @@
 					"pitch": 4.22,
 					"yaw": 73.07,
 					"type": "scene",
+					"text": "Högsjö nya kyrka",
 					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hony.html?scene=1",
 					"attributes": {
 						"target": "_self"
@@ -486,6 +488,7 @@
 					"pitch": -1.55,
 					"yaw": -90.03,
 					"type": "scene",
+					"text": "Högsjö nya kyrka",
 					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hony.html?scene=4",
 					"attributes": {
 						"target": "_self"
@@ -622,6 +625,7 @@
 					"pitch": -1.4,
 					"yaw": -60.16,
 					"type": "scene",
+					"text": "Högsjö gravkapell",
 					"URL": "https://panorama.svenskakyrkanharnosand.se/ho/hoka.html",
 					"attributes": {
 						"target": "_self"
@@ -2886,7 +2890,7 @@
 					"yaw": -86.31,
 					"type": "info",
 					"id": 3,
-					"text": "En Askgravlund är en gemensam begravingsplats där efter flera döda finns.  Anhöriga får delta vid gravsättningen och kan välja att få en namnplakett uppsatt."
+					"text": "En Askgravlund är en gemensam begravingsplats där askan efter flera döda finns. Anhöriga får delta vid gravsättningen och kan välja att få en namnplakett uppsatt."
 				}
 			]
 		}

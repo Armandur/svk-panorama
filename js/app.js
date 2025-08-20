@@ -61,7 +61,7 @@ function loadPanorama(panoramaData, mapData) {
        return yaw;
      }
 
-     // Function to calculate targetPitch and targetYaw for hotspots
+     // Function to calculate targetYaw for hotspots
      function calculateTargetValues(hotspot, sceneKey, data) {
        if (hotspot.type === 'scene' && hotspot.sceneId) {
          // Always set targetPitch to 0 (horizon level)
@@ -101,6 +101,37 @@ function loadPanorama(panoramaData, mapData) {
        
        // If no back hotspot found, use current hotspot yaw
        return hotspot.yaw;
+     }
+     
+     // Function to calculate targetPitch based on hotspot position
+     function calculateTargetPitchFromPosition(hotspot, sceneKey, data) {
+       const currentScene = data.scenes[sceneKey];
+       const targetScene = data.scenes[hotspot.sceneId];
+       
+       if (!currentScene || !targetScene || !currentScene.hotSpots || !targetScene.hotSpots) {
+         return hotspot.pitch; // Fallback to current pitch
+       }
+       
+       // Find the corresponding hotspot in the target scene that points back to current scene
+       const backHotspot = targetScene.hotSpots.find(hs => hs.sceneId === sceneKey);
+       
+       if (backHotspot) {
+         // Use the same pitch as the back hotspot (no inversion)
+         // Pitch ranges from +90 (up) to -90 (down)
+         let targetPitch = backHotspot.pitch;
+         
+         // Ensure pitch stays within valid range
+         if (targetPitch > 90) {
+           targetPitch = 90;
+         } else if (targetPitch < -90) {
+           targetPitch = -90;
+         }
+         
+         return targetPitch;
+       }
+       
+       // If no back hotspot found, use current hotspot pitch
+       return hotspot.pitch;
      }
 
      // Loop through each scene and assign an 'id' to each hotspot based on its index
@@ -314,6 +345,7 @@ function loadPanorama(panoramaData, mapData) {
         <li>When creating URL hotspots with <b>U</b>, you will be prompted to enter URL and choose if it opens in same window.</li>
         <li>Press <b>R</b> to edit the closest hotspot near your current view position (info hotspots: edit text, scene hotspots: edit target scene ID).</li>
         <li>Press <b>T</b> to add/edit text attribute to the closest hotspot, or title attribute to current scene if no hotspot is nearby.</li>
+        <li>Press <b>C</b> to recalculate targetYaw for all existing scene hotspots.</li>
         <li>Press <b>X</b> to toggle all info boxes (pitch/yaw, JSON viewer, and help) on/off.</li>
         <li>Hold <b>Q</b>, drag and release to move existing hotspots to a new position.</li>
         <li>Press <b>E</b> to log the current scenes hotspots to the browsers console.</li>
@@ -479,13 +511,13 @@ function loadPanorama(panoramaData, mapData) {
                                  } else {
                    // Remove hotspot if scene ID is empty
                    if (currentSceneId && config.scenes[currentSceneId]) {
-                     const removeBackConnection = confirm(
+                     const shouldRemoveBackConnection = confirm(
                        `Remove scene hotspot.\n\n` +
                        `Do you also want to remove the corresponding back-connection from scene "${currentSceneId}"?\n\n` +
                        `OK = Remove both\nCancel = Remove only this hotspot`
                      );
                      
-                     if (removeBackConnection) {
+                     if (shouldRemoveBackConnection) {
                        removeBackConnection(currentSceneId, currentScene);
                      }
                    }
@@ -560,6 +592,62 @@ function loadPanorama(panoramaData, mapData) {
               updateConfigInfoBox();
             }
           }
+        }
+        
+        // Recalculate targetYaw for all existing hotspots
+        if (event.key === 'c' || event.key === 'C') {
+          const config = viewer.getConfig();
+          const currentSceneId = viewer.getScene();
+          let updatedCount = 0;
+          
+          // Go through all scenes
+          Object.keys(config.scenes).forEach(sceneId => {
+            const scene = config.scenes[sceneId];
+            if (scene.hotSpots && Array.isArray(scene.hotSpots)) {
+              scene.hotSpots.forEach(hotspot => {
+                if (hotspot.type === "scene" && hotspot.sceneId) {
+                  // Calculate and set targetPitch and targetYaw
+                  const targetValues = calculateTargetValues(hotspot, sceneId, config);
+                  if (targetValues) {
+                    hotspot.targetPitch = targetValues.targetPitch;
+                    hotspot.targetYaw = targetValues.targetYaw;
+                    updatedCount++;
+                  }
+                }
+              });
+            }
+          });
+          
+          console.log(`Recalculated targetYaw for ${updatedCount} hotspots`);
+          alert(`Recalculated targetYaw for ${updatedCount} hotspots`);
+          
+          // Update hotspot texts in current scene to show new values
+          if (config.default.editorMode) {
+            const currentScene = config.scenes[currentSceneId];
+            if (currentScene && currentScene.hotSpots && Array.isArray(currentScene.hotSpots)) {
+              currentScene.hotSpots.forEach((hotspot, index) => {
+                if (hotspot.type === "scene" && hotspot.sceneId) {
+                  let tooltipText = "" + index;
+                  tooltipText += " → " + hotspot.sceneId;
+                  
+                  if (hotspot.targetYaw !== undefined) {
+                    tooltipText += "<br>Target Y: " + hotspot.targetYaw.toFixed(1);
+                  }
+                  
+                  hotspot.text = tooltipText;
+                  if (hotspot.existingText) {
+                    hotspot.text = hotspot.text + "<br>" + hotspot.existingText;
+                  }
+                  
+                  // Remove and re-add the hotspot to update its display
+                  viewer.removeHotSpot(hotspot.id);
+                  viewer.addHotSpot(hotspot);
+                }
+              });
+            }
+          }
+          
+          updateConfigInfoBox();
         }
       }
 
@@ -781,15 +869,15 @@ function loadPanorama(panoramaData, mapData) {
           if (closestDistance < closenessThreshold) {
             // Check if it's a scene hotspot and ask about back-connection
             if (closestHotspot.type === "scene" && closestHotspot.sceneId) {
-              const removeBackConnection = confirm(
+              const shouldRemoveBackConnection = confirm(
                 `Remove hotspot to scene "${closestHotspot.sceneId}".\n\n` +
                 `Do you also want to remove the corresponding back-connection from scene "${closestHotspot.sceneId}"?\n\n` +
                 `OK = Remove both\nCancel = Remove only this hotspot`
               );
               
-                             if (removeBackConnection) {
-                 removeBackConnection(closestHotspot.sceneId, currentScene);
-               }
+              if (shouldRemoveBackConnection) {
+                removeBackConnection(closestHotspot.sceneId, currentScene);
+              }
             }
             
             // Remove the closest hotspot by its id

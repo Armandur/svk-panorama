@@ -1,0 +1,1352 @@
+{
+	"default": {
+		"autoLoad": true,
+		"autoRotate": -2,
+		"autoRotateInactivityDelay": 2000,
+		"sceneFadeDuration": 1500,
+		"editorMode": false,
+		"firstScene": "1"
+	},
+	"scenes": {
+		"1": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/1.jpg",
+			"hotSpots": [
+				{
+					"pitch": -0.47,
+					"yaw": -84.75,
+					"type": "scene",
+					"sceneId": "17",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -89.81
+				},
+				{
+					"pitch": -6.6,
+					"yaw": 83.09,
+					"type": "scene",
+					"sceneId": "20",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -46.7
+				},
+				{
+					"pitch": -9.12,
+					"yaw": 0.13,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 0.44
+				},
+				{
+					"pitch": -5.11,
+					"yaw": -22.71,
+					"type": "info",
+					"id": 3,
+					"text": "Den nuvarande kyrkan är uppförd av byggmästaren Hagmansson och togs i bruk 1785. Tidigare fanns redan på 1400-talet här en träkyrka som brann ner 1559. En ny kyrka i sten byggdes året därpå, ombyggdes samt förlängdes 1684-1685 och revs sedan när nuvarande kyrka skulle byggas."
+				}
+			]
+		},
+		"2": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/2.jpg",
+			"hotSpots": [
+				{
+					"pitch": -3.7,
+					"yaw": -88.4,
+					"type": "scene",
+					"sceneId": "18",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 179.19
+				},
+				{
+					"pitch": -5.6,
+					"yaw": -0.08,
+					"type": "scene",
+					"sceneId": "2b",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 0.25
+				},
+				{
+					"pitch": -8.14,
+					"yaw": 82.39,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 47.31
+				},
+				{
+					"pitch": -10.85,
+					"yaw": -179.56,
+					"type": "scene",
+					"sceneId": "1",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -179.87
+				}
+			]
+		},
+		"3": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/3.jpg",
+			"hotSpots": [
+				{
+					"pitch": -6.61,
+					"yaw": 0.18,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 2.05
+				},
+				{
+					"pitch": -3.44,
+					"yaw": -91.62,
+					"type": "scene",
+					"sceneId": "2b",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -91.16
+				},
+				{
+					"pitch": -2.79,
+					"yaw": -132.69,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -97.61
+				}
+			]
+		},
+		"4": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/4.jpg",
+			"hotSpots": [
+				{
+					"pitch": -1.27,
+					"yaw": -177.95,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.82
+				},
+				{
+					"pitch": -3.15,
+					"yaw": -89.05,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 91.38
+				},
+				{
+					"pitch": -10.5,
+					"yaw": -0.51,
+					"type": "scene",
+					"sceneId": "5",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 89.08
+				}
+			]
+		},
+		"5": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/5.jpg",
+			"hotSpots": [
+				{
+					"pitch": -3.69,
+					"yaw": -90.92,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 179.49
+				},
+				{
+					"pitch": -5.07,
+					"yaw": -0.11,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -0.19
+				},
+				{
+					"pitch": -0.06,
+					"yaw": -34.6,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -34.6
+				}
+			]
+		},
+		"6": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/6.jpg",
+			"hotSpots": [
+				{
+					"pitch": -0.92,
+					"yaw": -91.33,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 0.41
+				},
+				{
+					"pitch": -2.83,
+					"yaw": 0.14,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 0.74
+				},
+				{
+					"pitch": -5.15,
+					"yaw": 179.81,
+					"type": "scene",
+					"sceneId": "5",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 179.89
+				},
+				{
+					"pitch": -21.65,
+					"yaw": 88.71,
+					"type": "scene",
+					"sceneId": "6b",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 179.97
+				}
+			]
+		},
+		"7": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/7.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.44,
+					"yaw": 90.36,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -90.6
+				},
+				{
+					"pitch": -7.16,
+					"yaw": -88.62,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 90.95
+				},
+				{
+					"pitch": -13.84,
+					"yaw": -179.59,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 88.67
+				}
+			]
+		},
+		"8": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/8.jpg",
+			"hotSpots": [
+				{
+					"pitch": -2.87,
+					"yaw": 178.42,
+					"type": "scene",
+					"sceneId": "19",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -89.8
+				},
+				{
+					"pitch": -4.36,
+					"yaw": 89.4,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -89.64
+				},
+				{
+					"pitch": -11.4,
+					"yaw": -0.16,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 88.54
+				}
+			]
+		},
+		"9": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/9.jpg",
+			"hotSpots": [
+				{
+					"pitch": -0.68,
+					"yaw": -91.46,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 179.84
+				},
+				{
+					"pitch": -2.34,
+					"yaw": 0.01,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -1.37
+				},
+				{
+					"pitch": -4.78,
+					"yaw": -179.26,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -179.86
+				}
+			]
+		},
+		"10": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/10.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.61,
+					"yaw": 178.63,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.99
+				},
+				{
+					"pitch": -9.96,
+					"yaw": 84.54,
+					"type": "scene",
+					"sceneId": "11",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 20.25
+				},
+				{
+					"pitch": -0.73,
+					"yaw": -93.82,
+					"type": "scene",
+					"sceneId": "13",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -92.3
+				},
+				{
+					"pitch": -1.74,
+					"yaw": 0.13,
+					"type": "scene",
+					"sceneId": "12",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -179.62
+				},
+				{
+					"pitch": 0.98,
+					"yaw": -46.74,
+					"type": "scene",
+					"sceneId": "14",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": 137.1
+				}
+			]
+		},
+		"11": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/11.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.15,
+					"yaw": -159.75,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -95.46
+				},
+				{
+					"pitch": -10.39,
+					"yaw": 123.94,
+					"type": "scene",
+					"sceneId": "11b",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -177.91
+				},
+				{
+					"pitch": -6.43,
+					"yaw": -33.18,
+					"type": "info",
+					"id": 0,
+					"text": "Askgravlunden invigdes den 16 september 2018 och är ritad av Anna Johansson."
+				},
+				{
+					"pitch": -7.01,
+					"yaw": -39.98,
+					"type": "info",
+					"id": 3,
+					"text": "En Askgravlund är en gemensam begravingsplats där askan efter flera döda finns.  Anhöriga får delta vid gravsättningen och kan välja att få en namnplakett uppsatt."
+				}
+			],
+			"title": "Askgravlunden"
+		},
+		"12": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/12.jpg",
+			"hotSpots": [
+				{
+					"pitch": -5.17,
+					"yaw": 0.38,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.87
+				},
+				{
+					"pitch": -1.22,
+					"yaw": 44.87,
+					"type": "scene",
+					"sceneId": "13",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -133.71
+				},
+				{
+					"pitch": -0.68,
+					"yaw": 89.33,
+					"type": "scene",
+					"sceneId": "14",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 90.25
+				}
+			]
+		},
+		"13": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/13.jpg",
+			"hotSpots": [
+				{
+					"pitch": -1.88,
+					"yaw": -0.07,
+					"type": "scene",
+					"sceneId": "14",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 179.87
+				},
+				{
+					"pitch": -2.82,
+					"yaw": 46.29,
+					"type": "scene",
+					"sceneId": "12",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -135.13
+				},
+				{
+					"pitch": -6.43,
+					"yaw": 87.7,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 86.18
+				},
+				{
+					"pitch": -3.92,
+					"yaw": 179.35,
+					"type": "scene",
+					"sceneId": "19",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 179.61
+				},
+				{
+					"pitch": -3.75,
+					"yaw": -92.31,
+					"type": "scene",
+					"sceneId": "15",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": 84.87
+				},
+				{
+					"pitch": -1.35,
+					"yaw": -49.87,
+					"type": "scene",
+					"sceneId": "16",
+					"id": 5,
+					"targetPitch": 0,
+					"targetYaw": 132.23
+				}
+			]
+		},
+		"14": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/14.jpg",
+			"hotSpots": [
+				{
+					"pitch": -5.68,
+					"yaw": -42.9,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 133.26
+				},
+				{
+					"pitch": -6.66,
+					"yaw": -89.75,
+					"type": "scene",
+					"sceneId": "12",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -90.67
+				},
+				{
+					"pitch": -4.58,
+					"yaw": -0.13,
+					"type": "scene",
+					"sceneId": "13",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 179.93
+				},
+				{
+					"pitch": -3.15,
+					"yaw": 69.36,
+					"type": "scene",
+					"sceneId": "16",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 69.75
+				},
+				{
+					"pitch": -2.66,
+					"yaw": 84.92,
+					"type": "scene",
+					"sceneId": "16b",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": -90.24
+				},
+				{
+					"pitch": -2.6,
+					"yaw": 36.09,
+					"type": "scene",
+					"sceneId": "15",
+					"id": 5,
+					"targetPitch": 0,
+					"targetYaw": 34.71
+				}
+			]
+		},
+		"15": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/15.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.02,
+					"yaw": 0.08,
+					"type": "scene",
+					"sceneId": "18",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 1.4
+				},
+				{
+					"pitch": -3.71,
+					"yaw": -43.91,
+					"type": "scene",
+					"sceneId": "19",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 140.97
+				},
+				{
+					"pitch": -5.55,
+					"yaw": -95.13,
+					"type": "scene",
+					"sceneId": "13",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 87.69
+				},
+				{
+					"pitch": -1.65,
+					"yaw": -145.29,
+					"type": "scene",
+					"sceneId": "14",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -143.91
+				},
+				{
+					"pitch": -2.99,
+					"yaw": 178.15,
+					"type": "scene",
+					"sceneId": "16",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": 179.31
+				}
+			]
+		},
+		"16": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/16.jpg",
+			"hotSpots": [
+				{
+					"pitch": -3.58,
+					"yaw": -110.25,
+					"type": "scene",
+					"sceneId": "14",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -110.64
+				},
+				{
+					"pitch": -4.53,
+					"yaw": -47.77,
+					"type": "scene",
+					"sceneId": "13",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 130.13
+				},
+				{
+					"pitch": -5.57,
+					"yaw": -0.69,
+					"type": "scene",
+					"sceneId": "15",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -1.85
+				},
+				{
+					"pitch": -8.71,
+					"yaw": 86.61,
+					"type": "scene",
+					"sceneId": "17",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -179.98
+				},
+				{
+					"pitch": -13.51,
+					"yaw": -178.01,
+					"type": "scene",
+					"sceneId": "16b",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": 10.32
+				}
+			]
+		},
+		"17": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/17.jpg",
+			"hotSpots": [
+				{
+					"pitch": -20.78,
+					"yaw": 0.02,
+					"type": "scene",
+					"sceneId": "16",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -93.39
+				},
+				{
+					"pitch": -4.66,
+					"yaw": -19.41,
+					"type": "scene",
+					"sceneId": "14",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -19.41
+				},
+				{
+					"pitch": -1.35,
+					"yaw": 90.19,
+					"type": "scene",
+					"sceneId": "1",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 95.25
+				}
+			]
+		},
+		"18": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/18.jpg",
+			"hotSpots": [
+				{
+					"pitch": -2.77,
+					"yaw": -178.6,
+					"type": "scene",
+					"sceneId": "15",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.92
+				},
+				{
+					"pitch": -3.86,
+					"yaw": -35.72,
+					"type": "scene",
+					"sceneId": "2b",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 57.08
+				},
+				{
+					"pitch": -4.91,
+					"yaw": -91.75,
+					"type": "scene",
+					"sceneId": "19",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 87.98
+				},
+				{
+					"pitch": -5.79,
+					"yaw": -0.81,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 91.6
+				}
+			]
+		},
+		"19": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/19.jpg",
+			"hotSpots": [
+				{
+					"pitch": -2.33,
+					"yaw": -39.03,
+					"type": "scene",
+					"sceneId": "15",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 136.09
+				},
+				{
+					"pitch": -3.9,
+					"yaw": -0.39,
+					"type": "scene",
+					"sceneId": "13",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -0.65
+				},
+				{
+					"pitch": -4.81,
+					"yaw": -92.02,
+					"type": "scene",
+					"sceneId": "18",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 88.25
+				},
+				{
+					"pitch": -10.73,
+					"yaw": 90.2,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -1.58
+				},
+				{
+					"pitch": 38.46,
+					"yaw": -161.6,
+					"type": "info",
+					"id": 4,
+					"text": "Den nuvarande kyrkan är uppförd av byggmästaren Hagmansson och togs i bruk 1785. Tidigare fanns redan på 1400-talet här en träkyrka som brann ner 1559. En ny kyrka i sten byggdes året därpå, ombyggdes samt förlängdes 1684-1685 och revs sedan när nuvarande kyrka skulle byggas."
+				}
+			]
+		},
+		"20": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/20.jpg",
+			"hotSpots": [
+				{
+					"pitch": -11.41,
+					"yaw": -59.14,
+					"type": "scene",
+					"sceneId": "31",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -5.6
+				},
+				{
+					"pitch": -6.98,
+					"yaw": -114.88,
+					"type": "scene",
+					"sceneId": "30",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -114.88
+				},
+				{
+					"pitch": -7.26,
+					"yaw": -1.62,
+					"type": "scene",
+					"sceneId": "21",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 0.53
+				},
+				{
+					"pitch": -1.77,
+					"yaw": 133.3,
+					"type": "scene",
+					"sceneId": "1",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -96.91
+				}
+			]
+		},
+		"21": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/21.jpg",
+			"hotSpots": [
+				{
+					"pitch": -2.77,
+					"yaw": -179.47,
+					"type": "scene",
+					"sceneId": "20",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 178.38
+				},
+				{
+					"pitch": -7.69,
+					"yaw": -5.79,
+					"type": "scene",
+					"sceneId": "22",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 44.58
+				}
+			]
+		},
+		"22": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/22.jpg",
+			"hotSpots": [
+				{
+					"pitch": -5.5,
+					"yaw": -135.42,
+					"type": "scene",
+					"sceneId": "21",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 174.21
+				},
+				{
+					"pitch": -7.65,
+					"yaw": 0.03,
+					"type": "scene",
+					"sceneId": "23",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -8.7
+				},
+				{
+					"pitch": -5.12,
+					"yaw": 21.34,
+					"type": "scene",
+					"sceneId": "24",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 109.33
+				}
+			]
+		},
+		"23": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/23.jpg",
+			"hotSpots": [
+				{
+					"pitch": -3.14,
+					"yaw": -109.31,
+					"type": "scene",
+					"sceneId": "32",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -101.1
+				},
+				{
+					"pitch": -3.78,
+					"yaw": 171.3,
+					"type": "scene",
+					"sceneId": "22",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -179.97
+				},
+				{
+					"pitch": -4.96,
+					"yaw": 40.51,
+					"type": "scene",
+					"sceneId": "24",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 130.74
+				},
+				{
+					"pitch": -6.94,
+					"yaw": 0.24,
+					"type": "scene",
+					"sceneId": "25",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 2.74
+				}
+			]
+		},
+		"24": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/24.jpg",
+			"hotSpots": [
+				{
+					"pitch": -34.73,
+					"yaw": -0.52,
+					"type": "info",
+					"id": 0,
+					"text": "Minneslund 1993. Jesus sade \"Jag är uppståndelsen och livet\" - Joh. 11:25"
+				},
+				{
+					"pitch": -10.89,
+					"yaw": -18.92,
+					"type": "info",
+					"id": 1,
+					"text": "En minneslund är ett gemensamt, anonymt gravskick. Askan efter den avlidne nedsätts utan att anhöriga närvar och utan att askans exakta placering registreras."
+				},
+				{
+					"pitch": -3.57,
+					"yaw": -70.67,
+					"type": "scene",
+					"sceneId": "22",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -158.66
+				},
+				{
+					"pitch": -8.46,
+					"yaw": -49.26,
+					"type": "scene",
+					"sceneId": "23",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -139.49
+				},
+				{
+					"pitch": -10.4,
+					"yaw": 58.8,
+					"type": "scene",
+					"sceneId": "25",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": -24.01
+				}
+			],
+			"title": "Minneslunden"
+		},
+		"25": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/25.jpg",
+			"hotSpots": [
+				{
+					"pitch": -0.58,
+					"yaw": 155.99,
+					"type": "scene",
+					"sceneId": "24",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -121.2
+				},
+				{
+					"pitch": -1.17,
+					"yaw": -177.26,
+					"type": "scene",
+					"sceneId": "23",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -179.76
+				},
+				{
+					"pitch": -4.62,
+					"yaw": -4.23,
+					"type": "scene",
+					"sceneId": "26",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 156.86
+				}
+			]
+		},
+		"26": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/26.jpg",
+			"hotSpots": [
+				{
+					"pitch": -1.43,
+					"yaw": -23.14,
+					"type": "scene",
+					"sceneId": "25",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 175.77
+				},
+				{
+					"pitch": -1.45,
+					"yaw": 24.52,
+					"type": "scene",
+					"sceneId": "27",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 39.76
+				}
+			]
+		},
+		"27": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/27.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.11,
+					"yaw": -140.24,
+					"type": "scene",
+					"sceneId": "26",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -155.48
+				},
+				{
+					"pitch": 1.74,
+					"yaw": -0.36,
+					"type": "scene",
+					"sceneId": "32",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -179.59
+				},
+				{
+					"pitch": -1.93,
+					"yaw": 40.32,
+					"type": "scene",
+					"sceneId": "29",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 31.88
+				}
+			]
+		},
+		"28": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/28.jpg",
+			"hotSpots": []
+		},
+		"29": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/29.jpg",
+			"hotSpots": [
+				{
+					"pitch": -3.78,
+					"yaw": -148.12,
+					"type": "scene",
+					"sceneId": "27",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -139.68
+				},
+				{
+					"pitch": 0.17,
+					"yaw": -107.19,
+					"type": "scene",
+					"sceneId": "32",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 74.47
+				},
+				{
+					"pitch": -3.74,
+					"yaw": -10.6,
+					"type": "scene",
+					"sceneId": "30",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 22.71
+				}
+			]
+		},
+		"30": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/30.jpg",
+			"hotSpots": [
+				{
+					"pitch": -18.8,
+					"yaw": -157.29,
+					"type": "scene",
+					"sceneId": "29",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 169.4
+				},
+				{
+					"pitch": 0.69,
+					"yaw": -0.13,
+					"type": "scene",
+					"sceneId": "31",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 92.7
+				}
+			]
+		},
+		"31": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/31.jpg",
+			"hotSpots": [
+				{
+					"pitch": -3.88,
+					"yaw": 174.4,
+					"type": "scene",
+					"sceneId": "20",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 120.86
+				},
+				{
+					"pitch": -6.01,
+					"yaw": 89.97,
+					"type": "scene",
+					"sceneId": "21",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 89.97
+				},
+				{
+					"pitch": -7.25,
+					"yaw": -87.3,
+					"type": "scene",
+					"sceneId": "30",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 179.87
+				},
+				{
+					"pitch": -8.33,
+					"yaw": -0.14,
+					"type": "scene",
+					"sceneId": "32",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 0.03
+				}
+			]
+		},
+		"32": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/32.jpg",
+			"hotSpots": [
+				{
+					"pitch": -3.75,
+					"yaw": 78.9,
+					"type": "scene",
+					"sceneId": "23",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 70.69
+				},
+				{
+					"pitch": -0.08,
+					"yaw": -179.97,
+					"type": "scene",
+					"sceneId": "31",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 179.86
+				},
+				{
+					"pitch": -6.58,
+					"yaw": 0.41,
+					"type": "scene",
+					"sceneId": "27",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 179.64
+				},
+				{
+					"pitch": -4.63,
+					"yaw": -105.53,
+					"type": "scene",
+					"sceneId": "29",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 72.81
+				}
+			]
+		},
+		"2b": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/2b.jpg",
+			"hotSpots": [
+				{
+					"pitch": -5.94,
+					"yaw": 88.84,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 88.38
+				},
+				{
+					"pitch": -6.87,
+					"yaw": -179.75,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 179.92
+				},
+				{
+					"pitch": -3.39,
+					"yaw": -122.92,
+					"type": "scene",
+					"sceneId": "18",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 144.28
+				}
+			]
+		},
+		"6b": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/6b.jpg",
+			"hotSpots": [
+				{
+					"pitch": 4.21,
+					"yaw": -0.03,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -91.29
+				},
+				{
+					"pitch": -4.53,
+					"yaw": 79.79,
+					"type": "scene",
+					"sceneId": "11b",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -4.85
+				}
+			]
+		},
+		"11b": {
+			"type": "equirectangular",
+			"panorama": "/images/st/stkg/11b.jpg",
+			"hotSpots": [
+				{
+					"pitch": -5.49,
+					"yaw": 175.15,
+					"type": "scene",
+					"sceneId": "6b",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -100.21
+				},
+				{
+					"pitch": 1.91,
+					"yaw": 2.09,
+					"type": "scene",
+					"sceneId": "11",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -56.06
+				}
+			]
+		},
+		"16b": {
+			"type": "equirectangular",
+			"title": "Minnesstenen",
+			"panorama": "/images/st/stkg/16b.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.84,
+					"yaw": 89.76,
+					"type": "scene",
+					"sceneId": "14",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -95.08
+				},
+				{
+					"pitch": -16.78,
+					"yaw": -169.68,
+					"type": "scene",
+					"sceneId": "16",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 1.99
+				},
+				{
+					"pitch": -4.08,
+					"yaw": 146.56,
+					"type": "scene",
+					"sceneId": "13",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 146.56
+				},
+				{
+					"pitch": -4.64,
+					"yaw": -171.61,
+					"type": "scene",
+					"sceneId": "15",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -171.61
+				}
+			]
+		}
+	}
+}

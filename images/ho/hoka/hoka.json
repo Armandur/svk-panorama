@@ -2,7 +2,8 @@
 	"default": {
 		"autoLoad": true,
 		"autoRotate": -2,
-		"sceneFadeDuration": 500,
+		"autoRotateInactivityDelay": 2000,
+		"sceneFadeDuration": 1500,
 		"editorMode": false,
 		"firstScene": "1"
 	},
@@ -19,7 +20,14 @@
 					"attributes": {
 						"target": "_self"
 					},
-					"id": 1
+					"id": 0
+				},
+				{
+					"pitch": 4.91,
+					"yaw": -11.37,
+					"type": "info",
+					"id": 1,
+					"text": "Kapellet är byggt 1955 och är ritat av arkitekt K M Westerberg. Kapellet används både för begravningar i svenska kyrkans ordning, borgerliga ceremonier och andra trosuppfattningar."
 				}
 			]
 		}

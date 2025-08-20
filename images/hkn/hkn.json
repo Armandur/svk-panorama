@@ -3,7 +3,7 @@
 		"autoLoad": true,
 		"autoRotate": -2,
 		"autoRotateInactivityDelay": 2000,
-		"sceneFadeDuration": 700,
+		"sceneFadeDuration": 1500,
 		"editorMode": false,
 		"firstScene": "1"
 	},

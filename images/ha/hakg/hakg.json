@@ -1,0 +1,1453 @@
+{
+	"default": {
+		"autoLoad": true,
+		"autoRotate": -2,
+		"autoRotateInactivityDelay": 2000,
+		"sceneFadeDuration": 1500,
+		"editorMode": false,
+		"firstScene": "1"
+	},
+	"scenes": {
+		"1": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/1.jpg",
+			"hotSpots": [
+				{
+					"pitch": -3.06,
+					"yaw": 94.38,
+					"type": "scene",
+					"sceneId": "33",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 74.9
+				},
+				{
+					"pitch": -3.66,
+					"yaw": 7.05,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -6.57
+				},
+				{
+					"pitch": -1.35,
+					"yaw": -7.95,
+					"type": "info",
+					"id": 2,
+					"text": "Häggdångers äldsta kyrka uppfördes under 1200-talet. Den var liten och mätte ungefär 10 x 4.5 meter. Kyrkan saknade torn och kyrkklockan hängde i en stapel av trä bredvid. Sakristian och vapenhuset var sannolikt uppförda i trä."
+				},
+				{
+					"pitch": -1.18,
+					"yaw": 22.06,
+					"type": "info",
+					"id": 3,
+					"text": "På grund av kyrkogångsplikten blev den gamla kyrkan för liten och den nuvarande uppfördes 1785 på samma plats. Arkitekt Per Hagmansson, Sundsvall fick uppdraget att göra ritningar och bygget utfördes som dagsverken av socknens bönder. Kyrktornet tillkom 1845."
+				}
+			]
+		},
+		"2": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/2.jpg",
+			"hotSpots": [
+				{
+					"pitch": -2.12,
+					"yaw": 58.82,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -140.58
+				},
+				{
+					"pitch": -4.11,
+					"yaw": 85.4,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 138.14
+				},
+				{
+					"pitch": -6.71,
+					"yaw": -6.42,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -2.53
+				},
+				{
+					"pitch": -6.73,
+					"yaw": -94.36,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -133.55
+				},
+				{
+					"pitch": -15.53,
+					"yaw": 173.43,
+					"type": "scene",
+					"sceneId": "1",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": -172.95
+				}
+			]
+		},
+		"3": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/3.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.92,
+					"yaw": 88.99,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -116.9
+				},
+				{
+					"pitch": -8.08,
+					"yaw": -90.25,
+					"type": "scene",
+					"sceneId": "11",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -93
+				},
+				{
+					"pitch": -9.26,
+					"yaw": -1.83,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -0.75
+				},
+				{
+					"pitch": -16.42,
+					"yaw": 177.47,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 173.58
+				}
+			]
+		},
+		"4": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/4.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.68,
+					"yaw": 89.27,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -112.99
+				},
+				{
+					"pitch": -5.58,
+					"yaw": 115.34,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -96.36
+				},
+				{
+					"pitch": -5.68,
+					"yaw": 128.64,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -176.52
+				},
+				{
+					"pitch": -8.59,
+					"yaw": -89.21,
+					"type": "scene",
+					"sceneId": "12",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -89.01
+				},
+				{
+					"pitch": -13.47,
+					"yaw": 1,
+					"type": "scene",
+					"sceneId": "5",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": -15.11
+				},
+				{
+					"pitch": -14.15,
+					"yaw": 179.25,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 5,
+					"targetPitch": 0,
+					"targetYaw": 178.17
+				}
+			]
+		},
+		"5": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/5.jpg",
+			"hotSpots": [
+				{
+					"pitch": -1.47,
+					"yaw": -7.36,
+					"type": "scene",
+					"sceneId": "15b",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -85.11
+				},
+				{
+					"pitch": -3.84,
+					"yaw": 77.79,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -14.28
+				},
+				{
+					"pitch": -5.22,
+					"yaw": -23.15,
+					"type": "scene",
+					"sceneId": "15",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 175.98
+				},
+				{
+					"pitch": -16.51,
+					"yaw": 164.89,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -179
+				}
+			]
+		},
+		"6": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/6.jpg",
+			"hotSpots": [
+				{
+					"pitch": -5.09,
+					"yaw": -11.88,
+					"type": "scene",
+					"sceneId": "32",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 65.12
+				},
+				{
+					"pitch": -6.84,
+					"yaw": 165.72,
+					"type": "scene",
+					"sceneId": "5",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -102.21
+				},
+				{
+					"pitch": -15.18,
+					"yaw": 77.35,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -27.77
+				}
+			]
+		},
+		"7": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/7.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.1,
+					"yaw": -134.35,
+					"type": "scene",
+					"sceneId": "32",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 42.92
+				},
+				{
+					"pitch": -5.45,
+					"yaw": 67.01,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -90.73
+				},
+				{
+					"pitch": -12.79,
+					"yaw": 152.23,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -102.65
+				},
+				{
+					"pitch": -14.25,
+					"yaw": -25.72,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -31.63
+				}
+			]
+		},
+		"8": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/8.jpg",
+			"hotSpots": [
+				{
+					"pitch": -2.83,
+					"yaw": -158.66,
+					"type": "scene",
+					"sceneId": "32",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 25.02
+				},
+				{
+					"pitch": -3.52,
+					"yaw": 83.64,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 5,
+					"targetPitch": 0,
+					"targetYaw": -64.66
+				},
+				{
+					"pitch": -5.38,
+					"yaw": 63.1,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -91.01
+				},
+				{
+					"pitch": -6.32,
+					"yaw": 39.42,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -121.18
+				},
+				{
+					"pitch": -8.71,
+					"yaw": 148.37,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 154.28
+				},
+				{
+					"pitch": -12.13,
+					"yaw": -91.96,
+					"type": "scene",
+					"sceneId": "33",
+					"id": 6,
+					"targetPitch": 0,
+					"targetYaw": -91.96
+				},
+				{
+					"pitch": -16.34,
+					"yaw": -29.55,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": -130.32
+				}
+			]
+		},
+		"9": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/9.jpg",
+			"hotSpots": [
+				{
+					"pitch": 0.34,
+					"yaw": 87.4,
+					"type": "scene",
+					"sceneId": "32",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 8.26
+				},
+				{
+					"pitch": -2.32,
+					"yaw": 3.48,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -51.36
+				},
+				{
+					"pitch": -7.35,
+					"yaw": 49.68,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 150.45
+				},
+				{
+					"pitch": -7.41,
+					"yaw": -41.86,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -94.6
+				},
+				{
+					"pitch": -10.84,
+					"yaw": 140.88,
+					"type": "scene",
+					"sceneId": "33",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": 140.88
+				}
+			]
+		},
+		"10": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/10.jpg",
+			"hotSpots": [
+				{
+					"pitch": 0.15,
+					"yaw": 25.38,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 25.38
+				},
+				{
+					"pitch": -1.51,
+					"yaw": 46.45,
+					"type": "scene",
+					"sceneId": "2",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 85.64
+				},
+				{
+					"pitch": -10.71,
+					"yaw": -44.25,
+					"type": "scene",
+					"sceneId": "11",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 0.02
+				}
+			]
+		},
+		"11": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/11.jpg",
+			"hotSpots": [
+				{
+					"pitch": -0.41,
+					"yaw": 87,
+					"type": "scene",
+					"sceneId": "3",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 89.75
+				},
+				{
+					"pitch": -11.19,
+					"yaw": -3.11,
+					"type": "scene",
+					"sceneId": "12",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -2.39
+				},
+				{
+					"pitch": -13.28,
+					"yaw": -179.98,
+					"type": "scene",
+					"sceneId": "10",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 135.75
+				}
+			]
+		},
+		"12": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/12.jpg",
+			"hotSpots": [
+				{
+					"pitch": 0.9,
+					"yaw": 90.99,
+					"type": "scene",
+					"sceneId": "4",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 90.79
+				},
+				{
+					"pitch": -6.19,
+					"yaw": -0.06,
+					"type": "scene",
+					"sceneId": "13",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 1.02
+				},
+				{
+					"pitch": -10.74,
+					"yaw": 177.61,
+					"type": "scene",
+					"sceneId": "11",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 176.89
+				}
+			]
+		},
+		"13": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/13.jpg",
+			"hotSpots": [
+				{
+					"pitch": 2.12,
+					"yaw": 90.02,
+					"type": "scene",
+					"sceneId": "15",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -80.94
+				},
+				{
+					"pitch": -4.83,
+					"yaw": -178.98,
+					"type": "scene",
+					"sceneId": "12",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 179.94
+				},
+				{
+					"pitch": -6.96,
+					"yaw": 0.57,
+					"type": "scene",
+					"sceneId": "14",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -71.83
+				}
+			]
+		},
+		"14": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/14.jpg",
+			"hotSpots": [
+				{
+					"pitch": 1.31,
+					"yaw": 0.3,
+					"type": "scene",
+					"sceneId": "16",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -102.23
+				},
+				{
+					"pitch": 0.59,
+					"yaw": 49.59,
+					"type": "scene",
+					"sceneId": "15",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -46.01
+				},
+				{
+					"pitch": -5.52,
+					"yaw": 108.17,
+					"type": "scene",
+					"sceneId": "13",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.43
+				}
+			]
+		},
+		"15": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/15.jpg",
+			"hotSpots": [
+				{
+					"pitch": -5.39,
+					"yaw": -166.65,
+					"type": "scene",
+					"sceneId": "16",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -174.39
+				},
+				{
+					"pitch": -6.9,
+					"yaw": -4.02,
+					"type": "scene",
+					"sceneId": "5",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 156.85
+				},
+				{
+					"pitch": -8.37,
+					"yaw": 133.99,
+					"type": "scene",
+					"sceneId": "14",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -130.41
+				},
+				{
+					"pitch": -8.5,
+					"yaw": -83.63,
+					"type": "scene",
+					"sceneId": "15b",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 3.58
+				},
+				{
+					"pitch": -10.7,
+					"yaw": 99.06,
+					"type": "scene",
+					"sceneId": "13",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": -89.98
+				}
+			]
+		},
+		"16": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/16.jpg",
+			"hotSpots": [
+				{
+					"pitch": -2.8,
+					"yaw": -6.21,
+					"type": "scene",
+					"sceneId": "15b",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 87.59
+				},
+				{
+					"pitch": -5.44,
+					"yaw": 5.61,
+					"type": "scene",
+					"sceneId": "15",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 13.35
+				},
+				{
+					"pitch": -6.5,
+					"yaw": -121.9,
+					"type": "scene",
+					"sceneId": "17",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -121.09
+				},
+				{
+					"pitch": -8.59,
+					"yaw": 77.77,
+					"type": "scene",
+					"sceneId": "14",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -179.7
+				}
+			]
+		},
+		"17": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/17.jpg",
+			"hotSpots": [
+				{
+					"pitch": -8.03,
+					"yaw": 73.96,
+					"type": "scene",
+					"sceneId": "14",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 73.96
+				},
+				{
+					"pitch": -13.2,
+					"yaw": 58.91,
+					"type": "scene",
+					"sceneId": "16",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 58.1
+				},
+				{
+					"pitch": -17.93,
+					"yaw": -177.4,
+					"type": "scene",
+					"sceneId": "18",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 179.34
+				},
+				{
+					"pitch": 0.55,
+					"yaw": -13.93,
+					"type": "info",
+					"id": 3,
+					"text": "Häggdångers äldsta kyrka uppfördes under 1200-talet. DEn var liten och mätte ungefär 10x4.5 meter. Kyrkan saknade torn och kyrkklockan hängde i en stapel av trä brevid. Sakristian och vapenhuset var sannolikt uppförda i trä."
+				},
+				{
+					"pitch": 1.12,
+					"yaw": 12.86,
+					"type": "info",
+					"id": 4,
+					"text": "På grund av kyrkogångsplikten blev den gamla kyrkan för liten och den nuvarande uppfördes 1785 på samma plats. Arkitekt Per Hagmansson, Sundsvall fick uppdraget att göra ritningar och bygget utfördes som dagsver- ken av socknens bönder."
+				},
+				{
+					"pitch": 18.54,
+					"yaw": -0.35,
+					"type": "info",
+					"id": 5,
+					"text": "Kyrktornet tillkom 1845."
+				}
+			]
+		},
+		"18": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/18.jpg",
+			"hotSpots": [
+				{
+					"pitch": 0.38,
+					"yaw": -88.36,
+					"type": "scene",
+					"sceneId": "19",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 179.29
+				},
+				{
+					"pitch": -18.7,
+					"yaw": -0.66,
+					"type": "scene",
+					"sceneId": "17",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 2.6
+				}
+			]
+		},
+		"19": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/19.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.88,
+					"yaw": -165.03,
+					"type": "scene",
+					"sceneId": "20",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -179.02
+				},
+				{
+					"pitch": -10,
+					"yaw": -0.71,
+					"type": "scene",
+					"sceneId": "18",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 91.64
+				}
+			]
+		},
+		"20": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/20.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.58,
+					"yaw": 0.98,
+					"type": "scene",
+					"sceneId": "19",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 14.97
+				},
+				{
+					"pitch": -8.12,
+					"yaw": -74.59,
+					"type": "scene",
+					"sceneId": "30",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 179.73
+				},
+				{
+					"pitch": -10.64,
+					"yaw": -169.57,
+					"type": "scene",
+					"sceneId": "21",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -52.34
+				}
+			]
+		},
+		"21": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/21.jpg",
+			"hotSpots": [
+				{
+					"pitch": -6.36,
+					"yaw": 127.66,
+					"type": "scene",
+					"sceneId": "20",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 10.43
+				},
+				{
+					"pitch": -12.6,
+					"yaw": -0.15,
+					"type": "scene",
+					"sceneId": "22",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 61.51
+				}
+			]
+		},
+		"22": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/22.jpg",
+			"hotSpots": [
+				{
+					"pitch": -0.64,
+					"yaw": -118.49,
+					"type": "scene",
+					"sceneId": "21",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": 179.85
+				},
+				{
+					"pitch": -6.73,
+					"yaw": 140.9,
+					"type": "scene",
+					"sceneId": "29",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 140.9
+				},
+				{
+					"pitch": -9.46,
+					"yaw": -37.2,
+					"type": "scene",
+					"sceneId": "23",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 94.79
+				},
+				{
+					"pitch": -10.8,
+					"yaw": 13.28,
+					"type": "scene",
+					"sceneId": "24",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -133.84
+				},
+				{
+					"pitch": -15.14,
+					"yaw": 74.48,
+					"type": "scene",
+					"sceneId": "25",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -73.68
+				}
+			]
+		},
+		"23": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/23.jpg",
+			"hotSpots": [
+				{
+					"pitch": -1.81,
+					"yaw": -32.14,
+					"type": "scene",
+					"sceneId": "21",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -32.14
+				},
+				{
+					"pitch": -8.61,
+					"yaw": -85.21,
+					"type": "scene",
+					"sceneId": "22",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 142.8
+				},
+				{
+					"pitch": -9.41,
+					"yaw": -116.78,
+					"type": "scene",
+					"sceneId": "25",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -33.21
+				},
+				{
+					"pitch": -13.96,
+					"yaw": -176.22,
+					"type": "scene",
+					"sceneId": "24",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -89.15
+				}
+			]
+		},
+		"24": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/24.jpg",
+			"hotSpots": [
+				{
+					"pitch": -0.74,
+					"yaw": 46.16,
+					"type": "scene",
+					"sceneId": "22",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -166.72
+				},
+				{
+					"pitch": -3.11,
+					"yaw": 90.85,
+					"type": "scene",
+					"sceneId": "23",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 3.78
+				},
+				{
+					"pitch": -4.38,
+					"yaw": 0.11,
+					"type": "scene",
+					"sceneId": "25",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 6.9
+				}
+			]
+		},
+		"25": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/25.jpg",
+			"hotSpots": [
+				{
+					"pitch": -0.91,
+					"yaw": 146.79,
+					"type": "scene",
+					"sceneId": "23",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": 63.22
+				},
+				{
+					"pitch": -2.38,
+					"yaw": 106.32,
+					"type": "scene",
+					"sceneId": "22",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -105.52
+				},
+				{
+					"pitch": -3.23,
+					"yaw": 35.72,
+					"type": "scene",
+					"sceneId": "29",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 35.72
+				},
+				{
+					"pitch": -6.19,
+					"yaw": -173.1,
+					"type": "scene",
+					"sceneId": "24",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -179.89
+				},
+				{
+					"pitch": -7.93,
+					"yaw": 1.07,
+					"type": "scene",
+					"sceneId": "26",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -0.91
+				}
+			]
+		},
+		"26": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/26.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.34,
+					"yaw": 96.03,
+					"type": "scene",
+					"sceneId": "29",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -86.97
+				},
+				{
+					"pitch": -6.31,
+					"yaw": 179.09,
+					"type": "scene",
+					"sceneId": "25",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -178.93
+				},
+				{
+					"pitch": -6.61,
+					"yaw": 0.92,
+					"type": "scene",
+					"sceneId": "27",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -1.34
+				}
+			]
+		},
+		"27": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/27.jpg",
+			"hotSpots": [
+				{
+					"pitch": -3.23,
+					"yaw": 139.83,
+					"type": "scene",
+					"sceneId": "29",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 139.83
+				},
+				{
+					"pitch": -5.56,
+					"yaw": 37.69,
+					"type": "scene",
+					"sceneId": "32",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": 37.69
+				},
+				{
+					"pitch": -5.9,
+					"yaw": 178.66,
+					"type": "scene",
+					"sceneId": "26",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -179.08
+				},
+				{
+					"pitch": -7.1,
+					"yaw": 90.91,
+					"type": "scene",
+					"sceneId": "28",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -85.57
+				},
+				{
+					"pitch": -7.83,
+					"yaw": -3.48,
+					"type": "scene",
+					"sceneId": "27b",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 1.25
+				}
+			]
+		},
+		"28": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/28.jpg",
+			"hotSpots": [
+				{
+					"pitch": -5.75,
+					"yaw": 0.17,
+					"type": "scene",
+					"sceneId": "29",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 0.8
+				},
+				{
+					"pitch": -6.61,
+					"yaw": 144.97,
+					"type": "scene",
+					"sceneId": "27b",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -43.31
+				},
+				{
+					"pitch": -6.82,
+					"yaw": 35.86,
+					"type": "scene",
+					"sceneId": "26",
+					"id": 5,
+					"targetPitch": 0,
+					"targetYaw": 35.86
+				},
+				{
+					"pitch": -7.36,
+					"yaw": -99.28,
+					"type": "scene",
+					"sceneId": "30",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 180
+				},
+				{
+					"pitch": -7.88,
+					"yaw": 179.1,
+					"type": "scene",
+					"sceneId": "32",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -135.05
+				},
+				{
+					"pitch": -11.19,
+					"yaw": 94.43,
+					"type": "scene",
+					"sceneId": "27",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": -89.09
+				}
+			]
+		},
+		"29": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/29.jpg",
+			"hotSpots": [
+				{
+					"pitch": -7.54,
+					"yaw": -179.2,
+					"type": "scene",
+					"sceneId": "28",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -179.83
+				},
+				{
+					"pitch": -12.14,
+					"yaw": 93.03,
+					"type": "scene",
+					"sceneId": "26",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -83.97
+				}
+			]
+		},
+		"30": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/30.jpg",
+			"hotSpots": [
+				{
+					"pitch": 0,
+					"yaw": 0,
+					"type": "scene",
+					"sceneId": "28",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 80.72
+				},
+				{
+					"pitch": -0.42,
+					"yaw": -0.27,
+					"type": "scene",
+					"sceneId": "20",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 105.41
+				},
+				{
+					"pitch": -11.52,
+					"yaw": -176.58,
+					"type": "scene",
+					"sceneId": "32",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -179.72
+				},
+				{
+					"pitch": -11.8,
+					"yaw": -95.71,
+					"type": "scene",
+					"sceneId": "31",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 17.59
+				}
+			]
+		},
+		"31": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/31.jpg",
+			"hotSpots": [
+				{
+					"pitch": 0.31,
+					"yaw": 148.85,
+					"type": "scene",
+					"sceneId": "20",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 148.85
+				},
+				{
+					"pitch": -4.36,
+					"yaw": 34.2,
+					"type": "info",
+					"id": 0,
+					"text": "En minneslund är ett gemensamt, anonymt gravskick. Askan efter den avlidne nedsätts utan att anhöriga närvar och utan att askans exakta placering registreras."
+				},
+				{
+					"pitch": -7.99,
+					"yaw": -162.41,
+					"type": "scene",
+					"sceneId": "30",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 84.29
+				}
+			],
+			"title": "Minneslunden"
+		},
+		"32": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/32.jpg",
+			"hotSpots": [
+				{
+					"pitch": -0.96,
+					"yaw": 0.28,
+					"type": "scene",
+					"sceneId": "30",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 3.42
+				},
+				{
+					"pitch": -5.39,
+					"yaw": -114.88,
+					"type": "scene",
+					"sceneId": "6",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 168.12
+				},
+				{
+					"pitch": -5.48,
+					"yaw": -137.08,
+					"type": "scene",
+					"sceneId": "7",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": 45.65
+				},
+				{
+					"pitch": -5.68,
+					"yaw": -171.74,
+					"type": "scene",
+					"sceneId": "9",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": -92.6
+				},
+				{
+					"pitch": -5.97,
+					"yaw": -154.98,
+					"type": "scene",
+					"sceneId": "8",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": 21.34
+				},
+				{
+					"pitch": -8,
+					"yaw": 44.95,
+					"type": "scene",
+					"sceneId": "28",
+					"id": 5,
+					"targetPitch": 0,
+					"targetYaw": -0.9
+				},
+				{
+					"pitch": -10.78,
+					"yaw": 160.24,
+					"type": "scene",
+					"sceneId": "33",
+					"id": 6,
+					"targetPitch": 0,
+					"targetYaw": -178.26
+				}
+			]
+		},
+		"33": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/33.jpg",
+			"hotSpots": [
+				{
+					"pitch": 0.68,
+					"yaw": 1.74,
+					"type": "scene",
+					"sceneId": "32",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": -19.76
+				},
+				{
+					"pitch": -2.24,
+					"yaw": -105.1,
+					"type": "scene",
+					"sceneId": "1",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -85.62
+				}
+			]
+		},
+		"15b": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/15b.jpg",
+			"hotSpots": [
+				{
+					"pitch": -7.86,
+					"yaw": -92.41,
+					"type": "scene",
+					"sceneId": "16",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 173.79
+				},
+				{
+					"pitch": -8.65,
+					"yaw": -140.56,
+					"type": "scene",
+					"sceneId": "14",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": -140.56
+				},
+				{
+					"pitch": -10.09,
+					"yaw": -168.69,
+					"type": "scene",
+					"sceneId": "13",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -90.16
+				},
+				{
+					"pitch": -11.02,
+					"yaw": 94.89,
+					"type": "scene",
+					"sceneId": "5",
+					"id": 3,
+					"targetPitch": 0,
+					"targetYaw": 172.64
+				},
+				{
+					"pitch": -33.37,
+					"yaw": -176.42,
+					"type": "scene",
+					"sceneId": "15",
+					"id": 4,
+					"targetPitch": 0,
+					"targetYaw": 96.37
+				}
+			]
+		},
+		"27b": {
+			"type": "equirectangular",
+			"panorama": "/images/ha/hakg/27b.jpg",
+			"hotSpots": [
+				{
+					"pitch": -4.69,
+					"yaw": 136.69,
+					"type": "scene",
+					"sceneId": "28",
+					"id": 2,
+					"targetPitch": 0,
+					"targetYaw": -35.03
+				},
+				{
+					"pitch": -7.75,
+					"yaw": 87.24,
+					"type": "scene",
+					"sceneId": "32",
+					"id": 1,
+					"targetPitch": 0,
+					"targetYaw": 87.24
+				},
+				{
+					"pitch": -7.91,
+					"yaw": -178.75,
+					"type": "scene",
+					"sceneId": "27",
+					"id": 0,
+					"targetPitch": 0,
+					"targetYaw": 176.52
+				}
+			]
+		}
+	}
+}
