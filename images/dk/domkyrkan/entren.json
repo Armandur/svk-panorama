@@ -1,13 +1,13 @@
 {
 	"type": "equirectangular",
-    "panorama": "/images/domkyrkan/medium/orgelläktaren.jpg",
+    "panorama": "/images/dk/domkyrkan/medium/entrén.jpg",
     "autoLoad": true,
     "autoRotate": -5,
     "horizonRoll": 0.8,
     "hotSpotDebug": false,
     "hotSpots": [
         {
-            "pitch": -32.8,
+            "pitch": -13.287876542966647,
             "yaw": 1.0245490511855635,
             "type": "scene",
             "text": "Till mittgången",
@@ -17,7 +17,7 @@
             }
         },
         {
-            "pitch": -12.3,
+            "pitch": 0.5166208288350038,
             "yaw": 1.0245490511855635,
             "type": "scene",
             "text": "Till koret",

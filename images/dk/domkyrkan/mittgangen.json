@@ -1,6 +1,6 @@
 {
 	"type": "equirectangular",
-    "panorama": "/images/domkyrkan/medium/mittgången.jpg",
+    "panorama": "/images/dk/domkyrkan/medium/mittgången.jpg",
     "autoLoad": true,
     "autoRotate": -5,
     "horizonRoll": 0.8,

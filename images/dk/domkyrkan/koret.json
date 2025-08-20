@@ -1,6 +1,6 @@
 {
 	"type": "equirectangular",
-	"panorama": "/images/domkyrkan/medium/koret.jpg",
+	"panorama": "/images/dk/domkyrkan/medium/koret.jpg",
 	"autoLoad": true,
 	"autoRotate": -5,
 	"horizonRoll": 0.8,

@@ -10,7 +10,7 @@
 	"scenes": {
 		"1": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/1.jpg",
+			"panorama": "/images/dk/hkn/1.jpg",
 			"horizonRoll": 0,
 			"title": "Härnösands nya kyrkogård",
 			"hotSpots": [
@@ -37,7 +37,7 @@
 		},
 		"2": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/2.jpg",
+			"panorama": "/images/dk/hkn/2.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -57,7 +57,7 @@
 		},
 		"3": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/3.jpg",
+			"panorama": "/images/dk/hkn/3.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -86,7 +86,7 @@
 		},
 		"4": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/4.jpg",
+			"panorama": "/images/dk/hkn/4.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -115,7 +115,7 @@
 		},
 		"5": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/5.jpg",
+			"panorama": "/images/dk/hkn/5.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -151,7 +151,7 @@
 		},
 		"6": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/6.jpg",
+			"panorama": "/images/dk/hkn/6.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -172,7 +172,7 @@
 		},
 		"7": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/7.jpg",
+			"panorama": "/images/dk/hkn/7.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -201,7 +201,7 @@
 		},
 		"8": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/8.jpg",
+			"panorama": "/images/dk/hkn/8.jpg",
 			"horizonRoll": 0,
 			"yaw": -108,
 			"hotSpots": [
@@ -223,7 +223,7 @@
 		},
 		"9": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/9.jpg",
+			"panorama": "/images/dk/hkn/9.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -261,7 +261,7 @@
 		},
 		"10": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/10.jpg",
+			"panorama": "/images/dk/hkn/10.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -284,7 +284,7 @@
 		},
 		"11": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/11.jpg",
+			"panorama": "/images/dk/hkn/11.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -311,7 +311,7 @@
 		},
 		"12": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/12.jpg",
+			"panorama": "/images/dk/hkn/12.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -340,7 +340,7 @@
 		},
 		"13": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/13.jpg",
+			"panorama": "/images/dk/hkn/13.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -369,7 +369,7 @@
 		},
 		"13b": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/13b.jpg",
+			"panorama": "/images/dk/hkn/13b.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -392,7 +392,7 @@
 		},
 		"14": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/14.jpg",
+			"panorama": "/images/dk/hkn/14.jpg",
 			"horizonRoll": 0,
 			"yaw": 27.36,
 			"hotSpots": [
@@ -429,7 +429,7 @@
 		},
 		"15": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/15.jpg",
+			"panorama": "/images/dk/hkn/15.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -452,7 +452,7 @@
 		},
 		"16": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/16.jpg",
+			"panorama": "/images/dk/hkn/16.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -473,7 +473,7 @@
 		},
 		"17": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/17.jpg",
+			"panorama": "/images/dk/hkn/17.jpg",
 			"horizonRoll": 0,
 			"yaw": -190,
 			"hotSpots": [
@@ -505,7 +505,7 @@
 		},
 		"18": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/18.jpg",
+			"panorama": "/images/dk/hkn/18.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -543,7 +543,7 @@
 		},
 		"18b": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/18b.jpg",
+			"panorama": "/images/dk/hkn/18b.jpg",
 			"horizonRoll": 0,
 			"yaw": -180,
 			"title": "Minneslunden",
@@ -571,7 +571,7 @@
 		},
 		"19": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/19.jpg",
+			"panorama": "/images/dk/hkn/19.jpg",
 			"horizonRoll": 0,
 			"yaw": -180,
 			"hotSpots": [
@@ -601,7 +601,7 @@
 		},
 		"20": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/20.jpg",
+			"panorama": "/images/dk/hkn/20.jpg",
 			"title": "Nya askgravlunden",
 			"horizonRoll": 0,
 			"hotSpots": [
@@ -632,7 +632,7 @@
 		},
 		"20b": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/20b.jpg",
+			"panorama": "/images/dk/hkn/20b.jpg",
 			"title": "Nya askgravlunden",
 			"horizonRoll": 0,
 			"hotSpots": [
@@ -646,7 +646,7 @@
 		},
 		"21": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/21.jpg",
+			"panorama": "/images/dk/hkn/21.jpg",
 			"horizonRoll": 0,
 			"yaw": 220,
 			"hotSpots": [
@@ -674,7 +674,7 @@
 		},
 		"22": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/22.jpg",
+			"panorama": "/images/dk/hkn/22.jpg",
 			"title": "Gamla askgravlunden",
 			"horizonRoll": 0,
 			"hotSpots": [
@@ -690,7 +690,7 @@
 		},
 		"23": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/23.jpg",
+			"panorama": "/images/dk/hkn/23.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -719,7 +719,7 @@
 		},
 		"24": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/24.jpg",
+			"panorama": "/images/dk/hkn/24.jpg",
 			"horizonRoll": 0,
 			"yaw": 34,
 			"hotSpots": [
@@ -749,7 +749,7 @@
 		},
 		"24b": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/24b.jpg",
+			"panorama": "/images/dk/hkn/24b.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -770,7 +770,7 @@
 		},
 		"25": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/25.jpg",
+			"panorama": "/images/dk/hkn/25.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -813,7 +813,7 @@
 		},
 		"26": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/26.jpg",
+			"panorama": "/images/dk/hkn/26.jpg",
 			"horizonRoll": -2,
 			"hotSpots": [
 				{
@@ -836,7 +836,7 @@
 		},
 		"27": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/27.jpg",
+			"panorama": "/images/dk/hkn/27.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -857,7 +857,7 @@
 		},
 		"28": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/28.jpg",
+			"panorama": "/images/dk/hkn/28.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -886,7 +886,7 @@
 		},
 		"29": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/29.jpg",
+			"panorama": "/images/dk/hkn/29.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -907,7 +907,7 @@
 		},
 		"30": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/30.jpg",
+			"panorama": "/images/dk/hkn/30.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -944,7 +944,7 @@
 		},
 		"31": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/31.jpg",
+			"panorama": "/images/dk/hkn/31.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -973,7 +973,7 @@
 		},
 		"32": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/32.jpg",
+			"panorama": "/images/dk/hkn/32.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -1011,7 +1011,7 @@
 		},
 		"33": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/33.jpg",
+			"panorama": "/images/dk/hkn/33.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -1046,7 +1046,7 @@
 		},
 		"34": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/34.jpg",
+			"panorama": "/images/dk/hkn/34.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -1068,7 +1068,7 @@
 		},
 		"35": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/35.jpg",
+			"panorama": "/images/dk/hkn/35.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -1097,7 +1097,7 @@
 		},
 		"36": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/36.jpg",
+			"panorama": "/images/dk/hkn/36.jpg",
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
@@ -1127,7 +1127,7 @@
 		},
 		"37": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/37.jpg",
+			"panorama": "/images/dk/hkn/37.jpg",
 			"horizonRoll": 0,
 			"yaw": 100,
 			"hotSpots": [
@@ -1148,7 +1148,7 @@
 		},
 		"38": {
 			"type": "equirectangular",
-			"panorama": "/images/hkn/38.jpg",
+			"panorama": "/images/dk/hkn/38.jpg",
 			"horizonRoll": -8,
 			"horizonPitch": -8,
 			"yaw": -180,

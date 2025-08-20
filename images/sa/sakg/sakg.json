@@ -30,6 +30,13 @@
 					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": -2.5
+				},
+				{
+					"pitch": 8.41,
+					"yaw": 10.25,
+					"type": "info",
+					"id": 2,
+					"text": "Säbrå kyrka uppfördes efter rysshärjningarna år 1721 och fick sitt nuvarande utseende 1758-1759. Tornet tillkom först 1860. 1898 byttes en stor del av inredningen ut och koret förlängdes med halvcirkelformad absid. På 50-talet återplacerades en stor del av den gamla inredningen."
 				}
 			]
 		},
@@ -336,6 +343,13 @@
 					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": -103.89
+				},
+				{
+					"pitch": 3.48,
+					"yaw": -20.24,
+					"type": "info",
+					"id": 2,
+					"text": "Säbrå kyrka uppfördes efter rysshärjningarna år 1721 och fick sitt nuvarande utseende 1758-1759. Tornet tillkom först 1860. 1898 byttes en stor del av inredningen ut och koret förlängdes med halvcirkelformad absid. På 50-talet återplacerades en stor del av den gamla inredningen."
 				}
 			]
 		},
@@ -927,11 +941,18 @@
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
+					"pitch": 0.35,
+					"yaw": -39.32,
+					"type": "info",
+					"id": 0,
+					"text": "En Askgravlund är en gemensam begravingsplats där askan efter flera döda finns.  Anhöriga får delta vid gravsättningen och kan välja att få en namnplakett uppsatt."
+				},
+				{
 					"pitch": -6.15,
 					"yaw": -89.43,
 					"type": "scene",
 					"sceneId": "14",
-					"id": 0,
+					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": -151.13
 				},
@@ -940,7 +961,7 @@
 					"yaw": 77.74,
 					"type": "scene",
 					"sceneId": "26",
-					"id": 1,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": 64.19
 				},
@@ -949,7 +970,7 @@
 					"yaw": -22.4,
 					"type": "scene",
 					"sceneId": "24",
-					"id": 2,
+					"id": 3,
 					"targetPitch": 0,
 					"targetYaw": -84.02
 				},
@@ -958,16 +979,9 @@
 					"yaw": 154.13,
 					"type": "scene",
 					"sceneId": "13",
-					"id": 3,
+					"id": 4,
 					"targetPitch": 0,
 					"targetYaw": 159.92
-				},
-				{
-					"pitch": 0.35,
-					"yaw": -39.32,
-					"type": "info",
-					"id": 4,
-					"text": "En Askgravlund är en gemensam begravingsplats där askan efter flera döda finns.  Anhöriga får delta vid gravsättningen och kan välja att få en namnplakett uppsatt."
 				}
 			],
 			"title": "Askgravlunden"
@@ -978,35 +992,33 @@
 			"horizonRoll": 0,
 			"hotSpots": [
 				{
-					"pitch": -1.18,
-					"yaw": 79.79,
+					"pitch": 0.72,
+					"yaw": -31.01,
+					"type": "info",
+					"id": 0,
+					"text": "En askgravlund är"
+				},
+				{
+					"pitch": -1.72,
+					"yaw": 79.47,
 					"type": "scene",
 					"sceneId": "12",
-					"id": 0,
-					"targetPitch": 0,
-					"targetYaw": 79.79
-				},
-				{
-					"pitch": -2.9,
-					"yaw": 4.57,
-					"type": "scene",
-					"sceneId": "23",
 					"id": 1,
 					"targetPitch": 0,
-					"targetYaw": -54.58
+					"targetYaw": 79.47
 				},
 				{
-					"pitch": -7.02,
-					"yaw": -74.06,
+					"pitch": -10.65,
+					"yaw": -148.58,
 					"type": "scene",
-					"sceneId": "24",
+					"sceneId": "13",
 					"id": 2,
 					"targetPitch": 0,
-					"targetYaw": -137.06
+					"targetYaw": -145.58
 				},
 				{
-					"pitch": -9.82,
-					"yaw": -115.81,
+					"pitch": -8.45,
+					"yaw": -115.86,
 					"type": "scene",
 					"sceneId": "25",
 					"id": 3,
@@ -1014,20 +1026,22 @@
 					"targetYaw": -102.26
 				},
 				{
-					"pitch": -10.94,
-					"yaw": -148.39,
+					"pitch": -6.76,
+					"yaw": -73.88,
 					"type": "scene",
-					"sceneId": "13",
+					"sceneId": "24",
 					"id": 4,
 					"targetPitch": 0,
-					"targetYaw": -145.58
+					"targetYaw": -137.06
 				},
 				{
-					"pitch": 0.72,
-					"yaw": -31.01,
-					"type": "info",
+					"pitch": -3.53,
+					"yaw": 4.33,
+					"type": "scene",
+					"sceneId": "23",
 					"id": 5,
-					"text": "En askgravlund är"
+					"targetPitch": 0,
+					"targetYaw": -54.58
 				}
 			],
 			"title": "Askgravlunden"
@@ -1278,7 +1292,7 @@
 					"sceneId": "31",
 					"targetPitch": 0,
 					"targetYaw": 89.61,
-					"id": 1
+					"id": 0
 				},
 				{
 					"pitch": -5.51,
@@ -1286,7 +1300,7 @@
 					"type": "scene",
 					"sceneId": "40b",
 					"targetYaw": -91.73,
-					"id": 2,
+					"id": 1,
 					"targetPitch": 0
 				},
 				{
@@ -1294,7 +1308,7 @@
 					"yaw": -0.14,
 					"type": "scene",
 					"sceneId": "35",
-					"id": 0,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": -0.37
 				}
@@ -1310,7 +1324,7 @@
 					"yaw": 179.63,
 					"type": "scene",
 					"sceneId": "34",
-					"id": 1,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": 179.86
 				},
@@ -1319,7 +1333,7 @@
 					"yaw": 0.21,
 					"type": "scene",
 					"sceneId": "36",
-					"id": 0,
+					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": -2.68
 				}

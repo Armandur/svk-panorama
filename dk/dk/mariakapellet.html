@@ -15,17 +15,17 @@
 
 <div id="map-container">
     <span id="close-btn" onclick="closeMap()">X</span>
-    <img id="map" src="/images/domkyrkan/map.jpg" alt="Map Image">
+    <img id="map" src="/images/dk/domkyrkan/map.jpg" alt="Map Image">
 </div>
 
 <div id="show-map-btn" onclick="showMap()">Karta</div>
 
 <div id="panorama"></div>
 <script>
-    loadJSON("/images/domkyrkan/mariakapellet.json", function(data){
+    loadJSON("/images/dk/domkyrkan/mariakapellet.json", function(data){
         pannellum.viewer('panorama', data);
     });
-    makeMap("mariakapellet", "/images/domkyrkan/map.json");
+    makeMap("mariakapellet", "/images/dk/domkyrkan/map.json");
 </script>
 
 </body>
