@@ -102,37 +102,6 @@ function loadPanorama(panoramaData, mapData) {
        // If no back hotspot found, use current hotspot yaw
        return hotspot.yaw;
      }
-     
-     // Function to calculate targetPitch based on hotspot position
-     function calculateTargetPitchFromPosition(hotspot, sceneKey, data) {
-       const currentScene = data.scenes[sceneKey];
-       const targetScene = data.scenes[hotspot.sceneId];
-       
-       if (!currentScene || !targetScene || !currentScene.hotSpots || !targetScene.hotSpots) {
-         return hotspot.pitch; // Fallback to current pitch
-       }
-       
-       // Find the corresponding hotspot in the target scene that points back to current scene
-       const backHotspot = targetScene.hotSpots.find(hs => hs.sceneId === sceneKey);
-       
-       if (backHotspot) {
-         // Use the same pitch as the back hotspot (no inversion)
-         // Pitch ranges from +90 (up) to -90 (down)
-         let targetPitch = backHotspot.pitch;
-         
-         // Ensure pitch stays within valid range
-         if (targetPitch > 90) {
-           targetPitch = 90;
-         } else if (targetPitch < -90) {
-           targetPitch = -90;
-         }
-         
-         return targetPitch;
-       }
-       
-       // If no back hotspot found, use current hotspot pitch
-       return hotspot.pitch;
-     }
 
      // Loop through each scene and assign an 'id' to each hotspot based on its index
      for (let sceneKey in data.scenes) {
@@ -472,11 +441,11 @@ function loadPanorama(panoramaData, mapData) {
               let newSceneId = prompt("Redigera scene ID för scene hotspot:", currentSceneId);
               
               if (newSceneId !== null) {
+                const config = viewer.getConfig();
                 if (newSceneId.trim() !== "") {
                   newSceneId = newSceneId.trim();
-                  
+
                   // Check if target scene exists
-                  const config = viewer.getConfig();
                   if (!config.scenes[newSceneId]) {
                     alert(`Scene "${newSceneId}" does not exist!`);
                     return;
@@ -675,7 +644,7 @@ function loadPanorama(panoramaData, mapData) {
         }
 
         // Go forward one scene
-        if (event.key === 'k' || event.key === 'k') {
+        if (event.key === 'k' || event.key === 'K') {
           var next = getSceneKey(currentScene, 'next');
           viewer.loadScene(next)
         }
@@ -1381,7 +1350,7 @@ function loadPanorama(panoramaData, mapData) {
       window.history.pushState({}, '', url);
       currentScene = sceneID;
 
-      if (data.default.myHotSpotDebug) {
+      if (data.default.editorMode) {
         console.log(`Loading scene: ${sceneID}`);
       }
 
@@ -1422,12 +1391,12 @@ function loadPanorama(panoramaData, mapData) {
       if (newSceneId && newSceneId !== currentScene) {
         viewer.loadScene(newSceneId); // Load the new scene based on URL
 
-        if (data.default.myHotSpotDebug) {
+        if (data.default.editorMode) {
           console.log(`Back button pressed, loading scene: ${newSceneId}`);
         }
 
         // Update the map button's :current class
-        loadMap(viewer, newSceneId, mapData, data.default.myHotSpotDebug);
+        loadMap(viewer, newSceneId, mapData, data.default.editorMode);
 
         currentScene = newSceneId; // Update current scene to reflect the URL change
       }
