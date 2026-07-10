@@ -1,0 +1,12 @@
+# Normalisera radslut till LF så Windows/Unraid-kopior inte skapar diff-brus
+*.json text eol=lf
+*.js   text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+*.md   text eol=lf
+*.py   text eol=lf
+
+# Bilder hanteras binärt (och är dessutom gitignorade)
+*.jpg  binary
+*.jpeg binary
+*.png  binary
