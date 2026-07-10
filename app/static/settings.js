@@ -23,4 +23,14 @@
 			if (out) out.value = input.value;
 		});
 	});
+
+	// Rotationsriktning (select).
+	var dir = document.getElementById("preview-dir");
+	if (dir) {
+		var d = localStorage.getItem("svk_preview_dir");
+		dir.value = (d === "left" || d === "right") ? d : "right";
+		dir.addEventListener("change", function () {
+			localStorage.setItem("svk_preview_dir", dir.value);
+		});
+	}
 })();

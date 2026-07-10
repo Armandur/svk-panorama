@@ -28,6 +28,7 @@
 	function rotateSpeed() { return setting("svk_preview_speed", 5); }      // yaw, grader/s
 	function pitchAmp() { return setting("svk_preview_pitch_amp", 12); }    // vagg-amplitud, grader
 	function pitchPeriod() { return setting("svk_preview_pitch_period", 3.5); } // sekunder per vagg
+	function rotateDir() { return localStorage.getItem("svk_preview_dir") === "left" ? -1 : 1; } // 1 = höger
 
 	function ensureBox() {
 		if (box) return;
@@ -59,10 +60,10 @@
 	// användarinställningar; 0 stänger av respektive rörelse.
 	function startPreviewAnimation() {
 		stopPreviewAnimation();
-		var speed = rotateSpeed();
+		var speed = rotateSpeed() * rotateDir();
 		var amp = pitchAmp();
 		var periodMs = Math.max(0.5, pitchPeriod()) * 1000;
-		if ((speed <= 0 && amp <= 0) || !viewer) return;
+		if ((rotateSpeed() <= 0 && amp <= 0) || !viewer) return;
 		var t0 = performance.now(), last = t0;
 		var yaw = 0;
 		try { yaw = viewer.getYaw(); } catch (e) { /* default 0 */ }
