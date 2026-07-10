@@ -49,8 +49,21 @@
 	const sceneTitleLabel = document.getElementById("scene-title-label");
 	const fullresToggle = document.getElementById("fullres-toggle");
 	const rollInput = document.getElementById("horizon-roll");
-	const rollOut = document.getElementById("horizon-roll-val");
+	const rollNum = document.getElementById("horizon-roll-num");
 	let rollTimer = null;
+
+	// Slider och inmatningsruta hålls synkade; själva omladdningen debouncas.
+	function onRollChange(v) {
+		const cur = viewer.getScene();
+		if (!tour.scenes[cur] || isNaN(v)) return;
+		v = Math.max(-20, Math.min(20, v));
+		tour.scenes[cur].horizonRoll = v;
+		if (rollInput) rollInput.value = v;
+		if (rollNum) rollNum.value = v;
+		setDirty(true);
+		if (rollTimer) clearTimeout(rollTimer);
+		rollTimer = setTimeout(applyRoll, 180);
+	}
 
 	let fullRes = false, applyingRes = false;
 	function previewUrl(id) { return "/projects/" + encodeURIComponent(slug) + "/previews/" + encodeURIComponent(id) + ".jpg"; }
@@ -175,16 +188,8 @@
 		fullRes = fullresToggle.checked;
 		applyRes(viewer.getScene());
 	});
-	if (rollInput) rollInput.addEventListener("input", function () {
-		const cur = viewer.getScene();
-		if (!tour.scenes[cur]) return;
-		const v = parseFloat(rollInput.value) || 0;
-		tour.scenes[cur].horizonRoll = v;
-		if (rollOut) rollOut.value = v;
-		setDirty(true);
-		if (rollTimer) clearTimeout(rollTimer);
-		rollTimer = setTimeout(applyRoll, 180); // debounce omladdningen
-	});
+	if (rollInput) rollInput.addEventListener("input", function () { onRollChange(parseFloat(rollInput.value)); });
+	if (rollNum) rollNum.addEventListener("input", function () { onRollChange(parseFloat(rollNum.value)); });
 
 	if (mapImg) {
 		if (mapImg.complete && mapImg.naturalWidth) buildMapDots();
@@ -196,10 +201,10 @@
 		const cur = viewer.getScene();
 		if (curSceneEl) curSceneEl.textContent = cur;
 		if (sceneTitleInput) sceneTitleInput.value = (tour.scenes[cur] && tour.scenes[cur].title) || "";
-		if (rollInput) {
+		{
 			const r = (tour.scenes[cur] && tour.scenes[cur].horizonRoll) || 0;
-			rollInput.value = r;
-			if (rollOut) rollOut.value = r;
+			if (rollInput) rollInput.value = r;
+			if (rollNum) rollNum.value = r;
 		}
 		updateTitleLabel(cur);
 		renderCalibState(cur);

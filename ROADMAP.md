@@ -34,6 +34,11 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
 
 ## Fas 2 - Bundle & viewer
 
+- [ ] **Integrera multires-tiling i appen.** Pipelinen finns i
+      `tools/tile_tour.py` (Fas 0) men körs inte från appen än. Kör tiling som
+      ett jobb på de uppladdade bilderna och låt den publicerade turen använda
+      multires (`type: multires`) istället for hela equirektangulära JPG:er, för
+      snabb laddning. Se pannellums generate.py-docs (multires).
 - [ ] En templatead viewer istället for 13 nästan identiska HTML-filer.
 - [ ] **Förhandsvisa hela turen** (med kartan) i editorn innan export, med val av
       kartstorlek för olika skärmstorlekar.
