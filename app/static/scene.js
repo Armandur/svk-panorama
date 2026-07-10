@@ -43,6 +43,22 @@
 	const saveBtn = document.getElementById("save-tour-btn");
 	const discardBtn = document.getElementById("discard-tour-btn");
 	const generateBtn = document.getElementById("generate-btn");
+	const sceneTitleInput = document.getElementById("scene-title");
+	const sceneTitleLabel = document.getElementById("scene-title-label");
+	const fullresToggle = document.getElementById("fullres-toggle");
+
+	let fullRes = false, applyingRes = false;
+	function previewUrl(id) { return "/projects/" + encodeURIComponent(slug) + "/previews/" + encodeURIComponent(id) + ".jpg"; }
+	function fullUrl(id) { return tour.scenes[id].panorama; }
+	function applyRes(id) {
+		const cfg = viewer.getConfig().scenes[id];
+		if (!cfg) return;
+		const want = fullRes ? fullUrl(id) : previewUrl(id);
+		if (cfg.panorama !== want) { cfg.panorama = want; applyingRes = true; viewer.loadScene(id); }
+	}
+	function updateTitleLabel(id) {
+		if (sceneTitleLabel) sceneTitleLabel.textContent = (tour.scenes[id] && tour.scenes[id].title) || "";
+	}
 
 	function round2(n) { return Math.round(n * 100) / 100; }
 
@@ -64,7 +80,11 @@
 	function snapshot() {
 		const scenes = {};
 		Object.keys(tour.scenes).forEach(function (id) {
-			scenes[id] = { off: (offsets[id] == null ? null : offsets[id]), hs: tour.scenes[id].hotSpots || [] };
+			scenes[id] = {
+				off: (offsets[id] == null ? null : offsets[id]),
+				ti: tour.scenes[id].title || null,
+				hs: tour.scenes[id].hotSpots || [],
+			};
 		});
 		return JSON.stringify(scenes);
 	}
@@ -94,12 +114,32 @@
 	});
 
 	viewer.on("load", refreshSidebar);
-	viewer.on("scenechange", function () { setTimeout(refreshSidebar, 50); });
+	viewer.on("scenechange", function () {
+		setTimeout(function () {
+			refreshSidebar();
+			if (applyingRes) { applyingRes = false; return; }
+			applyRes(viewer.getScene()); // ladda full upplösning om läget är på
+		}, 50);
+	});
+
+	if (sceneTitleInput) sceneTitleInput.addEventListener("input", function () {
+		const cur = viewer.getScene();
+		if (!tour.scenes[cur]) return;
+		tour.scenes[cur].title = sceneTitleInput.value;
+		updateTitleLabel(cur);
+		setDirty(true);
+	});
+	if (fullresToggle) fullresToggle.addEventListener("change", function () {
+		fullRes = fullresToggle.checked;
+		applyRes(viewer.getScene());
+	});
 
 	// --- Sidopanel ---
 	function refreshSidebar() {
 		const cur = viewer.getScene();
 		if (curSceneEl) curSceneEl.textContent = cur;
+		if (sceneTitleInput) sceneTitleInput.value = (tour.scenes[cur] && tour.scenes[cur].title) || "";
+		updateTitleLabel(cur);
 		renderCalibState(cur);
 		renderNeighbors(cur);
 		renderReadiness();
@@ -206,7 +246,11 @@
 		try {
 			const payload = { scenes: {} };
 			sceneIds().forEach(function (id) {
-				payload.scenes[id] = { northOffset: (offsets[id] == null ? null : offsets[id]), hotSpots: tour.scenes[id].hotSpots || [] };
+				payload.scenes[id] = {
+					northOffset: (offsets[id] == null ? null : offsets[id]),
+					title: tour.scenes[id].title || null,
+					hotSpots: tour.scenes[id].hotSpots || [],
+				};
 			});
 			await apiFetch("/projects/" + encodeURIComponent(slug) + "/tour", { method: "POST", body: payload });
 			savedSnapshot = snapshot();
@@ -226,6 +270,7 @@
 		Object.keys(tour.scenes).forEach(function (id) {
 			const s = snap[id];
 			if (s.off == null) delete offsets[id]; else offsets[id] = s.off;
+			if (s.ti == null) delete tour.scenes[id].title; else tour.scenes[id].title = s.ti;
 			tour.scenes[id].hotSpots = s.hs;
 			const cfg = viewer.getConfig().scenes[id];
 			if (cfg) cfg.hotSpots = s.hs;

@@ -16,6 +16,7 @@ router = APIRouter()
 
 class SceneUpdate(BaseModel):
     northOffset: float | None = None
+    title: str | None = None
     hotSpots: list[dict[str, Any]] = Field(default_factory=list)
 
 
@@ -65,6 +66,12 @@ def save_tour(
             scene.pop("northOffset", None)
         else:
             scene["northOffset"] = round(upd.northOffset, 2)
+        if upd.title is not None:
+            title = upd.title.strip()
+            if title:
+                scene["title"] = title
+            else:
+                scene.pop("title", None)
         scene["hotSpots"] = upd.hotSpots
         updated += 1
     write_tour(slug, tour)

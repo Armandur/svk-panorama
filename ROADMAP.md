@@ -23,13 +23,21 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
       planeringsvy (placera, riktade länkar enväg/tvåväg med pilar, zoom/pan,
       hover-preview med inställningar, autospar, dirty-skydd, beredskapskoll,
       hjälp-modal).
-- [ ] **Scenvyn**: flytta kalibrering (nordoffset per scen) + auto-generering av
-      hotspots till appen, med riktningsstöd från envägs/tvåvägs-länkarna.
-- [ ] Inbyggd hur-man-gör-guide finns i planeringsvyns hjälp-modal + `WORKFLOW.md`.
+- [x] **Scenhantering** (route `/projects/{slug}/scenes`): kalibrering av
+      nordoffset per scen (sikta + klicka på granne), auto-generering av hotspots
+      med riktningsstöd, scennamn (visas i vyn), hårkors, full upplösning-toggle,
+      dirty-skydd, hjälp-modal.
+- [ ] Mer scenhantering: **info-hotspots**, **URL-hotspots** och manuell
+      redigering (lägg till/flytta/ta bort/redigera enskilda hotspots). Fanns i
+      gamla `js/app.js`-editorn (I/U/R/T/Q).
+- [x] Inbyggd hur-man-gör-guide finns i vyernas hjälp-modaler + `WORKFLOW.md`.
 
 ## Fas 2 - Bundle & viewer
 
 - [ ] En templatead viewer istället for 13 nästan identiska HTML-filer.
+- [ ] **Förhandsvisa hela turen** (med kartan) i editorn innan export, med val av
+      kartstorlek för olika skärmstorlekar.
+- [ ] **Teman**: valbara typsnitt, färger på kartprickar/linjer m.m.
 - [ ] "Exportera bundle" = zip med tiles + JSON + viewer + vendored pannellum +
       hosting-instruktioner. Detta är self-host-produkten.
 

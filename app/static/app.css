@@ -488,3 +488,42 @@ tr[data-preview-scene] { cursor: help; }
 .scene-nav button { flex: 1; margin: 0; }
 .neighbor-list { display: flex; flex-direction: column; gap: 0.4rem; }
 .neighbor-btn { width: 100%; margin: 0; text-align: left; }
+
+/* --- Scenvy: hårkors, titel-label, res-toggle --- */
+.crosshair {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 26px;
+	height: 26px;
+	transform: translate(-50%, -50%);
+	pointer-events: none;
+	z-index: 20;
+}
+.crosshair::before, .crosshair::after {
+	content: "";
+	position: absolute;
+	background: rgba(255, 255, 255, 0.9);
+	box-shadow: 0 0 2px rgba(0, 0, 0, 0.9);
+}
+.crosshair::before { left: 50%; top: 0; width: 2px; height: 100%; transform: translateX(-50%); }
+.crosshair::after { top: 50%; left: 0; height: 2px; width: 100%; transform: translateY(-50%); }
+
+.scene-title-label {
+	position: absolute;
+	right: 0.8rem;
+	bottom: 0.8rem;
+	background: rgba(0, 0, 0, 0.65);
+	color: #fff;
+	padding: 0.3rem 0.7rem;
+	border-radius: 0.3rem;
+	font-size: 1rem;
+	z-index: 20;
+	pointer-events: none;
+	max-width: 60%;
+}
+.scene-title-label:empty { display: none; }
+
+.section-head { margin-bottom: 0.5rem; }
+.fullres-label { display: block; margin: 0.5rem 0; }
+.scene-nav { margin-top: 0.25rem; }
