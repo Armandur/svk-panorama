@@ -96,6 +96,55 @@ def scene_id_from_filename(filename: str) -> str:
     return Path(filename).stem
 
 
+def _natural_key(text: str) -> list:
+    return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", text)]
+
+
+def list_scenes(slug: str) -> list[dict[str, Any]]:
+    """Uppladdade scener med metadata, naturligt sorterade på id. `placed`
+    anger om scenen har en position i map.json."""
+    tour = read_tour(slug)
+    placed = {s.get("id") for s in read_map(slug).get("scenes", [])}
+    out = []
+    for scene_id, scene in tour.get("scenes", {}).items():
+        filename = Path(scene.get("panorama", "")).name
+        fpath = images_dir(slug) / filename
+        out.append({
+            "id": scene_id,
+            "filename": filename,
+            "size": fpath.stat().st_size if fpath.exists() else 0,
+            "placed": scene_id in placed,
+        })
+    out.sort(key=lambda s: _natural_key(s["id"]))
+    return out
+
+
+def remove_scene(slug: str, scene_id: str) -> None:
+    """Ta bort en scen helt: bildfil, tour.json-post och ev. position/länkar
+    i map.json."""
+    tour = read_tour(slug)
+    scenes = tour.get("scenes", {})
+    scene = scenes.pop(scene_id, None)
+    if scene is None:
+        raise HTTPException(status_code=404, detail=f"Scen {scene_id} finns inte")
+
+    filename = Path(scene.get("panorama", "")).name
+    if filename:
+        fpath = images_dir(slug) / filename
+        if fpath.exists():
+            fpath.unlink()
+
+    default = tour.setdefault("default", default_tour()["default"])
+    if default.get("firstScene") == scene_id:
+        default["firstScene"] = next(iter(scenes), "")
+    write_tour(slug, tour)
+
+    map_data = read_map(slug)
+    map_data["scenes"] = [s for s in map_data.get("scenes", []) if s.get("id") != scene_id]
+    map_data["edges"] = [e for e in map_data.get("edges", []) if scene_id not in e]
+    write_map(slug, map_data)
+
+
 def merge_scene_into_tour(tour: dict[str, Any], scene_id: str, panorama_url: str) -> None:
     """Lägg till eller uppdatera en scen i tour.json. Bevarar befintliga
     hotSpots/titel om scenen redan finns (t.ex. vid omuppladdning)."""

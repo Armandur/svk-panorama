@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Uppladdning - {{ project.name }}{% endblock %}
+{% block content %}
+
+<hgroup>
+	<h1>{{ project.name }}</h1>
+	<p>Steg 1 av 2: ladda upp scenfoton och kartbild.</p>
+</hgroup>
+
+<nav class="stepper" aria-label="Arbetssteg">
+	<span aria-current="step">1. Uppladdning</span>
+	<span>2. Placering och länkning</span>
+</nav>
+
+<section class="upload-grid">
+	<article>
+		<h2>Panoramabilder</h2>
+		<p>Filnamnet blir scenens id (t.ex. <code>1.jpg</code> -&gt; scen <code>1</code>).</p>
+		<form method="post" action="/projects/{{ project.slug }}/images" enctype="multipart/form-data">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<input type="file" name="files" accept=".jpg,.jpeg,.png" multiple required>
+			<button type="submit">Ladda upp bilder</button>
+		</form>
+	</article>
+	<article>
+		<h2>Kartbild</h2>
+		<p>En bild (ritning/flygfoto) som scenerna placeras ut på.</p>
+		{% if has_map_image %}
+		<p><small>Karta uppladdad. Ladda upp en ny för att ersätta den.</small></p>
+		{% endif %}
+		<form method="post" action="/projects/{{ project.slug }}/map-image" enctype="multipart/form-data">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<input type="file" name="file" accept=".jpg,.jpeg,.png" required>
+			<button type="submit" class="secondary">{% if has_map_image %}Ersätt karta{% else %}Ladda upp karta{% endif %}</button>
+		</form>
+	</article>
+</section>
+
+<section>
+	<h2>Uppladdade scener ({{ scenes | length }})</h2>
+	{% if scenes %}
+	<table>
+		<thead>
+			<tr>
+				<th scope="col">Scen</th>
+				<th scope="col">Fil</th>
+				<th scope="col">Storlek</th>
+				<th scope="col"></th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for s in scenes %}
+			<tr>
+				<td><strong>{{ s.id }}</strong></td>
+				<td><code>{{ s.filename }}</code></td>
+				<td>{{ (s.size / 1048576) | round(1) }} MB</td>
+				<td>
+					<form method="post" action="/projects/{{ project.slug }}/images/{{ s.id }}/delete"
+						onsubmit="return confirm('Ta bort scen {{ s.id }}? Detta raderar bilden.');">
+						<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+						<button type="submit" class="secondary outline delete-btn">Ta bort</button>
+					</form>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<p class="hint">Valde du fel bild? Ta bort den, eller ladda upp en ny med samma filnamn för att ersätta den.</p>
+	{% else %}
+	<p><em>Inga scener uppladdade ännu.</em></p>
+	{% endif %}
+</section>
+
+<section class="step-nav">
+	{% if has_map_image and scenes %}
+	<a href="/projects/{{ project.slug }}/plan" role="button">Nästa: placera på kartan -&gt;</a>
+	{% else %}
+	<a href="#" role="button" aria-disabled="true"
+		title="Ladda upp minst en scen och en kartbild först">Nästa: placera på kartan -&gt;</a>
+	<p class="hint">Ladda upp minst en scen och en kartbild för att gå vidare.</p>
+	{% endif %}
+</section>
+
+{% endblock %}

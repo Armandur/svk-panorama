@@ -13,6 +13,7 @@ from app.services.project_files import (
     map_image_path,
     merge_scene_into_tour,
     read_tour,
+    remove_scene,
     safe_upload_name,
     scene_id_from_filename,
     validate_extension,
@@ -55,7 +56,7 @@ async def upload_images(
         merge_scene_into_tour(tour, scene_id, panorama_url)
 
     write_tour(slug, tour)
-    return RedirectResponse(url=f"/projects/{slug}/plan", status_code=302)
+    return RedirectResponse(url=f"/projects/{slug}", status_code=302)
 
 
 @router.post("/projects/{slug}/map-image")
@@ -74,4 +75,15 @@ async def upload_map_image(
     ensure_project_structure(slug)
     map_image_path(slug).write_bytes(content)
 
-    return RedirectResponse(url=f"/projects/{slug}/plan", status_code=302)
+    return RedirectResponse(url=f"/projects/{slug}", status_code=302)
+
+
+@router.post("/projects/{slug}/images/{scene_id}/delete")
+def delete_image(
+    slug: str,
+    scene_id: str,
+    project: Project = Depends(get_project_or_404),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    remove_scene(slug, scene_id)
+    return RedirectResponse(url=f"/projects/{slug}", status_code=302)

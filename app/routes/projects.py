@@ -7,11 +7,20 @@ from sqlalchemy.orm import Session
 
 from app import config
 from app.database import Project
-from app.deps import get_db, new_csrf_token, set_csrf_cookie, templates, verify_csrf_form
+from app.deps import (
+    get_db,
+    get_project_or_404,
+    new_csrf_token,
+    set_csrf_cookie,
+    templates,
+    verify_csrf_form,
+)
 from app.services.project_files import (
     default_map,
     default_tour,
     ensure_project_structure,
+    list_scenes,
+    map_image_path,
     slugify,
     write_map,
     write_tour,
@@ -69,4 +78,27 @@ async def create_project(
     write_tour(slug, default_tour())
     write_map(slug, default_map())
 
-    return RedirectResponse(url="/", status_code=302)
+    return RedirectResponse(url=f"/projects/{slug}", status_code=302)
+
+
+@router.get("/projects/{slug}", response_class=HTMLResponse)
+def project_home(
+    request: Request,
+    slug: str,
+    project: Project = Depends(get_project_or_404),
+) -> HTMLResponse:
+    """Steg 1: ladda upp bilder + karta och hantera scenlistan."""
+    scenes = list_scenes(slug)
+    token = new_csrf_token()
+    response = templates.TemplateResponse(
+        request,
+        "upload.html",
+        {
+            "project": project,
+            "scenes": scenes,
+            "has_map_image": map_image_path(slug).exists(),
+            "csrf_token": token,
+        },
+    )
+    set_csrf_cookie(response, token)
+    return response
