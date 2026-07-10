@@ -18,6 +18,8 @@
 	if (!stage) return; // ingen kartbild uppladdad än
 
 	const slug = document.body.dataset.slug;
+	const plannerMap = document.querySelector(".planner-map");
+	const mapContent = document.getElementById("map-content");
 	const img = document.getElementById("map-image");
 	const svg = document.getElementById("edges-layer");
 	const markersLayer = document.getElementById("markers-layer");
@@ -52,6 +54,9 @@
 		rubberEl: null,
 		edgeFocus: null, // scen-id vars länkar visas (hover), null = visa alla
 		dirty: false,    // osparade ändringar
+		panStart: null,
+		panMoved: false,
+		panPointerId: null,
 	};
 
 	function setDirty(v) {
@@ -125,6 +130,53 @@
 
 	const SVG_NS = "http://www.w3.org/2000/svg";
 
+	// --- Vy: zoom och panorering ------------------------------------------
+	// Kartbild + länker (#map-content) transformeras; markörerna ligger i ett
+	// otransformerat lager och positioneras i skärmkoordinater så de behåller
+	// konstant storlek när man zoomar (annars hjälper inte zoom på täta kartor).
+
+	const view = { scale: 1, tx: 0, ty: 0, base: 1 };
+	const MAX_ZOOM = 8;
+
+	function applyTransform() {
+		mapContent.style.transform = "translate(" + view.tx + "px," + view.ty + "px) scale(" + view.scale + ")";
+		updateMarkerPositions();
+	}
+
+	// Natur-pixel -> skärmkoordinat (relativt planner-map).
+	function project(nx, ny) {
+		return { x: view.tx + nx * view.scale, y: view.ty + ny * view.scale };
+	}
+
+	function fitView() {
+		const vw = plannerMap.clientWidth, vh = plannerMap.clientHeight;
+		const nw = img.naturalWidth, nh = img.naturalHeight;
+		if (!nw || !nh || !vw || !vh) return;
+		view.base = Math.min(vw / nw, vh / nh);
+		view.scale = view.base;
+		view.tx = (vw - nw * view.scale) / 2;
+		view.ty = (vh - nh * view.scale) / 2;
+		applyTransform();
+	}
+
+	function zoomAt(clientX, clientY, factor) {
+		const rect = plannerMap.getBoundingClientRect();
+		const cx = clientX - rect.left, cy = clientY - rect.top;
+		const newScale = Math.max(view.base, Math.min(view.base * MAX_ZOOM, view.scale * factor));
+		if (newScale === view.scale) return;
+		// Håll punkten under pekaren fast.
+		const wx = (cx - view.tx) / view.scale, wy = (cy - view.ty) / view.scale;
+		view.scale = newScale;
+		view.tx = cx - wx * view.scale;
+		view.ty = cy - wy * view.scale;
+		applyTransform();
+	}
+
+	function zoomFromCenter(factor) {
+		const rect = plannerMap.getBoundingClientRect();
+		zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, factor);
+	}
+
 	// --- Data-hjälpare -------------------------------------------------
 
 	function sceneIds() {
@@ -163,11 +215,9 @@
 	// --- Koordinatkonvertering ------------------------------------------
 
 	function clientToImageCoords(clientX, clientY) {
-		const rect = img.getBoundingClientRect();
-		const scaleX = img.naturalWidth / rect.width;
-		const scaleY = img.naturalHeight / rect.height;
-		let x = (clientX - rect.left) * scaleX;
-		let y = (clientY - rect.top) * scaleY;
+		const rect = plannerMap.getBoundingClientRect();
+		let x = (clientX - rect.left - view.tx) / view.scale;
+		let y = (clientY - rect.top - view.ty) / view.scale;
 		x = Math.max(0, Math.min(img.naturalWidth, x));
 		y = Math.max(0, Math.min(img.naturalHeight, y));
 		return { x: Math.round(x), y: Math.round(y) };
@@ -259,8 +309,9 @@
 			marker.className = "scene-marker";
 			marker.dataset.id = scene.id;
 			marker.textContent = scene.id;
-			marker.style.left = pctOf(scene.position.x, img.naturalWidth) + "%";
-			marker.style.top = pctOf(scene.position.y, img.naturalHeight) + "%";
+			const p = project(scene.position.x, scene.position.y);
+			marker.style.left = p.x + "px";
+			marker.style.top = p.y + "px";
 			marker.title = "Scen " + scene.id;
 			marker.addEventListener("pointerdown", function (e) { onMarkerPointerDown(e, scene.id); });
 			marker.addEventListener("mouseenter", function () { setEdgeFocus(scene.id); });
@@ -268,6 +319,19 @@
 			if (window.ScenePreview) window.ScenePreview.attach(marker, slug, scene.id);
 			markersLayer.appendChild(marker);
 		});
+	}
+
+	// Uppdatera markörernas skärmposition (vid pan/zoom) utan att bygga om dem.
+	function updateMarkerPositions() {
+		const children = markersLayer.children;
+		for (let i = 0; i < children.length; i++) {
+			const m = children[i];
+			const s = findPlaced(m.dataset.id);
+			if (!s) continue;
+			const p = project(s.position.x, s.position.y);
+			m.style.left = p.x + "px";
+			m.style.top = p.y + "px";
+		}
 	}
 
 	// Distinkta färger så en scens många länkar går att skilja åt vid hover,
@@ -351,11 +415,39 @@
 	// --- Placering (klick på kartan) --------------------------------------
 
 	function onStagePointerDown(e) {
-		if (e.target.closest(".scene-marker")) return; // hanteras separat
-		if (state.mode !== "place") return;
-		if (!state.armedId) return;
-		const pos = clientToImageCoords(e.clientX, e.clientY);
-		placeScene(state.armedId, pos);
+		if (e.target.closest(".scene-marker")) return; // markörer hanteras separat
+		// Starta möjlig panorering; blir det ingen rörelse tolkas det som klick.
+		state.panStart = { x: e.clientX, y: e.clientY, tx: view.tx, ty: view.ty };
+		state.panMoved = false;
+		state.panPointerId = e.pointerId;
+		stage.setPointerCapture(e.pointerId);
+		stage.addEventListener("pointermove", onStagePointerMove);
+		stage.addEventListener("pointerup", onStagePointerUp);
+		stage.addEventListener("pointercancel", onStagePointerUp);
+	}
+
+	function onStagePointerMove(e) {
+		if (e.pointerId !== state.panPointerId) return;
+		const dx = e.clientX - state.panStart.x, dy = e.clientY - state.panStart.y;
+		if (!state.panMoved && Math.sqrt(dx * dx + dy * dy) > 6) state.panMoved = true;
+		if (state.panMoved) {
+			view.tx = state.panStart.tx + dx;
+			view.ty = state.panStart.ty + dy;
+			applyTransform();
+		}
+	}
+
+	function onStagePointerUp(e) {
+		if (e.pointerId !== state.panPointerId) return;
+		stage.removeEventListener("pointermove", onStagePointerMove);
+		stage.removeEventListener("pointerup", onStagePointerUp);
+		stage.removeEventListener("pointercancel", onStagePointerUp);
+		const moved = state.panMoved;
+		state.panPointerId = null;
+		if (!moved && state.mode === "place" && state.armedId) {
+			const pos = clientToImageCoords(e.clientX, e.clientY);
+			placeScene(state.armedId, pos);
+		}
 	}
 
 	function placeScene(id, pos) {
@@ -429,8 +521,9 @@
 			// Flytta bara det dragna elementet. renderMarkers() här skulle förstöra
 			// elementet som håller pointer-capture och avbryta dragningen.
 			if (state.dragEl) {
-				state.dragEl.style.left = pctOf(pos.x, img.naturalWidth) + "%";
-				state.dragEl.style.top = pctOf(pos.y, img.naturalHeight) + "%";
+				const p = project(pos.x, pos.y);
+				state.dragEl.style.left = p.x + "px";
+				state.dragEl.style.top = p.y + "px";
 			}
 			renderEdges();
 		}
@@ -617,10 +710,39 @@
 	// --- Init ------------------------------------------------------------
 
 	function init() {
-		// viewBox i bildens naturliga pixelrum så länkar/pilar hamnar rätt när
-		// kartan skalas för att passa skärmen.
+		// viewBox i bildens naturliga pixelrum; #map-content har naturlig storlek
+		// och skalas via transform, så länkar/pilar följer kartan.
 		svg.setAttribute("viewBox", "0 0 " + img.naturalWidth + " " + img.naturalHeight);
+		mapContent.style.width = img.naturalWidth + "px";
+		mapContent.style.height = img.naturalHeight + "px";
+		fitView();
+
 		stage.addEventListener("pointerdown", onStagePointerDown);
+		stage.addEventListener("wheel", function (e) {
+			e.preventDefault();
+			zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.15 : 1 / 1.15);
+		}, { passive: false });
+
+		const zin = document.getElementById("zoom-in-btn");
+		const zout = document.getElementById("zoom-out-btn");
+		const fit = document.getElementById("fit-btn");
+		if (zin) zin.addEventListener("click", function () { zoomFromCenter(1.3); });
+		if (zout) zout.addEventListener("click", function () { zoomFromCenter(1 / 1.3); });
+		if (fit) fit.addEventListener("click", fitView);
+
+		const helpBtn = document.getElementById("help-btn");
+		const helpModal = document.getElementById("help-modal");
+		const helpClose = document.getElementById("help-close");
+		if (helpBtn && helpModal) helpBtn.addEventListener("click", function () { helpModal.hidden = false; });
+		if (helpClose && helpModal) helpClose.addEventListener("click", function () { helpModal.hidden = true; });
+		if (helpModal) helpModal.addEventListener("click", function (e) { if (e.target === helpModal) helpModal.hidden = true; });
+
+		let resizeTimer = null;
+		window.addEventListener("resize", function () {
+			if (resizeTimer) clearTimeout(resizeTimer);
+			resizeTimer = setTimeout(fitView, 150);
+		});
+
 		if (toolTwo) toolTwo.addEventListener("click", function () { setMode("two"); });
 		if (toolOne) toolOne.addEventListener("click", function () { setMode("one"); });
 		saveBtn.addEventListener("click", saveMap);
@@ -637,6 +759,8 @@
 				e.preventDefault();
 				saveMap();
 			} else if (e.key === "Escape") {
+				const hm = document.getElementById("help-modal");
+				if (hm && !hm.hidden) { hm.hidden = true; return; }
 				if (window.ScenePreview && window.ScenePreview.unpin) window.ScenePreview.unpin();
 				if (state.mode !== "place") setMode("place");
 			}

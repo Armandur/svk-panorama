@@ -20,22 +20,21 @@
 		<p>Steg 2 av 2: placera och länka scenerna.</p>
 	</hgroup>
 	<article>
-		<h3>Status</h3>
+		<div class="section-head">
+			<h3>Status</h3>
+			<button id="help-btn" type="button" class="secondary outline help-btn" title="Hjälp">? Hjälp</button>
+		</div>
 		<p id="status-box" aria-live="polite">Laddar...</p>
 		<div class="tool-row">
 			<button id="tool-two" type="button" class="secondary" aria-pressed="false" title="Tvåvägslänk (ingen pil)">&#8596; Tvåväg</button>
 			<button id="tool-one" type="button" class="secondary" aria-pressed="false" title="Envägslänk (pil i riktningen)">&#8594; Enväg</button>
 		</div>
-		<p class="hint">Välj ett verktyg och dra mellan två scener för att länka (dra samma igen för att ta bort). Klicka verktyget igen för att avsluta. <b>Klicka</b> på en scen för att markera den och kunna ta bort den från kartan. Hovra en scen för att bara se dess länkar.</p>
-		<p class="legend hint">Linjer: <b>&#9472;</b> tvåväg&nbsp;&nbsp; <b>&#9472;&#9658;</b> enväg (pil mot riktningen)</p>
-		<p class="hint">Kortkommandon: <kbd>Ctrl</kbd>+<kbd>S</kbd> spara, <kbd>Esc</kbd> avsluta läge/stäng.</p>
 		<p id="readiness" class="readiness" aria-live="polite"></p>
 		<p id="dirty-badge" class="dirty-badge" hidden>Osparade ändringar</p>
 		<button id="save-map-btn" type="button">Spara karta</button>
 	</article>
 	<article>
 		<h3>Oplacerade scener</h3>
-		<p class="hint">Klicka en scen här, klicka sedan på kartan för att placera den.</p>
 		<ul id="unplaced-list" class="unplaced-list"></ul>
 	</article>
 	<article>
@@ -44,10 +43,33 @@
 </aside>
 <div class="planner-map">
 	<div id="map-stage" class="map-stage">
-		<img id="map-image" src="/projects/{{ project.slug }}/map.png" alt="Karta över {{ project.name }}">
-		<svg id="edges-layer"></svg>
+		<div id="map-content">
+			<img id="map-image" src="/projects/{{ project.slug }}/map.png" alt="Karta över {{ project.name }}">
+			<svg id="edges-layer"></svg>
+		</div>
 		<div id="markers-layer"></div>
 	</div>
+	<div class="map-controls">
+		<button id="zoom-in-btn" type="button" class="secondary" title="Zooma in">+</button>
+		<button id="zoom-out-btn" type="button" class="secondary" title="Zooma ut">&minus;</button>
+		<button id="fit-btn" type="button" class="secondary" title="Anpassa vy till skärmen">Anpassa</button>
+	</div>
+</div>
+
+<div id="help-modal" class="help-modal" hidden>
+	<article>
+		<div class="section-head">
+			<h3>Hjälp - placering och länkning</h3>
+			<button id="help-close" type="button" class="secondary outline" aria-label="Stäng">&times;</button>
+		</div>
+		<p><b>Placera:</b> klicka en scen i "Oplacerade scener", klicka sedan på kartan. Dra en markör för att flytta den.</p>
+		<p><b>Länka:</b> välj <b>&#8596; Tvåväg</b> eller <b>&#8594; Enväg</b> och dra mellan två scener. Dra samma igen för att ta bort. Klicka verktyget igen för att avsluta.</p>
+		<p><b>Markera scen:</b> klicka på en placerad scen för att fästa förhandsvisningen och kunna ta bort den från kartan.</p>
+		<p><b>Se länkar:</b> hovra en scen så visas bara dess länkar, var och en i egen färg.</p>
+		<p><b>Linjer:</b> <b>&#9472;</b> tvåväg, <b>&#9472;&#9658;</b> enväg (pil mot riktningen).</p>
+		<p><b>Zooma/panorera:</b> scrollhjulet zoomar, dra i tom kartyta för att panorera, <b>Anpassa</b> återställer vyn.</p>
+		<p><b>Kortkommandon:</b> <kbd>Ctrl</kbd>+<kbd>S</kbd> spara, <kbd>Esc</kbd> avsluta läge/stäng.</p>
+	</article>
 </div>
 {% endif %}
 

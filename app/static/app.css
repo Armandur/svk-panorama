@@ -383,3 +383,88 @@ tr[data-preview-scene] { cursor: help; }
 .draft-banner p { margin: 0 0 0.5rem 0; font-size: 0.9rem; }
 .draft-actions { display: flex; gap: 0.5rem; }
 .draft-actions button { margin: 0; padding: 0.35rem 0.6rem; font-size: 0.85rem; }
+
+/* --- Zoom/pan-layout: transformerat kartinnehåll, otransformerade markörer --- */
+.planner-map {
+	display: block;
+	padding: 0;
+	position: relative;
+	overflow: hidden;
+}
+#map-stage {
+	position: absolute;
+	inset: 0;
+	width: auto;
+	max-width: none;
+	max-height: none;
+	border: none;
+	background: var(--pico-card-background-color);
+	touch-action: none;
+	user-select: none;
+	overflow: hidden;
+}
+#map-content {
+	position: absolute;
+	top: 0;
+	left: 0;
+	transform-origin: 0 0;
+	line-height: 0;
+	will-change: transform;
+}
+#map-content img#map-image {
+	display: block;
+	width: auto;
+	height: auto;
+	max-width: none;
+	max-height: none;
+}
+#edges-layer {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	overflow: visible;
+}
+#markers-layer {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.map-controls {
+	position: absolute;
+	right: 0.6rem;
+	bottom: 0.6rem;
+	display: flex;
+	gap: 0.3rem;
+	z-index: 5;
+}
+.map-controls button { margin: 0; width: 2.4rem; padding: 0.35rem 0; }
+.map-controls #fit-btn { width: auto; padding: 0.35rem 0.6rem; }
+
+/* --- Sektionsrubrik med knapp + hjälp-modal --- */
+.section-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 0.5rem;
+}
+.section-head h3 { margin: 0; }
+.section-head button { margin: 0; padding: 0.2rem 0.55rem; font-size: 0.85rem; width: auto; }
+
+.help-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 3500;
+	background: rgba(0, 0, 0, 0.55);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+}
+.help-modal[hidden] { display: none; }
+.help-modal article { max-width: 30rem; width: 100%; margin: 0; max-height: 90vh; overflow-y: auto; }
+.help-modal p { font-size: 0.9rem; margin: 0.45rem 0; }
