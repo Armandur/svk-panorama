@@ -110,11 +110,19 @@ main.plan-app {
 .unplaced-item .arm-btn { flex: 1; }
 .unplaced-item .del-fully {
 	flex: none;
-	width: 2.2rem;
-	padding: 0.4rem 0;
+	width: 2.4rem;
+	padding: 0;
 	margin: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--svk-danger);
+	border: 1px solid var(--svk-danger);
+	color: #fff;
+	font-size: 0.9rem;
 	line-height: 1;
 }
+.unplaced-item .del-fully:hover { filter: brightness(1.1); }
 
 #next-step-link[aria-disabled="true"] {
 	pointer-events: none;

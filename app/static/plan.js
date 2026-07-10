@@ -143,8 +143,9 @@
 
 			const del = document.createElement("button");
 			del.type = "button";
-			del.className = "secondary outline del-fully";
-			del.textContent = "×";
+			del.className = "del-fully";
+			del.textContent = "✕";
+			del.setAttribute("aria-label", "Ta bort scen " + id + " helt");
 			del.title = "Ta bort scenen helt (bilden raderas, kräver ny uppladdning)";
 			del.addEventListener("click", function () { deleteSceneFully(id); });
 
@@ -172,41 +173,55 @@
 		});
 	}
 
+	// Distinkta färger så en scens många länkar går att skilja åt vid hover,
+	// även när de ligger nästan parallellt.
+	const EDGE_PALETTE = ["#e6194b", "#3cb44b", "#4363d8", "#f58231", "#911eb4", "#00a0a0", "#f032e6", "#9a6324"];
+
 	function renderEdges() {
 		while (svg.firstChild) svg.removeChild(svg.firstChild);
+		const focus = state.edgeFocus;
+		let idx = 0;
 		mapData.edges.forEach(function (e) {
 			// När en scen hovras visas bara dess egna länkar.
-			if (state.edgeFocus && e.from !== state.edgeFocus && e.to !== state.edgeFocus) return;
+			if (focus && e.from !== focus && e.to !== focus) return;
 			const a = findPlaced(e.from);
 			const b = findPlaced(e.to);
 			if (!a || !b) return;
+			const color = focus ? EDGE_PALETTE[idx++ % EDGE_PALETTE.length] : null;
 			const line = document.createElementNS(SVG_NS, "line");
 			line.setAttribute("x1", a.position.x);
 			line.setAttribute("y1", a.position.y);
 			line.setAttribute("x2", b.position.x);
 			line.setAttribute("y2", b.position.y);
 			line.setAttribute("class", "graph-edge");
+			if (color) line.style.stroke = color;
 			svg.appendChild(line);
-			if (!e.twoway) drawArrowhead(a.position, b.position);
+			if (!e.twoway) drawArrowhead(a.position, b.position, color);
 		});
 	}
 
-	// Rita en pilspets nära målscenen (p2), pekande från p1 mot p2 (envägslänk).
-	function drawArrowhead(p1, p2) {
+	// Liten pilspets vid målmarkörens kant (p2), pekande från p1 mot p2.
+	// Storleken anges i skärm-pixlar (via user-units-per-pixel) så pilen blir
+	// proportionell mot den 3px-tjocka linjen oavsett hur kartan skalas.
+	function drawArrowhead(p1, p2, color) {
 		const dx = p2.x - p1.x, dy = p2.y - p1.y;
 		const len = Math.sqrt(dx * dx + dy * dy);
 		if (len < 1) return;
 		const ux = dx / len, uy = dy / len;   // riktning
 		const px = -uy, py = ux;               // vinkelrät
-		const s = Math.max(img.naturalWidth, img.naturalHeight) * 0.022;
-		// Placera pilspetsen strax innan målmarkören, inte i mitten.
-		const back = Math.min(len * 0.5, s * 1.6);
-		const tipx = p2.x - ux * back, tipy = p2.y - uy * back;
-		const b1 = [tipx - ux * s + px * s * 0.6, tipy - uy * s + py * s * 0.6];
-		const b2 = [tipx - ux * s - px * s * 0.6, tipy - uy * s - py * s * 0.6];
+		const rect = img.getBoundingClientRect();
+		const upp = img.naturalWidth / (rect.width || img.naturalWidth); // user-units per skärm-px
+		const markerR = 13 * upp;   // markörens radie (~13px)
+		const aLen = 10 * upp;      // pillängd ~10px
+		const aHalf = 4 * upp;      // halv bredd ~4px
+		const stop = Math.min(markerR, len * 0.5);
+		const tipx = p2.x - ux * stop, tipy = p2.y - uy * stop;
+		const b1 = [tipx - ux * aLen + px * aHalf, tipy - uy * aLen + py * aHalf];
+		const b2 = [tipx - ux * aLen - px * aHalf, tipy - uy * aLen - py * aHalf];
 		const poly = document.createElementNS(SVG_NS, "polygon");
 		poly.setAttribute("points", tipx + "," + tipy + " " + b1.join(",") + " " + b2.join(","));
 		poly.setAttribute("class", "graph-arrow");
+		if (color) poly.style.fill = color;
 		svg.appendChild(poly);
 	}
 
