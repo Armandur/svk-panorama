@@ -27,6 +27,7 @@
 	const toolOne = document.getElementById("tool-one");
 	const saveBtn = document.getElementById("save-map-btn");
 	const dirtyBadge = document.getElementById("dirty-badge");
+	const readinessEl = document.getElementById("readiness");
 
 	const tour = JSON.parse(document.getElementById("tour-data").textContent);
 	const mapData = JSON.parse(document.getElementById("map-data").textContent);
@@ -57,6 +58,69 @@
 		state.dirty = v;
 		if (dirtyBadge) dirtyBadge.hidden = !v;
 		if (saveBtn) saveBtn.classList.toggle("has-changes", v);
+		if (v) scheduleDraft();
+	}
+
+	// --- Autospar-utkast (localStorage) - krasch-säkerhet mellan sparningar ---
+
+	const DRAFT_KEY = "svk_draft_" + slug;
+	let draftTimer = null;
+
+	function scheduleDraft() {
+		if (draftTimer) clearTimeout(draftTimer);
+		draftTimer = setTimeout(function () {
+			try {
+				localStorage.setItem(DRAFT_KEY, JSON.stringify({
+					scenes: mapData.scenes, edges: mapData.edges, ts: Date.now(),
+				}));
+			} catch (e) { /* localStorage otillgängligt - strunt i det */ }
+		}, 600);
+	}
+
+	function clearDraft() {
+		try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* ignore */ }
+	}
+
+	function maybeOfferDraft() {
+		let raw;
+		try { raw = localStorage.getItem(DRAFT_KEY); } catch (e) { return; }
+		if (!raw) return;
+		let draft;
+		try { draft = JSON.parse(raw); } catch (e) { clearDraft(); return; }
+		const serverStr = JSON.stringify({ scenes: mapData.scenes, edges: mapData.edges });
+		const draftStr = JSON.stringify({ scenes: draft.scenes || [], edges: draft.edges || [] });
+		if (serverStr === draftStr) { clearDraft(); return; } // inget nytt i utkastet
+
+		const bar = document.createElement("article");
+		bar.className = "draft-banner";
+		const when = new Date(draft.ts || Date.now()).toLocaleString("sv-SE");
+		const p = document.createElement("p");
+		p.textContent = "Ett osparat utkast hittades (" + when + ").";
+		const row = document.createElement("div");
+		row.className = "draft-actions";
+		const restore = document.createElement("button");
+		restore.type = "button";
+		restore.textContent = "Återställ utkast";
+		restore.addEventListener("click", function () {
+			mapData.scenes = Array.isArray(draft.scenes) ? draft.scenes : [];
+			mapData.edges = (Array.isArray(draft.edges) ? draft.edges : []).map(function (e) {
+				return Array.isArray(e) ? { from: e[0], to: e[1], twoway: true } : { from: e.from, to: e.to, twoway: e.twoway !== false };
+			});
+			bar.remove();
+			setDirty(true);
+			render();
+		});
+		const discard = document.createElement("button");
+		discard.type = "button";
+		discard.className = "secondary outline";
+		discard.textContent = "Släng";
+		discard.addEventListener("click", function () { clearDraft(); bar.remove(); });
+		row.appendChild(restore);
+		row.appendChild(discard);
+		bar.appendChild(p);
+		bar.appendChild(row);
+		const side = document.querySelector(".planner-side");
+		if (side) side.insertBefore(bar, side.firstChild);
 	}
 
 	const SVG_NS = "http://www.w3.org/2000/svg";
@@ -121,6 +185,29 @@
 		renderMarkers();
 		renderEdges();
 		renderStatus();
+		renderReadiness();
+	}
+
+	function renderReadiness() {
+		if (!readinessEl) return;
+		const unplaced = unplacedIds();
+		const placedIds = mapData.scenes.map(function (s) { return s.id; });
+		const linked = {};
+		mapData.edges.forEach(function (e) { linked[e.from] = 1; linked[e.to] = 1; });
+		const isolated = placedIds.filter(function (id) { return !linked[id]; });
+		const issues = [];
+		if (unplaced.length) issues.push(unplaced.length + " oplacerade");
+		if (isolated.length) issues.push(isolated.length + " utan länk (scen " + isolated.join(", ") + ")");
+		if (!placedIds.length) {
+			readinessEl.className = "readiness";
+			readinessEl.textContent = "";
+		} else if (issues.length) {
+			readinessEl.className = "readiness warn";
+			readinessEl.textContent = "Att åtgärda innan kalibrering: " + issues.join("; ") + ".";
+		} else {
+			readinessEl.className = "readiness ok";
+			readinessEl.textContent = "Klar att kalibrera: alla scener placerade och länkade.";
+		}
 	}
 
 	function renderUnplacedList() {
@@ -467,6 +554,7 @@
 				body: { scenes: mapData.scenes, edges: mapData.edges },
 			});
 			setDirty(false);
+			clearDraft();
 			showToast("Kartan sparad", "ok");
 			return true;
 		} catch (err) {
@@ -543,6 +631,18 @@
 			if (state.dirty) { e.preventDefault(); e.returnValue = ""; }
 		});
 
+		// Tangentbord: Ctrl/Cmd+S sparar, Esc stänger pin / avslutar verktygsläge.
+		window.addEventListener("keydown", function (e) {
+			if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S")) {
+				e.preventDefault();
+				saveMap();
+			} else if (e.key === "Escape") {
+				if (window.ScenePreview && window.ScenePreview.unpin) window.ScenePreview.unpin();
+				if (state.mode !== "place") setMode("place");
+			}
+		});
+
+		maybeOfferDraft();
 		render();
 	}
 
