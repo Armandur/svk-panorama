@@ -20,12 +20,14 @@
 	var box, inner, cap, actionsEl, viewer, currentKey, showTimer, hideTimer, rafId;
 	var pinned = false;
 	var W = 320, H = 180;
-	var SPEED_KEY = "svk_preview_speed"; // grader/s, användarspecifik (localStorage)
-
-	function rotateSpeed() {
-		var v = parseFloat(localStorage.getItem(SPEED_KEY));
-		return isNaN(v) ? 5 : v; // 0 = ingen rotation
+	// Användarspecifika inställningar (localStorage). 0 = av.
+	function setting(key, def) {
+		var v = parseFloat(localStorage.getItem(key));
+		return isNaN(v) ? def : v;
 	}
+	function rotateSpeed() { return setting("svk_preview_speed", 5); }      // yaw, grader/s
+	function pitchAmp() { return setting("svk_preview_pitch_amp", 12); }    // vagg-amplitud, grader
+	function pitchPeriod() { return setting("svk_preview_pitch_period", 3.5); } // sekunder per vagg
 
 	function ensureBox() {
 		if (box) return;
@@ -44,29 +46,41 @@
 	}
 
 	function destroyViewer() {
-		stopPitchOscillation();
+		stopPreviewAnimation();
 		if (viewer) {
 			try { viewer.destroy(); } catch (e) { /* redan borta */ }
 			viewer = null;
 		}
 	}
 
-	// Mjuk upp/ned-vaggning (pitch) ovanpå pannellums yaw-rotation. Respekterar
-	// hastighetsinställningen: 0 = helt stilla.
-	function startPitchOscillation() {
-		stopPitchOscillation();
-		if (rotateSpeed() <= 0) return;
-		var amp = 12, period = 4000;
-		var t0 = performance.now();
+	// Driv både sidledsrotation (yaw) och upp/ned-vaggning (pitch) själva, med
+	// instant sättning (animated=false) - annars startar pannellum en tween per
+	// frame mot ett rörligt mål och inget rör sig. Alla tre värden är
+	// användarinställningar; 0 stänger av respektive rörelse.
+	function startPreviewAnimation() {
+		stopPreviewAnimation();
+		var speed = rotateSpeed();
+		var amp = pitchAmp();
+		var periodMs = Math.max(0.5, pitchPeriod()) * 1000;
+		if ((speed <= 0 && amp <= 0) || !viewer) return;
+		var t0 = performance.now(), last = t0;
+		var yaw = 0;
+		try { yaw = viewer.getYaw(); } catch (e) { /* default 0 */ }
 		function frame(now) {
 			if (!viewer) return;
-			try { viewer.setPitch(amp * Math.sin((now - t0) / period * 2 * Math.PI)); } catch (e) { /* ännu ej redo */ }
+			var dt = (now - last) / 1000; last = now;
+			yaw -= speed * dt;
+			var pitch = amp * Math.sin((now - t0) / periodMs * 2 * Math.PI);
+			try {
+				viewer.setYaw(yaw, false);
+				viewer.setPitch(pitch, false);
+			} catch (e) { /* ännu ej redo */ }
 			rafId = requestAnimationFrame(frame);
 		}
 		rafId = requestAnimationFrame(frame);
 	}
 
-	function stopPitchOscillation() {
+	function stopPreviewAnimation() {
 		if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
 	}
 
@@ -96,7 +110,7 @@
 			type: "equirectangular",
 			panorama: "/projects/" + encodeURIComponent(slug) + "/previews/" + encodeURIComponent(sceneId) + ".jpg",
 			autoLoad: true,
-			autoRotate: -rotateSpeed(),
+			autoRotate: 0,
 			showControls: false,
 			showZoomCtrl: false,
 			showFullscreenCtrl: false,
@@ -104,7 +118,7 @@
 			draggable: false,
 			hfov: 110,
 		});
-		startPitchOscillation();
+		startPreviewAnimation();
 	}
 
 	// --- Hover (transient) -------------------------------------------------
