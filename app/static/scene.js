@@ -64,7 +64,7 @@
 		// Applicera först när man slutat justera (pannellum måste ladda om scenen
 		// för att sätta roll; att göra det per drag-tick blir hackigt).
 		if (rollTimer) clearTimeout(rollTimer);
-		rollTimer = setTimeout(applyRoll, 500);
+		rollTimer = setTimeout(applyRoll, 900);
 	}
 
 	let fullRes = false, applyingRes = false;
