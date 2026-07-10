@@ -14,6 +14,12 @@
 
 	var box, inner, cap, viewer, currentKey, showTimer, hideTimer;
 	var W = 320, H = 180;
+	var SPEED_KEY = "svk_preview_speed"; // grader/s, användarspecifik (localStorage)
+
+	function rotateSpeed() {
+		var v = parseFloat(localStorage.getItem(SPEED_KEY));
+		return isNaN(v) ? 5 : v; // 0 = ingen rotation
+	}
 
 	function ensureBox() {
 		if (box) return;
@@ -63,7 +69,7 @@
 			type: "equirectangular",
 			panorama: "/projects/" + encodeURIComponent(slug) + "/previews/" + encodeURIComponent(sceneId) + ".jpg",
 			autoLoad: true,
-			autoRotate: -5,
+			autoRotate: -rotateSpeed(),
 			showControls: false,
 			showZoomCtrl: false,
 			showFullscreenCtrl: false,

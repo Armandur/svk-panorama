@@ -31,6 +31,9 @@
 		<p class="hint">Klicka en scen här, klicka sedan på kartan för att placera den.</p>
 		<ul id="unplaced-list" class="unplaced-list"></ul>
 	</article>
+	<article>
+		{% include "_preview_settings.html" %}
+	</article>
 </aside>
 <div class="planner-map">
 	<div id="map-stage" class="map-stage">
@@ -48,5 +51,6 @@
 {% block scripts %}
 <script src="/static/vendor/pannellum.js"></script>
 <script src="/static/preview.js"></script>
+<script src="/static/settings.js"></script>
 <script src="/static/plan.js"></script>
 {% endblock %}

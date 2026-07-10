@@ -67,7 +67,8 @@
 			{% endfor %}
 		</tbody>
 	</table>
-	<p class="hint">Valde du fel bild? Ta bort den, eller ladda upp en ny med samma filnamn för att ersätta den.</p>
+	<p class="hint">Valde du fel bild? Ta bort den, eller ladda upp en ny med samma filnamn för att ersätta den. Hovra en rad för att förhandsvisa panoramat.</p>
+	{% include "_preview_settings.html" %}
 	{% else %}
 	<p><em>Inga scener uppladdade ännu.</em></p>
 	{% endif %}
@@ -95,5 +96,6 @@
 {% block scripts %}
 <script src="/static/vendor/pannellum.js"></script>
 <script src="/static/preview.js"></script>
+<script src="/static/settings.js"></script>
 <script src="/static/upload.js"></script>
 {% endblock %}
