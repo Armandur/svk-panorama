@@ -527,3 +527,53 @@ tr[data-preview-scene] { cursor: help; }
 .section-head { margin-bottom: 0.5rem; }
 .fullres-label { display: block; margin: 0.5rem 0; }
 .scene-nav { margin-top: 0.25rem; }
+
+/* --- Scenvy: minikarta uppe till höger + grannrader med preview --- */
+.scene-map {
+	position: absolute;
+	top: 0.8rem;
+	right: 0.8rem;
+	width: 220px;
+	max-width: 42%;
+	border: 2px solid rgba(255, 255, 255, 0.75);
+	border-radius: 0.3rem;
+	overflow: hidden;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+	z-index: 15;
+	background: #fff;
+}
+.scene-map img { display: block; width: 100%; height: auto; }
+#scene-map-dots { position: absolute; inset: 0; pointer-events: none; }
+.scene-dot {
+	position: absolute;
+	width: 9px; height: 9px;
+	margin-left: -4.5px; margin-top: -4.5px;
+	border-radius: 50%;
+	background: var(--svk-marker);
+	border: 1px solid #fff;
+	box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+}
+.scene-dot.current, .scene-dot.highlight {
+	width: 14px; height: 14px;
+	margin-left: -7px; margin-top: -7px;
+	z-index: 2;
+}
+.scene-dot.current { background: #1e73d8; }
+.scene-dot.highlight { background: var(--svk-warn); z-index: 3; }
+
+.neighbor-row { display: flex; gap: 0.4rem; align-items: stretch; }
+.neighbor-row .neighbor-btn { flex: 1; margin: 0; text-align: left; }
+.neighbor-peek {
+	flex: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.4rem;
+	border: 1px solid var(--pico-muted-border-color);
+	border-radius: 0.25rem;
+	cursor: help;
+	color: var(--pico-muted-color);
+	font-size: 1.1rem;
+	background: var(--pico-card-background-color);
+}
+.neighbor-peek:hover { color: var(--svk-accent); border-color: var(--svk-accent); }

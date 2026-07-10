@@ -59,6 +59,10 @@
 	<div id="panorama"></div>
 	<div class="crosshair" aria-hidden="true"></div>
 	<div id="scene-title-label" class="scene-title-label"></div>
+	<div id="scene-map" class="scene-map">
+		<img id="scene-map-img" src="/projects/{{ project.slug }}/map.png" alt="Översiktskarta">
+		<div id="scene-map-dots"></div>
+	</div>
 </div>
 
 <div id="help-modal" class="help-modal" hidden>
@@ -82,5 +86,7 @@
 {% block scripts %}
 <script src="/static/vendor/pannellum.js"></script>
 <script src="/js/geo.js"></script>
+<script src="/static/preview.js"></script>
+<script src="/static/settings.js"></script>
 <script src="/static/scene.js"></script>
 {% endblock %}

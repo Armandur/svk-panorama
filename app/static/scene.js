@@ -60,6 +60,31 @@
 		if (sceneTitleLabel) sceneTitleLabel.textContent = (tour.scenes[id] && tour.scenes[id].title) || "";
 	}
 
+	// Minikarta uppe till höger: prickar för scener, markerar aktuell + hovrad.
+	const mapImg = document.getElementById("scene-map-img");
+	const mapDots = document.getElementById("scene-map-dots");
+	const dotEls = {};
+	function buildMapDots() {
+		if (!mapDots || !mapImg || !mapImg.naturalWidth) return;
+		mapDots.innerHTML = "";
+		Object.keys(dotEls).forEach(function (k) { delete dotEls[k]; });
+		(mapData.scenes || []).forEach(function (s) {
+			const d = document.createElement("div");
+			d.className = "scene-dot";
+			d.style.left = (s.position.x / mapImg.naturalWidth * 100) + "%";
+			d.style.top = (s.position.y / mapImg.naturalHeight * 100) + "%";
+			d.title = "Scen " + s.id;
+			mapDots.appendChild(d);
+			dotEls[s.id] = d;
+		});
+	}
+	function updateMapDots(currentId, highlightId) {
+		Object.keys(dotEls).forEach(function (id) {
+			dotEls[id].classList.toggle("current", id === currentId);
+			dotEls[id].classList.toggle("highlight", id === highlightId);
+		});
+	}
+
 	function round2(n) { return Math.round(n * 100) / 100; }
 
 	function sceneIds() {
@@ -134,6 +159,11 @@
 		applyRes(viewer.getScene());
 	});
 
+	if (mapImg) {
+		if (mapImg.complete && mapImg.naturalWidth) buildMapDots();
+		else mapImg.addEventListener("load", function () { buildMapDots(); updateMapDots(viewer.getScene(), null); });
+	}
+
 	// --- Sidopanel ---
 	function refreshSidebar() {
 		const cur = viewer.getScene();
@@ -143,6 +173,7 @@
 		renderCalibState(cur);
 		renderNeighbors(cur);
 		renderReadiness();
+		updateMapDots(cur, null);
 	}
 
 	function renderCalibState(cur) {
@@ -168,12 +199,29 @@
 			return;
 		}
 		ns.forEach(function (n) {
+			const row = document.createElement("div");
+			row.className = "neighbor-row";
+
 			const b = document.createElement("button");
 			b.type = "button";
 			b.className = "secondary neighbor-btn";
 			b.textContent = "Sikta mot scen " + n;
 			b.addEventListener("click", function () { calibrate(cur, n); });
-			neighborList.appendChild(b);
+
+			// Icke-knapp att hovra för att förhandsvisa scenen (auto-roterande).
+			const peek = document.createElement("span");
+			peek.className = "neighbor-peek";
+			peek.textContent = "◉"; // fisköga - ser ut som ett öga/mål
+			peek.title = "Förhandsvisa scen " + n;
+			if (window.ScenePreview) window.ScenePreview.attach(peek, slug, n);
+
+			// Hovra raden markerar grannens prick på minikartan.
+			row.addEventListener("mouseenter", function () { updateMapDots(cur, n); });
+			row.addEventListener("mouseleave", function () { updateMapDots(cur, null); });
+
+			row.appendChild(b);
+			row.appendChild(peek);
+			neighborList.appendChild(row);
 		});
 	}
 
