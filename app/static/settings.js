@@ -24,13 +24,16 @@
 		});
 	});
 
-	// Rotationsriktning (select).
+	// Rotationsriktning (slide-toggle): av = höger, på = vänster.
 	var dir = document.getElementById("preview-dir");
 	if (dir) {
-		var d = localStorage.getItem("svk_preview_dir");
-		dir.value = (d === "left" || d === "right") ? d : "right";
+		var dirOut = document.getElementById("preview-dir-val");
+		var isLeft = localStorage.getItem("svk_preview_dir") === "left";
+		dir.checked = isLeft;
+		if (dirOut) dirOut.value = isLeft ? "Vänster" : "Höger";
 		dir.addEventListener("change", function () {
-			localStorage.setItem("svk_preview_dir", dir.value);
+			localStorage.setItem("svk_preview_dir", dir.checked ? "left" : "right");
+			if (dirOut) dirOut.value = dir.checked ? "Vänster" : "Höger";
 		});
 	}
 })();
