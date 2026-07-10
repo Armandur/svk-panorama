@@ -11,7 +11,7 @@ from app.services.project_files import ensure_preview
 router = APIRouter()
 
 
-@router.get("/projects/{slug}/previews/{scene_id}.jpg")
+@router.api_route("/projects/{slug}/previews/{scene_id}.jpg", methods=["GET", "HEAD"])
 def scene_preview(
     slug: str,
     scene_id: str,

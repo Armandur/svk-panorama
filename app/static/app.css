@@ -254,3 +254,23 @@ main.plan-app {
 	color: #fff;
 }
 tr[data-preview-scene] { cursor: help; }
+
+/* --- Uppladdnings-overlay (async progress) --- */
+#upload-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 3000;
+	background: rgba(0, 0, 0, 0.55);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+}
+#upload-overlay[hidden] { display: none; }
+#upload-overlay article {
+	max-width: 24rem;
+	width: 100%;
+	text-align: center;
+	margin: 0;
+}
+#upload-overlay progress { width: 100%; }

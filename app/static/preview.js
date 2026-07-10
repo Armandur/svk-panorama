@@ -56,6 +56,9 @@
 		destroyViewer();
 		inner.innerHTML = "";
 		if (!window.pannellum) return;
+		// Tvinga en layout-flush så pannellum mäter containern (320x180) korrekt.
+		// Utan detta initieras WebGL-canvasen med 0 storlek -> svart ruta.
+		void inner.offsetHeight;
 		viewer = pannellum.viewer(inner, {
 			type: "equirectangular",
 			panorama: "/projects/" + encodeURIComponent(slug) + "/previews/" + encodeURIComponent(sceneId) + ".jpg",

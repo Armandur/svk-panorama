@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Uppladdning - {{ project.name }}{% endblock %}
 {% block head %}<link rel="stylesheet" href="/static/vendor/pannellum.css">{% endblock %}
+{% block body_attrs %} data-slug="{{ project.slug }}"{% endblock %}
 {% block content %}
 
 <hgroup>
@@ -17,7 +18,7 @@
 	<article>
 		<h2>Panoramabilder</h2>
 		<p>Filnamnet blir scenens id (t.ex. <code>1.jpg</code> -&gt; scen <code>1</code>).</p>
-		<form method="post" action="/projects/{{ project.slug }}/images" enctype="multipart/form-data">
+		<form id="images-form" method="post" action="/projects/{{ project.slug }}/images" enctype="multipart/form-data">
 			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 			<input type="file" name="files" accept=".jpg,.jpeg,.png" multiple required>
 			<button type="submit">Ladda upp bilder</button>
@@ -29,7 +30,7 @@
 		{% if has_map_image %}
 		<p><small>Karta uppladdad. Ladda upp en ny för att ersätta den.</small></p>
 		{% endif %}
-		<form method="post" action="/projects/{{ project.slug }}/map-image" enctype="multipart/form-data">
+		<form id="map-form" method="post" action="/projects/{{ project.slug }}/map-image" enctype="multipart/form-data">
 			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 			<input type="file" name="file" accept=".jpg,.jpeg,.png" required>
 			<button type="submit" class="secondary">{% if has_map_image %}Ersätt karta{% else %}Ladda upp karta{% endif %}</button>
@@ -82,8 +83,17 @@
 	{% endif %}
 </section>
 
+<div id="upload-overlay" hidden>
+	<article aria-busy="true">
+		<h3 id="upload-title">Laddar upp...</h3>
+		<progress id="upload-progress" value="0" max="100"></progress>
+		<p id="upload-detail" class="hint"></p>
+	</article>
+</div>
+
 {% endblock %}
 {% block scripts %}
 <script src="/static/vendor/pannellum.js"></script>
 <script src="/static/preview.js"></script>
+<script src="/static/upload.js"></script>
 {% endblock %}

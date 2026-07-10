@@ -1,8 +1,8 @@
 """Uppladdning av panoramabilder och kartbild."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from app import config
 from app.database import Project
@@ -28,16 +28,18 @@ router = APIRouter()
 
 @router.post("/projects/{slug}/images")
 async def upload_images(
+    request: Request,
     slug: str,
     files: list[UploadFile] = File(...),
     project: Project = Depends(get_project_or_404),
     _csrf: None = Depends(verify_csrf_form),
-) -> RedirectResponse:
+):
     if not files:
         raise HTTPException(status_code=400, detail="Inga filer valda")
 
     ensure_project_structure(slug)
     tour = read_tour(slug)
+    scene_ids = []
 
     for upload in files:
         filename = safe_upload_name(upload.filename or "")
@@ -56,18 +58,26 @@ async def upload_images(
 
         panorama_url = f"/projects/{slug}/images/{filename}"
         merge_scene_into_tour(tour, scene_id, panorama_url)
+        scene_ids.append(scene_id)
 
     write_tour(slug, tour)
+
+    # Fetch-anrop (async uppladdning i webbläsaren) får JSON med scen-id:n så
+    # klienten kan för-generera previews med progress. Vanlig formulärpost
+    # (utan JS) faller tillbaka på redirect.
+    if "application/json" in request.headers.get("accept", ""):
+        return JSONResponse({"scenes": scene_ids})
     return RedirectResponse(url=f"/projects/{slug}", status_code=302)
 
 
 @router.post("/projects/{slug}/map-image")
 async def upload_map_image(
+    request: Request,
     slug: str,
     file: UploadFile = File(...),
     project: Project = Depends(get_project_or_404),
     _csrf: None = Depends(verify_csrf_form),
-) -> RedirectResponse:
+):
     filename = file.filename or ""
     validate_extension(filename, config.ALLOWED_MAP_EXT)
     content = await file.read()
@@ -77,6 +87,8 @@ async def upload_map_image(
     ensure_project_structure(slug)
     map_image_path(slug).write_bytes(content)
 
+    if "application/json" in request.headers.get("accept", ""):
+        return JSONResponse({"ok": True})
     return RedirectResponse(url=f"/projects/{slug}", status_code=302)
 
 
