@@ -246,7 +246,9 @@ main.plan-app {
 	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
 	background: #000;
 }
-.scene-preview-inner { width: 320px; height: 180px; }
+/* Högre specificitet än pannellums .pnlm-container{height:100%} (som annars
+   vinner och kollapsar rutan eftersom boxen saknar fast höjd). */
+#scene-preview .scene-preview-inner { width: 320px; height: 180px; }
 .scene-preview-cap {
 	font-size: 0.8rem;
 	padding: 0.2rem 0.55rem;

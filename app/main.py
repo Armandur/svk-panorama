@@ -19,6 +19,17 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="SVK Panorama", lifespan=lifespan)
 
+
+@app.middleware("http")
+async def no_cache_static(request, call_next):
+    """Statiska CSS/JS ska alltid revalideras så att ändringar syns utan
+    hård-uppdatering (lokalt utvecklingsverktyg)."""
+    response = await call_next(request)
+    if request.url.path.startswith(("/static", "/js")):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
 app.include_router(projects.router)
 app.include_router(uploads.router)
 app.include_router(plan.router)
