@@ -134,10 +134,12 @@
 			btn.type = "button";
 			btn.className = "secondary arm-btn";
 			btn.textContent = "Scen " + id;
-			btn.setAttribute("aria-pressed", id === state.armedId ? "true" : "false");
+			// Markerad bara i placeringsläge - annars är det otydligt att man
+			// inte kan placera.
+			btn.setAttribute("aria-pressed", (state.mode === "place" && id === state.armedId) ? "true" : "false");
 			btn.addEventListener("click", function () {
 				state.armedId = id;
-				renderUnplacedList();
+				setMode("place"); // välja en scen innebär att man vill placera
 			});
 			if (window.ScenePreview) window.ScenePreview.attach(btn, slug, id);
 
@@ -241,6 +243,7 @@
 		state.mode = (state.mode === mode) ? "place" : mode;
 		toolTwo.setAttribute("aria-pressed", state.mode === "two" ? "true" : "false");
 		toolOne.setAttribute("aria-pressed", state.mode === "one" ? "true" : "false");
+		renderUnplacedList(); // uppdatera markering (bara synlig i placeringsläge)
 		renderStatus();
 	}
 
