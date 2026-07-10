@@ -17,7 +17,7 @@
 (function () {
 	"use strict";
 
-	var box, inner, cap, actionsEl, viewer, currentKey, showTimer, hideTimer;
+	var box, inner, cap, actionsEl, viewer, currentKey, showTimer, hideTimer, rafId;
 	var pinned = false;
 	var W = 320, H = 180;
 	var SPEED_KEY = "svk_preview_speed"; // grader/s, användarspecifik (localStorage)
@@ -44,10 +44,30 @@
 	}
 
 	function destroyViewer() {
+		stopPitchOscillation();
 		if (viewer) {
 			try { viewer.destroy(); } catch (e) { /* redan borta */ }
 			viewer = null;
 		}
+	}
+
+	// Mjuk upp/ned-vaggning (pitch) ovanpå pannellums yaw-rotation. Respekterar
+	// hastighetsinställningen: 0 = helt stilla.
+	function startPitchOscillation() {
+		stopPitchOscillation();
+		if (rotateSpeed() <= 0) return;
+		var amp = 12, period = 4000;
+		var t0 = performance.now();
+		function frame(now) {
+			if (!viewer) return;
+			try { viewer.setPitch(amp * Math.sin((now - t0) / period * 2 * Math.PI)); } catch (e) { /* ännu ej redo */ }
+			rafId = requestAnimationFrame(frame);
+		}
+		rafId = requestAnimationFrame(frame);
+	}
+
+	function stopPitchOscillation() {
+		if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
 	}
 
 	function position(x, y, extra) {
@@ -84,6 +104,7 @@
 			draggable: false,
 			hfov: 110,
 		});
+		startPitchOscillation();
 	}
 
 	// --- Hover (transient) -------------------------------------------------
