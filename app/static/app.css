@@ -577,3 +577,8 @@ tr[data-preview-scene] { cursor: help; }
 	background: var(--pico-card-background-color);
 }
 .neighbor-peek:hover { color: var(--svk-accent); border-color: var(--svk-accent); }
+
+/* Inställnings-knapp + modal */
+.settings-article .settings-btn { width: 100%; margin: 0; }
+.help-modal h4 { margin: 0.6rem 0 0.3rem; }
+.preview-controls label { margin-bottom: 0.1rem; }

@@ -41,4 +41,15 @@
 			applyDir(dir.checked);
 		});
 	}
+
+	// Inställnings-modal (öppnas från valfritt steg).
+	var openBtn = document.getElementById("settings-btn");
+	var modal = document.getElementById("settings-modal");
+	var closeBtn = document.getElementById("settings-close");
+	if (openBtn && modal) openBtn.addEventListener("click", function () { modal.hidden = false; });
+	if (closeBtn && modal) closeBtn.addEventListener("click", function () { modal.hidden = true; });
+	if (modal) modal.addEventListener("click", function (e) { if (e.target === modal) modal.hidden = true; });
+	document.addEventListener("keydown", function (e) {
+		if (e.key === "Escape" && modal && !modal.hidden) modal.hidden = true;
+	});
 })();
