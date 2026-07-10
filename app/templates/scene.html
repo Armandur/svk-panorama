@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Kalibrering - {{ project.name }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/vendor/pannellum.css">{% endblock %}
+{% block body_attrs %} class="plan-fullscreen" data-slug="{{ project.slug }}"{% endblock %}
+{% block main_attrs %} class="plan-app"{% endblock %}
+{% block content %}
+
+{% if not has_map_image %}
+<article class="notice">
+	<p>Ingen kartbild uppladdad ännu. <a href="/projects/{{ project.slug }}">Gå tillbaka till uppladdning</a> först.</p>
+</article>
+{% else %}
+<aside class="planner-side">
+	<nav class="plan-topnav" aria-label="Arbetssteg">
+		<a href="/projects/{{ project.slug }}/plan" role="button" class="secondary outline">&lt;- Placering</a>
+		<a href="#" role="button" class="secondary" aria-disabled="true" title="Kommer senare">Export -&gt;</a>
+	</nav>
+	<hgroup class="plan-heading">
+		<h2>{{ project.name }}</h2>
+		<p>Kalibrera riktning per scen och generera hotspots.</p>
+	</hgroup>
+
+	<article>
+		<div class="section-head">
+			<h3>Scen <span id="cur-scene">-</span></h3>
+			<button id="help-btn" type="button" class="secondary outline help-btn" title="Hjälp">? Hjälp</button>
+		</div>
+		<div class="scene-nav">
+			<button id="prev-scene" type="button" class="secondary" title="Föregående scen">&larr; Föreg.</button>
+			<button id="next-scene" type="button" class="secondary" title="Nästa scen">Nästa &rarr;</button>
+		</div>
+		<p id="calib-state" aria-live="polite"></p>
+	</article>
+
+	<article>
+		<h3>Kalibrera</h3>
+		<p class="hint">Vrid vyn så en granne du ser är centrerad, klicka sedan på grannen nedan.</p>
+		<div id="neighbor-list" class="neighbor-list"></div>
+	</article>
+
+	<article>
+		<p id="scene-readiness" class="readiness" aria-live="polite"></p>
+		<button id="generate-btn" type="button">Auto-generera hotspots</button>
+		<p id="dirty-badge" class="dirty-badge" hidden>Osparade ändringar</p>
+		<div class="save-row">
+			<button id="save-tour-btn" type="button">Spara</button>
+			<button id="discard-tour-btn" type="button" class="secondary outline" hidden>Släng ändringar</button>
+		</div>
+	</article>
+</aside>
+<div class="panorama-wrap">
+	<div id="panorama"></div>
+</div>
+
+<div id="help-modal" class="help-modal" hidden>
+	<article>
+		<div class="section-head">
+			<h3>Hjälp - kalibrering</h3>
+			<button id="help-close" type="button" class="secondary outline" aria-label="Stäng">&times;</button>
+		</div>
+		<p><b>Varför:</b> varje panoramas "framåt" (yaw 0) pekar åt ett godtyckligt håll. En kalibrering per scen låser riktningen mot kartan så alla hotspots kan riktas rätt automatiskt.</p>
+		<p><b>Gör så här:</b> för varje scen, vrid vyn tills en granne du ser är i mitten och klicka på grannens knapp. Upprepa för alla scener (byt med Föreg./Nästa).</p>
+		<p><b>Generera:</b> när scenerna är kalibrerade skapar <b>Auto-generera hotspots</b> alla länkpunkter ur kartan - enkelriktade länkar ger en hotspot, dubbelriktade två.</p>
+		<p><b>Spara</b> skriver nordoffset och hotspots till turen.</p>
+	</article>
+</div>
+{% endif %}
+
+<script id="tour-data" type="application/json">{{ tour | tojson }}</script>
+<script id="map-data" type="application/json">{{ map_data | tojson }}</script>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/vendor/pannellum.js"></script>
+<script src="/js/geo.js"></script>
+<script src="/static/scene.js"></script>
+{% endblock %}

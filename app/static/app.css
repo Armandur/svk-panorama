@@ -480,3 +480,11 @@ tr[data-preview-scene] { cursor: help; }
 .dir-toggle input { margin: 0; }
 .dir-toggle span { color: var(--pico-muted-color); font-size: 0.9rem; }
 .dir-toggle span.active { color: var(--pico-color); font-weight: 600; }
+
+/* --- Scenvy (kalibrering) --- */
+.panorama-wrap { flex: 1; min-height: 0; position: relative; }
+.panorama-wrap #panorama { position: absolute; inset: 0; }
+.scene-nav { display: flex; gap: 0.4rem; margin-bottom: 0.5rem; }
+.scene-nav button { flex: 1; margin: 0; }
+.neighbor-list { display: flex; flex-direction: column; gap: 0.4rem; }
+.neighbor-btn { width: 100%; margin: 0; text-align: left; }
