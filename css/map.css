@@ -88,3 +88,44 @@
  #show-map-btn:hover {
      background-color: #f8f8f8;
  }
+/* Graf-editor: länkar mellan scener + kalibreringsstatus (bara dev.html) */
+#graph-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    pointer-events: none;
+}
+#graph-overlay .graph-edge {
+    stroke: #4a90d9;
+    stroke-width: 2;
+    opacity: 0.85;
+}
+#graph-overlay .graph-rubber {
+    stroke: #f5a623;
+    stroke-width: 2;
+    stroke-dasharray: 4;
+}
+#graph-status {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font: 13px/1.6 Arial, sans-serif;
+    z-index: 9999;
+    text-align: center;
+}
+#graph-status .gk {
+    display: inline-block;
+    background: #333;
+    border-radius: 3px;
+    padding: 0 5px;
+    font-weight: bold;
+}
+#graph-status .gon {
+    color: #f5a623;
+}
