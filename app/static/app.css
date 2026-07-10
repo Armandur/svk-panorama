@@ -582,3 +582,9 @@ tr[data-preview-scene] { cursor: help; }
 .settings-article .settings-btn { width: 100%; margin: 0; }
 .help-modal h4 { margin: 0.6rem 0 0.3rem; }
 .preview-controls label { margin-bottom: 0.1rem; }
+
+.neighbor-btn.calibrated {
+	background: var(--svk-ok);
+	border-color: var(--svk-ok);
+	color: #fff;
+}

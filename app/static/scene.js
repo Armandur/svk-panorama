@@ -24,11 +24,13 @@
 		return Array.isArray(e) ? { from: e[0], to: e[1], twoway: true } : { from: e.from, to: e.to, twoway: e.twoway !== false };
 	});
 
-	// Nordoffset per scen (från turen, redigeras här).
+	// Nordoffset + vilken granne kalibreringen gjordes mot (per scen).
 	const offsets = {};
+	const calibRef = {};
 	Object.keys(tour.scenes).forEach(function (id) {
 		const o = tour.scenes[id].northOffset;
 		if (o !== undefined && o !== null) offsets[id] = o;
+		if (tour.scenes[id].calibRef) calibRef[id] = tour.scenes[id].calibRef;
 	});
 
 	const state = { dirty: false };
@@ -107,6 +109,7 @@
 		Object.keys(tour.scenes).forEach(function (id) {
 			scenes[id] = {
 				off: (offsets[id] == null ? null : offsets[id]),
+				cr: calibRef[id] || null,
 				ti: tour.scenes[id].title || null,
 				hs: tour.scenes[id].hotSpots || [],
 			};
@@ -202,10 +205,12 @@
 			const row = document.createElement("div");
 			row.className = "neighbor-row";
 
+			const isRef = calibRef[cur] === n;
 			const b = document.createElement("button");
 			b.type = "button";
-			b.className = "secondary neighbor-btn";
-			b.textContent = "Sikta mot scen " + n;
+			b.className = "secondary neighbor-btn" + (isRef ? " calibrated" : "");
+			b.textContent = (isRef ? "Kalibrerad mot scen " : "Sikta mot scen ") + n;
+			b.title = isRef ? "Klicka för att kalibrera om" : "";
 			b.addEventListener("click", function () { calibrate(cur, n); });
 
 			// Icke-knapp att hovra för att förhandsvisa scenen (auto-roterande).
@@ -247,6 +252,7 @@
 		if (!positions[cur] || !positions[neighbor]) return;
 		const yaw = viewer.getYaw();
 		offsets[cur] = round2(Geo.deriveOffset(positions[cur], positions[neighbor], yaw));
+		calibRef[cur] = neighbor;
 		setDirty(true);
 		refreshSidebar();
 		showToast("Scen " + cur + " kalibrerad mot " + neighbor, "ok");
@@ -296,6 +302,7 @@
 			sceneIds().forEach(function (id) {
 				payload.scenes[id] = {
 					northOffset: (offsets[id] == null ? null : offsets[id]),
+					calibRef: calibRef[id] || null,
 					title: tour.scenes[id].title || null,
 					hotSpots: tour.scenes[id].hotSpots || [],
 				};
@@ -318,6 +325,7 @@
 		Object.keys(tour.scenes).forEach(function (id) {
 			const s = snap[id];
 			if (s.off == null) delete offsets[id]; else offsets[id] = s.off;
+			if (s.cr == null) delete calibRef[id]; else calibRef[id] = s.cr;
 			if (s.ti == null) delete tour.scenes[id].title; else tour.scenes[id].title = s.ti;
 			tour.scenes[id].hotSpots = s.hs;
 			const cfg = viewer.getConfig().scenes[id];

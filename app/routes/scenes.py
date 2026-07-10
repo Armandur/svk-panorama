@@ -17,6 +17,7 @@ router = APIRouter()
 class SceneUpdate(BaseModel):
     northOffset: float | None = None
     title: str | None = None
+    calibRef: str | None = None  # grannscen kalibreringen gjordes mot (UI-state)
     hotSpots: list[dict[str, Any]] = Field(default_factory=list)
 
 
@@ -72,6 +73,10 @@ def save_tour(
                 scene["title"] = title
             else:
                 scene.pop("title", None)
+        if upd.calibRef:
+            scene["calibRef"] = upd.calibRef
+        else:
+            scene.pop("calibRef", None)
         scene["hotSpots"] = upd.hotSpots
         updated += 1
     write_tour(slug, tour)
