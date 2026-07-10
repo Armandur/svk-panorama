@@ -24,16 +24,21 @@
 		});
 	});
 
-	// Rotationsriktning (slide-toggle): av = höger, på = vänster.
+	// Rotationsriktning (slide-toggle): knoppen till vänster = vänster (av),
+	// till höger = höger (på). Vänster/Höger-etiketter flankerar switchen.
 	var dir = document.getElementById("preview-dir");
 	if (dir) {
-		var dirOut = document.getElementById("preview-dir-val");
-		var isLeft = localStorage.getItem("svk_preview_dir") === "left";
-		dir.checked = isLeft;
-		if (dirOut) dirOut.value = isLeft ? "Vänster" : "Höger";
+		var dirLeft = document.getElementById("dir-left");
+		var dirRight = document.getElementById("dir-right");
+		function applyDir(isRight) {
+			dir.checked = isRight;
+			if (dirLeft) dirLeft.classList.toggle("active", !isRight);
+			if (dirRight) dirRight.classList.toggle("active", isRight);
+		}
+		applyDir(localStorage.getItem("svk_preview_dir") !== "left"); // default höger
 		dir.addEventListener("change", function () {
-			localStorage.setItem("svk_preview_dir", dir.checked ? "left" : "right");
-			if (dirOut) dirOut.value = dir.checked ? "Vänster" : "Höger";
+			localStorage.setItem("svk_preview_dir", dir.checked ? "right" : "left");
+			applyDir(dir.checked);
 		});
 	}
 })();

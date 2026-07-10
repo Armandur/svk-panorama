@@ -473,3 +473,10 @@ tr[data-preview-scene] { cursor: help; }
 .save-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .save-row button { margin: 0; flex: 1; }
 #discard-map-btn[hidden] { display: none; }
+
+/* Rotationsriktnings-toggle med Vänster/Höger-etiketter */
+#dir-label { margin-bottom: 0.2rem; }
+.dir-toggle { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+.dir-toggle input { margin: 0; }
+.dir-toggle span { color: var(--pico-muted-color); font-size: 0.9rem; }
+.dir-toggle span.active { color: var(--pico-color); font-weight: 600; }
