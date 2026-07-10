@@ -18,11 +18,14 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
       hotspot-yaw/targetYaw ur kartposition + en nordoffset per scen.
 - [x] Graf-editor-prototyp (`js/graph-editor.js`) - dra länkar på kartan,
       kalibrera, auto-generera. Mekaniken validerad.
-- [ ] **FastAPI-app** med kart-först planeringsvy: ladda upp bilder + karta,
-      placera numrerade punkter, länka scener. Flytta graf-UI hit (planeringen
-      hör hemma på kartan, skilt från scenvyn).
-- [ ] Flytta kalibrering + generering till appens scenvy.
-- [ ] Inbyggd hur-man-gör-guide (se `WORKFLOW.md`).
+- [x] **FastAPI-app** (`app/`) med tvåstegs-flöde: steg 1 uppladdning (async
+      med progress, för-genererade previews, ta bort/ersätta), steg 2 kart-först
+      planeringsvy (placera, riktade länkar enväg/tvåväg med pilar, zoom/pan,
+      hover-preview med inställningar, autospar, dirty-skydd, beredskapskoll,
+      hjälp-modal).
+- [ ] **Scenvyn**: flytta kalibrering (nordoffset per scen) + auto-generering av
+      hotspots till appen, med riktningsstöd från envägs/tvåvägs-länkarna.
+- [ ] Inbyggd hur-man-gör-guide finns i planeringsvyns hjälp-modal + `WORKFLOW.md`.
 
 ## Fas 2 - Bundle & viewer
 
