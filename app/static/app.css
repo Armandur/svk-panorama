@@ -85,7 +85,7 @@ main.plan-app {
 .planner-side article { margin-bottom: 1rem; }
 .planner-side .hint { font-size: 0.85rem; color: var(--pico-muted-color); }
 
-#save-map-btn { background: var(--svk-ok); border-color: var(--svk-ok); }
+#save-map-btn, #save-tour-btn { background: var(--svk-ok); border-color: var(--svk-ok); }
 
 .tool-row {
 	display: flex;
@@ -339,7 +339,7 @@ tr[data-preview-scene] { cursor: help; }
 	margin-bottom: 0.5rem;
 }
 .dirty-badge[hidden] { display: none; }
-#save-map-btn.has-changes {
+#save-map-btn.has-changes, #save-tour-btn.has-changes {
 	background: var(--svk-warn);
 	border-color: var(--svk-warn);
 	color: #1a1a1a;
@@ -472,7 +472,7 @@ tr[data-preview-scene] { cursor: help; }
 /* Spara/släng-rad */
 .save-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .save-row button { margin: 0; flex: 1; }
-#discard-map-btn[hidden] { display: none; }
+#discard-map-btn[hidden], #discard-tour-btn[hidden] { display: none; }
 
 /* Rotationsriktnings-toggle med Vänster/Höger-etiketter */
 #dir-label { margin-bottom: 0.2rem; }
