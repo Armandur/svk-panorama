@@ -1,7 +1,7 @@
 """Pydantic-scheman för JSON-endpoints."""
 from __future__ import annotations
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ScenePosition(BaseModel):
@@ -14,16 +14,19 @@ class MapScene(BaseModel):
     position: ScenePosition
 
 
+class MapEdge(BaseModel):
+    """Länk mellan två scener. twoway=True saknar riktning (dubbelriktad),
+    twoway=False är enkelriktad from -> to."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    from_: str = Field(alias="from")
+    to: str
+    twoway: bool = True
+
+
 class MapPayload(BaseModel):
-    """Body för POST /projects/{slug}/map - skrivs rakt av till map.json."""
+    """Body för POST /projects/{slug}/map - skrivs till map.json."""
 
     scenes: list[MapScene] = Field(default_factory=list)
-    edges: list[list[str]] = Field(default_factory=list)
-
-    @field_validator("edges")
-    @classmethod
-    def edges_har_tva_andar(cls, v: list[list[str]]) -> list[list[str]]:
-        for edge in v:
-            if len(edge) != 2:
-                raise ValueError("varje länk måste ha exakt två scen-id:n")
-        return v
+    edges: list[MapEdge] = Field(default_factory=list)

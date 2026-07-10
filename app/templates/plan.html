@@ -22,8 +22,12 @@
 	<article>
 		<h3>Status</h3>
 		<p id="status-box" aria-live="polite">Laddar...</p>
-		<button id="link-mode-toggle" type="button" class="secondary" aria-pressed="false">Länka scener</button>
-		<p class="hint">I länkläge: dra från en punkt till en annan för att skapa eller ta bort en länk.</p>
+		<div class="tool-row">
+			<button id="tool-two" type="button" class="secondary" aria-pressed="false" title="Tvåvägslänk (ingen pil)">&#8596; Tvåväg</button>
+			<button id="tool-one" type="button" class="secondary" aria-pressed="false" title="Envägslänk (pil i riktningen)">&#8594; Enväg</button>
+			<button id="tool-unplace" type="button" class="secondary" aria-pressed="false" title="Ta bort scen från kartan">&times; Ta bort</button>
+		</div>
+		<p class="hint">Välj ett verktyg och dra mellan två scener för att länka (dra samma igen för att ta bort). <b>&times; Ta bort</b> tar bort en scen från kartan (åter till oplacerade). Klicka verktyget igen för att avsluta.</p>
 		<button id="save-map-btn" type="button">Spara karta</button>
 	</article>
 	<article>

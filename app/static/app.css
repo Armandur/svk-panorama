@@ -87,10 +87,33 @@ main.plan-app {
 
 #save-map-btn { background: var(--svk-ok); border-color: var(--svk-ok); }
 
-#link-mode-toggle[aria-pressed="true"] {
+.tool-row {
+	display: flex;
+	gap: 0.4rem;
+	margin-bottom: 0.5rem;
+}
+.tool-row button {
+	flex: 1;
+	margin: 0;
+	padding: 0.4rem 0.3rem;
+	font-size: 0.85rem;
+}
+.tool-row button[aria-pressed="true"] {
 	background: var(--svk-accent);
 	color: var(--pico-primary-inverse);
 	border-color: var(--svk-accent);
+}
+
+.graph-arrow { fill: var(--svk-edge); }
+
+.unplaced-item { display: flex; gap: 0.3rem; align-items: stretch; }
+.unplaced-item .arm-btn { flex: 1; }
+.unplaced-item .del-fully {
+	flex: none;
+	width: 2.2rem;
+	padding: 0.4rem 0;
+	margin: 0;
+	line-height: 1;
 }
 
 #next-step-link[aria-disabled="true"] {

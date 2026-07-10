@@ -50,13 +50,13 @@ def save_map(
         if scene.id not in known_ids:
             raise HTTPException(status_code=400, detail=f"Okänt scen-id: {scene.id}")
     for edge in payload.edges:
-        for scene_id in edge:
+        for scene_id in (edge.from_, edge.to):
             if scene_id not in known_ids:
                 raise HTTPException(status_code=400, detail=f"Okänt scen-id i länk: {scene_id}")
 
     data = {
         "scenes": [scene.model_dump() for scene in payload.scenes],
-        "edges": payload.edges,
+        "edges": [edge.model_dump(by_alias=True) for edge in payload.edges],
     }
     write_map(slug, data)
     return {"ok": True, "scenes": len(data["scenes"]), "edges": len(data["edges"])}
