@@ -24,17 +24,62 @@
 
 .notice { border-left: 4px solid var(--svk-warn); }
 
-/* --- Planeringsvy ------------------------------------------------------ */
+/* --- Planeringsvy (helskärm: vänsterpanel 100% hög + autopassande karta) - */
 
-.plan-main { max-width: 100%; padding-inline: 0.75rem; }
+.plan-fullscreen .site-header { display: none; }
 
-.planner {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 1rem;
+main.plan-app {
+	max-width: none;
+	padding: 0;
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
 }
-@media (min-width: 900px) {
-	.planner { grid-template-columns: 20rem 1fr; align-items: start; }
+@media (min-width: 768px) {
+	main.plan-app { flex-direction: row; }
+}
+
+.planner-side {
+	flex: none;
+	padding: 0.75rem 0.9rem;
+	overflow-y: auto;
+	border-bottom: 1px solid var(--pico-muted-border-color);
+}
+@media (min-width: 768px) {
+	.planner-side {
+		width: 21rem;
+		height: 100vh;
+		border-bottom: none;
+		border-right: 1px solid var(--pico-muted-border-color);
+	}
+}
+
+.plan-topnav {
+	display: flex;
+	gap: 0.5rem;
+	margin-bottom: 0.75rem;
+}
+.plan-topnav [role="button"] { margin: 0; flex: 1; text-align: center; }
+.plan-heading { margin-bottom: 1rem; }
+.plan-heading h2 { margin-bottom: 0.1rem; }
+.plan-heading p { font-size: 0.85rem; color: var(--pico-muted-color); margin: 0; }
+
+.planner-map {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	padding: 0.5rem;
+}
+.planner-map .map-stage { width: auto; max-width: 100%; max-height: 100%; }
+.planner-map .map-stage img#map-image {
+	width: auto;
+	height: auto;
+	max-width: 100%;
+	max-height: 100%;
 }
 
 .planner-side article { margin-bottom: 1rem; }
@@ -188,3 +233,24 @@
 	padding: 0.25rem 0.6rem;
 	font-size: 0.85rem;
 }
+
+/* --- Hover-preview (auto-roterande mini-panorama) --- */
+#scene-preview {
+	position: fixed;
+	z-index: 2000;
+	width: 320px;
+	pointer-events: none;
+	display: none;
+	border-radius: 0.5rem;
+	overflow: hidden;
+	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+	background: #000;
+}
+.scene-preview-inner { width: 320px; height: 180px; }
+.scene-preview-cap {
+	font-size: 0.8rem;
+	padding: 0.2rem 0.55rem;
+	background: rgba(0, 0, 0, 0.85);
+	color: #fff;
+}
+tr[data-preview-scene] { cursor: help; }

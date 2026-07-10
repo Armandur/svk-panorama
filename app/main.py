@@ -8,7 +8,7 @@ from starlette.staticfiles import StaticFiles
 
 from app import config
 from app.database import init_db
-from app.routes import plan, projects, uploads
+from app.routes import plan, previews, projects, uploads
 
 
 @asynccontextmanager
@@ -22,6 +22,7 @@ app = FastAPI(title="SVK Panorama", lifespan=lifespan)
 app.include_router(projects.router)
 app.include_router(uploads.router)
 app.include_router(plan.router)
+app.include_router(previews.router)
 
 # Egen statik (CSS/JS för editorn).
 app.mount("/static", StaticFiles(directory=str(config.REPO_ROOT / "app" / "static")), name="static")

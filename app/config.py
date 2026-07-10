@@ -34,3 +34,7 @@ ALLOWED_MAP_EXT = {".jpg", ".jpeg", ".png"}
 MAX_MAP_MB = int(os.environ.get("SVK_MAX_MAP_MB", "20"))
 
 MAP_IMAGE_FILENAME = "map.png"
+
+# Preview: nedskalad equirektangulär bild för auto-roterande hover-förhandsvisning.
+PREVIEW_MAX_WIDTH = int(os.environ.get("SVK_PREVIEW_MAX_WIDTH", "2048"))
+PREVIEW_QUALITY = int(os.environ.get("SVK_PREVIEW_QUALITY", "82"))

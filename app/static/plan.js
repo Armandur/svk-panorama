@@ -112,6 +112,7 @@
 				state.armedId = id;
 				renderUnplacedList();
 			});
+			if (window.ScenePreview) window.ScenePreview.attach(btn, slug, id);
 			li.appendChild(btn);
 			unplacedList.appendChild(li);
 		});
@@ -128,6 +129,7 @@
 			marker.style.top = pctOf(scene.position.y, img.naturalHeight) + "%";
 			marker.title = "Scen " + scene.id;
 			marker.addEventListener("pointerdown", function (e) { onMarkerPointerDown(e, scene.id); });
+			if (window.ScenePreview) window.ScenePreview.attach(marker, slug, scene.id);
 			markersLayer.appendChild(marker);
 		});
 	}
@@ -311,6 +313,9 @@
 	// --- Init ------------------------------------------------------------
 
 	function init() {
+		// viewBox i bildens naturliga pixelrum så länklinjer (som ritas i
+		// samma rum) hamnar rätt även när kartan skalas för att passa skärmen.
+		svg.setAttribute("viewBox", "0 0 " + img.naturalWidth + " " + img.naturalHeight);
 		stage.addEventListener("pointerdown", onStagePointerDown);
 		linkToggle.addEventListener("click", function () { setLinkMode(!state.linkMode); });
 		saveBtn.addEventListener("click", saveMap);

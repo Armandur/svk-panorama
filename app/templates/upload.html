@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Uppladdning - {{ project.name }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/vendor/pannellum.css">{% endblock %}
 {% block content %}
 
 <hgroup>
@@ -50,7 +51,7 @@
 		</thead>
 		<tbody>
 			{% for s in scenes %}
-			<tr>
+			<tr data-preview-scene="{{ s.id }}" data-preview-slug="{{ project.slug }}">
 				<td><strong>{{ s.id }}</strong></td>
 				<td><code>{{ s.filename }}</code></td>
 				<td>{{ (s.size / 1048576) | round(1) }} MB</td>
@@ -81,4 +82,8 @@
 	{% endif %}
 </section>
 
+{% endblock %}
+{% block scripts %}
+<script src="/static/vendor/pannellum.js"></script>
+<script src="/static/preview.js"></script>
 {% endblock %}

@@ -44,6 +44,14 @@ def map_json_path(slug: str) -> Path:
     return project_dir(slug) / "map.json"
 
 
+def previews_dir(slug: str) -> Path:
+    return project_dir(slug) / "previews"
+
+
+def preview_path(slug: str, scene_id: str) -> Path:
+    return previews_dir(slug) / f"{scene_id}.jpg"
+
+
 def ensure_project_structure(slug: str) -> None:
     images_dir(slug).mkdir(parents=True, exist_ok=True)
 
@@ -100,6 +108,47 @@ def _natural_key(text: str) -> list:
     return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", text)]
 
 
+def scene_source_image(slug: str, scene_id: str) -> Path | None:
+    scene = read_tour(slug).get("scenes", {}).get(scene_id)
+    if not scene:
+        return None
+    filename = Path(scene.get("panorama", "")).name
+    if not filename:
+        return None
+    path = images_dir(slug) / filename
+    return path if path.exists() else None
+
+
+def generate_preview(slug: str, scene_id: str) -> Path:
+    """Skapa en nedskalad equirektangulär preview för hover-förhandsvisning.
+    Lat: kallas först när scenen faktiskt förhandsvisas."""
+    src = scene_source_image(slug, scene_id)
+    if src is None:
+        raise HTTPException(status_code=404, detail=f"Scen {scene_id} saknar bild")
+    from PIL import Image
+
+    previews_dir(slug).mkdir(parents=True, exist_ok=True)
+    dst = preview_path(slug, scene_id)
+    with Image.open(src) as im:
+        im = im.convert("RGB")
+        if im.width > config.PREVIEW_MAX_WIDTH:
+            height = round(im.height * config.PREVIEW_MAX_WIDTH / im.width)
+            im = im.resize((config.PREVIEW_MAX_WIDTH, height), Image.LANCZOS)
+        im.save(dst, "JPEG", quality=config.PREVIEW_QUALITY)
+    return dst
+
+
+def ensure_preview(slug: str, scene_id: str) -> Path:
+    dst = preview_path(slug, scene_id)
+    return dst if dst.exists() else generate_preview(slug, scene_id)
+
+
+def clear_preview(slug: str, scene_id: str) -> None:
+    dst = preview_path(slug, scene_id)
+    if dst.exists():
+        dst.unlink()
+
+
 def list_scenes(slug: str) -> list[dict[str, Any]]:
     """Uppladdade scener med metadata, naturligt sorterade på id. `placed`
     anger om scenen har en position i map.json."""
@@ -133,6 +182,7 @@ def remove_scene(slug: str, scene_id: str) -> None:
         fpath = images_dir(slug) / filename
         if fpath.exists():
             fpath.unlink()
+    clear_preview(slug, scene_id)
 
     default = tour.setdefault("default", default_tour()["default"])
     if default.get("firstScene") == scene_id:

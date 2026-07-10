@@ -8,6 +8,7 @@ from app import config
 from app.database import Project
 from app.deps import get_project_or_404, verify_csrf_form
 from app.services.project_files import (
+    clear_preview,
     ensure_project_structure,
     images_dir,
     map_image_path,
@@ -51,6 +52,7 @@ async def upload_images(
 
         dest = images_dir(slug) / filename
         dest.write_bytes(content)
+        clear_preview(slug, scene_id)  # regenereras lat om bilden ersattes
 
         panorama_url = f"/projects/{slug}/images/{filename}"
         merge_scene_into_tour(tour, scene_id, panorama_url)
