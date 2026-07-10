@@ -4,10 +4,12 @@
  * js/geo.js), SVG-overlayen använder viewBox så allt skalar med kartan.
  *
  * Verktygslägen (state.mode):
- *   place   - klick placerar vald scen, dra flyttar markörer (default)
- *   two     - dra mellan markörer -> tvåvägslänk (ingen pil)
- *   one     - dra mellan markörer -> envägslänk from->to (pil)
- *   unplace - klick på markör tar bort scenen från kartan (åter till oplacerade)
+ *   place - klick på tom karta placerar vald scen, dra flyttar markörer, klick
+ *           på en markör markerar scenen (fäster previewen med borttagningsknapp)
+ *   two   - dra mellan markörer -> tvåvägslänk (ingen pil)
+ *   one   - dra mellan markörer -> envägslänk from->to (pil nära målet)
+ *
+ * Hover över en scen visar bara dess egna länkar (state.edgeFocus).
  */
 (function () {
 	"use strict";
@@ -23,7 +25,6 @@
 	const statusBox = document.getElementById("status-box");
 	const toolTwo = document.getElementById("tool-two");
 	const toolOne = document.getElementById("tool-one");
-	const toolUnplace = document.getElementById("tool-unplace");
 	const saveBtn = document.getElementById("save-map-btn");
 
 	const tour = JSON.parse(document.getElementById("tour-data").textContent);
@@ -41,10 +42,13 @@
 		dragId: null,
 		dragEl: null,
 		dragPointerId: null,
+		dragStart: null,
+		dragMoved: false,
 		linkFromId: null,
 		linkEl: null,
 		linkPointerId: null,
 		rubberEl: null,
+		edgeFocus: null, // scen-id vars länkar visas (hover), null = visa alla
 	};
 
 	const SVG_NS = "http://www.w3.org/2000/svg";
@@ -161,6 +165,8 @@
 			marker.style.top = pctOf(scene.position.y, img.naturalHeight) + "%";
 			marker.title = "Scen " + scene.id;
 			marker.addEventListener("pointerdown", function (e) { onMarkerPointerDown(e, scene.id); });
+			marker.addEventListener("mouseenter", function () { setEdgeFocus(scene.id); });
+			marker.addEventListener("mouseleave", function () { setEdgeFocus(null); });
 			if (window.ScenePreview) window.ScenePreview.attach(marker, slug, scene.id);
 			markersLayer.appendChild(marker);
 		});
@@ -169,6 +175,8 @@
 	function renderEdges() {
 		while (svg.firstChild) svg.removeChild(svg.firstChild);
 		mapData.edges.forEach(function (e) {
+			// När en scen hovras visas bara dess egna länkar.
+			if (state.edgeFocus && e.from !== state.edgeFocus && e.to !== state.edgeFocus) return;
 			const a = findPlaced(e.from);
 			const b = findPlaced(e.to);
 			if (!a || !b) return;
@@ -183,25 +191,26 @@
 		});
 	}
 
-	// Rita en pilspets vid mittpunkten, pekande från p1 mot p2 (envägslänk).
+	// Rita en pilspets nära målscenen (p2), pekande från p1 mot p2 (envägslänk).
 	function drawArrowhead(p1, p2) {
 		const dx = p2.x - p1.x, dy = p2.y - p1.y;
 		const len = Math.sqrt(dx * dx + dy * dy);
 		if (len < 1) return;
 		const ux = dx / len, uy = dy / len;   // riktning
 		const px = -uy, py = ux;               // vinkelrät
-		const s = Math.max(img.naturalWidth, img.naturalHeight) * 0.02;
-		const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
-		const tip = [mx + ux * s, my + uy * s];
-		const b1 = [mx - ux * s * 0.3 + px * s * 0.7, my - uy * s * 0.3 + py * s * 0.7];
-		const b2 = [mx - ux * s * 0.3 - px * s * 0.7, my - uy * s * 0.3 - py * s * 0.7];
+		const s = Math.max(img.naturalWidth, img.naturalHeight) * 0.022;
+		// Placera pilspetsen strax innan målmarkören, inte i mitten.
+		const back = Math.min(len * 0.5, s * 1.6);
+		const tipx = p2.x - ux * back, tipy = p2.y - uy * back;
+		const b1 = [tipx - ux * s + px * s * 0.6, tipy - uy * s + py * s * 0.6];
+		const b2 = [tipx - ux * s - px * s * 0.6, tipy - uy * s - py * s * 0.6];
 		const poly = document.createElementNS(SVG_NS, "polygon");
-		poly.setAttribute("points", tip.join(",") + " " + b1.join(",") + " " + b2.join(","));
+		poly.setAttribute("points", tipx + "," + tipy + " " + b1.join(",") + " " + b2.join(","));
 		poly.setAttribute("class", "graph-arrow");
 		svg.appendChild(poly);
 	}
 
-	const MODE_TEXT = { two: "Tvåvägslänk", one: "Envägslänk", unplace: "Ta bort från karta" };
+	const MODE_TEXT = { two: "Tvåvägslänk", one: "Envägslänk" };
 
 	function renderStatus() {
 		const placed = mapData.scenes.length;
@@ -217,8 +226,13 @@
 		state.mode = (state.mode === mode) ? "place" : mode;
 		toolTwo.setAttribute("aria-pressed", state.mode === "two" ? "true" : "false");
 		toolOne.setAttribute("aria-pressed", state.mode === "one" ? "true" : "false");
-		toolUnplace.setAttribute("aria-pressed", state.mode === "unplace" ? "true" : "false");
 		renderStatus();
+	}
+
+	function setEdgeFocus(id) {
+		if (state.edgeFocus === id) return;
+		state.edgeFocus = id;
+		renderEdges();
 	}
 
 	// --- Placering (klick på kartan) --------------------------------------
@@ -269,13 +283,14 @@
 
 	function onMarkerPointerDown(e, id) {
 		e.stopPropagation();
-		if (state.mode === "unplace") { e.preventDefault(); unplaceScene(id); return; }
 		if (state.mode === "two" || state.mode === "one") { startLink(e, id); return; }
 		e.preventDefault();
 		const el = e.currentTarget;
 		state.dragId = id;
 		state.dragPointerId = e.pointerId;
 		state.dragEl = el;
+		state.dragStart = { x: e.clientX, y: e.clientY };
+		state.dragMoved = false;
 		el.setPointerCapture(e.pointerId);
 		el.addEventListener("pointermove", onMarkerPointerMove);
 		el.addEventListener("pointerup", onMarkerPointerUp);
@@ -284,6 +299,12 @@
 
 	function onMarkerPointerMove(e) {
 		if (state.dragId === null || e.pointerId !== state.dragPointerId) return;
+		// Skilj klick från drag: rör sig pekaren tillräckligt blir det en drag.
+		if (!state.dragMoved && state.dragStart) {
+			const ddx = e.clientX - state.dragStart.x, ddy = e.clientY - state.dragStart.y;
+			if (Math.sqrt(ddx * ddx + ddy * ddy) > 6) state.dragMoved = true;
+		}
+		if (!state.dragMoved) return;
 		const pos = clientToImageCoords(e.clientX, e.clientY);
 		const scene = findPlaced(state.dragId);
 		if (scene) {
@@ -301,6 +322,8 @@
 	function onMarkerPointerUp(e) {
 		if (e.pointerId !== state.dragPointerId) return;
 		const el = state.dragEl;
+		const id = state.dragId;
+		const wasClick = !state.dragMoved;
 		if (el) {
 			el.removeEventListener("pointermove", onMarkerPointerMove);
 			el.removeEventListener("pointerup", onMarkerPointerUp);
@@ -309,7 +332,22 @@
 		state.dragId = null;
 		state.dragPointerId = null;
 		state.dragEl = null;
-		render();
+		state.dragStart = null;
+		state.dragMoved = false;
+		if (wasClick && el && id !== null) selectMarker(id, el);
+		else render();
+	}
+
+	// Klick på en placerad markör: fäst previewen med en knapp för att ta bort
+	// scenen från kartan (åter till oplacerade).
+	function selectMarker(id, el) {
+		if (!window.ScenePreview || !window.ScenePreview.pin) return;
+		const r = el.getBoundingClientRect();
+		window.ScenePreview.pin(slug, id, r.right, r.top, [{
+			label: "Ta bort från karta",
+			kind: "danger",
+			onClick: function () { unplaceScene(id); window.ScenePreview.unpin(); },
+		}]);
 	}
 
 	// --- Länkning ----------------------------------------------------------
@@ -412,7 +450,6 @@
 		stage.addEventListener("pointerdown", onStagePointerDown);
 		if (toolTwo) toolTwo.addEventListener("click", function () { setMode("two"); });
 		if (toolOne) toolOne.addEventListener("click", function () { setMode("one"); });
-		if (toolUnplace) toolUnplace.addEventListener("click", function () { setMode("unplace"); });
 		saveBtn.addEventListener("click", saveMap);
 		render();
 	}
