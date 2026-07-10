@@ -327,3 +327,40 @@ tr[data-preview-scene] { cursor: help; }
 	margin: 0;
 }
 #upload-overlay progress { width: 100%; }
+
+/* --- Osparade ändringar (dirty state) --- */
+.dirty-badge {
+	background: var(--svk-warn);
+	color: #1a1a1a;
+	padding: 0.35rem 0.6rem;
+	border-radius: 0.3rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+	margin-bottom: 0.5rem;
+}
+.dirty-badge[hidden] { display: none; }
+#save-map-btn.has-changes {
+	background: var(--svk-warn);
+	border-color: var(--svk-warn);
+	color: #1a1a1a;
+}
+
+/* Fråga vid navigering bort med osparade ändringar */
+.leave-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 4000;
+	background: rgba(0, 0, 0, 0.55);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+}
+.leave-overlay article { max-width: 26rem; width: 100%; margin: 0; }
+.leave-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
+}
+.leave-actions button { margin: 0; }

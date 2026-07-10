@@ -26,6 +26,7 @@
 	const toolTwo = document.getElementById("tool-two");
 	const toolOne = document.getElementById("tool-one");
 	const saveBtn = document.getElementById("save-map-btn");
+	const dirtyBadge = document.getElementById("dirty-badge");
 
 	const tour = JSON.parse(document.getElementById("tour-data").textContent);
 	const mapData = JSON.parse(document.getElementById("map-data").textContent);
@@ -49,7 +50,14 @@
 		linkPointerId: null,
 		rubberEl: null,
 		edgeFocus: null, // scen-id vars länkar visas (hover), null = visa alla
+		dirty: false,    // osparade ändringar
 	};
+
+	function setDirty(v) {
+		state.dirty = v;
+		if (dirtyBadge) dirtyBadge.hidden = !v;
+		if (saveBtn) saveBtn.classList.toggle("has-changes", v);
+	}
 
 	const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -267,6 +275,7 @@
 		const existing = findPlaced(id);
 		if (existing) existing.position = pos;
 		else mapData.scenes.push({ id: id, position: pos });
+		setDirty(true);
 		render();
 	}
 
@@ -274,6 +283,7 @@
 		const i = mapData.scenes.findIndex(function (s) { return s.id === id; });
 		if (i >= 0) mapData.scenes.splice(i, 1);
 		mapData.edges = mapData.edges.filter(function (e) { return e.from !== id && e.to !== id; });
+		setDirty(true);
 		render();
 	}
 
@@ -290,6 +300,7 @@
 			const i = mapData.scenes.findIndex(function (s) { return s.id === id; });
 			if (i >= 0) mapData.scenes.splice(i, 1);
 			mapData.edges = mapData.edges.filter(function (e) { return e.from !== id && e.to !== id; });
+			setDirty(true);
 			render();
 			if (window.showToast) showToast("Scen " + id + " borttagen", "ok");
 		}).catch(function (err) {
@@ -327,6 +338,7 @@
 		const scene = findPlaced(state.dragId);
 		if (scene) {
 			scene.position = pos;
+			setDirty(true);
 			// Flytta bara det dragna elementet. renderMarkers() här skulle förstöra
 			// elementet som håller pointer-capture och avbryta dragningen.
 			if (state.dragEl) {
@@ -405,7 +417,10 @@
 		if (e.pointerId !== state.linkPointerId) return;
 		const pos = clientToImageCoords(e.clientX, e.clientY);
 		const target = nearestMarker(pos);
-		if (target && target !== state.linkFromId) applyEdge(state.linkFromId, target, state.mode === "two");
+		if (target && target !== state.linkFromId) {
+			applyEdge(state.linkFromId, target, state.mode === "two");
+			setDirty(true);
+		}
 		finishLink();
 	}
 
@@ -451,12 +466,64 @@
 				method: "POST",
 				body: { scenes: mapData.scenes, edges: mapData.edges },
 			});
+			setDirty(false);
 			showToast("Kartan sparad", "ok");
+			return true;
 		} catch (err) {
 			showToast("Kunde inte spara: " + err.message, "error");
+			return false;
 		} finally {
 			saveBtn.removeAttribute("aria-busy");
 		}
+	}
+
+	// --- Skydd mot att lämna med osparade ändringar ------------------------
+
+	function showLeaveDialog() {
+		return new Promise(function (resolve) {
+			const ov = document.createElement("div");
+			ov.className = "leave-overlay";
+			const art = document.createElement("article");
+			const h = document.createElement("h3");
+			h.textContent = "Osparade ändringar";
+			const p = document.createElement("p");
+			p.textContent = "Du har ändringar på kartan som inte är sparade. Vad vill du göra?";
+			const row = document.createElement("div");
+			row.className = "leave-actions";
+			function mk(label, val, cls) {
+				const b = document.createElement("button");
+				b.type = "button";
+				b.textContent = label;
+				if (cls) b.className = cls;
+				b.addEventListener("click", function () {
+					if (ov.parentNode) document.body.removeChild(ov);
+					resolve(val);
+				});
+				return b;
+			}
+			row.appendChild(mk("Spara och lämna", "save"));
+			row.appendChild(mk("Lämna utan att spara", "discard", "secondary"));
+			row.appendChild(mk("Avbryt", "cancel", "secondary outline"));
+			art.appendChild(h);
+			art.appendChild(p);
+			art.appendChild(row);
+			ov.appendChild(art);
+			document.body.appendChild(ov);
+		});
+	}
+
+	function guardLink(a) {
+		a.addEventListener("click", function (e) {
+			if (!state.dirty) return;
+			if (a.getAttribute("aria-disabled") === "true") return;
+			e.preventDefault();
+			const href = a.href;
+			showLeaveDialog().then(function (choice) {
+				if (choice === "cancel") return;
+				if (choice === "discard") { setDirty(false); window.location.href = href; return; }
+				if (choice === "save") saveMap().then(function (ok) { if (ok) window.location.href = href; });
+			});
+		});
 	}
 
 	// --- Init ------------------------------------------------------------
@@ -469,6 +536,13 @@
 		if (toolTwo) toolTwo.addEventListener("click", function () { setMode("two"); });
 		if (toolOne) toolOne.addEventListener("click", function () { setMode("one"); });
 		saveBtn.addEventListener("click", saveMap);
+
+		// Fråga vid navigering bort med osparade ändringar.
+		document.querySelectorAll(".planner-side a[href]").forEach(guardLink);
+		window.addEventListener("beforeunload", function (e) {
+			if (state.dirty) { e.preventDefault(); e.returnValue = ""; }
+		});
+
 		render();
 	}
 
