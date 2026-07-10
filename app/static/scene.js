@@ -61,8 +61,10 @@
 		if (rollInput) rollInput.value = v;
 		if (rollNum) rollNum.value = v;
 		setDirty(true);
+		// Applicera först när man slutat justera (pannellum måste ladda om scenen
+		// för att sätta roll; att göra det per drag-tick blir hackigt).
 		if (rollTimer) clearTimeout(rollTimer);
-		rollTimer = setTimeout(applyRoll, 180);
+		rollTimer = setTimeout(applyRoll, 500);
 	}
 
 	let fullRes = false, applyingRes = false;
@@ -164,7 +166,7 @@
 		? tour.default.firstScene : sceneIds()[0];
 
 	const viewer = pannellum.viewer("panorama", {
-		default: { firstScene: firstScene, autoLoad: true, sceneFadeDuration: 800 },
+		default: { firstScene: firstScene, autoLoad: true, sceneFadeDuration: 0 },
 		scenes: cfgScenes,
 	});
 
