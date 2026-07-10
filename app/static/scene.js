@@ -48,6 +48,9 @@
 	const sceneTitleInput = document.getElementById("scene-title");
 	const sceneTitleLabel = document.getElementById("scene-title-label");
 	const fullresToggle = document.getElementById("fullres-toggle");
+	const rollInput = document.getElementById("horizon-roll");
+	const rollOut = document.getElementById("horizon-roll-val");
+	let rollTimer = null;
 
 	let fullRes = false, applyingRes = false;
 	function previewUrl(id) { return "/projects/" + encodeURIComponent(slug) + "/previews/" + encodeURIComponent(id) + ".jpg"; }
@@ -57,6 +60,15 @@
 		if (!cfg) return;
 		const want = fullRes ? fullUrl(id) : previewUrl(id);
 		if (cfg.panorama !== want) { cfg.panorama = want; applyingRes = true; viewer.loadScene(id); }
+	}
+	// Applicera horizonRoll på aktuell scen (kräver omladdning; behåll vyn).
+	function applyRoll() {
+		const cur = viewer.getScene();
+		const cfg = viewer.getConfig().scenes[cur];
+		if (!cfg) return;
+		cfg.horizonRoll = tour.scenes[cur].horizonRoll || 0;
+		applyingRes = true; // hindra res-omladdning i scenechange-hanteraren
+		viewer.loadScene(cur, viewer.getPitch(), viewer.getYaw(), viewer.getHfov());
 	}
 	function updateTitleLabel(id) {
 		if (sceneTitleLabel) sceneTitleLabel.textContent = (tour.scenes[id] && tour.scenes[id].title) || "";
@@ -111,6 +123,7 @@
 				off: (offsets[id] == null ? null : offsets[id]),
 				cr: calibRef[id] || null,
 				ti: tour.scenes[id].title || null,
+				ro: tour.scenes[id].horizonRoll || null,
 				hs: tour.scenes[id].hotSpots || [],
 			};
 		});
@@ -132,6 +145,7 @@
 			panorama: "/projects/" + encodeURIComponent(slug) + "/previews/" + encodeURIComponent(id) + ".jpg",
 			hotSpots: (tour.scenes[id].hotSpots || []).slice(),
 		};
+		if (tour.scenes[id].horizonRoll) cfgScenes[id].horizonRoll = tour.scenes[id].horizonRoll;
 	});
 	const firstScene = (tour.default && tour.default.firstScene && cfgScenes[tour.default.firstScene])
 		? tour.default.firstScene : sceneIds()[0];
@@ -161,6 +175,16 @@
 		fullRes = fullresToggle.checked;
 		applyRes(viewer.getScene());
 	});
+	if (rollInput) rollInput.addEventListener("input", function () {
+		const cur = viewer.getScene();
+		if (!tour.scenes[cur]) return;
+		const v = parseFloat(rollInput.value) || 0;
+		tour.scenes[cur].horizonRoll = v;
+		if (rollOut) rollOut.value = v;
+		setDirty(true);
+		if (rollTimer) clearTimeout(rollTimer);
+		rollTimer = setTimeout(applyRoll, 180); // debounce omladdningen
+	});
 
 	if (mapImg) {
 		if (mapImg.complete && mapImg.naturalWidth) buildMapDots();
@@ -172,6 +196,11 @@
 		const cur = viewer.getScene();
 		if (curSceneEl) curSceneEl.textContent = cur;
 		if (sceneTitleInput) sceneTitleInput.value = (tour.scenes[cur] && tour.scenes[cur].title) || "";
+		if (rollInput) {
+			const r = (tour.scenes[cur] && tour.scenes[cur].horizonRoll) || 0;
+			rollInput.value = r;
+			if (rollOut) rollOut.value = r;
+		}
 		updateTitleLabel(cur);
 		renderCalibState(cur);
 		renderNeighbors(cur);
@@ -304,6 +333,7 @@
 					northOffset: (offsets[id] == null ? null : offsets[id]),
 					calibRef: calibRef[id] || null,
 					title: tour.scenes[id].title || null,
+					horizonRoll: tour.scenes[id].horizonRoll || null,
 					hotSpots: tour.scenes[id].hotSpots || [],
 				};
 			});
@@ -327,9 +357,10 @@
 			if (s.off == null) delete offsets[id]; else offsets[id] = s.off;
 			if (s.cr == null) delete calibRef[id]; else calibRef[id] = s.cr;
 			if (s.ti == null) delete tour.scenes[id].title; else tour.scenes[id].title = s.ti;
-			tour.scenes[id].hotSpots = s.hs;
+			if (s.ro == null) delete tour.scenes[id].horizonRoll; else tour.scenes[id].horizonRoll = s.ro;
 			const cfg = viewer.getConfig().scenes[id];
-			if (cfg) cfg.hotSpots = s.hs;
+			if (cfg) { cfg.hotSpots = s.hs; cfg.horizonRoll = s.ro || 0; }
+			tour.scenes[id].hotSpots = s.hs;
 		});
 		viewer.loadScene(viewer.getScene());
 		setDirty(false);

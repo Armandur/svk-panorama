@@ -18,6 +18,7 @@ class SceneUpdate(BaseModel):
     northOffset: float | None = None
     title: str | None = None
     calibRef: str | None = None  # grannscen kalibreringen gjordes mot (UI-state)
+    horizonRoll: float | None = None  # räta upp sned horisont (grader)
     hotSpots: list[dict[str, Any]] = Field(default_factory=list)
 
 
@@ -77,6 +78,10 @@ def save_tour(
             scene["calibRef"] = upd.calibRef
         else:
             scene.pop("calibRef", None)
+        if upd.horizonRoll:
+            scene["horizonRoll"] = round(upd.horizonRoll, 2)
+        else:
+            scene.pop("horizonRoll", None)
         scene["hotSpots"] = upd.hotSpots
         updated += 1
     write_tour(slug, tour)
