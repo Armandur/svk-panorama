@@ -32,6 +32,7 @@
 		armedId: null,
 		linkMode: false,
 		dragId: null,
+		dragEl: null,
 		dragPointerId: null,
 		linkFromId: null,
 		linkPointerId: null,
@@ -190,12 +191,14 @@
 			return;
 		}
 		e.preventDefault();
+		var el = e.currentTarget;
 		state.dragId = id;
 		state.dragPointerId = e.pointerId;
-		e.target.setPointerCapture(e.pointerId);
-		e.target.addEventListener("pointermove", onMarkerPointerMove);
-		e.target.addEventListener("pointerup", onMarkerPointerUp);
-		e.target.addEventListener("pointercancel", onMarkerPointerUp);
+		state.dragEl = el;
+		el.setPointerCapture(e.pointerId);
+		el.addEventListener("pointermove", onMarkerPointerMove);
+		el.addEventListener("pointerup", onMarkerPointerUp);
+		el.addEventListener("pointercancel", onMarkerPointerUp);
 	}
 
 	function onMarkerPointerMove(e) {
@@ -204,18 +207,27 @@
 		const scene = findPlaced(state.dragId);
 		if (scene) {
 			scene.position = pos;
-			renderMarkers();
+			// Flytta bara det dragna elementet. renderMarkers() här skulle förstöra
+			// elementet som håller pointer-capture och avbryta dragningen.
+			if (state.dragEl) {
+				state.dragEl.style.left = pctOf(pos.x, img.naturalWidth) + "%";
+				state.dragEl.style.top = pctOf(pos.y, img.naturalHeight) + "%";
+			}
 			renderEdges();
 		}
 	}
 
 	function onMarkerPointerUp(e) {
 		if (e.pointerId !== state.dragPointerId) return;
-		e.target.removeEventListener("pointermove", onMarkerPointerMove);
-		e.target.removeEventListener("pointerup", onMarkerPointerUp);
-		e.target.removeEventListener("pointercancel", onMarkerPointerUp);
+		var el = state.dragEl;
+		if (el) {
+			el.removeEventListener("pointermove", onMarkerPointerMove);
+			el.removeEventListener("pointerup", onMarkerPointerUp);
+			el.removeEventListener("pointercancel", onMarkerPointerUp);
+		}
 		state.dragId = null;
 		state.dragPointerId = null;
+		state.dragEl = null;
 		render();
 	}
 
