@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Projekt - SVK Panorama{% endblock %}
+{% block content %}
+
+<section>
+	<hgroup>
+		<h1>Projekt</h1>
+		<p>Skapa en ny rundtur eller fortsätt planera en befintlig.</p>
+	</hgroup>
+
+	{% if projects %}
+	<table>
+		<thead>
+			<tr>
+				<th scope="col">Namn</th>
+				<th scope="col">Slug</th>
+				<th scope="col">Skapad</th>
+				<th scope="col"></th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for p in projects %}
+			<tr>
+				<td>{{ p.name }}</td>
+				<td><code>{{ p.slug }}</code></td>
+				<td>{{ p.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+				<td><a href="/projects/{{ p.slug }}/plan" role="button" class="secondary">Öppna planering</a></td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	{% else %}
+	<p><em>Inga projekt ännu - skapa ditt första nedan.</em></p>
+	{% endif %}
+</section>
+
+<section>
+	<article>
+		<h2>Nytt projekt</h2>
+		<form method="post" action="/projects">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<label for="name">Namn på kyrka/kyrkogård</label>
+			<input type="text" id="name" name="name" required maxlength="200" placeholder="t.ex. Härnösands gamla kyrkogård">
+			<button type="submit">Skapa projekt</button>
+		</form>
+	</article>
+</section>
+
+<section>
+	<details>
+		<summary>Hur funkar det? (arbetsgång)</summary>
+		<pre class="guide-text">{{ guide_text }}</pre>
+	</details>
+</section>
+
+{% endblock %}

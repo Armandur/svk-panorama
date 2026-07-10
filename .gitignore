@@ -14,3 +14,14 @@ _tiletest.html
 dev.log
 
 test/
+
+# FastAPI-app: venv, användarprojekt (proprietära), databas, env
+.venv/
+projects/
+*.db
+.env
+
+# Python
+__pycache__/
+*.pyc
+app.log

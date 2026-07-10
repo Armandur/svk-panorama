@@ -1,0 +1,36 @@
+/* Identitet ovanpå Pico: accentfärg + statusfärger, ljust/mörkt via
+   prefers-color-scheme. Inga data-theme-attribut - Pico sköter grunden. */
+
+:root {
+	--svk-accent: #2f6f4f;
+	--svk-accent-hover: #24583e;
+	--svk-ok: #2f6f4f;
+	--svk-warn: #b5872b;
+	--svk-danger: #b5342f;
+	--svk-marker: #d94f2b;
+	--svk-marker-armed: #2f6f4f;
+	--svk-edge: #2f6f4f;
+	--svk-rubber: #b5872b;
+
+	--pico-primary: var(--svk-accent);
+	--pico-primary-hover: var(--svk-accent-hover);
+	--pico-primary-underline: var(--svk-accent);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--svk-accent: #4fa87a;
+		--svk-accent-hover: #6cc297;
+		--svk-ok: #4fa87a;
+		--svk-warn: #d6a94a;
+		--svk-danger: #d9635c;
+		--svk-marker: #f07a52;
+		--svk-marker-armed: #4fa87a;
+		--svk-edge: #4fa87a;
+		--svk-rubber: #d6a94a;
+
+		--pico-primary: var(--svk-accent);
+		--pico-primary-hover: var(--svk-accent-hover);
+		--pico-primary-underline: var(--svk-accent);
+	}
+}

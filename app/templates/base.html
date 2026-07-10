@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="sv">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{% block title %}SVK Panorama{% endblock %}</title>
+	<link rel="stylesheet" href="/static/vendor/pico.min.css">
+	<link rel="stylesheet" href="/static/tokens.css">
+	<link rel="stylesheet" href="/static/app.css">
+	{% block head %}{% endblock %}
+</head>
+<body{% block body_attrs %}{% endblock %}>
+	<header class="site-header">
+		<nav class="container">
+			<ul><li><a href="/"><strong>SVK Panorama</strong></a></li></ul>
+			<ul><li>Editor för virtuella kyrkorundturer</li></ul>
+		</nav>
+	</header>
+	<main{% block main_attrs %} class="container"{% endblock %}>
+		{% block content %}{% endblock %}
+	</main>
+	<script src="/static/utils.js"></script>
+	{% block scripts %}{% endblock %}
+</body>
+</html>

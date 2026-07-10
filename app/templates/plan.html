@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Planering - {{ project.name }}{% endblock %}
+{% block body_attrs %} data-slug="{{ project.slug }}"{% endblock %}
+{% block main_attrs %} class="container plan-main"{% endblock %}
+{% block content %}
+
+<hgroup>
+	<h1>{{ project.name }}</h1>
+	<p>Steg 1: ladda upp bilder och karta. Steg 2: placera och länka scenerna.</p>
+</hgroup>
+
+<section class="upload-grid">
+	<article>
+		<h2>Panoramabilder</h2>
+		<p>Filnamnet blir scenens id (t.ex. <code>1.jpg</code> -&gt; scen <code>1</code>).</p>
+		<form method="post" action="/projects/{{ project.slug }}/images" enctype="multipart/form-data">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<input type="file" name="files" accept=".jpg,.jpeg,.png" multiple required>
+			<button type="submit">Ladda upp bilder</button>
+		</form>
+	</article>
+	<article>
+		<h2>Kartbild</h2>
+		<p>En bild (ritning/flygfoto) som scenerna placeras ut på.</p>
+		<form method="post" action="/projects/{{ project.slug }}/map-image" enctype="multipart/form-data">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<input type="file" name="file" accept=".jpg,.jpeg,.png" required>
+			<button type="submit">Ladda upp karta</button>
+		</form>
+	</article>
+</section>
+
+{% if not has_map_image %}
+<article class="notice">
+	<p>Ingen kartbild uppladdad ännu. Ladda upp en karta ovan för att kunna placera scenerna.</p>
+</article>
+{% else %}
+<section class="planner">
+	<aside class="planner-side">
+		<article>
+			<h2>Status</h2>
+			<p id="status-box" aria-live="polite">Laddar...</p>
+			<button id="link-mode-toggle" type="button" class="secondary" aria-pressed="false">Länka scener</button>
+			<p class="hint">I länkläge: dra från en punkt till en annan för att skapa eller ta bort en länk.</p>
+			<button id="save-map-btn" type="button">Spara karta</button>
+		</article>
+		<article>
+			<h2>Oplacerade scener</h2>
+			<p class="hint">Klicka en scen här, klicka sedan på kartan för att placera den.</p>
+			<ul id="unplaced-list" class="unplaced-list"></ul>
+		</article>
+		<article>
+			<a id="next-step-link" href="#" role="button" class="secondary" aria-disabled="true" title="Kommer i ett senare steg">Nästa: kalibrera scener -&gt;</a>
+		</article>
+	</aside>
+	<div class="planner-map">
+		<div id="map-stage" class="map-stage">
+			<img id="map-image" src="/projects/{{ project.slug }}/map.png" alt="Karta över {{ project.name }}">
+			<svg id="edges-layer"></svg>
+			<div id="markers-layer"></div>
+		</div>
+	</div>
+</section>
+{% endif %}
+
+<script id="tour-data" type="application/json">{{ tour | tojson }}</script>
+<script id="map-data" type="application/json">{{ map_data | tojson }}</script>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/plan.js"></script>
+{% endblock %}

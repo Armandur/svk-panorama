@@ -1,0 +1,154 @@
+/* Layout och komponenter utöver Pico. Mobil-först: enkla staplade block som
+   default, grid-layout tillkommer vid större skärmar. */
+
+:root { font-size: 100%; }
+
+.site-header nav { padding-block: 0.5rem; }
+
+.guide-text {
+	white-space: pre-wrap;
+	font-family: inherit;
+	font-size: 0.9rem;
+	max-height: 60vh;
+	overflow-y: auto;
+}
+
+.upload-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1rem;
+}
+@media (min-width: 700px) {
+	.upload-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.notice { border-left: 4px solid var(--svk-warn); }
+
+/* --- Planeringsvy ------------------------------------------------------ */
+
+.plan-main { max-width: 100%; padding-inline: 0.75rem; }
+
+.planner {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1rem;
+}
+@media (min-width: 900px) {
+	.planner { grid-template-columns: 20rem 1fr; align-items: start; }
+}
+
+.planner-side article { margin-bottom: 1rem; }
+.planner-side .hint { font-size: 0.85rem; color: var(--pico-muted-color); }
+
+#save-map-btn { background: var(--svk-ok); border-color: var(--svk-ok); }
+
+#link-mode-toggle[aria-pressed="true"] {
+	background: var(--svk-accent);
+	color: var(--pico-primary-inverse);
+	border-color: var(--svk-accent);
+}
+
+#next-step-link[aria-disabled="true"] {
+	pointer-events: none;
+	opacity: 0.55;
+}
+
+.unplaced-list { list-style: none; padding: 0; margin: 0; }
+.unplaced-list li { margin-bottom: 0.4rem; }
+.unplaced-list button {
+	width: 100%;
+	text-align: left;
+	padding: 0.4rem 0.7rem;
+	margin: 0;
+}
+.unplaced-list button[aria-pressed="true"] {
+	background: var(--svk-marker-armed);
+	color: var(--pico-primary-inverse);
+	border-color: var(--svk-marker-armed);
+}
+
+.planner-map { min-width: 0; }
+
+.map-stage {
+	position: relative;
+	width: 100%;
+	line-height: 0;
+	background: var(--pico-card-background-color);
+	border: 1px solid var(--pico-muted-border-color);
+	touch-action: none;
+	user-select: none;
+}
+.map-stage img#map-image {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+#edges-layer, #markers-layer {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+#edges-layer { pointer-events: none; }
+
+.graph-edge {
+	stroke: var(--svk-edge);
+	stroke-width: 3;
+	vector-effect: non-scaling-stroke;
+}
+.graph-rubber {
+	stroke: var(--svk-rubber);
+	stroke-width: 3;
+	stroke-dasharray: 6 4;
+	vector-effect: non-scaling-stroke;
+}
+
+.scene-marker {
+	position: absolute;
+	width: 1.6rem;
+	height: 1.6rem;
+	margin-left: -0.8rem;
+	margin-top: -0.8rem;
+	border-radius: 50%;
+	background: var(--svk-marker);
+	border: 2px solid var(--pico-background-color);
+	color: #fff;
+	font-size: 0.75rem;
+	font-weight: bold;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: grab;
+	pointer-events: auto;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+.scene-marker:active { cursor: grabbing; }
+.scene-marker.linking-from { outline: 3px solid var(--svk-rubber); }
+
+/* --- Toast --------------------------------------------------------------- */
+
+#toast-container {
+	position: fixed;
+	bottom: 1rem;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 1000;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	align-items: center;
+	pointer-events: none;
+}
+.toast {
+	background: var(--pico-contrast-background);
+	color: var(--pico-contrast);
+	padding: 0.5rem 1rem;
+	border-radius: 0.4rem;
+	opacity: 0;
+	transform: translateY(0.5rem);
+	transition: opacity 0.2s ease, transform 0.2s ease;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+.toast.visible { opacity: 1; transform: translateY(0); }
+.toast-error { background: var(--svk-danger); color: #fff; }
+.toast-ok { background: var(--svk-ok); color: #fff; }
