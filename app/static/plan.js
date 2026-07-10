@@ -28,6 +28,7 @@
 	const toolTwo = document.getElementById("tool-two");
 	const toolOne = document.getElementById("tool-one");
 	const saveBtn = document.getElementById("save-map-btn");
+	const discardBtn = document.getElementById("discard-map-btn");
 	const dirtyBadge = document.getElementById("dirty-badge");
 	const readinessEl = document.getElementById("readiness");
 
@@ -59,11 +60,26 @@
 		panPointerId: null,
 	};
 
+	// Ögonblicksbild av senast sparade läge (för "Släng ändringar").
+	let savedSnapshot = JSON.stringify({ scenes: mapData.scenes, edges: mapData.edges });
+
 	function setDirty(v) {
 		state.dirty = v;
 		if (dirtyBadge) dirtyBadge.hidden = !v;
 		if (saveBtn) saveBtn.classList.toggle("has-changes", v);
+		if (discardBtn) discardBtn.hidden = !v;
 		if (v) scheduleDraft();
+	}
+
+	function discardChanges() {
+		if (!state.dirty) return;
+		if (!confirm("Släng alla ändringar sedan senaste sparning?")) return;
+		const snap = JSON.parse(savedSnapshot);
+		mapData.scenes = snap.scenes;
+		mapData.edges = snap.edges;
+		clearDraft();
+		setDirty(false);
+		render();
 	}
 
 	// --- Autospar-utkast (localStorage) - krasch-säkerhet mellan sparningar ---
@@ -646,6 +662,7 @@
 				method: "POST",
 				body: { scenes: mapData.scenes, edges: mapData.edges },
 			});
+			savedSnapshot = JSON.stringify({ scenes: mapData.scenes, edges: mapData.edges });
 			setDirty(false);
 			clearDraft();
 			showToast("Kartan sparad", "ok");
@@ -746,6 +763,7 @@
 		if (toolTwo) toolTwo.addEventListener("click", function () { setMode("two"); });
 		if (toolOne) toolOne.addEventListener("click", function () { setMode("one"); });
 		saveBtn.addEventListener("click", saveMap);
+		if (discardBtn) discardBtn.addEventListener("click", discardChanges);
 
 		// Fråga vid navigering bort med osparade ändringar.
 		document.querySelectorAll(".planner-side a[href]").forEach(guardLink);

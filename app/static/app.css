@@ -468,3 +468,8 @@ tr[data-preview-scene] { cursor: help; }
 .help-modal[hidden] { display: none; }
 .help-modal article { max-width: 30rem; width: 100%; margin: 0; max-height: 90vh; overflow-y: auto; }
 .help-modal p { font-size: 0.9rem; margin: 0.45rem 0; }
+
+/* Spara/släng-rad */
+.save-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.save-row button { margin: 0; flex: 1; }
+#discard-map-btn[hidden] { display: none; }
