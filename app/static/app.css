@@ -57,10 +57,18 @@ main.plan-app {
 
 .plan-topnav {
 	display: flex;
-	gap: 0.5rem;
+	flex-wrap: wrap;
+	gap: 0.4rem;
 	margin-bottom: 0.75rem;
 }
-.plan-topnav [role="button"] { margin: 0; flex: 1; text-align: center; }
+.plan-topnav [role="button"] {
+	margin: 0;
+	flex: 1 1 auto;
+	text-align: center;
+	white-space: nowrap;
+	font-size: 0.78rem;
+	padding: 0.4rem 0.45rem;
+}
 .plan-heading { margin-bottom: 1rem; }
 .plan-heading h2 { margin-bottom: 0.1rem; }
 .plan-heading p { font-size: 0.85rem; color: var(--pico-muted-color); margin: 0; }
