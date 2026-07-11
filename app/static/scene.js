@@ -357,23 +357,49 @@
 		hsCtx = ctx;
 		document.getElementById("hs-modal-title").textContent =
 			(ctx.mode === "edit" ? "Redigera " : "Ny ") + ({ info: "info-hotspot", url: "URL-hotspot", scene: "scen-hotspot" }[ctx.type]);
-		hsFieldText.hidden = !(ctx.type === "info" || ctx.type === "url");
+		hsFieldText.hidden = false; // text (tooltip) valfri för alla typer
 		hsFieldUrl.hidden = ctx.type !== "url";
 		hsFieldScene.hidden = ctx.type !== "scene";
-		hsText.value = (ctx.hs && ctx.hs.text) || "";
+		hsText.value = (ctx.hs && ctx.hs.text != null) ? ctx.hs.text : "";
 		hsUrl.value = (ctx.hs && ctx.hs.URL) || "";
+		hsCtx.autoText = null;
 		if (ctx.type === "scene") {
 			const target = (ctx.hs && ctx.hs.sceneId) || sceneIds().filter(function (id) { return id !== ctx.cur; })[0];
+			hsCtx.target = target;
 			fillSceneSelect(ctx.cur, target);
 			const two = ctx.hs ? hasReciprocal(ctx.cur, target) : false;
 			document.querySelector('input[name="hs-dir"][value="' + (two ? "two" : "one") + '"]').checked = true;
 			setTyaw(ctx.hs && ctx.hs.targetYaw != null ? ctx.hs.targetYaw : computeTargetYaw(ctx.cur, target));
 			tyawNote(ctx.cur);
+			if (!ctx.hs) { hsCtx.autoText = sceneHotspotText(target); hsText.value = hsCtx.autoText; } // förslag, kan rensas
 		}
 		hsModal.hidden = false;
 		(ctx.type === "scene" ? hsSceneSel : hsText).focus();
+		if (ctx.type === "scene") showHsPreview(hsCtx.target);
 	}
-	function closeHsModal() { hsModal.hidden = true; hsCtx = null; }
+	function closeHsModal() { hsModal.hidden = true; hsCtx = null; destroyHsPreview(); }
+
+	// Liten auto-roterande preview av vald målscen i modalen.
+	let hsPreviewViewer = null;
+	function destroyHsPreview() {
+		if (hsPreviewViewer) { try { hsPreviewViewer.destroy(); } catch (e) { /* borta */ } hsPreviewViewer = null; }
+	}
+	function showHsPreview(sceneId) {
+		destroyHsPreview();
+		const el = document.getElementById("hs-scene-preview");
+		if (!el || !sceneId || !window.pannellum) return;
+		void el.offsetHeight; // reflow så pannellum mäter rätt
+		const sp = parseFloat(localStorage.getItem("svk_preview_speed"));
+		const speed = isNaN(sp) ? 5 : sp;
+		const rot = localStorage.getItem("svk_preview_dir") === "left" ? speed : -speed;
+		hsPreviewViewer = pannellum.viewer(el, {
+			type: "equirectangular",
+			panorama: "/projects/" + encodeURIComponent(slug) + "/previews/" + encodeURIComponent(sceneId) + ".jpg",
+			autoLoad: true, autoRotate: rot,
+			showControls: false, showZoomCtrl: false, showFullscreenCtrl: false,
+			mouseZoom: false, draggable: false, hfov: 110,
+		});
+	}
 
 	// Dubbelriktning härleds från om en länk tillbaka faktiskt finns i målscenen.
 	function hasReciprocal(fromScene, toScene) {
@@ -420,7 +446,7 @@
 			if (!target) { alert("Välj en målscen."); return; }
 			hs.type = "scene"; hs.sceneId = target; hs.targetPitch = 0;
 			hs.targetYaw = parseFloat(hsTyaw.value) || 0;
-			hs.text = sceneHotspotText(target);
+			if (hsText.value) hs.text = hsText.value; else delete hs.text;
 			delete hs.URL;
 			const two = document.querySelector('input[name="hs-dir"]:checked').value === "two";
 			hs.twoway = two;
@@ -448,12 +474,19 @@
 	});
 	if (hsSceneSel) hsSceneSel.addEventListener("change", function () {
 		if (!hsCtx) return;
-		const ty = computeTargetYaw(hsCtx.cur, hsSceneSel.value);
+		const target = hsSceneSel.value;
+		const ty = computeTargetYaw(hsCtx.cur, target);
 		if (ty != null) setTyaw(ty);
 		tyawNote(hsCtx.cur);
 		// Spegla om det nya målet redan har en länk tillbaka.
-		const two = hasReciprocal(hsCtx.cur, hsSceneSel.value);
+		const two = hasReciprocal(hsCtx.cur, target);
 		document.querySelector('input[name="hs-dir"][value="' + (two ? "two" : "one") + '"]').checked = true;
+		// Auto-uppdatera tooltip-texten om den inte redigerats manuellt.
+		if (hsCtx.autoText != null && hsText.value === hsCtx.autoText) {
+			hsCtx.autoText = sceneHotspotText(target);
+			hsText.value = hsCtx.autoText;
+		}
+		showHsPreview(target);
 	});
 	if (hsModal) {
 		document.getElementById("hs-save").addEventListener("click", saveHsModal);

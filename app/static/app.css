@@ -627,3 +627,13 @@ tr[data-preview-scene] { cursor: help; }
 .hs-modal-actions button { margin: 0; flex: 1; }
 #hs-field-scene fieldset { margin: 0.4rem 0; }
 #hs-tyaw-regen { margin: 0.3rem 0; }
+
+.hs-scene-preview {
+	width: 100%;
+	height: 150px;
+	margin: 0.4rem 0;
+	border-radius: 0.3rem;
+	overflow: hidden;
+	background: #000;
+}
+.hs-scene-preview:empty { display: none; }
