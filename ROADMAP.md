@@ -253,6 +253,14 @@ Faser (minst till störst):
       relativiseras i bundle-exporten och nås via publika /s-routen. Enkel
       media-hantering i editorn (ladda upp -> få markdown-snutt att klistra in).
 
+- [ ] **Fler typsnitt i temat (särskilt DM Sans).** Idag är tema-typsnitten
+      system-font-stackar (sans/serif/mono/humanist - inga font-filer, självbärande
+      bundle). Lägg till fler val, framförallt **DM Sans**. OBS avvägning: riktiga
+      webbtypsnitt kräver self-hostade `woff2`-filer (vendora, ingen CDN) som måste
+      inkluderas i bundle-exporten och den publika /s-vyn - dvs. bundlen växer. Väg
+      mot att behålla systemstackar som lätta default. Uppdatera `FONTS` i
+      `tour-preview.js` + `viewer.css` + font-validering på servern.
+
 ## Fas 4 - Team & egna domäner (multi-tenancy nivå 2)
 
 Bakgrund (2026-07-11): för att erbjuda editorn till andra behöver turer kunna ägas
