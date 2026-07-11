@@ -172,10 +172,10 @@ Luckor identifierade 2026-07-11 innan team-arbetet.
 - [x] **Vänliga felsidor KLAR (2026-07-11).** HTTPException på sid-navigering
       renderar `error.html` (kod + meddelande + hem-länk) i stället för rå JSON;
       API/JSON-klienter får fortfarande JSON. 401 -> login, 403 -> hem som förut.
-- [ ] **Konfigurerbart tjänstenamn.** "SVK Panorama" ska inte vara hårdkodat -
-      super-admin ska kunna byta det. Env-default (`SVK_SITE_NAME`) + DB-override
-      redigerbar i en admin-inställningssida (env-default + admin-override-mönstret).
-      Exponeras som Jinja-global så alla mallar (brand + titlar) läser samma värde.
+- [x] **Konfigurerbart tjänstenamn KLAR (2026-07-11).** Env-default (`SVK_SITE_NAME`)
+      + DB-override (`Setting`-tabell, `app/services/settings.py`) redigerbar av
+      super-admin på `/admin/settings`. Exponeras som Jinja-globalen `site_name` så
+      alla mallar (brand + titlar) läser samma värde. DB-värdet vinner över env.
 - [ ] **Publik delningslänk för en tur.** `/view` kräver inloggning idag; ingen
       oautentiserad väg att visa en tur för allmänheten in-app (bara bundle-export).
       Lägg `Project.share_token` (oigissbar), publika routes `/s/{token}` (viewer utan

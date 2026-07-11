@@ -1,0 +1,23 @@
+{% extends "admin_base.html" %}
+{% block title %}Inställningar - Admin{% endblock %}
+{% block admin_content %}
+
+<hgroup>
+	<h1>Inställningar</h1>
+	<p>Övergripande inställningar för tjänsten.</p>
+</hgroup>
+
+{% if msg %}<p class="profile-ok" role="status">{{ msg }}</p>{% endif %}
+
+<article>
+	<h2>Tjänstenamn</h2>
+	<p class="hint">Namnet som visas i sidhuvudet och webbläsarens flik. Standard sätts via env (<code>SVK_SITE_NAME</code>); värdet här vinner.</p>
+	<form method="post" action="/admin/settings">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+		<label for="site_name">Namn</label>
+		<input type="text" id="site_name" name="site_name" value="{{ site_name_value }}" maxlength="200" required>
+		<button type="submit">Spara</button>
+	</form>
+</article>
+
+{% endblock %}

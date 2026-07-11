@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>{% block title %}SVK Panorama{% endblock %}</title>
+	<title>{% block title %}{{ site_name() }}{% endblock %}</title>
 	<link rel="stylesheet" href="/static/vendor/pico.min.css">
 	<link rel="stylesheet" href="/static/tokens.css">
 	<link rel="stylesheet" href="/static/app.css">
@@ -14,7 +14,7 @@
 	{% set _initial = (_dn[:1] | upper) if _dn else '?' %}
 	<header class="site-header">
 		<nav class="container">
-			<ul><li>{% block brand %}<a href="/"><strong>SVK Panorama</strong></a>{% endblock %}</li></ul>
+			<ul><li>{% block brand %}<a href="/"><strong>{{ site_name() }}</strong></a>{% endblock %}</li></ul>
 			{% if request.session.get('uid') %}
 			<ul class="nav-right">
 				{% if request.session.get('admin') %}

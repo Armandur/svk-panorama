@@ -18,6 +18,7 @@ from app.deps import (
     verify_csrf_header,
 )
 from app.routes.profile import _process_avatar
+from app.services import settings as site_settings
 from app.services.project_files import validate_image_magic, validate_size
 from app.services.tiling import project_tile_state
 
@@ -48,6 +49,37 @@ def _back(user_id: int, msg: str | None = None, error: str | None = None) -> Red
     elif error:
         url += f"?error={quote(error)}"
     return RedirectResponse(url=url, status_code=303)
+
+
+@router.get("/admin/settings", response_class=HTMLResponse)
+def settings_page(
+    request: Request,
+    admin: User = Depends(require_admin),
+) -> HTMLResponse:
+    token = new_csrf_token()
+    response = templates.TemplateResponse(
+        request,
+        "admin_settings.html",
+        {
+            "active": "settings",
+            "site_name_value": site_settings.get_site_name(),
+            "csrf_token": token,
+            "msg": request.query_params.get("msg"),
+        },
+    )
+    set_csrf_cookie(response, token)
+    return response
+
+
+@router.post("/admin/settings")
+async def save_settings(
+    request: Request,
+    admin: User = Depends(require_admin),
+    site_name: str = Form(...),
+    _csrf: None = Depends(verify_csrf_form),
+):
+    site_settings.set_site_name(site_name)
+    return RedirectResponse(url="/admin/settings?msg=Sparat", status_code=303)
 
 
 @router.get("/admin/users", response_class=HTMLResponse)

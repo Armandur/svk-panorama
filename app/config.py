@@ -49,6 +49,11 @@ TILE_CONCURRENCY = max(1, int(os.environ.get("SVK_TILE_CONCURRENCY", "2")))
 # av bundle-export och delningslänkar (byggs senare).
 BASE_URL = os.environ.get("SVK_BASE_URL", "").rstrip("/")
 
+# Tjänstens visningsnamn (brand + sidtitlar). Env-default; super-admin kan
+# override:a i DB via /admin/settings (DB-värdet vinner). Läses genom
+# app/services/settings.py och exponeras som Jinja-global `site_name`.
+SITE_NAME = os.environ.get("SVK_SITE_NAME", "SVK Panorama")
+
 # Bootstrap-admin: skapas vid uppstart om inga användare finns. Sluten inbjudan
 # -> ingen öppen registrering; admin bjuder in övriga.
 # PRE-PRODUKTION: default admin/admin. BYT (via env) innan produktion.

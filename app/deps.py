@@ -16,6 +16,11 @@ from app.database import Project, User, get_db  # get_db bor i database (undvike
 
 templates = Jinja2Templates(directory=str(config.REPO_ROOT / "app" / "templates"))
 
+# Tjänstenamnet (super-admin-konfigurerbart) exponeras till alla mallar.
+from app.services import settings as _settings  # noqa: E402 (undvik cirkel vid import-tid)
+
+templates.env.globals["site_name"] = _settings.get_site_name
+
 CSRF_COOKIE_NAME = "csrf_token"
 
 __all__ = ["get_db", "templates", "CSRF_COOKIE_NAME"]  # get_db re-exporteras här

@@ -40,9 +40,20 @@ class Project(Base):
     # Ägare (multi-tenant). Nullable för bakåtkompatibilitet med tidiga projekt
     # som backfillas till bootstrap-admin.
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    # Oigissbar token för publik delning (/s/{token}). None = inte delad.
+    share_token: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True, index=True)
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow
     )
+
+
+class Setting(Base):
+    """Enkel nyckel/värde-store för super-admin-inställningar (t.ex. tjänstenamn).
+    Env ger default; en rad här override:ar. Läses via app/services/settings.py."""
+    __tablename__ = "settings"
+
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[str] = mapped_column(String(500))
 
 
 engine = create_engine(
