@@ -1,8 +1,6 @@
 """Uppladdning av panoramabilder och kartbild."""
 from __future__ import annotations
 
-import asyncio
-
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse, RedirectResponse
 
@@ -19,6 +17,7 @@ from app.services.project_files import (
     remove_scene,
     safe_upload_name,
     scene_id_from_filename,
+    tour_lock,
     validate_extension,
     validate_image_magic,
     validate_size,
@@ -27,10 +26,6 @@ from app.services.project_files import (
 from app.services.tiling import drop_scene_tiles
 
 router = APIRouter()
-
-# Serialiserar läs-modifiera-skriv av tour.json så parallella per-fil-
-# uppladdningar inte skriver över varandras scener.
-_tour_lock = asyncio.Lock()
 
 
 @router.post("/projects/{slug}/images")
@@ -64,9 +59,10 @@ async def upload_images(
         drop_scene_tiles(slug, scene_id)  # ev. tiles blir stale om bilden bytts
 
         panorama_url = f"/projects/{slug}/images/{filename}"
-        # Per fil: lås runt läs-modifiera-skriv så parallella requests inte
-        # skriver över varandras scener, och varje fil persisteras direkt.
-        async with _tour_lock:
+        # Per fil: delat lås runt läs-modifiera-skriv så parallella uppladdningar
+        # (och samtidig radering/scen-spar i andra routes) inte skriver över
+        # varandras scener. Kort synkron sektion, ingen await inuti.
+        with tour_lock:
             tour = read_tour(slug)
             merge_scene_into_tour(tour, scene_id, panorama_url)
             write_tour(slug, tour)
@@ -109,6 +105,7 @@ def delete_image(
     project: Project = Depends(get_project_or_404),
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:
-    remove_scene(slug, scene_id)
+    with tour_lock:
+        remove_scene(slug, scene_id)
     drop_scene_tiles(slug, scene_id)
     return RedirectResponse(url=f"/projects/{slug}", status_code=302)

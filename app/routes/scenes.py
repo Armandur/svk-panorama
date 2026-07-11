@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from app.database import Project
 from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
-from app.services.project_files import map_image_path, read_map, read_tour, write_tour
+from app.services.project_files import map_image_path, read_map, read_tour, tour_lock, write_tour
 from app.services.tiling import read_manifest
 
 router = APIRouter()
@@ -59,32 +59,33 @@ def save_tour(
     project: Project = Depends(get_project_or_404),
     _csrf: None = Depends(verify_csrf_header),
 ) -> dict:
-    tour = read_tour(slug)
-    scenes = tour.get("scenes", {})
-    updated = 0
-    for scene_id, upd in payload.scenes.items():
-        if scene_id not in scenes:
-            raise HTTPException(status_code=400, detail=f"Okänd scen: {scene_id}")
-        scene = scenes[scene_id]
-        if upd.northOffset is None:
-            scene.pop("northOffset", None)
-        else:
-            scene["northOffset"] = round(upd.northOffset, 2)
-        if upd.title is not None:
-            title = upd.title.strip()
-            if title:
-                scene["title"] = title
+    with tour_lock:  # läs-modifiera-skriv atomiskt mot andra tour.json-skrivare
+        tour = read_tour(slug)
+        scenes = tour.get("scenes", {})
+        updated = 0
+        for scene_id, upd in payload.scenes.items():
+            if scene_id not in scenes:
+                raise HTTPException(status_code=400, detail=f"Okänd scen: {scene_id}")
+            scene = scenes[scene_id]
+            if upd.northOffset is None:
+                scene.pop("northOffset", None)
             else:
-                scene.pop("title", None)
-        if upd.calibRef:
-            scene["calibRef"] = upd.calibRef
-        else:
-            scene.pop("calibRef", None)
-        if upd.horizonRoll:
-            scene["horizonRoll"] = round(upd.horizonRoll, 2)
-        else:
-            scene.pop("horizonRoll", None)
-        scene["hotSpots"] = upd.hotSpots
-        updated += 1
-    write_tour(slug, tour)
+                scene["northOffset"] = round(upd.northOffset, 2)
+            if upd.title is not None:
+                title = upd.title.strip()
+                if title:
+                    scene["title"] = title
+                else:
+                    scene.pop("title", None)
+            if upd.calibRef:
+                scene["calibRef"] = upd.calibRef
+            else:
+                scene.pop("calibRef", None)
+            if upd.horizonRoll:
+                scene["horizonRoll"] = round(upd.horizonRoll, 2)
+            else:
+                scene.pop("horizonRoll", None)
+            scene["hotSpots"] = upd.hotSpots
+            updated += 1
+        write_tour(slug, tour)
     return {"ok": True, "scenes": updated}

@@ -18,7 +18,7 @@ def _hex(value: str, fallback: str) -> str:
 
 from app.database import Project
 from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
-from app.services.project_files import _natural_key, map_image_path, read_map, read_tour, write_tour
+from app.services.project_files import _natural_key, map_image_path, read_map, read_tour, tour_lock, write_tour
 from app.services.tiling import apply_multires, read_manifest
 
 router = APIRouter()
@@ -73,22 +73,23 @@ def save_tour_settings(
     project: Project = Depends(get_project_or_404),
     _csrf: None = Depends(verify_csrf_header),
 ) -> dict:
-    tour = read_tour(slug)  # rå (equirektangulär) sanningskälla
-    default = tour.setdefault("default", {})
-    default["autoLoad"] = payload.autoLoad
-    speed = abs(payload.autoRotateSpeed)
-    direction = 1 if payload.autoRotateDir >= 0 else -1
-    default["autoRotate"] = direction * speed if payload.autoRotateEnabled else False
-    default["autoRotateInactivityDelay"] = max(0, payload.autoRotateInactivityDelay)
-    default["sceneFadeDuration"] = max(0, payload.sceneFadeDuration)
-    if payload.firstScene and payload.firstScene in tour.get("scenes", {}):
-        default["firstScene"] = payload.firstScene
-    default["mapSize"] = payload.mapSize if payload.mapSize in ("small", "medium", "large") else "medium"
-    default["theme"] = {
-        "font": payload.themeFont if payload.themeFont in FONT_KEYS else "sans",
-        "dotColor": _hex(payload.themeDotColor, "#666666"),
-        "currentColor": _hex(payload.themeCurrentColor, "#8b0000"),
-    }
-    default["editorMode"] = False
-    write_tour(slug, tour)
+    with tour_lock:  # läs-modifiera-skriv atomiskt mot andra tour.json-skrivare
+        tour = read_tour(slug)  # rå (equirektangulär) sanningskälla
+        default = tour.setdefault("default", {})
+        default["autoLoad"] = payload.autoLoad
+        speed = abs(payload.autoRotateSpeed)
+        direction = 1 if payload.autoRotateDir >= 0 else -1
+        default["autoRotate"] = direction * speed if payload.autoRotateEnabled else False
+        default["autoRotateInactivityDelay"] = max(0, payload.autoRotateInactivityDelay)
+        default["sceneFadeDuration"] = max(0, payload.sceneFadeDuration)
+        if payload.firstScene and payload.firstScene in tour.get("scenes", {}):
+            default["firstScene"] = payload.firstScene
+        default["mapSize"] = payload.mapSize if payload.mapSize in ("small", "medium", "large") else "medium"
+        default["theme"] = {
+            "font": payload.themeFont if payload.themeFont in FONT_KEYS else "sans",
+            "dotColor": _hex(payload.themeDotColor, "#666666"),
+            "currentColor": _hex(payload.themeCurrentColor, "#8b0000"),
+        }
+        default["editorMode"] = False
+        write_tour(slug, tour)
     return {"ok": True}

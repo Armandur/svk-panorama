@@ -18,7 +18,12 @@ from PIL import Image  # noqa: E402
 
 from app.routes.preview import FONT_KEYS, _hex  # noqa: E402
 from app.services.bundle import _relativize  # noqa: E402
-from app.services.project_files import _natural_key, safe_upload_name, slugify  # noqa: E402
+from app.services.project_files import (  # noqa: E402
+    _atomic_write_text,
+    _natural_key,
+    safe_upload_name,
+    slugify,
+)
 from app.services.tiling import _expected_tile_count, apply_multires  # noqa: E402
 
 _passed = 0
@@ -113,6 +118,16 @@ def test_slug_and_upload_safety():
     check("tillåter 1.jpg", safe_upload_name("1.jpg") == "1.jpg")
 
 
+def test_atomic_write():
+    d = Path(tempfile.mkdtemp())
+    p = d / "sub" / "x.json"  # parent skapas
+    _atomic_write_text(p, '{"a": 1}')
+    check("atomic skrev innehåll", p.read_text(encoding="utf-8") == '{"a": 1}')
+    _atomic_write_text(p, '{"a": 2}')  # skriver över
+    check("atomic skrev över", p.read_text(encoding="utf-8") == '{"a": 2}')
+    check("inga .tmp kvar", not list(p.parent.glob("*.tmp")))
+
+
 def main() -> int:
     for fn in (
         test_expected_tile_count,
@@ -120,6 +135,7 @@ def main() -> int:
         test_relativize,
         test_hex,
         test_slug_and_upload_safety,
+        test_atomic_write,
     ):
         fn()
     print(f"\n{_passed} passed, {_failed} failed")

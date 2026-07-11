@@ -21,6 +21,7 @@ from typing import Any
 
 from app import config
 from app.services.project_files import (
+    _atomic_write_text,
     _natural_key,
     project_dir,
     read_tour,
@@ -52,20 +53,25 @@ def read_manifest(slug: str) -> dict[str, Any]:
 
 def write_manifest(slug: str, data: dict[str, Any]) -> None:
     tiles_dir(slug).mkdir(parents=True, exist_ok=True)
-    manifest_path(slug).write_text(
-        json.dumps(data, indent="\t", ensure_ascii=False), encoding="utf-8"
-    )
+    # Atomiskt -> pollande läsare (status/preview/view) ser aldrig en truncerad fil.
+    _atomic_write_text(manifest_path(slug), json.dumps(data, indent="\t", ensure_ascii=False))
 
 
 def drop_scene_tiles(slug: str, scene_id: str) -> None:
     """Ta bort en scens tiles + manifestpost (vid borttagen/ersatt bild)."""
-    scene_tiles = tiles_dir(slug) / scene_id
-    if scene_tiles.exists():
-        shutil.rmtree(scene_tiles, ignore_errors=True)
-    manifest = read_manifest(slug)
-    if scene_id in manifest:
-        del manifest[scene_id]
-        write_manifest(slug, manifest)
+    job = _jobs.get(slug)
+    # Rör inte tile-katalogen om ett jobb kör - Docker kan skriva där just nu.
+    # Nästa tiling rmtree:ar den ändå innan omgenerering.
+    if not (job and job["status"] == "running"):
+        scene_tiles = tiles_dir(slug) / scene_id
+        if scene_tiles.exists():
+            shutil.rmtree(scene_tiles, ignore_errors=True)
+    # Läs-modifiera-skriv under samma lås som tiling-trådarna använder.
+    with _manifest_lock:
+        manifest = read_manifest(slug)
+        if scene_id in manifest:
+            del manifest[scene_id]
+            write_manifest(slug, manifest)
 
 
 def apply_multires(tour: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any]:
@@ -101,8 +107,11 @@ def job_status(slug: str) -> dict[str, Any] | None:
 
 
 def all_jobs() -> dict[str, dict[str, Any]]:
-    """Alla in-memory-jobb (körande + nyligen klara) för bulk-polling."""
-    return _jobs
+    """Ögonblicksbild av alla in-memory-jobb för bulk-polling. Kopieras under
+    _start_lock så en samtidig jobbstart inte ändrar dictens storlek under
+    iteration (RuntimeError)."""
+    with _start_lock:
+        return dict(_jobs)
 
 
 def project_tile_state(slug: str) -> dict[str, Any]:
@@ -234,13 +243,17 @@ def _run_docker(image_fs: Path, out_dir: Path, quality: int, on_progress=None) -
     watcher.start()
 
     tail: list[str] = []
-    for line in proc.stdout:
-        tail.append(line.rstrip())
-        if len(tail) > 15:
-            tail.pop(0)
+    try:
+        for line in proc.stdout:
+            tail.append(line.rstrip())
+            if len(tail) > 15:
+                tail.pop(0)
+    finally:
+        # Stoppa watcher-tråden även om stdout-läsningen kastar (t.ex. bruten
+        # pipe om Docker-daemonen dör) - annars läcker den och pollar vidare.
+        stop.set()
+        watcher.join(timeout=1)
     proc.wait()
-    stop.set()
-    watcher.join(timeout=1)
     if proc.returncode != 0:
         raise subprocess.CalledProcessError(proc.returncode, cmd, output="\n".join(tail))
     return json.loads((out_dir / "config.json").read_text(encoding="utf-8"))

@@ -6,7 +6,10 @@ exporten konsumerar, så det finns ingen mellanhand i databasen."""
 from __future__ import annotations
 
 import json
+import os
 import re
+import tempfile
+import threading
 import unicodedata
 from pathlib import Path
 from typing import Any
@@ -14,6 +17,28 @@ from typing import Any
 from fastapi import HTTPException
 
 from app import config
+
+# Serialiserar läs-modifiera-skriv av tour.json mellan alla muterande routes
+# (uppladdning, radering, scen-spar, turinställningar) så samtidiga skrivningar
+# inte tappar varandras ändringar. Hålls bara runt korta synkrona sektioner.
+tour_lock = threading.Lock()
+
+
+def _atomic_write_text(path: Path, text: str) -> None:
+    """Skriv via temp-fil + os.replace så läsare aldrig ser en halvskriven
+    (eller tom, truncerad) fil - replace är atomiskt på POSIX."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent), suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
 def slugify(text: str) -> str:
@@ -78,9 +103,7 @@ def read_tour(slug: str) -> dict[str, Any]:
 
 
 def write_tour(slug: str, tour: dict[str, Any]) -> None:
-    tour_json_path(slug).write_text(
-        json.dumps(tour, indent="\t", ensure_ascii=False), encoding="utf-8"
-    )
+    _atomic_write_text(tour_json_path(slug), json.dumps(tour, indent="\t", ensure_ascii=False))
 
 
 def default_map() -> dict[str, Any]:
@@ -95,9 +118,7 @@ def read_map(slug: str) -> dict[str, Any]:
 
 
 def write_map(slug: str, data: dict[str, Any]) -> None:
-    map_json_path(slug).write_text(
-        json.dumps(data, indent="\t", ensure_ascii=False), encoding="utf-8"
-    )
+    _atomic_write_text(map_json_path(slug), json.dumps(data, indent="\t", ensure_ascii=False))
 
 
 def scene_id_from_filename(filename: str) -> str:
