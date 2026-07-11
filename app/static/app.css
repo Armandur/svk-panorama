@@ -75,6 +75,7 @@ main.plan-app {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
+	justify-content: flex-start; /* Pico ger nav space-between - packa vänster i stället */
 	gap: 0.4rem;
 	margin-bottom: 0.75rem;
 }
@@ -481,6 +482,9 @@ tr[data-preview-scene] { cursor: help; }
 	background: var(--pico-secondary-background); color: var(--pico-secondary-inverse);
 }
 .step-action { font-size: 0.85rem; }
+/* Pico:s a[role=button] (0,1,1) slår gruppregelns display -> tvinga inline-flex
+   med högre specificitet så pilglyfen centreras vertikalt. */
+.plan-topnav a.step-arrow, .plan-topnav a.step-action { display: inline-flex; align-items: center; justify-content: center; }
 .step-menu-btn:hover, .step-arrow:hover, .step-action:hover { background: var(--pico-secondary-hover-background); color: var(--pico-secondary-inverse); }
 details.step-menu > summary { list-style: none; }
 details.step-menu > summary::-webkit-details-marker { display: none; }
