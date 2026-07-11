@@ -184,6 +184,25 @@ Luckor identifierade 2026-07-11 innan team-arbetet.
       sluta-dela på preview-steget (`/projects/{slug}/share` + `/unshare`); länken dör
       direkt vid unshare. Bundle-export fortsatt "publicera för self-host".
 
+## Buggar & UX-fixar (att ta)
+
+Upptäckt 2026-07-11 under genomgång.
+
+- [ ] **Färgväljare-lib i stället för native `<input type="color">`.** Tema-sektionen
+      på preview-steget (`preview.html`: `#theme-dot`, `#theme-current`) använder OS-
+      native färgväljare som ser olika ut per plattform. Byt till ett självhostat JS-
+      färgväljar-lib (ingen CDN, ladda ner till `static/vendor/`, jfr Pico/pannellum).
+- [ ] **Startscen-modalens kartprickar ritas inte.** I startscen-väljaren (kart-
+      modalen på preview-steget) syns inga prickar på kartan. `start-map-dots`
+      (`tour-preview.js:264`) fylls uppenbarligen inte som `preview-map-dots` gör.
+      Felsök prickutritningen i modalen.
+- [ ] **Temats typsnitt ger ingen synlig effekt.** Font-valet sätter `--tour-font`
+      på panorama-wrappen (`tour-preview.js:90`) och viewer.css applicerar det på
+      pannellum-textboxar, men det syns ingen skillnad i förhandsvisningen. Undersök
+      om pannellum faktiskt ärver variabeln (kanske behövs `!important`/rätt selektor)
+      eller om previewen saknar synlig text att applicera typsnittet på; verifiera i
+      publicerade turen/bundlen också.
+
 ## Fas 4 - Team & egna domäner (multi-tenancy nivå 2)
 
 Bakgrund (2026-07-11): för att erbjuda editorn till andra behöver turer kunna ägas

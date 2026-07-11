@@ -23,7 +23,7 @@
 			{% for p in projects %}
 			{% set st = tile_states[p.slug] %}
 			<tr>
-				<td>{{ p.name }}</td>
+				<td><a href="/projects/{{ p.slug }}" class="tour-name">{{ p.name }}</a></td>
 				<td><code>{{ p.slug }}</code></td>
 				<td>
 					<span class="tile-badge tile-{{ st.status }}" data-slug="{{ p.slug }}"
@@ -32,7 +32,6 @@
 				<td>{{ p.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
 				<td>
 					<div class="row-actions">
-						<a href="/projects/{{ p.slug }}" role="button" class="secondary">Öppna</a>
 						<form method="post" action="/projects/{{ p.slug }}/delete"
 							data-confirm="Ta bort turen {{ p.name }}? Alla bilder, tiles och exporter raderas permanent och går inte att ångra." data-confirm-danger data-confirm-ok="Ta bort">
 							<input type="hidden" name="csrf_token" value="{{ csrf_token }}">

@@ -461,6 +461,10 @@ tr[data-preview-scene] { cursor: help; }
 .slug-form { margin-top: 0.6rem; max-width: 28rem; }
 .slug-form button { margin: 0; }
 
+/* Turnamn som primär öppna-länk i projektlistan. */
+.tour-name { font-weight: 600; text-decoration: none; }
+.tour-name:hover { text-decoration: underline; }
+
 /* Radåtgärder i tabeller (Öppna + Ta bort sida vid sida). */
 .row-actions { display: flex; gap: 0.5rem; align-items: center; }
 .row-actions form { margin: 0; }
