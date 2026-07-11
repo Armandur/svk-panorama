@@ -422,33 +422,42 @@
 	const hsFieldSceneTop = document.getElementById("hs-field-scene-top");
 	const hsFieldSceneDir = document.getElementById("hs-field-scene-dir");
 	const hsText = document.getElementById("hs-text");
-	const hsTextPreview = document.getElementById("hs-text-preview");
-	function updateHsPreview() {
-		if (!hsTextPreview) return;
-		const v = hsText.value.trim();
-		if (v && window.renderMarkdown) {
-			hsTextPreview.innerHTML = renderMarkdown(v);
-			hsTextPreview.hidden = false;
-		} else {
-			hsTextPreview.hidden = true;
-		}
-	}
-	if (hsText) hsText.addEventListener("input", updateHsPreview);
-	// Expanderbar ("läs mer") - teaser i tooltip, body i fullskärms-ark.
-	const hsExpandable = document.getElementById("hs-expandable");
-	const hsExpandableLabel = document.getElementById("hs-expandable-label");
 	const hsBody = document.getElementById("hs-body");
-	const hsBodyWrap = document.getElementById("hs-body-wrap");
-	const hsBodyPreview = document.getElementById("hs-body-preview");
-	function updateHsBodyPreview() {
-		if (!hsBodyPreview) return;
-		const v = hsBody.value.trim();
-		if (v && window.renderMarkdown) { hsBodyPreview.innerHTML = renderMarkdown(v); hsBodyPreview.hidden = false; }
-		else hsBodyPreview.hidden = true;
+
+	// Samma markdown-editor som i admin: EasyMDE med vår sanerade preview. Teasern
+	// får en kompakt toolbar, läs mer-innehållet en fylligare. Initieras en gång;
+	// value() sätts/läses per hotspot och codemirror.refresh() körs när panelen visas.
+	function mkEditor(el, compact) {
+		if (!window.EasyMDE || !el) return null;
+		return new EasyMDE({
+			element: el,
+			spellChecker: false,
+			status: false,
+			autoDownloadFontAwesome: false,
+			minHeight: compact ? "60px" : "120px",
+			maxHeight: compact ? "22vh" : "38vh", // skrolla vid mycket text (input + preview)
+			toolbar: compact
+				? ["bold", "italic", "link", "|", "preview"]
+				: ["bold", "italic", "heading", "|", "unordered-list", "ordered-list", "link", "|", "preview", "guide"],
+			previewRender: function (t) { return window.renderMarkdown(t); },
+		});
 	}
-	function syncBodyWrap() { if (hsBodyWrap) hsBodyWrap.hidden = !(hsExpandable && hsExpandable.checked); }
-	if (hsExpandable) hsExpandable.addEventListener("change", function () { syncBodyWrap(); updateHsBodyPreview(); });
-	if (hsBody) hsBody.addEventListener("input", updateHsBodyPreview);
+	const hsTextEditor = mkEditor(hsText, true);
+	const hsBodyEditor = mkEditor(hsBody, false);
+	function hsTextVal() { return hsTextEditor ? hsTextEditor.value() : (hsText ? hsText.value : ""); }
+	function hsBodyVal() { return hsBodyEditor ? hsBodyEditor.value() : (hsBody ? hsBody.value : ""); }
+
+	// --- Flikar: Teaser / Läs mer (den senare bara när expanderbar) ---
+	const hsTabs = document.getElementById("hs-tabs");
+	const hsTabBtns = hsTabs ? Array.prototype.slice.call(hsTabs.querySelectorAll(".hs-tab")) : [];
+	const hsPanels = Array.prototype.slice.call(document.querySelectorAll("#hs-field-text .hs-tabpanel"));
+	function showTab(name) {
+		hsTabBtns.forEach(function (b) { b.classList.toggle("active", b.dataset.tab === name); });
+		hsPanels.forEach(function (p) { p.hidden = p.dataset.panel !== name; });
+		if (name === "teaser" && hsTextEditor) hsTextEditor.codemirror.refresh();
+		if (name === "body" && hsBodyEditor) hsBodyEditor.codemirror.refresh();
+	}
+	hsTabBtns.forEach(function (b) { b.addEventListener("click", function () { showTab(b.dataset.tab); }); });
 	const hsTooltipWidth = document.getElementById("hs-tooltip-width");
 	const hsWidthWrap = document.getElementById("hs-width-wrap");
 	const hsUrl = document.getElementById("hs-url");
@@ -479,16 +488,16 @@
 		hsFieldUrl.hidden = ctx.type !== "url";
 		hsFieldSceneTop.hidden = ctx.type !== "scene";
 		hsFieldSceneDir.hidden = ctx.type !== "scene";
-		hsText.value = (ctx.hs && ctx.hs.text != null) ? ctx.hs.text : "";
-		updateHsPreview();
+		const teaser = (ctx.hs && ctx.hs.text != null) ? ctx.hs.text : "";
+		if (hsTextEditor) hsTextEditor.value(teaser); else hsText.value = teaser;
 		// Expanderbar + rutbredd bara för rena info-hotspots (ej URL/scen).
 		if (hsWidthWrap) hsWidthWrap.hidden = ctx.type !== "info";
 		if (hsTooltipWidth) hsTooltipWidth.value = (ctx.hs && ctx.hs.tooltipWidth) || "";
-		if (hsExpandableLabel) hsExpandableLabel.hidden = ctx.type !== "info";
-		if (hsExpandable) hsExpandable.checked = ctx.type === "info" && !!(ctx.hs && ctx.hs.expandable);
-		if (hsBody) hsBody.value = (ctx.hs && ctx.hs.body) || "";
-		syncBodyWrap();
-		updateHsBodyPreview();
+		const bodyVal = (ctx.hs && ctx.hs.body) || "";
+		if (hsBodyEditor) hsBodyEditor.value(bodyVal); else if (hsBody) hsBody.value = bodyVal;
+		// Både flikarna visas alltid för info; övriga typer har bara teasern.
+		if (hsTabs) hsTabs.hidden = ctx.type !== "info";
+		showTab("teaser");
 		hsUrl.value = (ctx.hs && ctx.hs.URL) || "";
 		if (ctx.type === "scene") {
 			const target = (ctx.hs && ctx.hs.sceneId) || sceneIds().filter(function (id) { return id !== ctx.cur; })[0];
@@ -500,7 +509,12 @@
 			tyawNote(ctx.cur);
 		}
 		hsModal.hidden = false;
-		(ctx.type === "scene" ? hsSceneSel : hsText).focus();
+		// EasyMDE/CodeMirror renderar 0-höjd om den initierats dold -> refresh när
+		// modalen visas, sedan fokus.
+		if (hsTextEditor) hsTextEditor.codemirror.refresh();
+		if (ctx.type === "scene") hsSceneSel.focus();
+		else if (hsTextEditor) hsTextEditor.codemirror.focus();
+		else hsText.focus();
 		if (ctx.type === "scene") showHsPreview(hsCtx.target);
 	}
 	function closeHsModal() { hsModal.hidden = true; hsCtx = null; destroyHsPreview(); }
@@ -564,15 +578,17 @@
 		if (!tour.scenes[cur].hotSpots) tour.scenes[cur].hotSpots = [];
 		const creating = hsCtx.mode === "create";
 		let hs = creating ? { id: nextHotspotId(cur), pitch: hsCtx.pitch, yaw: hsCtx.yaw, manual: true } : hsCtx.hs;
+		const teaserV = hsTextVal();
+		const bodyV = hsBodyVal();
 		if (hsCtx.type === "url") {
 			if (!hsUrl.value) { alert("URL krävs."); return; }
-			hs.type = "info"; hs.text = hsText.value; hs.URL = hsUrl.value;
+			hs.type = "info"; hs.text = teaserV; hs.URL = hsUrl.value;
 			delete hs.expandable; delete hs.body;
 		} else if (hsCtx.type === "info") {
-			hs.type = "info"; hs.text = hsText.value; delete hs.URL;
-			if (hsExpandable && hsExpandable.checked && hsBody.value.trim()) {
-				hs.expandable = true; hs.body = hsBody.value;
-			} else { delete hs.expandable; delete hs.body; }
+			hs.type = "info"; hs.text = teaserV; delete hs.URL;
+			// Expanderbar härleds: finns text i Läs mer-fliken -> expanderbar.
+			if (bodyV.trim()) { hs.expandable = true; hs.body = bodyV; }
+			else { delete hs.expandable; delete hs.body; }
 			if (hsTooltipWidth && hsTooltipWidth.value) hs.tooltipWidth = hsTooltipWidth.value;
 			else delete hs.tooltipWidth;
 		} else { // scene
@@ -580,7 +596,7 @@
 			if (!target) { alert("Välj en målscen."); return; }
 			hs.type = "scene"; hs.sceneId = target; hs.targetPitch = 0;
 			hs.targetYaw = parseFloat(hsTyaw.value) || 0;
-			if (hsText.value) hs.text = hsText.value; else delete hs.text;
+			if (teaserV) hs.text = teaserV; else delete hs.text;
 			delete hs.URL;
 			const two = document.querySelector('input[name="hs-dir"]:checked').value === "two";
 			hs.twoway = two;
@@ -746,8 +762,11 @@
 			const label = document.createElement("span");
 			label.className = "hotspot-label";
 			const kind = hs.type === "scene" ? "Scen" : (hs.URL ? "URL" : "Info");
-			const body = hs.type === "scene" ? sceneName(hs.sceneId) + (hasReciprocal(cur, hs.sceneId) ? " (dubbel)" : " (enkel)") : (hs.text || "(tom)");
+			const raw = hs.type === "scene" ? sceneName(hs.sceneId) + (hasReciprocal(cur, hs.sceneId) ? " (dubbel)" : " (enkel)") : (hs.text || "(tom)");
+			// Platt en-rads-label (markdown-tecken + radbrytningar bort); CSS cappar med "...".
+			const body = String(raw).replace(/[#*_`>[\]!]/g, "").replace(/\s+/g, " ").trim();
 			label.textContent = kind + ": " + body;
+			label.title = body;
 			const btns = document.createElement("div");
 			btns.className = "hotspot-btns";
 			btns.appendChild(mkHsBtn("Flytta hit", function () { moveHotspot(cur, hs); }));

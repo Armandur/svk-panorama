@@ -1011,8 +1011,16 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 	padding: 0.4rem 0.5rem;
 	margin-bottom: 0.4rem;
 }
-.hotspot-label { display: block; font-size: 0.9rem; margin-bottom: 0.3rem; word-break: break-word; }
+.hotspot-label { display: block; font-size: 0.9rem; margin-bottom: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hotspot-btns { display: flex; gap: 0.3rem; }
+
+/* Hotspot-modal: flikar (Teaser / Läs mer) + EasyMDE-editor. */
+.hs-tabs { display: flex; justify-content: flex-start; gap: 0.3rem; margin-bottom: 0.6rem; border-bottom: 1px solid var(--pico-muted-border-color); }
+.hs-tab { margin: 0; border: none; background: none; padding: 0.4rem 0.8rem; font-size: 0.9rem; cursor: pointer; color: var(--pico-muted-color); border-bottom: 2px solid transparent; width: auto; border-radius: 0; }
+.hs-tab.active { color: var(--pico-primary); border-bottom-color: var(--pico-primary); font-weight: 600; }
+.hs-tabpanel[hidden] { display: none; }
+#hs-field-text .EasyMDEContainer { margin-bottom: 0.5rem; }
+#hs-field-text .editor-toolbar { border-radius: 0.3rem 0.3rem 0 0; }
 .hs-btn { flex: 1; margin: 0; padding: 0.25rem 0.3rem; font-size: 0.78rem; }
 .hs-danger { color: var(--svk-danger); border-color: var(--svk-danger); }
 

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Scenhantering - {{ project.name }}{% endblock %}
-{% block head %}<link rel="stylesheet" href="/static/vendor/pannellum.css">{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/vendor/pannellum.css"><link rel="stylesheet" href="/static/vendor/fontawesome/css/font-awesome.min.css"><link rel="stylesheet" href="/static/vendor/easymde/easymde.min.css">{% endblock %}
 {% block body_attrs %} class="plan-fullscreen" data-slug="{{ project.slug }}"{% endblock %}
 {% block main_attrs %} class="plan-app"{% endblock %}
 {% block content %}
@@ -111,24 +111,25 @@
 			<select id="hs-scene"></select>
 		</div>
 		<div id="hs-field-text">
-			<label for="hs-text">Text (markdown, visas vid hover)</label>
-			<textarea id="hs-text" maxlength="2000" rows="4"></textarea>
-			<p class="hint">Markdown stöds: <code>**fet**</code>, <code>*kursiv*</code>, <code># rubrik</code>, <code>- lista</code>, <code>[länk](https://...)</code>.</p>
-			<div id="hs-text-preview" class="markdown-body hs-text-preview" hidden></div>
-			<div id="hs-width-wrap">
-				<label for="hs-tooltip-width">Rutbredd (vid hover)</label>
-				<select id="hs-tooltip-width">
-					<option value="">Auto (anpassar sig)</option>
-					<option value="narrow">Smal</option>
-					<option value="medium">Mellan</option>
-					<option value="wide">Bred</option>
-				</select>
+			<nav class="hs-tabs" id="hs-tabs" hidden>
+				<button type="button" class="hs-tab active" data-tab="teaser">Teaser (hover)</button>
+				<button type="button" class="hs-tab" data-tab="body">Läs mer</button>
+			</nav>
+			<div class="hs-tabpanel" data-panel="teaser">
+				<textarea id="hs-text" maxlength="4000"></textarea>
+				<div id="hs-width-wrap">
+					<label for="hs-tooltip-width">Rutbredd (vid hover)</label>
+					<select id="hs-tooltip-width">
+						<option value="">Auto (anpassar sig)</option>
+						<option value="narrow">Smal</option>
+						<option value="medium">Mellan</option>
+						<option value="wide">Bred</option>
+					</select>
+				</div>
 			</div>
-			<label class="fullres-label" id="hs-expandable-label"><input type="checkbox" id="hs-expandable"> Expanderbar - texten ovan blir en teaser, klick öppnar en större ruta</label>
-			<div id="hs-body-wrap" hidden>
-				<label for="hs-body">Innehåll i läs mer-rutan (markdown)</label>
-				<textarea id="hs-body" maxlength="20000" rows="6"></textarea>
-				<div id="hs-body-preview" class="markdown-body hs-text-preview" hidden></div>
+			<div class="hs-tabpanel" data-panel="body" hidden>
+				<p class="hint">Skriver du något här blir hotspoten expanderbar - teasern visas vid hover, klick öppnar en större ruta med detta innehåll. Töm fältet för att göra den vanlig igen.</p>
+				<textarea id="hs-body" maxlength="40000"></textarea>
 			</div>
 		</div>
 		<div id="hs-field-url">
@@ -169,5 +170,6 @@
 <script src="/static/vendor/marked/marked.min.js"></script>
 <script src="/static/vendor/dompurify/purify.min.js"></script>
 <script src="/static/markdown.js"></script>
+<script src="/static/vendor/easymde/easymde.min.js"></script>
 <script src="/static/scene.js"></script>
 {% endblock %}
