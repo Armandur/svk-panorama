@@ -22,17 +22,23 @@
 
 	<article>
 		<h2>Byt lösenord</h2>
-		<form method="post" action="/profile/password">
+		<form method="post" action="/profile/password" data-pw-form data-pw-min="8">
 			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 			<label for="current">Nuvarande lösenord</label>
 			<input type="password" id="current" name="current" required autocomplete="current-password">
 			<label for="new">Nytt lösenord (minst 8 tecken)</label>
-			<input type="password" id="new" name="new" required minlength="8" autocomplete="new-password">
+			<input type="password" id="new" name="new" autocomplete="new-password" data-pw-new>
+			<small class="field-hint" data-pw-new-hint hidden></small>
 			<label for="new2">Upprepa nytt lösenord</label>
-			<input type="password" id="new2" name="new2" required autocomplete="new-password">
+			<input type="password" id="new2" name="new2" autocomplete="new-password" data-pw-confirm>
+			<small class="field-hint" data-pw-confirm-hint hidden></small>
 			<button type="submit">Byt lösenord</button>
 		</form>
 	</article>
 </section>
 
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/form-validate.js"></script>
 {% endblock %}

@@ -12,17 +12,23 @@
 		<p class="login-error" role="alert">{{ error or "Länken är ogiltig eller har gått ut." }} Kontakta en administratör för en ny inbjudan.</p>
 		{% else %}
 		{% if error %}<p class="login-error" role="alert">{{ error }}</p>{% endif %}
-		<form method="post" action="/accept-invite">
+		<form method="post" action="/accept-invite" data-pw-form data-pw-min="8">
 			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 			<input type="hidden" name="token" value="{{ token }}">
 			<label for="password">Lösenord (minst 8 tecken)</label>
-			<input type="password" id="password" name="password" required minlength="8" autocomplete="new-password" autofocus>
+			<input type="password" id="password" name="password" autocomplete="new-password" autofocus data-pw-new>
+			<small class="field-hint" data-pw-new-hint hidden></small>
 			<label for="password2">Upprepa lösenord</label>
-			<input type="password" id="password2" name="password2" required autocomplete="new-password">
+			<input type="password" id="password2" name="password2" autocomplete="new-password" data-pw-confirm>
+			<small class="field-hint" data-pw-confirm-hint hidden></small>
 			<button type="submit">Sätt lösenord och logga in</button>
 		</form>
 		{% endif %}
 	</article>
 </section>
 
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/form-validate.js"></script>
 {% endblock %}
