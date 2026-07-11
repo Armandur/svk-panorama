@@ -27,9 +27,17 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
       nordoffset per scen (sikta + klicka på granne), auto-generering av hotspots
       med riktningsstöd, scennamn (visas i vyn), hårkors, full upplösning-toggle,
       dirty-skydd, hjälp-modal.
-- [x] Mer scenhantering: **info-hotspots**, **URL-hotspots** och manuell
-      redigering (lägg till vid hårkorset, flytta/redigera/ta bort). Scennamn,
-      horisont-upprätning (roll) och full upplösning-toggle ingår också.
+- [x] Mer scenhantering: **info-, URL- och scen-hotspots** via en modal (håll
+      I/U/H eller knappar; sikta hårkorset, släpp -> modal). Scen-hotspots: välj
+      målscen (med roterande preview), enkel/dubbelriktad (härleds från om en
+      länk tillbaka finns), targetYaw (auto/manuell/generera-om), samt en alltid
+      synlig "Scen X"-etikett i editorn (tour-datans text är valfri tooltip).
+      Manuella hotspots bevaras av auto-generera. Flytta/redigera/ta bort i lista.
+      Scennamn, horisont-upprätning (roll, 0,25-steg), full upplösning-toggle.
+      Delad Inställningar-modal (preview snurr/riktning/vagg) i alla steg.
+- [ ] **Hotspot-interaktion pass 2** (ej byggt): greppa & flytta hotspot med
+      Space, färgad ring på närmaste hotspot, live-följning medan man håller
+      I/U/H. Pass 1 (modalen ovan) är klar.
 - [x] Inbyggd hur-man-gör-guide finns i vyernas hjälp-modaler + `WORKFLOW.md`.
 
 ## Fas 2 - Bundle & viewer
