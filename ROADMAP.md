@@ -35,9 +35,10 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
       Manuella hotspots bevaras av auto-generera. Flytta/redigera/ta bort i lista.
       Scennamn, horisont-upprätning (roll, 0,25-steg), full upplösning-toggle.
       Delad Inställningar-modal (preview snurr/riktning/vagg) i alla steg.
-- [ ] **Hotspot-interaktion pass 2** (ej byggt): greppa & flytta hotspot med
-      Space, färgad ring på närmaste hotspot, live-följning medan man håller
-      I/U/H. Pass 1 (modalen ovan) är klar.
+- [x] **Hotspot-interaktion pass 2**: färgad ring på närmaste hotspot (rAF-loop),
+      greppa & flytta närmaste med Space (släpp = släpp på hårkorset). Live-
+      följning vid håll I/U/H sker via pending-markör i mitten. Behöver
+      webbläsartest (interaktion, ej verifierbar headless).
 - [x] Inbyggd hur-man-gör-guide finns i vyernas hjälp-modaler + `WORKFLOW.md`.
 
 ## Fas 2 - Bundle & viewer

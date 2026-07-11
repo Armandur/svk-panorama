@@ -524,6 +524,56 @@
 		}
 	});
 
+	// --- Pass 2: ring på närmaste hotspot + greppa/flytta med Space -----------
+	let nearestId = null, grabbed = null;
+	function angDist(p1, y1, p2, y2) {
+		let dy = Math.abs(y1 - y2); if (dy > 180) dy = 360 - dy;
+		const dp = p1 - p2;
+		return Math.sqrt(dp * dp + dy * dy);
+	}
+	function currentClones() {
+		const cfg = viewer.getConfig().scenes[viewer.getScene()];
+		return (cfg && cfg.hotSpots) || [];
+	}
+	function setNearest(h) {
+		currentClones().forEach(function (x) { if (x.div) x.div.classList.toggle("hs-nearest", x === h); });
+		nearestId = h ? h.id : null;
+	}
+	function updateNearest() {
+		if (grabbed || (hsModal && !hsModal.hidden)) { setNearest(null); return; }
+		const cp = viewer.getPitch(), cy = viewer.getYaw();
+		let best = null, bestD = Infinity;
+		currentClones().forEach(function (h) {
+			const d = angDist(cp, cy, h.pitch || 0, h.yaw || 0);
+			if (d < bestD) { bestD = d; best = h; }
+		});
+		setNearest(best);
+	}
+	(function nearestTick() { try { updateNearest(); } catch (e) { /* ännu ej redo */ } requestAnimationFrame(nearestTick); })();
+
+	function isSpace(e) { return e.code === "Space" || e.key === " "; }
+	window.addEventListener("keydown", function (e) {
+		if (!isSpace(e)) return;
+		if (typingInField() || (hsModal && !hsModal.hidden) || grabbed || nearestId == null) return;
+		const cur = viewer.getScene();
+		const hs = (tour.scenes[cur].hotSpots || []).find(function (h) { return h.id === nearestId; });
+		if (!hs) return;
+		e.preventDefault();
+		grabbed = hs;
+		try { viewer.removeHotSpot(hs.id); } catch (er) { /* redan borta */ }
+		if (pendingEl) { pendingEl.className = "hs-pending hs-pending-grab"; pendingEl.hidden = false; }
+	});
+	window.addEventListener("keyup", function (e) {
+		if (!isSpace(e) || !grabbed) return;
+		const cur = viewer.getScene();
+		grabbed.pitch = round2(viewer.getPitch());
+		grabbed.yaw = round2(viewer.getYaw());
+		grabbed = null;
+		if (pendingEl) pendingEl.hidden = true;
+		setDirty(true);
+		syncAndReload(cur);
+	});
+
 	function moveHotspot(cur, hs) {
 		hs.pitch = round2(viewer.getPitch());
 		hs.yaw = round2(viewer.getYaw());

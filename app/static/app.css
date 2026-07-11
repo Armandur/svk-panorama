@@ -643,3 +643,10 @@ tr[data-preview-scene] { cursor: help; }
 /* Scen-hotspots visar alltid vilken scen de länkar till (editorn) */
 #panorama .pnlm-scene > span,
 #panorama .pnlm-hotspot.pnlm-scene span { visibility: visible !important; }
+
+/* Pass 2: ring på närmaste hotspot + grab-markör */
+#panorama .hs-nearest {
+	box-shadow: 0 0 0 3px var(--svk-warn), 0 0 6px rgba(0, 0, 0, 0.7);
+	border-radius: 50%;
+}
+.hs-pending-grab { background: rgba(181, 135, 43, 0.85); }
