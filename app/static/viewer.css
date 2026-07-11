@@ -1,13 +1,22 @@
 /* Fristående runtime-viewer: fullskärmspanorama + flytande kartöverlägg.
-   Ingen Pico/tokens - vieweren ska vara självbärande och exporterbar. */
+   Ingen Pico/tokens - vieweren ska vara självbärande och exporterbar.
+   Temavariabler (--tour-font, --dot-color m.fl.) sätts av viewer.js. */
+:root {
+	--tour-font: "Nimbus Sans L", "Liberation Sans", Arial, sans-serif;
+	--dot-color: #666666;
+	--current-dot-color: #8b0000;
+	--line-color: #4a90d9;
+}
 * { box-sizing: border-box; }
 html, body {
 	margin: 0;
 	padding: 0;
 	height: 100%;
 	background: #000;
-	font-family: "Nimbus Sans L", "Liberation Sans", Arial, sans-serif;
+	font-family: var(--tour-font);
 }
+/* Pannellums titel/info ärver temats typsnitt */
+.pnlm-title-box, .pnlm-author-box, .pnlm-panorama-info, .pnlm-load-box { font-family: var(--tour-font) !important; }
 
 #panorama {
 	position: fixed;
@@ -86,6 +95,21 @@ html, body {
 	position: absolute;
 	inset: 0;
 }
+/* Länklinjer mellan scener (under prickarna). preserveAspectRatio=none ->
+   non-scaling-stroke ger konstant linjebredd oavsett kartans skala. */
+#map-edges {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+#map-edges line {
+	stroke: var(--line-color);
+	stroke-width: 2;
+	vector-effect: non-scaling-stroke;
+	opacity: 0.85;
+}
 .map-dot {
 	position: absolute;
 	width: 16px;
@@ -94,12 +118,12 @@ html, body {
 	padding: 0;
 	border: 2px solid #fff;
 	border-radius: 50%;
-	background: #666;
+	background: var(--dot-color);
 	cursor: pointer;
-	transition: background-color 0.2s ease, transform 0.1s ease;
+	transition: transform 0.1s ease;
 }
-.map-dot:hover { background: #999; transform: scale(1.15); }
-.map-dot.current { background: darkred; }
+.map-dot:hover { transform: scale(1.2); }
+.map-dot.current { background: var(--current-dot-color); }
 
 /* Mobil: karta tar mer bredd och läggs nederst så den inte skymmer vyn. */
 @media (max-width: 640px) {

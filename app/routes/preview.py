@@ -3,9 +3,18 @@
 hela turen i multires med scenbläddring."""
 from __future__ import annotations
 
+import re
+
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
+
+FONT_KEYS = {"sans", "serif", "mono", "humanist"}
+_HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def _hex(value: str, fallback: str) -> str:
+    return value if _HEX_RE.match(value or "") else fallback
 
 from app.database import Project
 from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
@@ -24,6 +33,10 @@ class TourSettings(BaseModel):
     sceneFadeDuration: int = 1500          # ms crossfade vid scenbyte
     firstScene: str = ""
     mapSize: str = "medium"                # small | medium | large
+    themeFont: str = "sans"                # sans | serif | mono | humanist
+    themeDotColor: str = "#666666"
+    themeCurrentColor: str = "#8b0000"
+    themeLineColor: str = "#4a90d9"
 
 
 @router.get("/projects/{slug}/preview", response_class=HTMLResponse)
@@ -72,6 +85,12 @@ def save_tour_settings(
     if payload.firstScene and payload.firstScene in tour.get("scenes", {}):
         default["firstScene"] = payload.firstScene
     default["mapSize"] = payload.mapSize if payload.mapSize in ("small", "medium", "large") else "medium"
+    default["theme"] = {
+        "font": payload.themeFont if payload.themeFont in FONT_KEYS else "sans",
+        "dotColor": _hex(payload.themeDotColor, "#666666"),
+        "currentColor": _hex(payload.themeCurrentColor, "#8b0000"),
+        "lineColor": _hex(payload.themeLineColor, "#4a90d9"),
+    }
     default["editorMode"] = False
     write_tour(slug, tour)
     return {"ok": True}

@@ -73,6 +73,22 @@
 	</article>
 
 	<article>
+		<h3>Tema</h3>
+		<label for="theme-font">Typsnitt</label>
+		<select id="theme-font">
+			<option value="sans">Sans (standard)</option>
+			<option value="serif">Serif</option>
+			<option value="humanist">Humanist</option>
+			<option value="mono">Monospace</option>
+		</select>
+		<div class="theme-colors">
+			<label>Kartprickar <input type="color" id="theme-dot" value="#666666"></label>
+			<label>Aktiv scen <input type="color" id="theme-current" value="#8b0000"></label>
+			<label>Länklinjer <input type="color" id="theme-line" value="#4a90d9"></label>
+		</div>
+	</article>
+
+	<article>
 		<p id="dirty-badge" class="dirty-badge" hidden>Osparade ändringar</p>
 		<div class="save-row">
 			<button id="save-btn" type="button">Spara inställningar</button>
