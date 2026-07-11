@@ -1,0 +1,106 @@
+/* Fristående runtime-viewer: fullskärmspanorama + flytande kartöverlägg.
+   Ingen Pico/tokens - vieweren ska vara självbärande och exporterbar. */
+* { box-sizing: border-box; }
+html, body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	background: #000;
+	font-family: "Nimbus Sans L", "Liberation Sans", Arial, sans-serif;
+}
+
+#panorama {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+/* "Karta"-knappen som öppnar överlägget. */
+.map-toggle {
+	position: fixed;
+	top: 12px;
+	right: 12px;
+	z-index: 50;
+	padding: 8px 14px;
+	font-size: 15px;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.65);
+	border: 1px solid rgba(255, 255, 255, 0.35);
+	border-radius: 6px;
+	cursor: pointer;
+	backdrop-filter: blur(2px);
+}
+.map-toggle:hover { background: rgba(0, 0, 0, 0.85); }
+
+#map-container {
+	position: fixed;
+	top: 12px;
+	right: 12px;
+	z-index: 60;
+	width: min(42vw, 460px);
+	max-width: calc(100vw - 24px);
+	background: rgba(0, 0, 0, 0.55);
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	border-radius: 8px;
+	padding: 8px;
+	backdrop-filter: blur(2px);
+}
+#map-container[hidden] { display: none; }
+
+.map-close {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	z-index: 2;
+	width: 26px;
+	height: 26px;
+	font-size: 18px;
+	line-height: 1;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.7);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-radius: 4px;
+	cursor: pointer;
+}
+.map-close:hover { background: rgba(0, 0, 0, 0.9); }
+
+/* Wrapper som prickarna positioneras relativt (matchar bildens box). */
+.map-inner {
+	position: relative;
+	line-height: 0;
+}
+#map-img {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: 4px;
+}
+
+#map-dots {
+	position: absolute;
+	inset: 0;
+}
+.map-dot {
+	position: absolute;
+	width: 16px;
+	height: 16px;
+	margin: -8px 0 0 -8px; /* centrera på koordinaten */
+	padding: 0;
+	border: 2px solid #fff;
+	border-radius: 50%;
+	background: #666;
+	cursor: pointer;
+	transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.map-dot:hover { background: #999; transform: scale(1.15); }
+.map-dot.current { background: darkred; }
+
+/* Mobil: karta tar mer bredd och läggs nederst så den inte skymmer vyn. */
+@media (max-width: 640px) {
+	#map-container {
+		width: calc(100vw - 24px);
+		top: auto;
+		bottom: 12px;
+	}
+}
