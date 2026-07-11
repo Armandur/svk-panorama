@@ -53,7 +53,9 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
       multires-viewer med kartan, globala default-inställningar (autorotate,
       fördröjning, scen-fade, startscen), scenbläddring och val av kartstorlek
       (sparas som `default.mapSize`, respekteras av runtime-vieweren).
-- [ ] **Teman**: valbara typsnitt, färger på kartprickar/linjer m.m.
+- [x] **Teman**: valbara typsnitt (system-font-stackar) och färger på kartprickar,
+      aktiv scen och länklinjer. Sparas i `tour.default.theme`, appliceras av
+      runtime-vieweren via CSS-variabler; länklinjer ritas mellan scener på kartan.
 - [x] **"Exportera bundle"** (route `/export`, `app/services/bundle.py`): async-
       jobb bygger en självbärande zip (index.html + vendored pannellum + viewer +
       tiles + map.png + originalbilder för otilade scener + README). Relativa
