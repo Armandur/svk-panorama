@@ -197,12 +197,14 @@ Upptäckt 2026-07-11 under genomgång.
       utan fallback, och temavariablerna definieras bara på `.panorama-wrap` - start-
       modalen ligger utanför den. Lade fallback-värden (`var(--dot-color, #666666)` /
       `var(--current-dot-color, #8b0000)`) så prickar syns var som helst.
-- [ ] **Temats typsnitt ger ingen synlig effekt.** Font-valet sätter `--tour-font`
-      på panorama-wrappen (`tour-preview.js:90`) och viewer.css applicerar det på
-      pannellum-textboxar, men det syns ingen skillnad i förhandsvisningen. Undersök
-      om pannellum faktiskt ärver variabeln (kanske behövs `!important`/rätt selektor)
-      eller om previewen saknar synlig text att applicera typsnittet på; verifiera i
-      publicerade turen/bundlen också.
+- [x] **Temats typsnitt ger ingen synlig effekt FIXAT (2026-07-11).** Pannellum
+      sätter `font-family` på `.pnlm-container` och ALL text (titel, info, hotspot-
+      tooltips) ärver därifrån - men både preview (app.css) och runtime (viewer.css)
+      override:ade bara `.pnlm-title-box`/`author-box`, aldrig containern. Så temats
+      typsnitt nådde aldrig tooltips (huvudtexten). Bytte båda till att override:a
+      `.pnlm-container` med `!important`. Verifierat: font byts live sans->serif på
+      containern; tooltips ärver. (För att SE det i previewen krävs synlig pannellum-
+      text, dvs. hotspot-tooltip vid hover eller en titel.)
 
 ## Rich text & markdown (info-hotspots + redigerbara texter)
 

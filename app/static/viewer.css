@@ -14,8 +14,10 @@ html, body {
 	background: #000;
 	font-family: var(--tour-font);
 }
-/* Pannellums titel/info ärver temats typsnitt */
-.pnlm-title-box, .pnlm-author-box, .pnlm-panorama-info, .pnlm-load-box { font-family: var(--tour-font) !important; }
+/* Pannellum sätter font-family på .pnlm-container och all text (titel, info,
+   hotspot-tooltips) ärver därifrån - override:a containern så temats typsnitt
+   verkligen slår igenom överallt, inte bara på titelboxen. */
+.pnlm-container { font-family: var(--tour-font) !important; }
 
 #panorama {
 	position: fixed;

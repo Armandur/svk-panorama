@@ -446,8 +446,10 @@ tr[data-preview-scene] { cursor: help; }
 }
 .preview-dot:hover { transform: scale(1.2); }
 .preview-dot.current { background: var(--current-dot-color, #8b0000); }
-/* Live-typsnitt i förhandsvisningens pannellum-titel */
-.panorama-wrap .pnlm-title-box, .panorama-wrap .pnlm-author-box { font-family: var(--tour-font, inherit) !important; }
+/* Live-typsnitt i förhandsvisningen. Pannellum sätter font-family på
+   .pnlm-container och ALL text (titel, info, hotspot-tooltips) ärver därifrån -
+   så temats typsnitt måste override:a just containern, inte bara titelboxen. */
+.panorama-wrap .pnlm-container { font-family: var(--tour-font, inherit) !important; }
 /* Tema: färgväljare */
 .theme-colors { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.5rem; }
 .theme-colors label { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; margin: 0; }
