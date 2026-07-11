@@ -263,11 +263,77 @@ Faser (minst till störst):
       `/projects/<slug>/` -> `/s/{token}/` (befintlig JSON-replace). Bundle: attachments-
       mappen kopieras och bild-URL:erna relativiseras (`_relativize` + `_collect`).
       **Markdown-funktionen (fas 1-4) därmed KLAR.**
-- [x] **Mediebibliotek KLAR (2026-07-12).** `media-library.js` (`window.openMediaLibrary`)
-      + `GET /projects/{slug}/attachments` (lista) + `POST .../{name}/delete`. Knapp i
-      hotspot-editorns EasyMDE-toolbar: bläddra miniatyrer, ladda upp, radera, välj
-      (infogar markdown-bildlänk). Direktuppladdning finns kvar via EasyMDE:s
-      bild-knapp.
+- [x] **Mediebibliotek v1 (per-projekt) KLAR (2026-07-12).** `media-library.js`
+      (`window.openMediaLibrary`) + `GET /projects/{slug}/attachments` (lista) +
+      `POST .../{name}/delete`. Knapp i hotspot-editorns EasyMDE-toolbar: bläddra
+      miniatyrer, ladda upp, radera, välj (infogar markdown-bildlänk). Direktuppladdning
+      via EasyMDE:s bild-knapp. **ERSÄTTS av delad pool nedan.**
+
+- [ ] **Mediebibliotek v2: DELAD POOL PER ÄGARE + administrationsvy (BÖRJA HÄR efter
+      clear).** Beslut 2026-07-12 (Rasmus valde pool framför per-projekt): flytta
+      bilderna från per-projekt (`projects/<slug>/attachments/`) till en **pool per
+      ägare**, återanvändbar mellan projekt, med metadata + härledd användning + filter,
+      och en dedikerad administrationsvy. "Ägare" = `User` nu (Team i Fas 4).
+
+      **Ingen migrering behövs (Rasmus 2026-07-12):** befintlig
+      `projects/harnosands-domkyrka/attachments/9ae126dd-map.jpg` + dess referens i den
+      turens tour.json är BARA TESTDATA - städa bort den (radera mappen + ta bort
+      ev. hotspot-referens i tour.json) i stället för att migrera. Ren start på poolen.
+
+      **Lagring:** `media/<owner_id>/<name>` under nytt `config.MEDIA_DIR`
+      (`REPO_ROOT/media`, env `SVK_MEDIA_DIR`, gitignorat). owner_id = `User.id`.
+      Filnamn: `secrets.token_hex(6) + "-" + safe_upload_name(orig)` (oigissbart).
+
+      **URL + servering:** bilder refereras i hotspot-markdown som absolut
+      `/media/<owner_id>/<name>`. Serva via `GET /media/{owner_id}/{name}` **publikt per
+      oigissbar URL** (capability-URL, som share-token-modellen) - traversal-guard, men
+      ingen auth-grind (annars funkar inte publika /s-vyn utan att känna till token per
+      bild). Motivering: namnen är oigissbara, listning/hantering är auth-grindad, och
+      bilderna är turinnehåll ämnat att visas. SÄKERHETSNOT: en bild som bara refereras i
+      en privat (odelad) tur är ändå serverbar om någon har exakt URL - låg risk för beta.
+      Fördel: funkar identiskt i editor + publik /s + bundle utan URL-omskrivning
+      (till skillnad från `/projects/<slug>/`-URL:erna som public.py skriver om).
+
+      **Endpoints (ny `routes/media.py`, registrera i main.py FÖRE assets-catchall):**
+      - `POST /media/upload` (require_user, CSRF-header): spara till `media/<user.id>/`,
+        returnera `{url, name, ...}`. Validera magic + storlek (jfr uploads.py).
+      - `GET /media/list` (require_user): lista current users pool med metadata:
+        `name, url, size` (stat), `width/height` (PIL `Image.open`), `mtime`
+        (uppladdningsdatum), `usage` = härledd lista `[{slug, name, count}]`.
+      - `POST /media/{name}/delete` (require_user, CSRF-header): radera ur
+        `media/<user.id>/<name>`, traversal-guard.
+      - `GET /media/{owner_id}/{name}`: FileResponse, traversal-guard, ingen auth
+        (capability-URL). Admin/owner ser den; publik /s når den direkt.
+
+      **Härledd användning (ingen DB-tabell):** skanna current users projekt
+      (`Project.owner_id == user.id`) sina `tour.json` efter strängen
+      `/media/<user_id>/<name>` i alla `hotSpots[].text` + `.body`. Bygg map
+      `{name: [usages]}` en gång per list-anrop. Räkna även otillhörande = kan raderas.
+
+      **Filtrering i biblioteket:** filter "Används i denna tur" / "Oanvända" / "Alla" /
+      per projekt. `media-library.js` får en filter-rad; picker-läget kan förvälja
+      current projekt. Behåll `openMediaLibrary(onPick)` men byt käll-URL till `/media/*`
+      (slug behövs ej längre för listan; skicka current slug bara för filtret).
+
+      **Administrationsvy:** egen route/sida (t.ex. `/media` eller sektion under Admin
+      eller på projektsidan) med tabell/grid: miniatyr, pixelmått (WxH), lagringsstorlek,
+      uppladdningsdatum, "används i" (klickbar lista). Radera med användnings-varning
+      (confirmDialog). Ev. döp om. Återanvänd media-library.js-komponenten.
+
+      **Bundle (`bundle.py`):** hotspot-markdown har nu `/media/<owner_id>/<name>`.
+      I `_relativize`: skanna `hotSpots[].text/.body` efter `/media/<owner_id>/`-URL:er,
+      byt till relativa `media/<name>`. I `_collect`: kopiera de REFERERADE poolbilderna
+      (inte hela poolen) till `media/<name>` i zipen. (Ta bort gamla
+      `attachments/`-hanteringen när migrering är klar.)
+
+      **Repoint befintligt:** `scene.js` `uploadHsImage` + `mediaAction` -> `/media/*`.
+      `media-library.js` -> `/media/*`. Ta bort per-projekt-attachments-endpoints i
+      `uploads.py` (eller behåll som deprecated tills migrering körts). Publika /s
+      behöver INGEN ändring (media-URL:er är absoluta + publika).
+
+      **Fas 4-koppling:** när Team byggs blir owner_id ett Team-id och poolen delas i
+      teamet. `/media/<owner_id>/`-strukturen håller (owner_id = team_id då). Usage-scan
+      blir per-team-projekt.
 
 - [x] **Karta-knappen försvinner i pannellum-helskärm FIXAT (2026-07-12).**
       `viewer.js` flyttar kart-knappen + överlägget in i det fullskärmade elementet
