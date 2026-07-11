@@ -4,8 +4,9 @@
  * Ersätter formulärens vanliga (blockerande) post med XHR så användaren ser
  * uppladdningsprogress istället för att webbläsaren hänger. Efter att
  * scenbilder laddats upp för-genereras previews på servern (HEAD-anrop mot
- * preview-endpointen) med synlig progress. Faller tillbaka på vanlig post om
- * JS är av (formulären fungerar utan denna fil).
+ * preview-endpointen) med synlig progress, och därefter genereras multires-
+ * tiles (async-jobb med polling) så publicerade turer laddar snabbt. Faller
+ * tillbaka på vanlig post om JS är av (formulären fungerar utan denna fil).
  */
 (function () {
 	"use strict";
@@ -87,10 +88,54 @@
 		});
 	}
 
+	// Generera multires-tiles för nyuppladdade scener (async-jobb + polling).
+	// Icke-blockerande fel: turen fungerar equirektangulärt även utan tiles.
+	function generateTiles() {
+		return new Promise(function (resolve) {
+			setTitle("Genererar tiles...");
+			setProgress(null);
+			setDetail("Startar...");
+			fetch("/projects/" + encodeURIComponent(slug) + "/tile-job", {
+				method: "POST",
+				headers: { "X-CSRF-Token": window.getCsrfToken ? getCsrfToken() : "" },
+			})
+				.then(function (r) { return r.ok ? r.json() : Promise.reject(new Error("start " + r.status)); })
+				.then(function (state) {
+					if (!state.job || !state.job.total) { resolve(); return; }
+					pollTiles(resolve);
+				})
+				.catch(function () {
+					if (window.showToast) showToast("Kunde inte starta tiling (turen fungerar ändå)", "error");
+					resolve();
+				});
+		});
+	}
+
+	function pollTiles(resolve) {
+		fetch("/projects/" + encodeURIComponent(slug) + "/tile-job/status")
+			.then(function (r) { return r.json(); })
+			.then(function (state) {
+				var job = state.job;
+				if (job && job.status === "running") {
+					var total = job.total || 1;
+					setProgress(Math.round((job.done / total) * 100));
+					setDetail("Genererar tiles " + job.done + "/" + total + (job.current ? " (scen " + job.current + ")" : ""));
+					setTimeout(function () { pollTiles(resolve); }, 1500);
+					return;
+				}
+				if (job && job.status === "error" && window.showToast) {
+					showToast("Tiling misslyckades delvis (turen fungerar ändå)", "error");
+				}
+				resolve();
+			})
+			.catch(function () { resolve(); });
+	}
+
 	function handleImages(form) {
 		showOverlay("Laddar upp bilder...");
 		uploadForm(form)
 			.then(function (data) { return pregeneratePreviews(data.scenes || []); })
+			.then(function () { return generateTiles(); })
 			.then(function () { window.location.reload(); })
 			.catch(function (err) {
 				hideOverlay();

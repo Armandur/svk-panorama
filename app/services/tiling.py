@@ -119,11 +119,17 @@ def _run_docker(image_fs: Path, out_dir: Path, quality: int) -> dict[str, Any]:
     return json.loads((out_dir / "config.json").read_text(encoding="utf-8"))
 
 
-def _run_job(slug: str, quality: int) -> None:
+def pending_scenes(slug: str) -> list[tuple[str, Path]]:
+    """Tileable scener som ännu saknar tiles (inte i manifestet)."""
+    manifest = read_manifest(slug)
+    return [(sid, img) for sid, img in tileable_scenes(slug) if sid not in manifest]
+
+
+def _run_job(slug: str, quality: int, scenes: list[tuple[str, Path]]) -> None:
     job = _jobs[slug]
     manifest = read_manifest(slug)
     try:
-        for scene_id, image_fs in tileable_scenes(slug):
+        for scene_id, image_fs in scenes:
             job["current"] = scene_id
             out_dir = tiles_dir(slug) / scene_id
             config = _run_docker(image_fs, out_dir, quality)
@@ -143,12 +149,13 @@ def _run_job(slug: str, quality: int) -> None:
 
 
 def start_job(slug: str, quality: int = 80) -> dict[str, Any]:
-    """Starta ett tiling-jobb om inget redan kör för projektet."""
+    """Starta ett tiling-jobb för scener som saknar tiles. Redan tilade
+    scener hoppas över, så om-uppladdning av en scen inte re-tilar allt."""
     with _start_lock:
         existing = _jobs.get(slug)
         if existing and existing["status"] == "running":
             return existing
-        scenes = tileable_scenes(slug)
+        scenes = pending_scenes(slug)
         job = {
             "status": "running",
             "total": len(scenes),
@@ -160,5 +167,5 @@ def start_job(slug: str, quality: int = 80) -> dict[str, Any]:
     if not scenes:
         job["status"] = "done"
         return job
-    threading.Thread(target=_run_job, args=(slug, quality), daemon=True).start()
+    threading.Thread(target=_run_job, args=(slug, quality, scenes), daemon=True).start()
     return job
