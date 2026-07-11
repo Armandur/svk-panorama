@@ -14,6 +14,7 @@ import os
 import shutil
 import subprocess
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
@@ -26,9 +27,15 @@ from app.services.project_files import (
 
 DOCKER_IMAGE = "pannellum-multires"
 
+# Antal scener som tilas parallellt. nona (kubfaces) är enkeltrådat, så
+# parallellism hjälper - men VM:en delas och har 4 kärnor, så vi håller oss
+# lågt och lämnar kärnor till resten.
+TILE_CONCURRENCY = 2
+
 # Jobbstatus per slug (single-worker lokalverktyg -> in-memory räcker).
 _jobs: dict[str, dict[str, Any]] = {}
 _start_lock = threading.Lock()
+_manifest_lock = threading.Lock()
 
 
 def tiles_dir(slug: str) -> Path:
@@ -154,42 +161,52 @@ def pending_scenes(slug: str) -> list[tuple[str, Path]]:
     return [(sid, img) for sid, img in tileable_scenes(slug) if sid not in manifest]
 
 
+def _tile_one(slug: str, quality: int, scene_id: str, image_fs: Path, entry: dict, job: dict) -> None:
+    """Tila en scen och skriv in dess multiRes i manifestet (under lås)."""
+    entry["status"] = "running"
+    entry["progress"] = 5
+    entry["stage"] = "startar"
+
+    def on_stage(pct, label):
+        entry["progress"] = pct
+        entry["stage"] = label
+
+    out_dir = tiles_dir(slug) / scene_id
+    config = _run_docker(image_fs, out_dir, quality, on_stage)
+    multires = config["multiRes"]
+    multires["basePath"] = f"/projects/{slug}/tiles/{scene_id}"
+    # Läs-modifiera-skriv av manifestet måste serialiseras mellan trådarna.
+    with _manifest_lock:
+        manifest = read_manifest(slug)
+        manifest[scene_id] = multires
+        write_manifest(slug, manifest)
+        job["done"] += 1
+    entry["status"] = "done"
+    entry["progress"] = 100
+    entry["stage"] = "klar"
+
+
 def _run_job(slug: str, quality: int, scenes: list[tuple[str, Path]]) -> None:
     job = _jobs[slug]
     entries = {s["id"]: s for s in job["scenes"]}
-    manifest = read_manifest(slug)
-    try:
-        for scene_id, image_fs in scenes:
-            job["current"] = scene_id
-            entry = entries[scene_id]
-            entry["status"] = "running"
-            entry["progress"] = 5
-            entry["stage"] = "startar"
-
-            def on_stage(pct, label, _e=entry):
-                _e["progress"] = pct
-                _e["stage"] = label
-
-            out_dir = tiles_dir(slug) / scene_id
-            config = _run_docker(image_fs, out_dir, quality, on_stage)
-            multires = config["multiRes"]
-            multires["basePath"] = f"/projects/{slug}/tiles/{scene_id}"
-            manifest[scene_id] = multires
-            write_manifest(slug, manifest)  # skriv löpande -> överlever avbrott
-            entry["status"] = "done"
-            entry["progress"] = 100
-            entry["stage"] = "klar"
-            job["done"] += 1
-        job["current"] = None
-        job["status"] = "done"
-    except (subprocess.CalledProcessError, Exception) as exc:  # noqa: BLE001 - visa felet i UI:t
-        cur = job.get("current")
-        if cur and cur in entries:
-            entries[cur]["status"] = "error"
-            entries[cur]["stage"] = "fel"
-        detail = getattr(exc, "output", None) or exc
-        job["status"] = "error"
-        job["error"] = f"scen {cur}: {detail}"
+    errors: list[str] = []
+    with ThreadPoolExecutor(max_workers=TILE_CONCURRENCY) as pool:
+        futures = {
+            pool.submit(_tile_one, slug, quality, sid, img, entries[sid], job): sid
+            for sid, img in scenes
+        }
+        for fut in as_completed(futures):
+            sid = futures[fut]
+            try:
+                fut.result()
+            except Exception as exc:  # noqa: BLE001 - visa felet i UI:t
+                entries[sid]["status"] = "error"
+                entries[sid]["stage"] = "fel"
+                detail = getattr(exc, "output", None) or exc
+                errors.append(f"scen {sid}: {detail}")
+    job["status"] = "error" if errors else "done"
+    if errors:
+        job["error"] = "; ".join(errors)
 
 
 def start_job(slug: str, quality: int = 80) -> dict[str, Any]:
@@ -204,7 +221,6 @@ def start_job(slug: str, quality: int = 80) -> dict[str, Any]:
             "status": "running",
             "total": len(scenes),
             "done": 0,
-            "current": None,
             "error": None,
             "scenes": [
                 {"id": sid, "status": "pending", "progress": 0, "stage": ""}
