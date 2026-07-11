@@ -1,0 +1,20 @@
+# ENDAST för lokal dev/test. Produktion på Unraid körs via Add Container
+# (se DOCKER.md), inte compose.
+services:
+  svk-panorama:
+    build: .
+    image: ghcr.io/armandur/svk-panorama:latest
+    ports:
+      - "8002:8000"
+    environment:
+      - SVK_SECRET_KEY=${SVK_SECRET_KEY:-dev-only-secret}
+      - SVK_TILE_CONCURRENCY=${SVK_TILE_CONCURRENCY:-2}
+    volumes:
+      # Persistent data (projekt + db).
+      - ./data:/data
+      # Tiling via värdens docker-daemon. OBS: -v-monteringar i tiling använder
+      # container-paths som värden måste kunna se -> för att tiling ska funka
+      # lokalt måste ./data ligga på samma path i container och värd (avancerat).
+      # Utan detta fungerar allt UTOM tiling (turer blir equirektangulära).
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped

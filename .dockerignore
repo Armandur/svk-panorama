@@ -1,0 +1,28 @@
+# Versionshantering / verktyg
+.git
+.github
+.venv
+**/__pycache__
+*.pyc
+
+# Runtime-data och hemligheter (ska aldrig in i imagen)
+projects/
+svk.db
+.env
+*.log
+tmp/
+tests/
+
+# Legacy-produktionsturer (ingår inte i editorn)
+images/
+css/
+dev/
+dk/
+ha/
+he/
+ho/
+sa/
+st/
+vi/
+_tiletest.html
+index.html
