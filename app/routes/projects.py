@@ -16,9 +16,11 @@ from app.deps import (
     templates,
     verify_csrf_form,
 )
+from app.services.bundle import forget_job as forget_export_job
 from app.services.project_files import (
     default_map,
     default_tour,
+    delete_project_files,
     ensure_project_structure,
     list_scenes,
     map_image_path,
@@ -26,6 +28,7 @@ from app.services.project_files import (
     write_map,
     write_tour,
 )
+from app.services.tiling import forget_job as forget_tile_job
 from app.services.tiling import project_tile_state
 
 router = APIRouter()
@@ -96,6 +99,31 @@ async def create_project(
     write_map(slug, default_map())
 
     return RedirectResponse(url=f"/projects/{slug}", status_code=302)
+
+
+@router.post("/projects/{slug}/delete")
+async def delete_project(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+    project: Project = Depends(get_project_or_404),  # gate: ägare eller admin
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Radera en hel tur: DB-rad + projektmappen + ev. in-memory-jobb."""
+    owner_id = project.owner_id
+    acted_on_other = user.is_admin and owner_id != user.id
+
+    db.delete(project)
+    db.commit()
+
+    forget_tile_job(slug)
+    forget_export_job(slug)
+    delete_project_files(slug)
+
+    # Admin som raderar en annans tur -> tillbaka till den användarens turlista.
+    dest = f"/admin/users/{owner_id}/projects" if acted_on_other else "/"
+    return RedirectResponse(url=dest, status_code=303)
 
 
 @router.get("/projects/{slug}", response_class=HTMLResponse)

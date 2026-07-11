@@ -43,6 +43,12 @@ def job_status(slug: str) -> dict[str, Any] | None:
     return _jobs.get(slug)
 
 
+def forget_job(slug: str) -> None:
+    """Glöm in-memory-exportjobb för en slug (t.ex. när turen raderas)."""
+    with _lock:
+        _jobs.pop(slug, None)
+
+
 def _relativize(slug: str, tour: dict) -> dict:
     """Applicera multires och gör alla asset-sökvägar relativa till bundle-roten."""
     apply_multires(tour, read_manifest(slug))

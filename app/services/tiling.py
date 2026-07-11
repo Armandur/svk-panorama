@@ -106,6 +106,13 @@ def job_status(slug: str) -> dict[str, Any] | None:
     return _jobs.get(slug)
 
 
+def forget_job(slug: str) -> None:
+    """Glöm in-memory-jobbstatus för en slug (t.ex. när turen raderas). En
+    ev. redan startad tråd är daemon och avslutar av sig själv."""
+    with _start_lock:
+        _jobs.pop(slug, None)
+
+
 def all_jobs() -> dict[str, dict[str, Any]]:
     """Ögonblicksbild av alla in-memory-jobb för bulk-polling. Kopieras under
     _start_lock så en samtidig jobbstart inte ändrar dictens storlek under

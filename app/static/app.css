@@ -455,6 +455,11 @@ tr[data-preview-scene] { cursor: help; }
 .login-section { max-width: 26rem; margin: 2rem auto; }
 .login-error { background: var(--svk-danger); color: #fff; padding: 0.5rem 0.7rem; border-radius: 0.3rem; font-size: 0.9rem; }
 .logout-form { margin: 0; }
+/* Radåtgärder i tabeller (Öppna + Ta bort sida vid sida). */
+.row-actions { display: flex; gap: 0.5rem; align-items: center; }
+.row-actions form { margin: 0; }
+.row-actions .delete-btn { margin: 0; }
+
 /* Inline fältvalidering: hint under fältet, röd via aria-invalid (Pico). */
 .field-hint { display: block; color: var(--svk-danger); font-size: 0.8rem; margin: -0.5rem 0 0.6rem; }
 .col-avatar { width: 3rem; text-align: center; }

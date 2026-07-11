@@ -94,11 +94,20 @@ def user_projects(
         db.query(Project).filter(Project.owner_id == user_id).order_by(Project.created_at.desc()).all()
     )
     tile_states = {p.slug: project_tile_state(p.slug) for p in projects}
-    return templates.TemplateResponse(
+    token = new_csrf_token()
+    response = templates.TemplateResponse(
         request,
         "admin_user_projects.html",
-        {"target": target, "projects": projects, "tile_states": tile_states, "active": "users"},
+        {
+            "target": target,
+            "projects": projects,
+            "tile_states": tile_states,
+            "active": "users",
+            "csrf_token": token,
+        },
     )
+    set_csrf_cookie(response, token)
+    return response
 
 
 @router.get("/admin/users/{user_id}", response_class=HTMLResponse)

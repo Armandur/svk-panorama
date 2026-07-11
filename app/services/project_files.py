@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import tempfile
 import threading
 import unicodedata
@@ -51,6 +52,15 @@ def slugify(text: str) -> str:
 
 def project_dir(slug: str) -> Path:
     return config.PROJECTS_DIR / slug
+
+
+def delete_project_files(slug: str) -> None:
+    """Radera hela projektmappen (bilder, tiles, previews, export). Guardar mot
+    traversal - mappen måste vara ett direkt barn till PROJECTS_DIR."""
+    d = project_dir(slug).resolve()
+    if d.parent != config.PROJECTS_DIR.resolve():
+        raise HTTPException(status_code=400, detail="Ogiltig projektsökväg")
+    shutil.rmtree(d, ignore_errors=True)
 
 
 def images_dir(slug: str) -> Path:

@@ -22,7 +22,16 @@
 			<td>
 				<span class="tile-badge tile-{{ st.status }}">{%- if st.status == 'running' -%}Genererar {{ st.done }}/{{ st.total }}{%- elif st.status == 'done' -%}Tiles klara{%- elif st.status == 'partial' -%}{{ st.tiled }}/{{ st.tileable }} tilade{%- elif st.status == 'error' -%}Tiling-fel{%- endif -%}</span>
 			</td>
-			<td><a href="/projects/{{ p.slug }}" role="button" class="secondary">Öppna</a></td>
+			<td>
+					<div class="row-actions">
+						<a href="/projects/{{ p.slug }}" role="button" class="secondary">Öppna</a>
+						<form method="post" action="/projects/{{ p.slug }}/delete"
+							onsubmit="return confirm('Ta bort turen {{ p.name }}? Alla bilder, tiles och exporter raderas permanent och går inte att ångra.');">
+							<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+							<button type="submit" class="secondary outline delete-btn">Ta bort</button>
+						</form>
+					</div>
+				</td>
 		</tr>
 		{% endfor %}
 	</tbody>

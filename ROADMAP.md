@@ -141,15 +141,14 @@ Kvarvarande arbete är i praktiken auth + multi-tenancy.
       + kolumn i listan för aktivitetsöversikt; sök/filtrera användare när listan
       växer. Alla gated med `require_admin`, CSRF på POST.
 
-- [ ] **Ta bort enskild tur.** Idag finns ingen funktion för användare/admin att
-      radera en hel tur - bara enskilda scener på uppladdningssidan. Behövs: en
-      radera-knapp (huvudmenyn per tur och/eller projektsidan) som tar bort DB-raden
-      (`Project`) + projektmappen på disk (`projects/<slug>/` med bilder/tiles/
-      export). Endpoint i `app/routes/projects.py`, gated med `get_project_or_404`
-      (ägare eller admin) + CSRF, bekräftelsedialog. Admin ska kunna radera andras
-      turer (nås via Användare -> turer). Städa även ev. pågående tiling/export-jobb
-      för slugen. Löser dessutom delvis "överför/radera turer innan man tar bort en
-      ägande användare" (se admin-verktygsförslagen ovan).
+- [x] **Ta bort enskild tur KLAR (2026-07-11).** `POST /projects/{slug}/delete`
+      (`app/routes/projects.py`), gated med `get_project_or_404` (ägare eller admin)
+      + CSRF. Raderar DB-raden + hela projektmappen (`delete_project_files` med
+      traversal-guard) + glömmer in-memory tiling/export-jobb (`forget_job` i
+      `services/tiling.py` + `bundle.py`). Radera-knapp på huvudmenyn (`index.html`)
+      och på admins turlista (`admin_user_projects.html`); admin-radering av annans
+      tur -> tillbaka till den användarens turlista. Bekräftelsedialog. Löser delvis
+      "radera/överför turer innan man tar bort en ägande användare".
 
 - [ ] **Vid produktionssättning:** återinför Alembic (baslinje ur då-aktuella
       modeller), byt admin/admin mot riktiga creds, ev. Postgres via docker-compose.

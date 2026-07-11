@@ -44,7 +44,7 @@ app/
   deps.py            # get_db, templates, CSRF (dubbel-cookie), get_project_or_404
   schemas.py         # Pydantic (map-payload)
   routes/            # en fil per domän
-    projects.py      # /, /projects (skapa), /projects/{slug} (uppladdningssidan)
+    projects.py      # /, /projects (skapa), /projects/{slug} (uppladdning), /delete (radera tur)
     uploads.py       # POST bilder/kartbild (per-fil, tour.json under asyncio-lås)
     plan.py          # /plan (placering + länkning på kartan) + spara map.json
     scenes.py        # /scenes (kalibrera + hotspots) + spara tour.json
