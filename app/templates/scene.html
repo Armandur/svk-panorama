@@ -48,21 +48,22 @@
 		<h3>Kalibrera</h3>
 		<p class="hint">Vrid vyn så en granne du ser är centrerad, klicka sedan på grannen nedan.</p>
 		<div id="neighbor-list" class="neighbor-list"></div>
+		<p id="scene-readiness" class="readiness" aria-live="polite"></p>
+		<button id="generate-btn" type="button">Auto-generera hotspots</button>
 	</article>
 
 	<article>
 		<h3>Hotspots</h3>
-		<p class="hint">Sikta hårkorset dit du vill och klicka. Scen-länkar skapas automatiskt via Auto-generera nedan.</p>
+		<p class="hint">Håll <kbd>I</kbd> (info), <kbd>U</kbd> (URL) eller <kbd>H</kbd> (scen), sikta hårkorset och släpp för att lägga en hotspot. Eller använd knapparna nedan.</p>
 		<div class="tool-row">
 			<button id="add-info-btn" type="button" class="secondary">+ Info</button>
 			<button id="add-url-btn" type="button" class="secondary">+ URL</button>
+			<button id="add-scene-btn" type="button" class="secondary">+ Scen</button>
 		</div>
 		<ul id="hotspot-list" class="hotspot-list"></ul>
 	</article>
 
 	<article>
-		<p id="scene-readiness" class="readiness" aria-live="polite"></p>
-		<button id="generate-btn" type="button">Auto-generera hotspots</button>
 		<p id="dirty-badge" class="dirty-badge" hidden>Osparade ändringar</p>
 		<div class="save-row">
 			<button id="save-tour-btn" type="button">Spara</button>
@@ -76,6 +77,7 @@
 <div class="panorama-wrap">
 	<div id="panorama"></div>
 	<div class="crosshair" aria-hidden="true"></div>
+	<div id="hs-pending" class="hs-pending" hidden aria-hidden="true"></div>
 	<div id="scene-title-label" class="scene-title-label"></div>
 	<div id="scene-map" class="scene-map">
 		<img id="scene-map-img" src="/projects/{{ project.slug }}/map.png" alt="Översiktskarta">
@@ -93,6 +95,42 @@
 		<p><b>Gör så här:</b> för varje scen, vrid vyn tills en granne du ser är i mitten och klicka på grannens knapp. Upprepa för alla scener (byt med Föreg./Nästa).</p>
 		<p><b>Generera:</b> när scenerna är kalibrerade skapar <b>Auto-generera hotspots</b> alla länkpunkter ur kartan - enkelriktade länkar ger en hotspot, dubbelriktade två.</p>
 		<p><b>Spara</b> skriver nordoffset och hotspots till turen.</p>
+	</article>
+</div>
+
+<div id="hs-modal" class="help-modal" hidden>
+	<article>
+		<div class="section-head">
+			<h3 id="hs-modal-title">Hotspot</h3>
+			<button id="hs-modal-close" type="button" class="secondary outline" aria-label="Stäng">&times;</button>
+		</div>
+		<div id="hs-field-text">
+			<label for="hs-text">Text (visas vid hover)</label>
+			<input type="text" id="hs-text" maxlength="500">
+		</div>
+		<div id="hs-field-url">
+			<label for="hs-url">URL</label>
+			<input type="text" id="hs-url" placeholder="https://...">
+		</div>
+		<div id="hs-field-scene">
+			<label for="hs-scene">Målscen</label>
+			<select id="hs-scene"></select>
+			<fieldset>
+				<label><input type="radio" name="hs-dir" value="one" checked> Enkelriktad</label>
+				<label><input type="radio" name="hs-dir" value="two"> Dubbelriktad (skapar länk tillbaka)</label>
+			</fieldset>
+			<label for="hs-tyaw">Riktning vid ankomst (targetYaw)</label>
+			<div class="roll-row">
+				<input type="range" id="hs-tyaw" min="-180" max="180" step="1" value="0">
+				<input type="number" id="hs-tyaw-num" class="roll-num" min="-180" max="180" step="1" value="0">
+			</div>
+			<button id="hs-tyaw-regen" type="button" class="secondary outline">Generera om riktning</button>
+			<p id="hs-tyaw-note" class="hint"></p>
+		</div>
+		<div class="hs-modal-actions">
+			<button id="hs-save" type="button">Spara hotspot</button>
+			<button id="hs-cancel" type="button" class="secondary outline">Avbryt</button>
+		</div>
 	</article>
 </div>
 {% endif %}

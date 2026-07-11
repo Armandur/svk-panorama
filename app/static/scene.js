@@ -319,42 +319,153 @@
 		return (ids.length ? Math.max.apply(null, ids) : -1) + 1;
 	}
 
-	function addHotspot(kind) {
-		const cur = viewer.getScene();
-		if (!tour.scenes[cur].hotSpots) tour.scenes[cur].hotSpots = [];
-		const pitch = round2(viewer.getPitch());
-		const yaw = round2(viewer.getYaw());
-		let hs;
-		if (kind === "url") {
-			const url = prompt("URL som hotspoten öppnar:");
-			if (!url) return;
-			const text = prompt("Text (visas vid hover):", url) || url;
-			hs = { id: nextHotspotId(cur), pitch: pitch, yaw: yaw, type: "info", text: text, URL: url };
-		} else {
-			const text = prompt("Text för info-hotspot:");
-			if (!text) return;
-			hs = { id: nextHotspotId(cur), pitch: pitch, yaw: yaw, type: "info", text: text };
+	function sceneName(id) { return (tour.scenes[id] && tour.scenes[id].title) || ("scen " + id); }
+	function sceneHotspotText(target) { return "Till " + sceneName(target); }
+	function computeTargetYaw(from, to) {
+		if (positions[from] && positions[to] && offsets[to] != null) return round2(Geo.targetYaw(positions[from], positions[to], offsets[to]));
+		return null;
+	}
+	function hsTypeOf(hs) { return hs.type === "scene" ? "scene" : (hs.URL ? "url" : "info"); }
+
+	// --- Hotspot-modal ---
+	const hsModal = document.getElementById("hs-modal");
+	const hsFieldText = document.getElementById("hs-field-text");
+	const hsFieldUrl = document.getElementById("hs-field-url");
+	const hsFieldScene = document.getElementById("hs-field-scene");
+	const hsText = document.getElementById("hs-text");
+	const hsUrl = document.getElementById("hs-url");
+	const hsSceneSel = document.getElementById("hs-scene");
+	const hsTyaw = document.getElementById("hs-tyaw");
+	const hsTyawNum = document.getElementById("hs-tyaw-num");
+	const hsTyawNote = document.getElementById("hs-tyaw-note");
+	let hsCtx = null;
+
+	function fillSceneSelect(cur, selected) {
+		hsSceneSel.innerHTML = "";
+		sceneIds().filter(function (id) { return id !== cur; }).forEach(function (id) {
+			const o = document.createElement("option");
+			o.value = id;
+			o.textContent = sceneName(id) + " (" + id + ")";
+			if (id === selected) o.selected = true;
+			hsSceneSel.appendChild(o);
+		});
+	}
+	function setTyaw(v) { v = (v == null) ? 0 : Math.round(v); hsTyaw.value = v; hsTyawNum.value = v; }
+	function tyawNote(cur) { hsTyawNote.textContent = (computeTargetYaw(cur, hsSceneSel.value) == null) ? "Auto-beräknas när båda scenerna är kalibrerade." : ""; }
+
+	function openHsModal(ctx) {
+		hsCtx = ctx;
+		document.getElementById("hs-modal-title").textContent =
+			(ctx.mode === "edit" ? "Redigera " : "Ny ") + ({ info: "info-hotspot", url: "URL-hotspot", scene: "scen-hotspot" }[ctx.type]);
+		hsFieldText.hidden = !(ctx.type === "info" || ctx.type === "url");
+		hsFieldUrl.hidden = ctx.type !== "url";
+		hsFieldScene.hidden = ctx.type !== "scene";
+		hsText.value = (ctx.hs && ctx.hs.text) || "";
+		hsUrl.value = (ctx.hs && ctx.hs.URL) || "";
+		if (ctx.type === "scene") {
+			const target = (ctx.hs && ctx.hs.sceneId) || sceneIds().filter(function (id) { return id !== ctx.cur; })[0];
+			fillSceneSelect(ctx.cur, target);
+			const two = ctx.hs ? (ctx.hs.twoway === true) : false;
+			document.querySelector('input[name="hs-dir"][value="' + (two ? "two" : "one") + '"]').checked = true;
+			setTyaw(ctx.hs && ctx.hs.targetYaw != null ? ctx.hs.targetYaw : computeTargetYaw(ctx.cur, target));
+			tyawNote(ctx.cur);
 		}
-		tour.scenes[cur].hotSpots.push(hs);
+		hsModal.hidden = false;
+		(ctx.type === "scene" ? hsSceneSel : hsText).focus();
+	}
+	function closeHsModal() { hsModal.hidden = true; hsCtx = null; }
+
+	function ensureReciprocal(fromScene, toScene) {
+		const list = tour.scenes[toScene].hotSpots = tour.scenes[toScene].hotSpots || [];
+		if (list.some(function (h) { return h.type === "scene" && h.sceneId === fromScene; })) return;
+		const yaw = (positions[toScene] && positions[fromScene] && offsets[toScene] != null)
+			? round2(Geo.hotspotYaw(positions[toScene], positions[fromScene], offsets[toScene])) : 0;
+		list.push({
+			id: nextHotspotId(toScene), pitch: 0, yaw: yaw, type: "scene", sceneId: fromScene,
+			targetPitch: 0, targetYaw: computeTargetYaw(toScene, fromScene) || 0,
+			text: sceneHotspotText(fromScene), manual: true, twoway: true,
+		});
+	}
+
+	function saveHsModal() {
+		if (!hsCtx) return;
+		const cur = hsCtx.cur;
+		if (!tour.scenes[cur].hotSpots) tour.scenes[cur].hotSpots = [];
+		const creating = hsCtx.mode === "create";
+		let hs = creating ? { id: nextHotspotId(cur), pitch: hsCtx.pitch, yaw: hsCtx.yaw, manual: true } : hsCtx.hs;
+		if (hsCtx.type === "url") {
+			if (!hsUrl.value) { alert("URL krävs."); return; }
+			hs.type = "info"; hs.text = hsText.value; hs.URL = hsUrl.value;
+		} else if (hsCtx.type === "info") {
+			hs.type = "info"; hs.text = hsText.value; delete hs.URL;
+		} else { // scene
+			const target = hsSceneSel.value;
+			if (!target) { alert("Välj en målscen."); return; }
+			hs.type = "scene"; hs.sceneId = target; hs.targetPitch = 0;
+			hs.targetYaw = parseFloat(hsTyaw.value) || 0;
+			hs.text = sceneHotspotText(target);
+			hs.twoway = document.querySelector('input[name="hs-dir"]:checked').value === "two";
+			delete hs.URL;
+			if (hs.twoway) ensureReciprocal(cur, target);
+		}
+		if (creating) tour.scenes[cur].hotSpots.push(hs);
+		closeHsModal();
 		setDirty(true);
 		syncAndReload(cur);
 	}
+
+	function beginCreate(type) {
+		openHsModal({ mode: "create", type: type, cur: viewer.getScene(), pitch: round2(viewer.getPitch()), yaw: round2(viewer.getYaw()) });
+	}
+
+	// Modal-wiring
+	if (hsTyaw) hsTyaw.addEventListener("input", function () { hsTyawNum.value = hsTyaw.value; });
+	if (hsTyawNum) hsTyawNum.addEventListener("input", function () { hsTyaw.value = hsTyawNum.value; });
+	const hsRegen = document.getElementById("hs-tyaw-regen");
+	if (hsRegen) hsRegen.addEventListener("click", function () {
+		if (!hsCtx || hsCtx.type !== "scene") return;
+		const ty = computeTargetYaw(hsCtx.cur, hsSceneSel.value);
+		if (ty == null) { alert("Kan inte beräkna - kalibrera målscenen först."); return; }
+		setTyaw(ty);
+	});
+	if (hsSceneSel) hsSceneSel.addEventListener("change", function () {
+		if (!hsCtx) return;
+		const ty = computeTargetYaw(hsCtx.cur, hsSceneSel.value);
+		if (ty != null) setTyaw(ty);
+		tyawNote(hsCtx.cur);
+	});
+	if (hsModal) {
+		document.getElementById("hs-save").addEventListener("click", saveHsModal);
+		document.getElementById("hs-cancel").addEventListener("click", closeHsModal);
+		document.getElementById("hs-modal-close").addEventListener("click", closeHsModal);
+		hsModal.addEventListener("click", function (e) { if (e.target === hsModal) closeHsModal(); });
+	}
+
+	// Tangent: håll I/U/H, sikta, släpp -> modal.
+	const pendingEl = document.getElementById("hs-pending");
+	let pendingType = null;
+	const KEY_TYPE = { i: "info", u: "url", h: "scene" };
+	function typingInField() { const a = document.activeElement; return a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName); }
+	window.addEventListener("keydown", function (e) {
+		if (e.repeat || typingInField() || (hsModal && !hsModal.hidden)) return;
+		const t = KEY_TYPE[e.key.toLowerCase()];
+		if (t && !pendingType) {
+			pendingType = t;
+			if (pendingEl) { pendingEl.className = "hs-pending hs-pending-" + t; pendingEl.hidden = false; }
+		}
+	});
+	window.addEventListener("keyup", function (e) {
+		const t = KEY_TYPE[e.key.toLowerCase()];
+		if (t && pendingType === t) {
+			if (pendingEl) pendingEl.hidden = true;
+			pendingType = null;
+			beginCreate(t);
+		}
+	});
 
 	function moveHotspot(cur, hs) {
 		hs.pitch = round2(viewer.getPitch());
 		hs.yaw = round2(viewer.getYaw());
-		setDirty(true);
-		syncAndReload(cur);
-	}
-
-	function editHotspot(cur, hs) {
-		const text = prompt("Text:", hs.text || "");
-		if (text == null) return;
-		hs.text = text;
-		if (hs.URL != null) {
-			const url = prompt("URL:", hs.URL);
-			if (url != null) hs.URL = url;
-		}
 		setDirty(true);
 		syncAndReload(cur);
 	}
@@ -377,24 +488,26 @@
 	function renderHotspotList(cur) {
 		if (!hotspotList) return;
 		hotspotList.innerHTML = "";
-		const manual = (tour.scenes[cur].hotSpots || []).filter(function (h) { return h.type === "info"; });
-		if (!manual.length) {
+		const list = tour.scenes[cur].hotSpots || [];
+		if (!list.length) {
 			const li = document.createElement("li");
 			li.className = "hint";
-			li.textContent = "Inga info/URL-hotspots i denna scen.";
+			li.textContent = "Inga hotspots i denna scen.";
 			hotspotList.appendChild(li);
 			return;
 		}
-		manual.forEach(function (hs) {
+		list.forEach(function (hs) {
 			const li = document.createElement("li");
 			li.className = "hotspot-item";
 			const label = document.createElement("span");
 			label.className = "hotspot-label";
-			label.textContent = (hs.URL ? "URL: " : "") + (hs.text || "(tom)");
+			const kind = hs.type === "scene" ? "Scen" : (hs.URL ? "URL" : "Info");
+			const body = hs.type === "scene" ? sceneName(hs.sceneId) + (hs.twoway ? " (dubbel)" : "") : (hs.text || "(tom)");
+			label.textContent = kind + ": " + body;
 			const btns = document.createElement("div");
 			btns.className = "hotspot-btns";
 			btns.appendChild(mkHsBtn("Flytta hit", function () { moveHotspot(cur, hs); }));
-			btns.appendChild(mkHsBtn("Redigera", function () { editHotspot(cur, hs); }));
+			btns.appendChild(mkHsBtn("Redigera", function () { openHsModal({ mode: "edit", type: hsTypeOf(hs), cur: cur, hs: hs }); }));
 			btns.appendChild(mkHsBtn("Ta bort", function () { removeHotspot(cur, hs); }, true));
 			li.appendChild(label);
 			li.appendChild(btns);
@@ -403,30 +516,38 @@
 	}
 
 	// --- Generering ---
+	// Skapar scen-hotspots ur kartlänkarna, men bevarar alla manuella hotspots
+	// och hoppar över länkar som redan har en manuell scen-hotspot till målet.
 	function generate() {
-		const result = {};
 		const skipped = [];
-		function addDir(a, b) {
-			if (!positions[a] || !positions[b] || offsets[a] == null || offsets[b] == null) { skipped.push(a + "->" + b); return; }
-			(result[a] = result[a] || []).push({
-				pitch: 0,
-				yaw: round2(Geo.hotspotYaw(positions[a], positions[b], offsets[a])),
-				type: "scene",
-				sceneId: b,
-				targetPitch: 0,
-				targetYaw: round2(Geo.targetYaw(positions[a], positions[b], offsets[b])),
-			});
-		}
-		edges.forEach(function (e) { addDir(e.from, e.to); if (e.twoway) addDir(e.to, e.from); });
-
 		let total = 0;
 		sceneIds().forEach(function (id) {
-			const scene = tour.scenes[id];
-			const kept = (scene.hotSpots || []).filter(function (h) { return h.type !== "scene" || h.URL; });
-			const merged = kept.concat(result[id] || []);
+			const list = tour.scenes[id].hotSpots || [];
+			const kept = list.filter(function (h) { return h.manual || h.type === "info"; });
+			const manualTargets = {};
+			kept.forEach(function (h) { if (h.type === "scene" && h.sceneId) manualTargets[h.sceneId] = 1; });
+
+			const gen = [];
+			edges.forEach(function (e) {
+				const targets = [];
+				if (e.from === id) targets.push(e.to);
+				if (e.twoway && e.to === id) targets.push(e.from);
+				targets.forEach(function (to) {
+					if (manualTargets[to]) return;
+					if (!positions[id] || !positions[to] || offsets[id] == null || offsets[to] == null) { skipped.push(id + "->" + to); return; }
+					gen.push({
+						pitch: 0, yaw: round2(Geo.hotspotYaw(positions[id], positions[to], offsets[id])),
+						type: "scene", sceneId: to, targetPitch: 0,
+						targetYaw: round2(Geo.targetYaw(positions[id], positions[to], offsets[to])),
+						text: sceneHotspotText(to),
+					});
+				});
+			});
+
+			const merged = kept.concat(gen);
 			merged.forEach(function (h, i) { h.id = i; });
-			scene.hotSpots = merged;
-			total += (result[id] || []).length;
+			tour.scenes[id].hotSpots = merged;
+			total += gen.length;
 			const cfg = viewer.getConfig().scenes[id];
 			if (cfg) cfg.hotSpots = cloneHs(merged);
 		});
@@ -434,8 +555,9 @@
 		applyingRes = true;
 		viewer.loadScene(viewer.getScene(), viewer.getPitch(), viewer.getYaw(), viewer.getHfov());
 		setDirty(true);
-		let msg = "Genererade " + total + " hotspots.";
-		if (skipped.length) msg += " Hoppade över " + skipped.length + " (okalibrerad/oplacerad).";
+		renderHotspotList(viewer.getScene());
+		let msg = "Genererade " + total + " scen-hotspots (manuella orörda).";
+		if (skipped.length) msg += " Hoppade över " + skipped.length + " (okalibrerad).";
 		showToast(msg, skipped.length ? "error" : "ok");
 	}
 
@@ -499,8 +621,10 @@
 	if (discardBtn) discardBtn.addEventListener("click", discard);
 	const addInfoBtn = document.getElementById("add-info-btn");
 	const addUrlBtn = document.getElementById("add-url-btn");
-	if (addInfoBtn) addInfoBtn.addEventListener("click", function () { addHotspot("info"); });
-	if (addUrlBtn) addUrlBtn.addEventListener("click", function () { addHotspot("url"); });
+	const addSceneBtn = document.getElementById("add-scene-btn");
+	if (addInfoBtn) addInfoBtn.addEventListener("click", function () { beginCreate("info"); });
+	if (addUrlBtn) addUrlBtn.addEventListener("click", function () { beginCreate("url"); });
+	if (addSceneBtn) addSceneBtn.addEventListener("click", function () { beginCreate("scene"); });
 
 	const helpBtn = document.getElementById("help-btn");
 	const helpModal = document.getElementById("help-modal");
@@ -511,7 +635,10 @@
 
 	window.addEventListener("keydown", function (e) {
 		if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S")) { e.preventDefault(); save(); }
-		else if (e.key === "Escape" && helpModal && !helpModal.hidden) helpModal.hidden = true;
+		else if (e.key === "Escape") {
+			if (hsModal && !hsModal.hidden) closeHsModal();
+			else if (helpModal && !helpModal.hidden) helpModal.hidden = true;
+		}
 	});
 	window.addEventListener("beforeunload", function (e) {
 		if (state.dirty) { e.preventDefault(); e.returnValue = ""; }

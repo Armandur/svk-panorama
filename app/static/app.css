@@ -610,3 +610,20 @@ tr[data-preview-scene] { cursor: help; }
 .hotspot-btns { display: flex; gap: 0.3rem; }
 .hs-btn { flex: 1; margin: 0; padding: 0.25rem 0.3rem; font-size: 0.78rem; }
 .hs-danger { color: var(--svk-danger); border-color: var(--svk-danger); }
+
+/* --- Hotspot pending-markör + modal --- */
+.hs-pending {
+	position: absolute; top: 50%; left: 50%;
+	width: 20px; height: 20px; margin-left: -10px; margin-top: -10px;
+	border-radius: 50%; border: 3px solid #fff;
+	box-shadow: 0 0 4px rgba(0, 0, 0, 0.9); z-index: 21; pointer-events: none;
+}
+.hs-pending[hidden] { display: none; }
+.hs-pending-info { background: rgba(47, 111, 79, 0.75); }
+.hs-pending-url { background: rgba(30, 115, 216, 0.75); }
+.hs-pending-scene { background: rgba(217, 79, 43, 0.75); }
+
+.hs-modal-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+.hs-modal-actions button { margin: 0; flex: 1; }
+#hs-field-scene fieldset { margin: 0.4rem 0; }
+#hs-tyaw-regen { margin: 0.3rem 0; }
