@@ -263,6 +263,11 @@ Faser (minst till störst):
       `/projects/<slug>/` -> `/s/{token}/` (befintlig JSON-replace). Bundle: attachments-
       mappen kopieras och bild-URL:erna relativiseras (`_relativize` + `_collect`).
       **Markdown-funktionen (fas 1-4) därmed KLAR.**
+- [x] **Mediebibliotek KLAR (2026-07-12).** `media-library.js` (`window.openMediaLibrary`)
+      + `GET /projects/{slug}/attachments` (lista) + `POST .../{name}/delete`. Knapp i
+      hotspot-editorns EasyMDE-toolbar: bläddra miniatyrer, ladda upp, radera, välj
+      (infogar markdown-bildlänk). Direktuppladdning finns kvar via EasyMDE:s
+      bild-knapp.
 
 - [x] **Karta-knappen försvinner i pannellum-helskärm FIXAT (2026-07-12).**
       `viewer.js` flyttar kart-knappen + överlägget in i det fullskärmade elementet

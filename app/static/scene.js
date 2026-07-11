@@ -440,6 +440,17 @@
 			.catch(function (e) { onError(e.message || "Uppladdning misslyckades"); });
 	}
 
+	// Mediebibliotek-knapp: bläddra bland/välj turens uppladdade bilder.
+	function mediaAction(editor) {
+		if (!window.openMediaLibrary) return;
+		window.openMediaLibrary(slug, function (url) {
+			const cm = editor.codemirror;
+			cm.replaceSelection("![](" + url + ")");
+			cm.focus();
+		});
+	}
+	const mediaBtn = { name: "media", action: mediaAction, className: "fa fa-photo", title: "Mediebibliotek" };
+
 	// Samma markdown-editor som i admin: EasyMDE med vår sanerade preview. Teasern
 	// får en kompakt toolbar, läs mer-innehållet en fylligare. Initieras en gång;
 	// value() sätts/läses per hotspot och codemirror.refresh() körs när panelen visas.
@@ -455,8 +466,8 @@
 			uploadImage: true,
 			imageUploadFunction: uploadHsImage,
 			toolbar: compact
-				? ["bold", "italic", "link", "upload-image", "|", "preview"]
-				: ["bold", "italic", "heading", "|", "unordered-list", "ordered-list", "link", "upload-image", "|", "preview", "guide"],
+				? ["bold", "italic", "link", "upload-image", mediaBtn, "|", "preview"]
+				: ["bold", "italic", "heading", "|", "unordered-list", "ordered-list", "link", "upload-image", mediaBtn, "|", "preview", "guide"],
 			previewRender: function (t) { return window.renderMarkdown(t); },
 		});
 	}

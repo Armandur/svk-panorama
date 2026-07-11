@@ -101,6 +101,40 @@ async def upload_map_image(
     return RedirectResponse(url=f"/projects/{slug}", status_code=302)
 
 
+@router.get("/projects/{slug}/attachments")
+def list_attachments(
+    slug: str,
+    project: Project = Depends(get_project_or_404),
+) -> JSONResponse:
+    """Mediebibliotek: lista turens uppladdade bilder (nyast först)."""
+    attach_dir = project_dir(slug) / "attachments"
+    items = []
+    if attach_dir.exists():
+        for f in sorted(attach_dir.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
+            if f.is_file():
+                items.append({
+                    "name": f.name,
+                    "url": f"/projects/{slug}/attachments/{f.name}",
+                    "size": f.stat().st_size,
+                })
+    return JSONResponse({"items": items})
+
+
+@router.post("/projects/{slug}/attachments/{name}/delete")
+async def delete_attachment(
+    slug: str,
+    name: str,
+    project: Project = Depends(get_project_or_404),
+    _csrf: None = Depends(verify_csrf_header),
+) -> JSONResponse:
+    attach_dir = (project_dir(slug) / "attachments").resolve()
+    target = (attach_dir / name).resolve()
+    if target.parent != attach_dir or not target.is_file():
+        raise HTTPException(status_code=404, detail="Filen hittades inte")
+    target.unlink()
+    return JSONResponse({"ok": True})
+
+
 @router.post("/projects/{slug}/attachments")
 async def upload_attachment(
     slug: str,
