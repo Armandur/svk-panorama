@@ -85,6 +85,27 @@
 		if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
 	}
 
+	// Driv en godtycklig pannellum-vy med samma inställningar (yaw + vagg) som
+	// hover-previewsen. Returnerar en stop-funktion. Skapa vyn med autoRotate: 0.
+	function driveViewer(v) {
+		const speed = rotateSpeed() * rotateDir();
+		const amp = pitchAmp();
+		const periodMs = Math.max(0.5, pitchPeriod()) * 1000;
+		if ((rotateSpeed() <= 0 && amp <= 0) || !v) return function () {};
+		const t0 = performance.now();
+		let last = t0, raf, yaw = 0;
+		try { yaw = v.getYaw(); } catch (e) { /* default 0 */ }
+		function frame(now) {
+			if (!v) return;
+			const dt = (now - last) / 1000; last = now;
+			yaw -= speed * dt;
+			try { v.setYaw(yaw, false); v.setPitch(amp * Math.sin((now - t0) / periodMs * 2 * Math.PI), false); } catch (e) { /* ännu ej redo */ }
+			raf = requestAnimationFrame(frame);
+		}
+		raf = requestAnimationFrame(frame);
+		return function stop() { if (raf) cancelAnimationFrame(raf); raf = null; };
+	}
+
 	function position(x, y, extra) {
 		var pad = 14;
 		var h = H + 22 + (extra || 0);
@@ -212,7 +233,7 @@
 		});
 	}
 
-	window.ScenePreview = { attach: attach, pin: pin, unpin: unpin };
+	window.ScenePreview = { attach: attach, pin: pin, unpin: unpin, driveViewer: driveViewer };
 
 	if (document.readyState !== "loading") scan();
 	else document.addEventListener("DOMContentLoaded", scan);

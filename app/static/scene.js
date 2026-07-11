@@ -341,7 +341,8 @@
 	const hsModal = document.getElementById("hs-modal");
 	const hsFieldText = document.getElementById("hs-field-text");
 	const hsFieldUrl = document.getElementById("hs-field-url");
-	const hsFieldScene = document.getElementById("hs-field-scene");
+	const hsFieldSceneTop = document.getElementById("hs-field-scene-top");
+	const hsFieldSceneDir = document.getElementById("hs-field-scene-dir");
 	const hsText = document.getElementById("hs-text");
 	const hsUrl = document.getElementById("hs-url");
 	const hsSceneSel = document.getElementById("hs-scene");
@@ -369,7 +370,8 @@
 			(ctx.mode === "edit" ? "Redigera " : "Ny ") + ({ info: "info-hotspot", url: "URL-hotspot", scene: "scen-hotspot" }[ctx.type]);
 		hsFieldText.hidden = false; // text (tooltip) valfri för alla typer
 		hsFieldUrl.hidden = ctx.type !== "url";
-		hsFieldScene.hidden = ctx.type !== "scene";
+		hsFieldSceneTop.hidden = ctx.type !== "scene";
+		hsFieldSceneDir.hidden = ctx.type !== "scene";
 		hsText.value = (ctx.hs && ctx.hs.text != null) ? ctx.hs.text : "";
 		hsUrl.value = (ctx.hs && ctx.hs.URL) || "";
 		if (ctx.type === "scene") {
@@ -388,8 +390,9 @@
 	function closeHsModal() { hsModal.hidden = true; hsCtx = null; destroyHsPreview(); }
 
 	// Liten auto-roterande preview av vald målscen i modalen.
-	let hsPreviewViewer = null;
+	let hsPreviewViewer = null, hsPreviewStop = null;
 	function destroyHsPreview() {
+		if (hsPreviewStop) { try { hsPreviewStop(); } catch (e) { /* borta */ } hsPreviewStop = null; }
 		if (hsPreviewViewer) { try { hsPreviewViewer.destroy(); } catch (e) { /* borta */ } hsPreviewViewer = null; }
 	}
 	function showHsPreview(sceneId) {
@@ -397,16 +400,17 @@
 		const el = document.getElementById("hs-scene-preview");
 		if (!el || !sceneId || !window.pannellum) return;
 		void el.offsetHeight; // reflow så pannellum mäter rätt
-		const sp = parseFloat(localStorage.getItem("svk_preview_speed"));
-		const speed = isNaN(sp) ? 5 : sp;
-		const rot = localStorage.getItem("svk_preview_dir") === "left" ? speed : -speed;
 		hsPreviewViewer = pannellum.viewer(el, {
 			type: "equirectangular",
 			panorama: "/projects/" + encodeURIComponent(slug) + "/previews/" + encodeURIComponent(sceneId) + ".jpg",
-			autoLoad: true, autoRotate: rot,
+			autoLoad: true, autoRotate: 0,
 			showControls: false, showZoomCtrl: false, showFullscreenCtrl: false,
 			mouseZoom: false, draggable: false, hfov: 110,
 		});
+		// Samma drivning (yaw + vagg) som hover-previewsen, från deras inställningar.
+		if (window.ScenePreview && window.ScenePreview.driveViewer) {
+			hsPreviewStop = window.ScenePreview.driveViewer(hsPreviewViewer);
+		}
 	}
 
 	// Dubbelriktning härleds från om en länk tillbaka faktiskt finns i målscenen.

@@ -104,6 +104,11 @@
 			<h3 id="hs-modal-title">Hotspot</h3>
 			<button id="hs-modal-close" type="button" class="secondary outline" aria-label="Stäng">&times;</button>
 		</div>
+		<div id="hs-field-scene-top">
+			<div id="hs-scene-preview" class="hs-scene-preview"></div>
+			<label for="hs-scene">Målscen</label>
+			<select id="hs-scene"></select>
+		</div>
 		<div id="hs-field-text">
 			<label for="hs-text">Text (visas vid hover)</label>
 			<input type="text" id="hs-text" maxlength="500">
@@ -112,10 +117,7 @@
 			<label for="hs-url">URL</label>
 			<input type="text" id="hs-url" placeholder="https://...">
 		</div>
-		<div id="hs-field-scene">
-			<label for="hs-scene">Målscen</label>
-			<select id="hs-scene"></select>
-			<div id="hs-scene-preview" class="hs-scene-preview"></div>
+		<div id="hs-field-scene-dir">
 			<fieldset>
 				<label><input type="radio" name="hs-dir" value="one" checked> Enkelriktad</label>
 				<label><input type="radio" name="hs-dir" value="two"> Dubbelriktad (skapar länk tillbaka)</label>
