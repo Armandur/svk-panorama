@@ -592,3 +592,7 @@ tr[data-preview-scene] { cursor: help; }
 .roll-row { display: flex; gap: 0.5rem; align-items: center; }
 .roll-row input[type="range"] { flex: 1 1 auto; min-width: 0; margin: 0; }
 .roll-row .roll-num { flex: 0 0 5rem; width: 5rem; margin: 0; }
+
+/* Auto-generera + inställnings-knapp i uppladdningssteget: fullbredd */
+#generate-btn { width: 100%; }
+.settings-inline .settings-btn { width: auto; }
