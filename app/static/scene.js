@@ -611,7 +611,17 @@
 		if (t && pendingType === t) {
 			if (pendingEl) pendingEl.hidden = true;
 			pendingType = null;
-			beginCreate(t);
+			// Siktar man på en befintlig hotspot av samma typ -> redigera den i
+			// stället för att skapa en ny.
+			const cur = viewer.getScene();
+			const aimed = nearestId != null
+				? (tour.scenes[cur].hotSpots || []).find(function (h) { return h.id === nearestId; })
+				: null;
+			if (aimed && hsTypeOf(aimed) === t) {
+				openHsModal({ mode: "edit", type: t, cur: cur, hs: aimed });
+			} else {
+				beginCreate(t);
+			}
 		}
 	});
 
