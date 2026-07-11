@@ -1,14 +1,24 @@
 """Admin: hantera användare (sluten inbjudan - admin skapar + bjuder in)."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from urllib.parse import quote
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session
 
 from app import config
-from app.auth import make_invite_token, require_admin
+from app.auth import hash_password, make_invite_token, require_admin
 from app.database import Project, User, get_db
-from app.deps import new_csrf_token, set_csrf_cookie, templates, verify_csrf_form
+from app.deps import (
+    new_csrf_token,
+    set_csrf_cookie,
+    templates,
+    verify_csrf_form,
+    verify_csrf_header,
+)
+from app.routes.profile import _process_avatar
+from app.services.project_files import validate_image_magic, validate_size
 from app.services.tiling import project_tile_state
 
 router = APIRouter()
@@ -24,6 +34,22 @@ def _invite_url(request: Request, user_id: int) -> str:
     return f"{base}/accept-invite?token={make_invite_token(user_id)}"
 
 
+def _target_or_404(db: Session, user_id: int) -> User:
+    target = db.get(User, user_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Användaren finns inte")
+    return target
+
+
+def _back(user_id: int, msg: str | None = None, error: str | None = None) -> RedirectResponse:
+    url = f"/admin/users/{user_id}"
+    if msg:
+        url += f"?msg={quote(msg)}"
+    elif error:
+        url += f"?error={quote(error)}"
+    return RedirectResponse(url=url, status_code=303)
+
+
 @router.get("/admin/users", response_class=HTMLResponse)
 def users_page(
     request: Request,
@@ -35,7 +61,10 @@ def users_page(
         {
             "id": u.id,
             "email": u.email,
+            "name": u.name,
+            "has_avatar": u.avatar is not None,
             "is_admin": u.is_admin,
+            "active": u.active,
             "pending": u.password_hash is None,
             "invite_url": _invite_url(request, u.id) if u.password_hash is None else None,
         }
@@ -45,7 +74,7 @@ def users_page(
     response = templates.TemplateResponse(
         request,
         "admin_users.html",
-        {"users": rows, "me": admin.id, "active": "users", "error": request.query_params.get("error"), "csrf_token": token},
+        {"users": rows, "me": admin.id, "active": "users", "msg": request.query_params.get("msg"), "error": request.query_params.get("error"), "csrf_token": token},
     )
     set_csrf_cookie(response, token)
     return response
@@ -70,6 +99,204 @@ def user_projects(
         "admin_user_projects.html",
         {"target": target, "projects": projects, "tile_states": tile_states, "active": "users"},
     )
+
+
+@router.get("/admin/users/{user_id}", response_class=HTMLResponse)
+def user_detail(
+    request: Request,
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+) -> HTMLResponse:
+    target = _target_or_404(db, user_id)
+    owns = db.query(Project).filter(Project.owner_id == user_id).count()
+    token = new_csrf_token()
+    response = templates.TemplateResponse(
+        request,
+        "admin_user_detail.html",
+        {
+            "target": target,
+            "is_self": target.id == admin.id,
+            "owns": owns,
+            "pending": target.password_hash is None,
+            "invite_url": _invite_url(request, target.id) if target.password_hash is None else None,
+            "active": "users",
+            "csrf_token": token,
+            "msg": request.query_params.get("msg"),
+            "error": request.query_params.get("error"),
+        },
+    )
+    set_csrf_cookie(response, token)
+    return response
+
+
+@router.post("/admin/users/{user_id}/profile")
+async def admin_set_name(
+    request: Request,
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+    name: str = Form(""),
+    _csrf: None = Depends(verify_csrf_form),
+):
+    target = _target_or_404(db, user_id)
+    target.name = name.strip() or None
+    db.commit()
+    if target.id == admin.id:  # egen ändring -> uppdatera kontokortet
+        request.session["name"] = target.name or ""
+    return _back(user_id, msg="Namn sparat.")
+
+
+@router.post("/admin/users/{user_id}/password")
+async def admin_set_password(
+    request: Request,
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+    new: str = Form(...),
+    new2: str = Form(...),
+    _csrf: None = Depends(verify_csrf_form),
+):
+    target = _target_or_404(db, user_id)
+    if len(new) < 8:
+        return _back(user_id, error="Lösenordet måste vara minst 8 tecken.")
+    if new != new2:
+        return _back(user_id, error="Lösenorden matchar inte.")
+    target.password_hash = hash_password(new)  # admin override - inget nuvarande krävs
+    db.commit()
+    return _back(user_id, msg="Lösenordet ändrat.")
+
+
+@router.get("/admin/users/{user_id}/avatar")
+def admin_get_avatar(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+) -> Response:
+    target = _target_or_404(db, user_id)
+    if not target.avatar:
+        raise HTTPException(status_code=404, detail="Ingen profilbild")
+    return Response(content=target.avatar, media_type="image/png", headers={"Cache-Control": "no-cache"})
+
+
+@router.post("/admin/users/{user_id}/avatar")
+async def admin_upload_avatar(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+    file: UploadFile = File(...),
+    _csrf: None = Depends(verify_csrf_header),
+) -> dict:
+    target = _target_or_404(db, user_id)
+    content = await file.read()
+    validate_size(content, file.filename or "bild", max_mb=10)
+    validate_image_magic(content, file.filename or "bild")
+    try:
+        target.avatar = _process_avatar(content)
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="Kunde inte läsa bilden")
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/admin/users/{user_id}/avatar/delete")
+async def admin_delete_avatar(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf_header),
+) -> dict:
+    target = _target_or_404(db, user_id)
+    target.avatar = None
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/admin/users/{user_id}/active")
+async def admin_set_active(
+    request: Request,
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+    active: str = Form(...),
+    _csrf: None = Depends(verify_csrf_form),
+):
+    target = _target_or_404(db, user_id)
+    want_active = active == "1"
+    if not want_active and target.id == admin.id:
+        return _back(user_id, error="Du kan inte spärra ditt eget konto.")
+    target.active = want_active
+    db.commit()
+    return _back(user_id, msg="Kontot aktiverat." if want_active else "Kontot spärrat.")
+
+
+@router.post("/admin/users/{user_id}/admin")
+async def admin_set_role(
+    request: Request,
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+    is_admin: str = Form(...),
+    _csrf: None = Depends(verify_csrf_form),
+):
+    target = _target_or_404(db, user_id)
+    want_admin = is_admin == "1"
+    if not want_admin and target.id == admin.id:
+        return _back(user_id, error="Du kan inte ta bort din egen adminbehörighet.")
+    target.is_admin = want_admin
+    db.commit()
+    return _back(user_id, msg="Användaren är nu administratör." if want_admin else "Adminbehörighet borttagen.")
+
+
+@router.post("/admin/users/batch")
+async def batch_users(
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+    action: str = Form(...),
+    user_ids: list[int] = Form(default=[]),
+    _csrf: None = Depends(verify_csrf_form),
+):
+    if action not in {"reset_password", "disable", "enable", "delete"}:
+        return RedirectResponse(url="/admin/users?error=Ok%C3%A4nd+%C3%A5tg%C3%A4rd", status_code=303)
+    if not user_ids:
+        return RedirectResponse(url="/admin/users?error=Inga+anv%C3%A4ndare+valda", status_code=303)
+
+    targets = db.query(User).filter(User.id.in_(user_ids)).all()
+    done = 0
+    skipped = 0
+    for u in targets:
+        # Aldrig destruktiva åtgärder på det egna kontot (undvik självutlåsning).
+        if u.id == admin.id and action in {"reset_password", "disable", "delete"}:
+            skipped += 1
+            continue
+        if action == "reset_password":
+            u.password_hash = None  # -> inbjuden igen, sätter nytt via länk
+            done += 1
+        elif action == "disable":
+            u.active = False
+            done += 1
+        elif action == "enable":
+            u.active = True
+            done += 1
+        elif action == "delete":
+            if db.query(Project).filter(Project.owner_id == u.id).count():
+                skipped += 1  # äger turer -> delete-guarden
+                continue
+            db.delete(u)
+            done += 1
+    db.commit()
+
+    labels = {
+        "reset_password": "återställda",
+        "disable": "spärrade",
+        "enable": "aktiverade",
+        "delete": "borttagna",
+    }
+    msg = f"{done} {labels[action]}"
+    if skipped:
+        msg += f", {skipped} hoppade (du själv eller ägare av turer)"
+    return RedirectResponse(url=f"/admin/users?msg={quote(msg)}", status_code=303)
 
 
 @router.post("/admin/users")

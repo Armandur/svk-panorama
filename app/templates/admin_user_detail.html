@@ -1,0 +1,123 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ target.email }} - Admin{% endblock %}
+{% set _ti = ((target.name or target.email)[:1] | upper) %}
+{% block admin_content %}
+
+<p><a href="/admin/users">&larr; Alla användare</a></p>
+<hgroup>
+	<h1>{{ target.name or target.email }}</h1>
+	<p>
+		{{ target.email }}
+		- {{ "administratör" if target.is_admin else "användare" }}
+		- {% if pending %}inbjuden{% elif not target.active %}spärrad{% else %}aktiv{% endif %}
+	</p>
+</hgroup>
+
+{% if msg %}<p class="profile-ok" role="status">{{ msg }}</p>{% endif %}
+{% if error %}<p class="login-error" role="alert">{{ error }}</p>{% endif %}
+
+<article class="admin-avatar-card">
+	<span id="admin-avatar-open" class="avatar avatar-lg" role="button" tabindex="0" title="Ändra profilbild">
+		<span class="avatar-initial">{{ _ti }}</span>
+		<img class="avatar-img" src="/admin/users/{{ target.id }}/avatar" alt="" onerror="this.remove()">
+		<span class="avatar-cam" aria-hidden="true">
+			<svg viewBox="0 0 24 24" width="26" height="26" fill="#fff"><path d="M9 3l-1.5 2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.5L15 3H9zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+		</span>
+	</span>
+	<div>
+		<strong>Profilbild</strong>
+		<p class="hint">Klicka på bilden för att byta eller ta bort - på användarens vägnar.</p>
+	</div>
+</article>
+
+<article>
+	<h2>Uppgifter</h2>
+	<form method="post" action="/admin/users/{{ target.id }}/profile">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+		<label for="name">Namn</label>
+		<input type="text" id="name" name="name" value="{{ target.name or '' }}" maxlength="200" placeholder="Användarens namn">
+		<button type="submit">Spara</button>
+	</form>
+</article>
+
+<article>
+	<h2>Sätt lösenord</h2>
+	<p class="hint">Som admin sätter du ett nytt lösenord utan att ange det nuvarande.</p>
+	<form method="post" action="/admin/users/{{ target.id }}/password" data-pw-form data-pw-min="8">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+		<label for="new">Nytt lösenord (minst 8 tecken)</label>
+		<input type="password" id="new" name="new" autocomplete="new-password" data-pw-new>
+		<small class="field-hint" data-pw-new-hint hidden></small>
+		<label for="new2">Upprepa nytt lösenord</label>
+		<input type="password" id="new2" name="new2" autocomplete="new-password" data-pw-confirm>
+		<small class="field-hint" data-pw-confirm-hint hidden></small>
+		<button type="submit">Byt lösenord</button>
+	</form>
+</article>
+
+<article>
+	<h2>Konto</h2>
+	<div class="account-actions">
+		{% if target.active %}
+		<form method="post" action="/admin/users/{{ target.id }}/active">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<input type="hidden" name="active" value="0">
+			<button type="submit" class="secondary outline" {% if is_self %}disabled title="Du kan inte spärra dig själv"{% endif %}>Spärra konto</button>
+		</form>
+		{% else %}
+		<form method="post" action="/admin/users/{{ target.id }}/active">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<input type="hidden" name="active" value="1">
+			<button type="submit" class="secondary">Aktivera konto</button>
+		</form>
+		{% endif %}
+
+		{% if target.is_admin %}
+		<form method="post" action="/admin/users/{{ target.id }}/admin">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<input type="hidden" name="is_admin" value="0">
+			<button type="submit" class="secondary outline" {% if is_self %}disabled title="Du kan inte ta bort din egen adminbehörighet"{% endif %}>Ta bort adminbehörighet</button>
+		</form>
+		{% else %}
+		<form method="post" action="/admin/users/{{ target.id }}/admin">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<input type="hidden" name="is_admin" value="1">
+			<button type="submit" class="secondary outline">Gör till administratör</button>
+		</form>
+		{% endif %}
+	</div>
+
+	{% if pending and invite_url %}
+	<details class="invite-details">
+		<summary class="tile-partial">Inbjuden - visa länk</summary>
+		<input class="invite-link" type="text" readonly value="{{ invite_url }}" onclick="this.select()">
+	</details>
+	{% endif %}
+</article>
+
+<article>
+	<h2>Turer</h2>
+	<p><a href="/admin/users/{{ target.id }}/projects" role="button" class="secondary outline">Visa användarens turer ({{ owns }})</a></p>
+	{% if not is_self %}
+	<form method="post" action="/admin/users/{{ target.id }}/delete" onsubmit="return confirm('Ta bort {{ target.email }}?');">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+		<button type="submit" class="secondary outline delete-btn" {% if owns %}disabled title="Användaren äger {{ owns }} turer - flytta eller ta bort dem först"{% endif %}>Ta bort användare</button>
+	</form>
+	{% if owns %}<p class="hint">Användaren äger {{ owns }} turer. Ta bort eller flytta dem innan kontot kan raderas.</p>{% endif %}
+	{% endif %}
+</article>
+
+{% with modal_id='admin-avatar-modal',
+        avatar_src='/admin/users/' ~ target.id ~ '/avatar',
+        post_url='/admin/users/' ~ target.id ~ '/avatar',
+        delete_url='/admin/users/' ~ target.id ~ '/avatar/delete',
+        initial=_ti %}
+	{% include "_avatar_modal.html" %}
+{% endwith %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/admin-user.js"></script>
+<script src="/static/form-validate.js"></script>
+{% endblock %}

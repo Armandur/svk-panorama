@@ -24,6 +24,21 @@ SVK_PORT=8002 .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8002
 
 Tester: `.venv/bin/python tests/backend_test.py` och `node tools/geo.test.js`.
 
+## Konton och inloggning
+
+Sluten inbjudan (ingen öppen registrering), multi-tenant: varje användare ser
+sina egna turer. Vid första start seedas en admin ur env (`SVK_ADMIN_EMAIL` /
+`SVK_ADMIN_PASSWORD`, default **admin/admin** - byt före produktion). Admin
+hanterar användare under **Admin -> Användare** (`/admin/users`): skapa konton och
+dela inbjudningslänken (den inbjudne sätter själv sitt lösenord), öppna en
+användares detaljsida för att ändra namn/lösenord/profilbild på deras vägnar,
+spärra/aktivera konton, promota/degradera admin, samt batch-åtgärder på flera
+användare. Egna uppgifter ändras under **Inställningar** (`/profile`).
+
+Pre-produktion körs utan migrationer: vid schemaändring, radera `svk.db` och
+starta om (schemat byggs om och admin seedas; projektmappar på disk adopteras av
+admin). Alembic återinförs vid produktionssättning.
+
 ## Deployment
 
 Docker single-container, publiceras av GitHub Actions till

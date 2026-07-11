@@ -1,37 +1,44 @@
-{% set _dn = request.session.get('name') or request.session.get('email') or '' %}
-<div id="avatar-modal" class="help-modal" hidden>
+{#- Generaliserad avatar-modal. Defaults = egen profil; admin passar in
+    modal_id/avatar_src/post_url/delete_url/initial för en annan användare. -#}
+{% set modal_id = modal_id | default('avatar-modal') %}
+{% set avatar_src = avatar_src | default('/profile/avatar') %}
+{% set post_url = post_url | default('/profile/avatar') %}
+{% set delete_url = delete_url | default('/profile/avatar/delete') %}
+{% set _self_dn = request.session.get('name') or request.session.get('email') or '' %}
+{% set initial = initial | default((_self_dn[:1] | upper) if _self_dn else '?') %}
+<div id="{{ modal_id }}" class="help-modal avatar-modal" data-post-url="{{ post_url }}" data-delete-url="{{ delete_url }}" hidden>
 	<article class="avatar-modal-article">
 		<div class="section-head">
 			<h3>Ändra foto</h3>
-			<button id="avatar-modal-close" type="button" class="secondary outline" aria-label="Stäng">&times;</button>
+			<button type="button" class="secondary outline avatar-modal-close" aria-label="Stäng">&times;</button>
 		</div>
 
 		<div class="crop-stage">
 			<!-- Visas när ingen ny bild valts: nuvarande avatar / initial. -->
-			<span class="avatar avatar-xl" id="crop-current">
-				<span class="avatar-initial">{{ (_dn[:1] | upper) if _dn else '?' }}</span>
-				<img class="avatar-img" src="/profile/avatar" alt="" onerror="this.style.display='none'">
+			<span class="avatar avatar-xl crop-current">
+				<span class="avatar-initial">{{ initial }}</span>
+				<img class="avatar-img" src="{{ avatar_src }}" alt="" onerror="this.style.display='none'">
 			</span>
 			<!-- Visas vid beskärning av en vald bild. -->
-			<canvas id="crop-canvas" width="260" height="260" hidden></canvas>
+			<canvas class="crop-canvas" width="260" height="260" hidden></canvas>
 		</div>
 
-		<p class="hint" id="crop-hint" hidden>Dra för att flytta, zooma för att rama in. Beskärs till en cirkel.</p>
-		<div class="crop-controls" id="crop-controls" hidden>
-			<label for="crop-zoom">Zoom</label>
-			<input type="range" id="crop-zoom" min="1" max="3" step="0.01" value="1">
-			<button id="crop-rotate" type="button" class="secondary outline">Rotera</button>
+		<p class="hint crop-hint" hidden>Dra för att flytta, zooma för att rama in. Beskärs till en cirkel.</p>
+		<div class="crop-controls" hidden>
+			<label>Zoom</label>
+			<input type="range" class="crop-zoom" min="1" max="3" step="0.01" value="1">
+			<button type="button" class="secondary outline crop-rotate">Rotera</button>
 		</div>
 
-		<input type="file" id="avatar-file" accept="image/png,image/jpeg" hidden>
+		<input type="file" class="avatar-file" accept="image/png,image/jpeg" hidden>
 		<div class="avatar-actions">
-			<button id="avatar-choose" type="button" class="secondary outline">Ändra</button>
-			<button id="avatar-remove" type="button" class="secondary outline">Ta bort</button>
+			<button type="button" class="secondary outline avatar-choose">Ändra</button>
+			<button type="button" class="secondary outline avatar-remove">Ta bort</button>
 		</div>
-		<p id="avatar-error" class="login-error" hidden></p>
+		<p class="login-error avatar-error" hidden></p>
 		<div class="save-row">
-			<button id="avatar-save" type="button" disabled>Spara</button>
-			<button id="avatar-cancel" type="button" class="secondary outline">Avbryt</button>
+			<button type="button" class="avatar-save" disabled>Spara</button>
+			<button type="button" class="secondary outline avatar-cancel">Avbryt</button>
 		</div>
 	</article>
 </div>

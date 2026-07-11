@@ -455,6 +455,14 @@ tr[data-preview-scene] { cursor: help; }
 .login-section { max-width: 26rem; margin: 2rem auto; }
 .login-error { background: var(--svk-danger); color: #fff; padding: 0.5rem 0.7rem; border-radius: 0.3rem; font-size: 0.9rem; }
 .logout-form { margin: 0; }
+/* Inline fältvalidering: hint under fältet, röd via aria-invalid (Pico). */
+.field-hint { display: block; color: var(--svk-danger); font-size: 0.8rem; margin: -0.5rem 0 0.6rem; }
+.col-avatar { width: 3rem; text-align: center; }
+.col-avatar .avatar-sm { display: inline-flex; }
+.col-check { width: 2.5rem; text-align: center; }
+.batch-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.8rem; }
+.batch-bar select, .batch-bar button { margin: 0; width: auto; }
+.batch-count { color: var(--pico-muted-color); font-size: 0.9rem; }
 .invite-details summary { cursor: pointer; font-size: 0.85rem; }
 .invite-link { width: 100%; margin-top: 0.3rem; font-family: ui-monospace, monospace; font-size: 0.78rem; }
 .profile-ok { background: var(--svk-ok); color: #fff; padding: 0.5rem 0.7rem; border-radius: 0.3rem; font-size: 0.9rem; }
@@ -528,12 +536,19 @@ tr[data-preview-scene] { cursor: help; }
 .avatar-actions { display: flex; gap: 0.6rem; justify-content: center; margin: 0.6rem 0; }
 .avatar-actions button { margin: 0; }
 .crop-stage { position: relative; width: 260px; max-width: 100%; height: 260px; margin: 0.8rem auto; display: flex; align-items: center; justify-content: center; }
-#crop-canvas { width: 260px; height: 260px; border-radius: 50%; touch-action: none; cursor: grab; background: #000; }
-#crop-canvas:active { cursor: grabbing; }
+.crop-canvas { width: 260px; height: 260px; border-radius: 50%; touch-action: none; cursor: grab; background: #000; }
+.crop-canvas:active { cursor: grabbing; }
 .crop-controls { display: flex; align-items: center; gap: 0.6rem; justify-content: center; margin: 0.2rem 0 0.6rem; }
 .crop-controls label { margin: 0; font-size: 0.9rem; }
 .crop-controls input[type="range"] { flex: 1; max-width: 12rem; margin: 0; }
 .crop-controls button { margin: 0; padding: 0.3rem 0.7rem; }
+
+/* --- Admin: användardetalj --- */
+.admin-avatar-card { display: flex; align-items: center; gap: 1rem; }
+.admin-avatar-card p { margin: 0.2rem 0 0; }
+.account-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.account-actions form { margin: 0; }
+.account-actions button { margin: 0; }
 
 /* --- Admin-vy: vänster kategorier + huvudyta --- */
 .admin-layout { display: flex; gap: 1.5rem; align-items: flex-start; }

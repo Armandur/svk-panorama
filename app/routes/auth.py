@@ -48,6 +48,8 @@ async def login(
     user = db.query(User).filter(User.email == email.strip().lower()).first()
     if user is None or not verify_password(password, user.password_hash):
         return _render_login(request, next, error="Fel e-post eller lösenord.")
+    if not user.active:
+        return _render_login(request, next, error="Kontot är spärrat. Kontakta en administratör.")
     set_user_session(request, user)
     return RedirectResponse(url=_safe_next(next), status_code=303)
 

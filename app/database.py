@@ -24,6 +24,8 @@ class User(Base):
     name: Mapped[str | None] = mapped_column(String(200), nullable=True)
     avatar: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)  # PNG, center-croppad
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Spärrat konto: sessionen nekas och login blockeras (se app/auth.py).
+    active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow
     )

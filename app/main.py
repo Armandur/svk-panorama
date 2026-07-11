@@ -45,8 +45,12 @@ async def _auth_aware_http_exception(request: Request, exc: StarletteHTTPExcepti
     """401 på en sid-navigering -> skicka till /login (med next). Övriga fel och
     API-anrop (JSON) får vanligt JSON-svar."""
     wants_html = "text/html" in request.headers.get("accept", "")
-    if exc.status_code == 401 and wants_html:
+    if wants_html and exc.status_code == 401:
         return RedirectResponse(url=f"/login?next={request.url.path}", status_code=303)
+    if wants_html and exc.status_code == 403:
+        # T.ex. en nyligen degraderad admin som klickar Admin - skicka hem
+        # i stället för en rå felsida (nav-knappen synkas bort nästa request).
+        return RedirectResponse(url="/", status_code=303)
     return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
 
 

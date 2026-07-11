@@ -6,38 +6,72 @@
 	<h1>Användare</h1>
 	<p>Sluten inbjudan - skapa konton och dela inbjudningslänken. Den inbjudne sätter själv sitt lösenord (länken gäller 7 dagar).</p>
 </hgroup>
+{% if msg %}<p class="profile-ok" role="status">{{ msg }}</p>{% endif %}
 {% if error %}<p class="login-error" role="alert">{{ error }}</p>{% endif %}
-<table>
-	<thead>
-		<tr><th scope="col">E-post</th><th scope="col">Roll</th><th scope="col">Status</th><th scope="col"></th></tr>
-	</thead>
-	<tbody>
-		{% for u in users %}
-		<tr>
-			<td><a href="/admin/users/{{ u.id }}/projects" title="Visa användarens turer">{{ u.email }}</a></td>
-			<td>{{ "Admin" if u.is_admin else "Användare" }}</td>
-			<td>
-				{% if u.pending %}
-				<details class="invite-details">
-					<summary class="tile-partial">Inbjuden - visa länk</summary>
-					<input class="invite-link" type="text" readonly value="{{ u.invite_url }}" onclick="this.select()">
-				</details>
-				{% else %}
-				<span class="tile-done">Aktiv</span>
-				{% endif %}
-			</td>
-			<td>
-				{% if u.id != me %}
-				<form method="post" action="/admin/users/{{ u.id }}/delete" onsubmit="return confirm('Ta bort {{ u.email }}?');">
-					<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-					<button type="submit" class="secondary outline delete-btn">Ta bort</button>
-				</form>
-				{% endif %}
-			</td>
-		</tr>
-		{% endfor %}
-	</tbody>
-</table>
+
+<form method="post" action="/admin/users/batch" id="batch-form">
+	<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+	<div class="batch-bar">
+		<select name="action" id="batch-action" aria-label="Batch-åtgärd">
+			<option value="">Välj åtgärd...</option>
+			<option value="reset_password">Tvinga lösenordsbyte</option>
+			<option value="disable">Spärra konto</option>
+			<option value="enable">Aktivera konto</option>
+			<option value="delete">Ta bort</option>
+		</select>
+		<button type="submit" id="batch-apply" disabled>Kör på markerade</button>
+		<span class="batch-count" id="batch-count"></span>
+	</div>
+
+	<table>
+		<thead>
+			<tr>
+				<th scope="col" class="col-avatar"></th>
+				<th scope="col" class="col-check"><input type="checkbox" id="check-all" aria-label="Markera alla"></th>
+				<th scope="col">E-post</th>
+				<th scope="col">Namn</th>
+				<th scope="col">Roll</th>
+				<th scope="col">Status</th>
+				<th scope="col"></th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for u in users %}
+			<tr>
+				<td class="col-avatar">
+					<a href="/admin/users/{{ u.id }}" title="Hantera användare">
+						<span class="avatar avatar-sm">
+							<span class="avatar-initial">{{ ((u.name or u.email)[:1] | upper) }}</span>
+							{% if u.has_avatar %}<img class="avatar-img" src="/admin/users/{{ u.id }}/avatar" alt="" onerror="this.remove()">{% endif %}
+						</span>
+					</a>
+				</td>
+				<td class="col-check">
+					{% if u.id != me %}
+					<input type="checkbox" class="row-check" name="user_ids" value="{{ u.id }}" aria-label="Markera {{ u.email }}">
+					{% endif %}
+				</td>
+				<td><a href="/admin/users/{{ u.id }}" title="Hantera användare">{{ u.email }}</a></td>
+				<td>{{ u.name or "" }}</td>
+				<td>{{ "Admin" if u.is_admin else "Användare" }}</td>
+				<td>
+					{% if u.pending %}
+					<details class="invite-details">
+						<summary class="tile-partial">Inbjuden - visa länk</summary>
+						<input class="invite-link" type="text" readonly value="{{ u.invite_url }}" onclick="this.select()">
+					</details>
+					{% elif not u.active %}
+					<span class="tile-error">Spärrad</span>
+					{% else %}
+					<span class="tile-done">Aktiv</span>
+					{% endif %}
+				</td>
+				<td><a href="/admin/users/{{ u.id }}/projects" class="secondary">Turer</a></td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</form>
 
 <article class="admin-create">
 	<h2>Ny användare</h2>
@@ -50,4 +84,8 @@
 	</form>
 </article>
 
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/admin-users.js"></script>
 {% endblock %}

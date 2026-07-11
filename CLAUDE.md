@@ -129,6 +129,29 @@ Applicerar `tour.default.theme` via CSS-variabler (`--tour-font/--dot-color/
 - `preview.js` (`ScenePreview`) + `settings.js` - delad hover-preview + dess
   inställningar (snurr/riktning/vagg i localStorage). Används av scen- och
   preview-vyn.
+- `avatar-crop.js` - `window.initAvatarCrop({modal, openBtn, onOpen})`, generaliserad
+  crop-modal (canvas, pan/zoom/rotera -> 256px PNG). Läser POST/DELETE-url ur
+  modalens `data-post-url`/`data-delete-url`, slår upp inre element per klass i
+  roten -> flera modaler kan samexistera. Mallen `_avatar_modal.html` är
+  parameteriserad (defaults = egen profil).
+- `account.js` - kontokortets utfällning + kopplar egen avatar-modal till
+  `initAvatarCrop`. `admin-user.js` - kopplar admin-avatar-modalen (target-user) på
+  `/admin/users/{id}`. `admin-users.js` - batch-markering + åtgärdsrad på
+  `/admin/users`.
+- `form-validate.js` - inline fältvalidering för lösenordspar (`<form data-pw-form>`
+  med `[data-pw-new]`/`[data-pw-confirm]`): röd outline (`aria-invalid`) + `.field-hint`
+  vid fältet, servern validerar som fallback. UX-mönster för all fältvalidering.
+
+## Auth + admin (routes/auth.py, admin.py, profile.py)
+
+Sluten inbjudan, session bär `uid`. `User.active` (bool): spärrat konto nekas i
+`auth._user_from_session` (session ogiltig) + vid login. `require_admin` gate:ar
+`/admin/*`. Admin-detaljsidan `/admin/users/{id}` gör profiländringar på
+användarens vägnar (namn/lösenord-override/avatar/active/is_admin, self-guards mot
+att spärra/demota sig själv). Batch: `POST /admin/users/batch` (reset_password/
+disable/enable/delete). Admin-avatar-routes speglar profile.py (`_process_avatar`
+importeras därifrån). Pre-produktion: schemaändring (t.ex. `active`) = radera
+svk.db + starta om.
 
 ## Env-vars (config.py)
 

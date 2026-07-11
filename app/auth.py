@@ -46,7 +46,14 @@ def _user_from_session(request: Request, db: Session) -> User | None:
     uid = request.session.get("uid")
     if not uid:
         return None
-    return db.get(User, uid)
+    user = db.get(User, uid)
+    if user is None or not user.active:  # spärrat konto -> ingen giltig session
+        return None
+    # Håll sessionens cachade flaggor i synk med DB - roll kan ändras av en admin
+    # medan användaren är inloggad (annars visas Admin-knappen kvar felaktigt).
+    if request.session.get("admin") != bool(user.is_admin):
+        request.session["admin"] = bool(user.is_admin)
+    return user
 
 
 def get_current_user(request: Request, db: Session = Depends(get_db)) -> User | None:
