@@ -628,7 +628,9 @@ tr[data-preview-scene] { cursor: help; }
 #hs-field-scene fieldset { margin: 0.4rem 0; }
 #hs-tyaw-regen { margin: 0.3rem 0; }
 
-.hs-scene-preview {
+/* Högre specificitet än pannellums .pnlm-container{height:100%} (som pannellum
+   lägger på samma element och annars kollapsar rutan). */
+#hs-field-scene .hs-scene-preview {
 	width: 100%;
 	height: 150px;
 	margin: 0.4rem 0;
@@ -637,3 +639,7 @@ tr[data-preview-scene] { cursor: help; }
 	background: #000;
 }
 .hs-scene-preview:empty { display: none; }
+
+/* Scen-hotspots visar alltid vilken scen de länkar till (editorn) */
+#panorama .pnlm-scene > span,
+#panorama .pnlm-hotspot.pnlm-scene span { visibility: visible !important; }

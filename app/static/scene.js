@@ -301,8 +301,19 @@
 	// tour är ren sanningskälla; pannellum får kloner (annars smutsas datan ner
 	// med DOM-referenser som bryter JSON.stringify vid spara/snapshot).
 
+	// Editorn visar alltid vilken scen en scen-hotspot länkar till. Det görs som
+	// en injicerad etikett i pannellum-klonen (tour-datans text lämnas orörd, så
+	// den färdiga turen bara får tooltip om användaren skrivit egen text).
+	function sceneEditorLabel(id) {
+		const t = tour.scenes[id] && tour.scenes[id].title;
+		return "Scen " + id + (t ? " - " + t : "");
+	}
 	function cloneHs(list) {
-		return (list || []).map(function (h) { return Object.assign({}, h); });
+		return (list || []).map(function (h) {
+			const c = Object.assign({}, h);
+			if (c.type === "scene") c.text = sceneEditorLabel(c.sceneId);
+			return c;
+		});
 	}
 
 	// Skriv om aktuell scens hotspots i pannellum-configen från turen och ladda
@@ -320,7 +331,6 @@
 	}
 
 	function sceneName(id) { return (tour.scenes[id] && tour.scenes[id].title) || ("scen " + id); }
-	function sceneHotspotText(target) { return "Till " + sceneName(target); }
 	function computeTargetYaw(from, to) {
 		if (positions[from] && positions[to] && offsets[to] != null) return round2(Geo.targetYaw(positions[from], positions[to], offsets[to]));
 		return null;
@@ -362,7 +372,6 @@
 		hsFieldScene.hidden = ctx.type !== "scene";
 		hsText.value = (ctx.hs && ctx.hs.text != null) ? ctx.hs.text : "";
 		hsUrl.value = (ctx.hs && ctx.hs.URL) || "";
-		hsCtx.autoText = null;
 		if (ctx.type === "scene") {
 			const target = (ctx.hs && ctx.hs.sceneId) || sceneIds().filter(function (id) { return id !== ctx.cur; })[0];
 			hsCtx.target = target;
@@ -371,7 +380,6 @@
 			document.querySelector('input[name="hs-dir"][value="' + (two ? "two" : "one") + '"]').checked = true;
 			setTyaw(ctx.hs && ctx.hs.targetYaw != null ? ctx.hs.targetYaw : computeTargetYaw(ctx.cur, target));
 			tyawNote(ctx.cur);
-			if (!ctx.hs) { hsCtx.autoText = sceneHotspotText(target); hsText.value = hsCtx.autoText; } // förslag, kan rensas
 		}
 		hsModal.hidden = false;
 		(ctx.type === "scene" ? hsSceneSel : hsText).focus();
@@ -418,7 +426,7 @@
 		list.push({
 			id: nextHotspotId(toScene), pitch: 0, yaw: yaw, type: "scene", sceneId: fromScene,
 			targetPitch: 0, targetYaw: computeTargetYaw(toScene, fromScene) || 0,
-			text: sceneHotspotText(fromScene), manual: true, twoway: true,
+			manual: true, twoway: true,
 		});
 		syncConfig(toScene);
 	}
@@ -481,11 +489,6 @@
 		// Spegla om det nya målet redan har en länk tillbaka.
 		const two = hasReciprocal(hsCtx.cur, target);
 		document.querySelector('input[name="hs-dir"][value="' + (two ? "two" : "one") + '"]').checked = true;
-		// Auto-uppdatera tooltip-texten om den inte redigerats manuellt.
-		if (hsCtx.autoText != null && hsText.value === hsCtx.autoText) {
-			hsCtx.autoText = sceneHotspotText(target);
-			hsText.value = hsCtx.autoText;
-		}
 		showHsPreview(target);
 	});
 	if (hsModal) {
@@ -593,7 +596,6 @@
 						pitch: 0, yaw: round2(Geo.hotspotYaw(positions[id], positions[to], offsets[id])),
 						type: "scene", sceneId: to, targetPitch: 0,
 						targetYaw: round2(Geo.targetYaw(positions[id], positions[to], offsets[to])),
-						text: sceneHotspotText(to),
 					});
 				});
 			});
