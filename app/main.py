@@ -51,6 +51,21 @@ async def _auth_aware_http_exception(request: Request, exc: StarletteHTTPExcepti
         # T.ex. en nyligen degraderad admin som klickar Admin - skicka hem
         # i stället för en rå felsida (nav-knappen synkas bort nästa request).
         return RedirectResponse(url="/", status_code=303)
+    if wants_html:
+        # Vänlig felsida för sid-navigeringar (404 m.fl.) i stället för rå JSON.
+        from app.deps import templates as _templates
+
+        messages = {
+            404: "Sidan eller resursen hittades inte.",
+            400: "Något med förfrågan var fel.",
+            409: "Åtgärden krockade med rådande läge.",
+        }
+        return _templates.TemplateResponse(
+            request,
+            "error.html",
+            {"code": exc.status_code, "message": messages.get(exc.status_code, exc.detail or "Ett fel inträffade.")},
+            status_code=exc.status_code,
+        )
     return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
 
 

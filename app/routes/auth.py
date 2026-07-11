@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.auth import hash_password, read_invite_token, set_user_session, verify_password
 from app.database import User, get_db
 from app.deps import new_csrf_token, set_csrf_cookie, templates, verify_csrf_form
+from app.services import ratelimit
 
 router = APIRouter()
 
@@ -45,11 +46,21 @@ async def login(
     next: str = Form("/"),
     _csrf: None = Depends(verify_csrf_form),
 ):
+    ip = request.client.host if request.client else "unknown"
+    if ratelimit.too_many(ip):
+        return _render_login(
+            request, next,
+            error="För många misslyckade försök. Vänta en stund och försök igen.",
+            status_code=429,
+        )
     user = db.query(User).filter(User.email == email.strip().lower()).first()
     if user is None or not verify_password(password, user.password_hash):
+        ratelimit.record_failure(ip)
         return _render_login(request, next, error="Fel e-post eller lösenord.")
     if not user.active:
+        ratelimit.record_failure(ip)
         return _render_login(request, next, error="Kontot är spärrat. Kontakta en administratör.")
+    ratelimit.reset(ip)
     set_user_session(request, user)
     return RedirectResponse(url=_safe_next(next), status_code=303)
 

@@ -13,7 +13,13 @@
 {% if slug_error %}<p class="login-error" role="alert">{{ slug_error }}</p>{% endif %}
 
 <details class="slug-settings">
-	<summary>Adress (slug): <code>{{ project.slug }}</code></summary>
+	<summary>Turinställningar (namn &amp; adress)</summary>
+	<form method="post" action="/projects/{{ project.slug }}/rename" class="slug-form">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+		<label for="tour-name">Visningsnamn</label>
+		<input type="text" id="tour-name" name="name" value="{{ project.name }}" maxlength="200" required>
+		<button type="submit" class="secondary">Spara namn</button>
+	</form>
 	<form method="post" action="/projects/{{ project.slug }}/rename-slug" class="slug-form"
 		onsubmit="return confirm('Byt slug? Bokmärkta länkar och redan exporterade bundlar för nuvarande adress slutar fungera.');">
 		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">

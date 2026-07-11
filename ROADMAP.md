@@ -159,6 +159,30 @@ Kvarvarande arbete är i praktiken auth + multi-tenancy.
       bokmärkta /view-länkar och byggda bundlar bryts. Blir team-scopad unikhet när
       Fas 4 landar.
 
+## Grundfunktioner (före Fas 4)
+
+Luckor identifierade 2026-07-11 innan team-arbetet.
+
+- [x] **Byt turens visningsnamn KLAR (2026-07-11).** `POST /projects/{slug}/rename`
+      (gate + CSRF) uppdaterar `Project.name`. Fält i "Turinställningar"-sektionen på
+      uppladdningssidan (bredvid slug-bytet).
+- [x] **Rate limiting på login KLAR (2026-07-11).** In-memory fixed-window per IP
+      (`app/services/ratelimit.py`, 10 misslyckade/15 min -> 429). Efemärt, inga
+      IP-adresser persisteras. Nollställs vid lyckad login.
+- [x] **Vänliga felsidor KLAR (2026-07-11).** HTTPException på sid-navigering
+      renderar `error.html` (kod + meddelande + hem-länk) i stället för rå JSON;
+      API/JSON-klienter får fortfarande JSON. 401 -> login, 403 -> hem som förut.
+- [ ] **Konfigurerbart tjänstenamn.** "SVK Panorama" ska inte vara hårdkodat -
+      super-admin ska kunna byta det. Env-default (`SVK_SITE_NAME`) + DB-override
+      redigerbar i en admin-inställningssida (env-default + admin-override-mönstret).
+      Exponeras som Jinja-global så alla mallar (brand + titlar) läser samma värde.
+- [ ] **Publik delningslänk för en tur.** `/view` kräver inloggning idag; ingen
+      oautentiserad väg att visa en tur för allmänheten in-app (bara bundle-export).
+      Lägg `Project.share_token` (oigissbar), publika routes `/s/{token}` (viewer utan
+      auth) + `/s/{token}/{path}` (läs-only assets, traversal-guard), tour-paths
+      omskrivna `/projects/{slug}/` -> `/s/{token}/`. Dela/sluta-dela-toggle på
+      tursidan. Bundle-export är fortsatt "publicera för self-host".
+
 ## Fas 4 - Team & egna domäner (multi-tenancy nivå 2)
 
 Bakgrund (2026-07-11): för att erbjuda editorn till andra behöver turer kunna ägas

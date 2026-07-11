@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} - SVK Panorama{% endblock %}
+{% block content %}
+
+<section class="error-page">
+	<hgroup>
+		<h1>{{ code }}</h1>
+		<p>{{ message }}</p>
+	</hgroup>
+	<p><a href="/" role="button" class="secondary">Till startsidan</a></p>
+</section>
+
+{% endblock %}

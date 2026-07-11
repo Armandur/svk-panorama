@@ -129,6 +129,24 @@ async def delete_project(
     return RedirectResponse(url=dest, status_code=303)
 
 
+@router.post("/projects/{slug}/rename")
+async def rename_project(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+    project: Project = Depends(get_project_or_404),  # gate: ägare eller admin
+    name: str = Form(...),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Byt turens visningsnamn (påverkar inte slug/adress)."""
+    name = name.strip()
+    if name:
+        project.name = name
+        db.commit()
+    return RedirectResponse(url=f"/projects/{slug}", status_code=303)
+
+
 def _job_running(slug: str) -> bool:
     for status in (tile_job_status(slug), export_job_status(slug)):
         if status and status.get("status") == "running":
