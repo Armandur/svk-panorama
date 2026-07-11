@@ -203,6 +203,52 @@ Upptäckt 2026-07-11 under genomgång.
       eller om previewen saknar synlig text att applicera typsnittet på; verifiera i
       publicerade turen/bundlen också.
 
+## Rich text & markdown (info-hotspots + redigerbara texter)
+
+Beslutat 2026-07-11 (UX-genomgång). Mål: rikare formattering på info-hotspots och
+återanvändbar markdown-rendering + redigering i hela appen.
+
+**Bibliotek (alla självhostade i `static/vendor/`, ingen CDN):**
+- **Rendering:** `marked` (md -> HTML) + **DOMPurify** (sanering, XSS-skydd - publika
+  besökare och framtida andra tenants ser innehållet). En delad hjälpare
+  `renderMarkdown(md) -> säker HTML`. Liten payload -> laddas även i viewer/bundle.
+- **Redigering:** `EasyMDE` (toolbar + live-preview, CodeMirror). Laddas bara på
+  editor-/admin-sidor, inte i publika viewern. Sätt `previewRender` till vår
+  DOMPurify-sanerade renderare.
+
+**Datamodell (info-hotspots):** markdown genomgående; en flagga styr presentationen,
+inte innehållstypen. Fält: `teaser` (kort, visas i tooltip) + valfri `body` (lång
+markdown) + `expandable` (bool). Bakåtkompatibelt: befintlig ren text = giltig
+markdown. Ingen migration.
+
+**Interaktion:** inline-läge = markdown i tooltip/popover (hover dator / tap mobil).
+Expanderbart läge = teaser i tooltip, klick öppnar **fullskärms-ark** (panoramat
+dimmat bakom, stängbart med X/Escape/backdrop, scrollbart, fullskärm på mobil).
+Expanderbara hotspots får en affordans-ikon (t.ex. "+"). Pannellum:
+`createTooltipFunc` (rendera md) + `clickHandlerFunc` (öppna arket).
+
+Faser (minst till störst):
+
+- [ ] **1. Markdown-infra + redigerbar arbetsgångstext.** Vendora marked + DOMPurify
+      + EasyMDE. Delad `renderMarkdown`. Rendera "Hur funkar det (arbetsgång)" på
+      startsidan som markdown i stället för `<pre>` (idag `guide_text` från
+      `WORKFLOW.md`). Gör texten redigerbar av super-admin i en ny kategori på
+      `/admin/settings` (t.ex. "Texter"/"Startsida") med EasyMDE; lagras i `Setting`
+      (DB-override, default = `WORKFLOW.md`). Detta testar render- + editor-libbet i
+      liten skala innan hotspot-arbetet.
+- [ ] **2. Markdown i info-hotspots (inline).** Hotspot-textfältet blir markdown,
+      renderas i tooltip/popover via `createTooltipFunc`. EasyMDE i hotspot-editorn
+      (`scene.js`-modalen). Fungerar i viewer + bundle + publik /s-vy (vendora
+      renderaren i bundlen).
+- [ ] **3. Expanderbara hotspots (läs mer).** `teaser`/`body`/`expandable` på
+      hotspot. Fullskärms-ark med renderad body. Affordans-ikon. Hover=teaser/
+      klick=öppna på dator, tap=öppna på mobil. Editor: toggle + body-EasyMDE +
+      förhandsvisning.
+- [ ] **4. Bilder i hotspot-body.** Ladda upp bilder i projektet (media-/
+      attachments-mapp per tur), referera via markdown-bildsyntax. Måste inkluderas +
+      relativiseras i bundle-exporten och nås via publika /s-routen. Enkel
+      media-hantering i editorn (ladda upp -> få markdown-snutt att klistra in).
+
 ## Fas 4 - Team & egna domäner (multi-tenancy nivå 2)
 
 Bakgrund (2026-07-11): för att erbjuda editorn till andra behöver turer kunna ägas
