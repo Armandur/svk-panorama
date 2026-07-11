@@ -185,7 +185,12 @@ inställningar (jfr `TILE_CONCURRENCY`/`BASE_URL`).
 `vendor/marked` + `vendor/dompurify` laddats). Redigering via `vendor/easymde`
 (EasyMDE, `previewRender` = renderMarkdown) - toolbar-ikoner via `vendor/fontawesome`
 (FA 4.7). Renderad markdown stylas med `.markdown-body`. Används av arbetsgångstexten
-idag; info-hotspots (rich text) enligt ROADMAP-fas 2-4.
+och **info-hotspots**: `attachHsTooltips` ger info-hotspots markdown-teaser via
+pannellums `createTooltipFunc`; har hotspoten `body` blir den expanderbar
+(`clickHandlerFunc` -> `openHsSheet`, fullskärms-ark). Hotspot-editorn (scene.js)
+kör EasyMDE i flikar (Teaser/Läs mer, expanderbar härleds ur body-text). Bilder:
+`POST /projects/{slug}/attachments` -> `attachments/`-mappen, infogas som markdown;
+bundlen kopierar + relativiserar, publika /s skriver om URL:en.
 
 ## Env-vars (config.py)
 
