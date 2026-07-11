@@ -439,11 +439,13 @@ tr[data-preview-scene] { cursor: help; }
 	width: 12px; height: 12px;
 	margin: -6px 0 0 -6px; padding: 0;
 	border-radius: 50%;
-	background: var(--dot-color); border: 2px solid #fff;
+	/* Fallback så prickar syns även utanför .panorama-wrap (t.ex. startscen-modalen)
+	   där temavariablerna inte är definierade. */
+	background: var(--dot-color, #666666); border: 2px solid #fff;
 	cursor: pointer;
 }
 .preview-dot:hover { transform: scale(1.2); }
-.preview-dot.current { background: var(--current-dot-color); }
+.preview-dot.current { background: var(--current-dot-color, #8b0000); }
 /* Live-typsnitt i förhandsvisningens pannellum-titel */
 .panorama-wrap .pnlm-title-box, .panorama-wrap .pnlm-author-box { font-family: var(--tour-font, inherit) !important; }
 /* Tema: färgväljare */

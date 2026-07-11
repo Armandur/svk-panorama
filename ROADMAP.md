@@ -192,10 +192,11 @@ Upptäckt 2026-07-11 under genomgång.
       på preview-steget (`preview.html`: `#theme-dot`, `#theme-current`) använder OS-
       native färgväljare som ser olika ut per plattform. Byt till ett självhostat JS-
       färgväljar-lib (ingen CDN, ladda ner till `static/vendor/`, jfr Pico/pannellum).
-- [ ] **Startscen-modalens kartprickar ritas inte.** I startscen-väljaren (kart-
-      modalen på preview-steget) syns inga prickar på kartan. `start-map-dots`
-      (`tour-preview.js:264`) fylls uppenbarligen inte som `preview-map-dots` gör.
-      Felsök prickutritningen i modalen.
+- [x] **Startscen-modalens kartprickar ritas inte FIXAT (2026-07-11).** Prickarna
+      byggdes korrekt men var osynliga: `.preview-dot` hade `background: var(--dot-color)`
+      utan fallback, och temavariablerna definieras bara på `.panorama-wrap` - start-
+      modalen ligger utanför den. Lade fallback-värden (`var(--dot-color, #666666)` /
+      `var(--current-dot-color, #8b0000)`) så prickar syns var som helst.
 - [ ] **Temats typsnitt ger ingen synlig effekt.** Font-valet sätter `--tour-font`
       på panorama-wrappen (`tour-preview.js:90`) och viewer.css applicerar det på
       pannellum-textboxar, men det syns ingen skillnad i förhandsvisningen. Undersök
