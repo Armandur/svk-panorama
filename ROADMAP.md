@@ -27,9 +27,9 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
       nordoffset per scen (sikta + klicka på granne), auto-generering av hotspots
       med riktningsstöd, scennamn (visas i vyn), hårkors, full upplösning-toggle,
       dirty-skydd, hjälp-modal.
-- [ ] Mer scenhantering: **info-hotspots**, **URL-hotspots** och manuell
-      redigering (lägg till/flytta/ta bort/redigera enskilda hotspots). Fanns i
-      gamla `js/app.js`-editorn (I/U/R/T/Q).
+- [x] Mer scenhantering: **info-hotspots**, **URL-hotspots** och manuell
+      redigering (lägg till vid hårkorset, flytta/redigera/ta bort). Scennamn,
+      horisont-upprätning (roll) och full upplösning-toggle ingår också.
 - [x] Inbyggd hur-man-gör-guide finns i vyernas hjälp-modaler + `WORKFLOW.md`.
 
 ## Fas 2 - Bundle & viewer

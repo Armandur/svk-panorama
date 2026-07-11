@@ -596,3 +596,17 @@ tr[data-preview-scene] { cursor: help; }
 /* Auto-generera + inställnings-knapp i uppladdningssteget: fullbredd */
 #generate-btn { width: 100%; }
 .settings-inline .settings-btn { width: auto; }
+
+/* --- Hotspot-lista i scenhanteringen --- */
+.hotspot-list { list-style: none; padding: 0; margin: 0.5rem 0 0; }
+.hotspot-list li.hint { padding: 0.3rem 0; }
+.hotspot-item {
+	border: 1px solid var(--pico-muted-border-color);
+	border-radius: 0.3rem;
+	padding: 0.4rem 0.5rem;
+	margin-bottom: 0.4rem;
+}
+.hotspot-label { display: block; font-size: 0.9rem; margin-bottom: 0.3rem; word-break: break-word; }
+.hotspot-btns { display: flex; gap: 0.3rem; }
+.hs-btn { flex: 1; margin: 0; padding: 0.25rem 0.3rem; font-size: 0.78rem; }
+.hs-danger { color: var(--svk-danger); border-color: var(--svk-danger); }

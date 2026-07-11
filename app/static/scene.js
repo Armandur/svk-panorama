@@ -41,6 +41,7 @@
 	const calibStateEl = document.getElementById("calib-state");
 	const neighborList = document.getElementById("neighbor-list");
 	const readinessEl = document.getElementById("scene-readiness");
+	const hotspotList = document.getElementById("hotspot-list");
 	const dirtyBadge = document.getElementById("dirty-badge");
 	const saveBtn = document.getElementById("save-tour-btn");
 	const discardBtn = document.getElementById("discard-tour-btn");
@@ -155,10 +156,11 @@
 	// --- Pannellum ---
 	const cfgScenes = {};
 	sceneIds().forEach(function (id) {
+		if (!tour.scenes[id].hotSpots) tour.scenes[id].hotSpots = [];
 		cfgScenes[id] = {
 			type: "equirectangular",
 			panorama: "/projects/" + encodeURIComponent(slug) + "/previews/" + encodeURIComponent(id) + ".jpg",
-			hotSpots: (tour.scenes[id].hotSpots || []).slice(),
+			hotSpots: cloneHs(tour.scenes[id].hotSpots),
 		};
 		if (tour.scenes[id].horizonRoll) cfgScenes[id].horizonRoll = tour.scenes[id].horizonRoll;
 	});
@@ -211,6 +213,7 @@
 		updateTitleLabel(cur);
 		renderCalibState(cur);
 		renderNeighbors(cur);
+		renderHotspotList(cur);
 		renderReadiness();
 		updateMapDots(cur, null);
 	}
@@ -294,6 +297,111 @@
 		showToast("Scen " + cur + " kalibrerad mot " + neighbor, "ok");
 	}
 
+	// --- Hotspots (info/URL) -----------------------------------------------
+	// tour är ren sanningskälla; pannellum får kloner (annars smutsas datan ner
+	// med DOM-referenser som bryter JSON.stringify vid spara/snapshot).
+
+	function cloneHs(list) {
+		return (list || []).map(function (h) { return Object.assign({}, h); });
+	}
+
+	// Skriv om aktuell scens hotspots i pannellum-configen från turen och ladda
+	// om scenen (bevarad vy) så ändringen syns.
+	function syncAndReload(cur) {
+		const cfg = viewer.getConfig().scenes[cur];
+		if (cfg) cfg.hotSpots = cloneHs(tour.scenes[cur].hotSpots);
+		applyingRes = true;
+		viewer.loadScene(cur, viewer.getPitch(), viewer.getYaw(), viewer.getHfov());
+	}
+
+	function nextHotspotId(cur) {
+		const ids = (tour.scenes[cur].hotSpots || []).map(function (h) { return typeof h.id === "number" ? h.id : -1; });
+		return (ids.length ? Math.max.apply(null, ids) : -1) + 1;
+	}
+
+	function addHotspot(kind) {
+		const cur = viewer.getScene();
+		if (!tour.scenes[cur].hotSpots) tour.scenes[cur].hotSpots = [];
+		const pitch = round2(viewer.getPitch());
+		const yaw = round2(viewer.getYaw());
+		let hs;
+		if (kind === "url") {
+			const url = prompt("URL som hotspoten öppnar:");
+			if (!url) return;
+			const text = prompt("Text (visas vid hover):", url) || url;
+			hs = { id: nextHotspotId(cur), pitch: pitch, yaw: yaw, type: "info", text: text, URL: url };
+		} else {
+			const text = prompt("Text för info-hotspot:");
+			if (!text) return;
+			hs = { id: nextHotspotId(cur), pitch: pitch, yaw: yaw, type: "info", text: text };
+		}
+		tour.scenes[cur].hotSpots.push(hs);
+		setDirty(true);
+		syncAndReload(cur);
+	}
+
+	function moveHotspot(cur, hs) {
+		hs.pitch = round2(viewer.getPitch());
+		hs.yaw = round2(viewer.getYaw());
+		setDirty(true);
+		syncAndReload(cur);
+	}
+
+	function editHotspot(cur, hs) {
+		const text = prompt("Text:", hs.text || "");
+		if (text == null) return;
+		hs.text = text;
+		if (hs.URL != null) {
+			const url = prompt("URL:", hs.URL);
+			if (url != null) hs.URL = url;
+		}
+		setDirty(true);
+		syncAndReload(cur);
+	}
+
+	function removeHotspot(cur, hs) {
+		tour.scenes[cur].hotSpots = (tour.scenes[cur].hotSpots || []).filter(function (h) { return h !== hs; });
+		setDirty(true);
+		syncAndReload(cur);
+	}
+
+	function mkHsBtn(text, fn, danger) {
+		const b = document.createElement("button");
+		b.type = "button";
+		b.className = "secondary outline hs-btn" + (danger ? " hs-danger" : "");
+		b.textContent = text;
+		b.addEventListener("click", fn);
+		return b;
+	}
+
+	function renderHotspotList(cur) {
+		if (!hotspotList) return;
+		hotspotList.innerHTML = "";
+		const manual = (tour.scenes[cur].hotSpots || []).filter(function (h) { return h.type === "info"; });
+		if (!manual.length) {
+			const li = document.createElement("li");
+			li.className = "hint";
+			li.textContent = "Inga info/URL-hotspots i denna scen.";
+			hotspotList.appendChild(li);
+			return;
+		}
+		manual.forEach(function (hs) {
+			const li = document.createElement("li");
+			li.className = "hotspot-item";
+			const label = document.createElement("span");
+			label.className = "hotspot-label";
+			label.textContent = (hs.URL ? "URL: " : "") + (hs.text || "(tom)");
+			const btns = document.createElement("div");
+			btns.className = "hotspot-btns";
+			btns.appendChild(mkHsBtn("Flytta hit", function () { moveHotspot(cur, hs); }));
+			btns.appendChild(mkHsBtn("Redigera", function () { editHotspot(cur, hs); }));
+			btns.appendChild(mkHsBtn("Ta bort", function () { removeHotspot(cur, hs); }, true));
+			li.appendChild(label);
+			li.appendChild(btns);
+			hotspotList.appendChild(li);
+		});
+	}
+
 	// --- Generering ---
 	function generate() {
 		const result = {};
@@ -320,10 +428,11 @@
 			scene.hotSpots = merged;
 			total += (result[id] || []).length;
 			const cfg = viewer.getConfig().scenes[id];
-			if (cfg) cfg.hotSpots = merged;
+			if (cfg) cfg.hotSpots = cloneHs(merged);
 		});
 
-		viewer.loadScene(viewer.getScene()); // visa hotspots i aktuell scen
+		applyingRes = true;
+		viewer.loadScene(viewer.getScene(), viewer.getPitch(), viewer.getYaw(), viewer.getHfov());
 		setDirty(true);
 		let msg = "Genererade " + total + " hotspots.";
 		if (skipped.length) msg += " Hoppade över " + skipped.length + " (okalibrerad/oplacerad).";
@@ -366,7 +475,7 @@
 			if (s.ti == null) delete tour.scenes[id].title; else tour.scenes[id].title = s.ti;
 			if (s.ro == null) delete tour.scenes[id].horizonRoll; else tour.scenes[id].horizonRoll = s.ro;
 			const cfg = viewer.getConfig().scenes[id];
-			if (cfg) { cfg.hotSpots = s.hs; cfg.horizonRoll = s.ro || 0; }
+			if (cfg) { cfg.hotSpots = cloneHs(s.hs); cfg.horizonRoll = s.ro || 0; }
 			tour.scenes[id].hotSpots = s.hs;
 		});
 		viewer.loadScene(viewer.getScene());
@@ -388,6 +497,10 @@
 	if (generateBtn) generateBtn.addEventListener("click", generate);
 	if (saveBtn) saveBtn.addEventListener("click", save);
 	if (discardBtn) discardBtn.addEventListener("click", discard);
+	const addInfoBtn = document.getElementById("add-info-btn");
+	const addUrlBtn = document.getElementById("add-url-btn");
+	if (addInfoBtn) addInfoBtn.addEventListener("click", function () { addHotspot("info"); });
+	if (addUrlBtn) addUrlBtn.addEventListener("click", function () { addHotspot("url"); });
 
 	const helpBtn = document.getElementById("help-btn");
 	const helpModal = document.getElementById("help-modal");
