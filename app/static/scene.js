@@ -526,11 +526,6 @@
 
 	// --- Pass 2: ring på närmaste hotspot + greppa/flytta med Space -----------
 	let nearestId = null, grabbed = null;
-	function angDist(p1, y1, p2, y2) {
-		let dy = Math.abs(y1 - y2); if (dy > 180) dy = 360 - dy;
-		const dp = p1 - p2;
-		return Math.sqrt(dp * dp + dy * dy);
-	}
 	function currentClones() {
 		const cfg = viewer.getConfig().scenes[viewer.getScene()];
 		return (cfg && cfg.hotSpots) || [];
@@ -539,12 +534,18 @@
 		currentClones().forEach(function (x) { if (x.div) x.div.classList.toggle("hs-nearest", x === h); });
 		nearestId = h ? h.id : null;
 	}
+	// Närmast i SKÄRMPIXLAR till hårkorset (mitten), och bara om inom en tröskel -
+	// annars ingen ring (globalt närmast skulle alltid markera nåt).
 	function updateNearest() {
 		if (grabbed || (hsModal && !hsModal.hidden)) { setNearest(null); return; }
-		const cp = viewer.getPitch(), cy = viewer.getYaw();
-		let best = null, bestD = Infinity;
+		const rect = panoEl.getBoundingClientRect();
+		const ccx = rect.left + rect.width / 2, ccy = rect.top + rect.height / 2;
+		let best = null, bestD = Math.min(rect.width, rect.height) * 0.18; // tröskel
 		currentClones().forEach(function (h) {
-			const d = angDist(cp, cy, h.pitch || 0, h.yaw || 0);
+			if (!h.div) return;
+			const r = h.div.getBoundingClientRect();
+			if (!r.width || !r.height) return; // dold/bakom
+			const d = Math.hypot(r.left + r.width / 2 - ccx, r.top + r.height / 2 - ccy);
 			if (d < bestD) { bestD = d; best = h; }
 		});
 		setNearest(best);
