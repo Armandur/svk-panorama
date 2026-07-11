@@ -79,4 +79,17 @@
 		container.hidden = true;
 		showBtn.hidden = false;
 	});
+
+	// Pannellums helskärm renderar bara det fullskärmade elementet + dess barn.
+	// Kart-knappen/överlägget ligger utanför pannellums container och försvinner
+	// annars i helskärm - flytta in dem i det fullskärmade elementet (och tillbaka
+	// till body när man går ur). Robust oavsett vilket element som fullskärmas.
+	function relocateOverlay() {
+		var fs = document.fullscreenElement || document.webkitFullscreenElement;
+		var host = fs || document.body;
+		host.appendChild(showBtn);
+		host.appendChild(container);
+	}
+	document.addEventListener("fullscreenchange", relocateOverlay);
+	document.addEventListener("webkitfullscreenchange", relocateOverlay);
 })();

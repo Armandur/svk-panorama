@@ -254,13 +254,11 @@ Faser (minst till störst):
       relativiseras i bundle-exporten och nås via publika /s-routen. Enkel
       media-hantering i editorn (ladda upp -> få markdown-snutt att klistra in).
 
-- [ ] **Karta-knappen försvinner i pannellum-helskärm.** I helskärmsläge visas inte
-      "Karta"-knappen/kartöverlägget i rundturen. Orsak: Fullscreen API renderar bara
-      det fullskärmade elementet + dess barn; pannellum fullskärmar sin egen container
-      medan vår `.map-toggle` + `#map-container` är syskon till `#panorama` (utanför).
-      Fix: flytta in kartöverlägget i pannellum-containern, eller helskärma en wrapper
-      som innehåller både panorama och överläggen. Gäller runtime-viewern (`viewer.html`/
-      `viewer.css`) och därmed även bundlen + publika /s-vyn.
+- [x] **Karta-knappen försvinner i pannellum-helskärm FIXAT (2026-07-12).**
+      `viewer.js` flyttar kart-knappen + överlägget in i det fullskärmade elementet
+      vid `fullscreenchange` (och tillbaka till body när man går ur) - robust oavsett
+      vilket element pannellum fullskärmar. Gäller runtime-viewern + bundlen + publika
+      /s-vyn. (Ej browser-testad i äkta helskärm - headless stödjer inte fullscreen.)
 
 - [ ] **Avstavning/radbrytning i små info-hotspot-rutor.** Pannellum-tooltipen
       (`div.pnlm-tooltip span`, `max-width:200px` + padding) är för smal/har för mycket
@@ -269,13 +267,12 @@ Faser (minst till störst):
       inte bryts. Hör ihop med markdown-i-hotspots (rich text-sektionen) - ta gärna
       samlat där.
 
-- [ ] **Upplösningsväljare i preview-steget (parity med scenvyn).** Preview-steget
-      (`/preview`) defaultar redan till multires (`apply_multires` i `preview.py`,
-      full equirekt som fallback för otilade scener) - så defaulten är rätt. Men det
-      saknar upplösningsväljaren (preview/multires/full) som scenvyn har (`#res-select`
-      i `scene.js`). Lägg en motsvarande väljare i preview.html + `tour-preview.js`
-      (bädda in tiles-manifestet, bygg om scenen vid val), så man kan förhandsvisa i
-      olika upplösningar.
+- [x] **Upplösningsväljare i preview-steget KLAR (2026-07-12).** Multires appliceras
+      nu klient-side i `tour-preview.js` (defaultar multires) i stället för i
+      `preview.py`, så rå tur + manifest bäddas in. "Vy"-sektion med väljare
+      preview/multires/full i preview.html; byte bygger om vieweren (behåll scen/vy),
+      scener utan tiles faller till preview. Fixade även att aktuell scen inte
+      markerades på kartan förrän man bytte scen (`buildDots` kallar nu `markCurrent`).
 
 - [ ] **Fler typsnitt i temat (särskilt DM Sans).** Idag är tema-typsnitten
       system-font-stackar (sans/serif/mono/humanist - inga font-filer, självbärande
@@ -284,6 +281,12 @@ Faser (minst till störst):
       inkluderas i bundle-exporten och den publika /s-vyn - dvs. bundlen växer. Väg
       mot att behålla systemstackar som lätta default. Uppdatera `FONTS` i
       `tour-preview.js` + `viewer.css` + font-validering på servern.
+
+- [ ] **Uppdatera WORKFLOW.md.** Verkar inaktuell och stundtals för teknisk för sin
+      publik (fotografer) - t.ex. referenser till `js/geo.js` m.m. Skriv om till en
+      användarnära arbetsgång (den renderas ju nu som markdown på startsidan och är
+      redigerbar av super-admin). Skilj på fotografens steg-för-steg och de tekniska
+      utvecklarnoterna (de senare hör hemma i CLAUDE.md, inte WORKFLOW.md).
 
 ## Fas 4 - Team & egna domäner (multi-tenancy nivå 2)
 

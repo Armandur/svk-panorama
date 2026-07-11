@@ -14,6 +14,32 @@
 
 	const d = tour.default || {};
 
+	// --- Upplösning (preview/multires/full) - global för hela förhandsvisningen.
+	// Multires appliceras klient-side (defaultar multires) så man kan byta. Speglar
+	// scenvyns logik men för alla scener på en gång. ---
+	const resSelect = document.getElementById("res-select");
+	const resHint = document.getElementById("res-hint");
+	const manifest = (function () { const el = document.getElementById("tiles-data"); return el ? JSON.parse(el.textContent) : {}; })();
+	const origPanorama = {};
+	Object.keys(tour.scenes).forEach(function (id) { origPanorama[id] = tour.scenes[id].panorama; });
+	let resMode = "multires";
+	function hasTiles(id) { return !!manifest[id]; }
+	function previewUrl(id) { return "/projects/" + encodeURIComponent(slug) + "/previews/" + encodeURIComponent(id) + ".jpg"; }
+	function setSceneRes(id) {
+		const sc = tour.scenes[id];
+		if (!sc) return;
+		const eff = (resMode === "multires" && !hasTiles(id)) ? "preview" : resMode;
+		if (eff === "multires") {
+			sc.type = "multires"; sc.multiRes = manifest[id]; delete sc.panorama;
+		} else {
+			sc.type = "equirectangular";
+			sc.panorama = (eff === "full") ? origPanorama[id] : previewUrl(id);
+			delete sc.multiRes;
+		}
+	}
+	function applyRes() { Object.keys(tour.scenes).forEach(setSceneRes); }
+	applyRes(); // defaultar multires innan första bygget
+
 	function sceneIds() {
 		return Object.keys(tour.scenes).sort(function (a, b) {
 			return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
@@ -173,6 +199,9 @@
 			mapDotsEl.appendChild(dot);
 			dotEls[s.id] = dot;
 		});
+		// Markera aktuell scen direkt när prickarna byggts (annars syns ingen aktiv
+		// prick förrän man byter scen).
+		if (viewer) markCurrent(viewer.getScene());
 	}
 	function markCurrent(id) {
 		Object.keys(dotEls).forEach(function (k) { dotEls[k].classList.toggle("current", k === id); });
@@ -226,6 +255,14 @@
 	themeFont.addEventListener("change", function () { applyThemeLive(); onSettingChange(false); });
 	[themeDot, themeCurrent].forEach(function (inp) {
 		inp.addEventListener("input", function () { applyThemeLive(); onSettingChange(false); });
+	});
+
+	// Upplösningsbyte: applicera på alla scener + bygg om vieweren (behåll scen/vy).
+	// Påverkar bara förhandsvisningen, inte det som sparas (default-blocket).
+	if (resSelect) resSelect.addEventListener("change", function () {
+		resMode = resSelect.value;
+		applyRes();
+		rebuildKeepView();
 	});
 
 	if (prevBtn) prevBtn.addEventListener("click", function () { step(-1); });

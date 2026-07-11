@@ -20,7 +20,7 @@ from app import config
 from app.database import Project
 from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
 from app.services.project_files import _natural_key, map_image_path, read_map, read_tour, tour_lock, write_tour
-from app.services.tiling import apply_multires, read_manifest
+from app.services.tiling import read_manifest
 
 router = APIRouter()
 
@@ -46,9 +46,10 @@ def preview_view(
     project: Project = Depends(get_project_or_404),
 ) -> HTMLResponse:
     tour = read_tour(slug)
+    # Multires appliceras klient-side i tour-preview.js (defaultar multires) så
+    # användaren kan byta upplösning preview/multires/full - därför bäddas rå tur
+    # + manifest in, inte en multires-mergad tur.
     manifest = read_manifest(slug)
-    if manifest:
-        apply_multires(tour, manifest)
     scene_ids = sorted(tour.get("scenes", {}).keys(), key=_natural_key)
     token = new_csrf_token()
     share_url = None
@@ -64,6 +65,7 @@ def preview_view(
             "map_data": read_map(slug),
             "has_map_image": map_image_path(slug).exists(),
             "scene_ids": scene_ids,
+            "manifest": manifest,
             "csrf_token": token,
             "share_url": share_url,
         },
