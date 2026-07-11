@@ -603,6 +603,18 @@ tr[data-preview-scene] { cursor: help; }
 	background: var(--svk-marker);
 	border: 1px solid #fff;
 	box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+	pointer-events: auto;
+	cursor: pointer;
+}
+.scene-dot:hover { transform: scale(1.25); }
+/* Resize-handtag i nedre vänstra hörnet (kartan är fäst uppe till höger). */
+.scene-map-resize {
+	position: absolute;
+	left: 0; bottom: 0;
+	width: 16px; height: 16px;
+	cursor: nesw-resize;
+	background: linear-gradient(45deg, rgba(0,0,0,0.55) 0 40%, transparent 40%);
+	z-index: 4;
 }
 .scene-dot.current, .scene-dot.highlight {
 	width: 14px; height: 14px;

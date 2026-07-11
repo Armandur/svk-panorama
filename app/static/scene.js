@@ -137,11 +137,49 @@
 			d.className = "scene-dot";
 			d.style.left = (s.position.x / mapImg.naturalWidth * 100) + "%";
 			d.style.top = (s.position.y / mapImg.naturalHeight * 100) + "%";
-			d.title = "Scen " + s.id;
+			d.title = "Scen " + s.id + " - klicka för att gå hit";
+			// Klick på prick = navigera till scenen (som i den riktiga turen).
+			d.addEventListener("click", function () {
+				if (viewer.getScene() !== s.id) viewer.loadScene(s.id);
+			});
 			mapDots.appendChild(d);
 			dotEls[s.id] = d;
 		});
 	}
+
+	// Resize av minikartan genom att dra i nedre vänstra hörnet. Kartan är fäst
+	// uppe till höger, så att dra åt vänster gör den bredare (höjden följer
+	// bildförhållandet). Storleken sparas per projekt i localStorage.
+	const sceneMap = document.getElementById("scene-map");
+	const mapResize = document.getElementById("scene-map-resize");
+	const mapSizeKey = "svk-scene-map-w:" + slug;
+	(function initMapResize() {
+		if (!sceneMap || !mapResize) return;
+		const saved = parseFloat(localStorage.getItem(mapSizeKey));
+		if (saved && saved > 0) sceneMap.style.width = saved + "px";
+		let startX = 0, startW = 0, dragging = false;
+		mapResize.addEventListener("pointerdown", function (e) {
+			e.preventDefault();
+			dragging = true;
+			startX = e.clientX;
+			startW = sceneMap.getBoundingClientRect().width;
+			mapResize.setPointerCapture(e.pointerId);
+		});
+		mapResize.addEventListener("pointermove", function (e) {
+			if (!dragging) return;
+			const w = Math.max(120, Math.min(window.innerWidth * 0.8, startW - (e.clientX - startX)));
+			sceneMap.style.width = w + "px";
+			sceneMap.style.maxWidth = "none"; // släpp CSS-taket när användaren styr
+		});
+		function end(e) {
+			if (!dragging) return;
+			dragging = false;
+			try { mapResize.releasePointerCapture(e.pointerId); } catch (err) { /* redan släppt */ }
+			localStorage.setItem(mapSizeKey, parseFloat(sceneMap.style.width) || startW);
+		}
+		mapResize.addEventListener("pointerup", end);
+		mapResize.addEventListener("pointercancel", end);
+	})();
 	function updateMapDots(currentId, highlightId) {
 		Object.keys(dotEls).forEach(function (id) {
 			dotEls[id].classList.toggle("current", id === currentId);
