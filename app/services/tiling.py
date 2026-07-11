@@ -18,6 +18,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
+from app import config
 from app.services.project_files import (
     _natural_key,
     project_dir,
@@ -26,11 +27,6 @@ from app.services.project_files import (
 )
 
 DOCKER_IMAGE = "pannellum-multires"
-
-# Antal scener som tilas parallellt. nona (kubfaces) är enkeltrådat, så
-# parallellism hjälper - men VM:en delas och har 4 kärnor, så vi håller oss
-# lågt och lämnar kärnor till resten.
-TILE_CONCURRENCY = 2
 
 # Jobbstatus per slug (single-worker lokalverktyg -> in-memory räcker).
 _jobs: dict[str, dict[str, Any]] = {}
@@ -190,7 +186,10 @@ def _run_job(slug: str, quality: int, scenes: list[tuple[str, Path]]) -> None:
     job = _jobs[slug]
     entries = {s["id"]: s for s in job["scenes"]}
     errors: list[str] = []
-    with ThreadPoolExecutor(max_workers=TILE_CONCURRENCY) as pool:
+    # Läs vid jobbstart -> ett kommande admin-UI kan ändra parallelliteten
+    # (config.TILE_CONCURRENCY) och nästa jobb använder det, utan omstart.
+    workers = max(1, config.TILE_CONCURRENCY)
+    with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {
             pool.submit(_tile_one, slug, quality, sid, img, entries[sid], job): sid
             for sid, img in scenes

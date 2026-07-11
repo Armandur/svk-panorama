@@ -38,3 +38,7 @@ MAP_IMAGE_FILENAME = "map.png"
 # Preview: nedskalad equirektangulär bild för auto-roterande hover-förhandsvisning.
 PREVIEW_MAX_WIDTH = int(os.environ.get("SVK_PREVIEW_MAX_WIDTH", "2048"))
 PREVIEW_QUALITY = int(os.environ.get("SVK_PREVIEW_QUALITY", "82"))
+
+# Tiling: antal scener som tilas parallellt. Lågt default för delad VM;
+# tänkt att kunna justeras i ett kommande admin-gränssnitt (skriver env/config).
+TILE_CONCURRENCY = max(1, int(os.environ.get("SVK_TILE_CONCURRENCY", "2")))
