@@ -365,7 +365,7 @@
 		if (ctx.type === "scene") {
 			const target = (ctx.hs && ctx.hs.sceneId) || sceneIds().filter(function (id) { return id !== ctx.cur; })[0];
 			fillSceneSelect(ctx.cur, target);
-			const two = ctx.hs ? (ctx.hs.twoway === true) : false;
+			const two = ctx.hs ? hasReciprocal(ctx.cur, target) : false;
 			document.querySelector('input[name="hs-dir"][value="' + (two ? "two" : "one") + '"]').checked = true;
 			setTyaw(ctx.hs && ctx.hs.targetYaw != null ? ctx.hs.targetYaw : computeTargetYaw(ctx.cur, target));
 			tyawNote(ctx.cur);
@@ -375,9 +375,18 @@
 	}
 	function closeHsModal() { hsModal.hidden = true; hsCtx = null; }
 
+	// Dubbelriktning härleds från om en länk tillbaka faktiskt finns i målscenen.
+	function hasReciprocal(fromScene, toScene) {
+		const list = (tour.scenes[toScene] && tour.scenes[toScene].hotSpots) || [];
+		return list.some(function (h) { return h.type === "scene" && h.sceneId === fromScene; });
+	}
+	function syncConfig(id) {
+		const cfg = viewer.getConfig().scenes[id];
+		if (cfg) cfg.hotSpots = cloneHs(tour.scenes[id].hotSpots);
+	}
 	function ensureReciprocal(fromScene, toScene) {
+		if (hasReciprocal(fromScene, toScene)) return;
 		const list = tour.scenes[toScene].hotSpots = tour.scenes[toScene].hotSpots || [];
-		if (list.some(function (h) { return h.type === "scene" && h.sceneId === fromScene; })) return;
 		const yaw = (positions[toScene] && positions[fromScene] && offsets[toScene] != null)
 			? round2(Geo.hotspotYaw(positions[toScene], positions[fromScene], offsets[toScene])) : 0;
 		list.push({
@@ -385,6 +394,14 @@
 			targetPitch: 0, targetYaw: computeTargetYaw(toScene, fromScene) || 0,
 			text: sceneHotspotText(fromScene), manual: true, twoway: true,
 		});
+		syncConfig(toScene);
+	}
+	function removeReciprocal(fromScene, toScene) {
+		if (!tour.scenes[toScene]) return;
+		tour.scenes[toScene].hotSpots = (tour.scenes[toScene].hotSpots || []).filter(function (h) {
+			return !(h.type === "scene" && h.sceneId === fromScene);
+		});
+		syncConfig(toScene);
 	}
 
 	function saveHsModal() {
@@ -404,9 +421,10 @@
 			hs.type = "scene"; hs.sceneId = target; hs.targetPitch = 0;
 			hs.targetYaw = parseFloat(hsTyaw.value) || 0;
 			hs.text = sceneHotspotText(target);
-			hs.twoway = document.querySelector('input[name="hs-dir"]:checked').value === "two";
 			delete hs.URL;
-			if (hs.twoway) ensureReciprocal(cur, target);
+			const two = document.querySelector('input[name="hs-dir"]:checked').value === "two";
+			hs.twoway = two;
+			if (two) ensureReciprocal(cur, target); else removeReciprocal(cur, target);
 		}
 		if (creating) tour.scenes[cur].hotSpots.push(hs);
 		closeHsModal();
@@ -433,6 +451,9 @@
 		const ty = computeTargetYaw(hsCtx.cur, hsSceneSel.value);
 		if (ty != null) setTyaw(ty);
 		tyawNote(hsCtx.cur);
+		// Spegla om det nya målet redan har en länk tillbaka.
+		const two = hasReciprocal(hsCtx.cur, hsSceneSel.value);
+		document.querySelector('input[name="hs-dir"][value="' + (two ? "two" : "one") + '"]').checked = true;
 	});
 	if (hsModal) {
 		document.getElementById("hs-save").addEventListener("click", saveHsModal);
@@ -502,7 +523,7 @@
 			const label = document.createElement("span");
 			label.className = "hotspot-label";
 			const kind = hs.type === "scene" ? "Scen" : (hs.URL ? "URL" : "Info");
-			const body = hs.type === "scene" ? sceneName(hs.sceneId) + (hs.twoway ? " (dubbel)" : "") : (hs.text || "(tom)");
+			const body = hs.type === "scene" ? sceneName(hs.sceneId) + (hasReciprocal(cur, hs.sceneId) ? " (dubbel)" : " (enkel)") : (hs.text || "(tom)");
 			label.textContent = kind + ": " + body;
 			const btns = document.createElement("div");
 			btns.className = "hotspot-btns";
