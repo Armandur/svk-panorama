@@ -540,7 +540,7 @@
 		if (grabbed || (hsModal && !hsModal.hidden)) { setNearest(null); return; }
 		const rect = panoEl.getBoundingClientRect();
 		const ccx = rect.left + rect.width / 2, ccy = rect.top + rect.height / 2;
-		let best = null, bestD = Math.min(rect.width, rect.height) * 0.18; // tröskel
+		let best = null, bestD = Math.min(rect.width, rect.height) * 0.10; // tröskel
 		currentClones().forEach(function (h) {
 			if (!h.div) return;
 			const r = h.div.getBoundingClientRect();
