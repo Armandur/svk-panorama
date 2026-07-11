@@ -10,6 +10,7 @@ Jobbet körs i en bakgrundstråd; status pollas via `job_status()`."""
 from __future__ import annotations
 
 import json
+import math
 import os
 import shutil
 import subprocess
@@ -99,32 +100,86 @@ def job_status(slug: str) -> dict[str, Any] | None:
     return _jobs.get(slug)
 
 
-# generate.py skriver ut sina faser på stdout; vi mappar dem till ungefärlig
-# progress inom en scen så baren rör sig i stället för att stå still ~20s.
-_STAGES = [
-    ("Processing input", 10, "läser bild"),
-    ("Generating cube faces", 30, "kubfaces"),
-    ("Generating tiles", 65, "genererar tiles"),
-    ("Generating fallback", 90, "fallback"),
-]
+_TILE_SIZE = 512  # generate.py:s default (vi skickar inte --tileSize)
 
 
-def _run_docker(image_fs: Path, out_dir: Path, quality: int, on_stage=None) -> dict[str, Any]:
+def _expected_tile_count(image_fs: Path) -> int | None:
+    """Förväntat antal tile-jpg som generate.py skriver, härlett ur bildmåtten
+    (replikerar generate.py:s cube/level-matte). None om inte en 2:1-full-pano."""
+    from PIL import Image
+
+    with Image.open(image_fs) as im:
+        w, h = im.size
+    if h == 0 or abs(w / h - 2) > 0.02:
+        return None  # partiell pano: tiles kan hoppas över, exakt räkning svår
+    cube = 8 * int(w / math.pi / 8)
+    ts = min(_TILE_SIZE, cube)
+    if ts <= 0:
+        return None
+    levels = int(math.ceil(math.log(cube / ts, 2))) + 1
+    if int(cube / 2 ** (levels - 2)) == ts:
+        levels -= 1
+    total, size = 0, cube
+    for _ in range(levels):
+        t = math.ceil(size / ts)
+        total += t * t
+        size = int(size / 2)
+    return total * 6  # 6 kubsidor
+
+
+def _count_in(path: Path) -> int:
+    try:
+        return sum(1 for _ in os.scandir(path))
+    except OSError:
+        return 0
+
+
+def _file_progress(out_dir: Path, expected: int | None) -> tuple[int, str]:
+    """Härled progress + fas-etikett ur filerna generate.py skrivit hittills."""
+    # Tiles ligger i numeriskt namngivna nivåmappar; fallback separat.
+    tiles = 0
+    try:
+        for entry in os.scandir(out_dir):
+            if entry.is_dir() and entry.name.isdigit():
+                tiles += _count_in(entry.path)
+    except OSError:
+        pass
+
+    if tiles == 0:
+        # Kubfas: nona skriver face0000.tif..face0005.tif en i taget.
+        faces = 0
+        try:
+            faces = sum(
+                1 for e in os.scandir(out_dir)
+                if e.name.startswith("face") and e.name.endswith(".tif")
+            )
+        except OSError:
+            pass
+        return min(30, 5 + round(faces / 6 * 25)), "kubfaces"
+
+    fallback = _count_in(out_dir / "fallback")
+    if fallback > 0:
+        return min(98, 90 + round(fallback / 6 * 8)), "fallback"
+    if expected:
+        return min(89, 30 + round(tiles / expected * 59)), "genererar tiles"
+    return 60, "genererar tiles"
+
+
+def _run_docker(image_fs: Path, out_dir: Path, quality: int, on_progress=None) -> dict[str, Any]:
     """Kör generate.py i Docker, skriv tiles till out_dir, returnera config.
-    Streamar stdout och rapporterar faser via on_stage(progress, etikett)."""
+    En watcher-tråd räknar skrivna filer och rapporterar finkornig progress via
+    on_progress(procent, etikett) medan huvudtråden läser stdout (för felsvans)."""
     out_parent = out_dir.parent
     out_parent.mkdir(parents=True, exist_ok=True)
     # Rensa ev. gamla tiles så inte stale nivåer blir kvar vid om-tiling.
     if out_dir.exists():
         shutil.rmtree(out_dir, ignore_errors=True)
 
+    expected = _expected_tile_count(image_fs)
     uid, gid = os.getuid(), os.getgid()
     cmd = [
         "docker", "run", "--rm",
         "--user", f"{uid}:{gid}",
-        # Obuffrat -> generate.py:s fas-rader når oss live (annars kommer de i
-        # en klump vid slutet och progress-baren hoppar direkt till klar).
-        "-e", "PYTHONUNBUFFERED=1",
         "-v", f"{image_fs.parent}:/in:ro",
         "-v", f"{out_parent}:/out",
         DOCKER_IMAGE,
@@ -135,17 +190,29 @@ def _run_docker(image_fs: Path, out_dir: Path, quality: int, on_stage=None) -> d
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
     )
+
+    stop = threading.Event()
+
+    def watch():
+        last = 0
+        while not stop.wait(0.4):
+            if on_progress:
+                pct, label = _file_progress(out_dir, expected)
+                if pct >= last:  # låt aldrig baren backa
+                    last = pct
+                    on_progress(pct, label)
+
+    watcher = threading.Thread(target=watch, daemon=True)
+    watcher.start()
+
     tail: list[str] = []
     for line in proc.stdout:
         tail.append(line.rstrip())
         if len(tail) > 15:
             tail.pop(0)
-        if on_stage:
-            for key, pct, label in _STAGES:
-                if key in line:
-                    on_stage(pct, label)
-                    break
     proc.wait()
+    stop.set()
+    watcher.join(timeout=1)
     if proc.returncode != 0:
         raise subprocess.CalledProcessError(proc.returncode, cmd, output="\n".join(tail))
     return json.loads((out_dir / "config.json").read_text(encoding="utf-8"))
