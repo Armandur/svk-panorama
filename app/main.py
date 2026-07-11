@@ -21,6 +21,7 @@ from app.routes import (
     previews,
     profile,
     projects,
+    public,
     scenes,
     tiling,
     uploads,
@@ -91,6 +92,7 @@ app.include_router(tiling.router)
 app.include_router(preview.router)
 app.include_router(export.router)
 app.include_router(viewer.router)
+app.include_router(public.router)
 # SIST: catch-all för råa projektfiler (ägar-koll). Måste ligga efter alla
 # specifika /projects/{slug}/...-routes så de matchar först.
 app.include_router(assets.router)

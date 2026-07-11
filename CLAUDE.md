@@ -52,7 +52,8 @@ app/
     tiling.py        # POST /tile-job, GET status, GET /tile-jobs (bulk)
     preview.py       # /preview (förhandsvisa + turinställningar) + /tour-settings
     export.py        # /export (bygg bundle), status, download
-    viewer.py        # /view (publik runtime-viewer, multires-merge)
+    viewer.py        # /view (inloggad runtime-viewer, multires-merge)
+    public.py        # /s/{token} publik delad viewer + /s/{token}/{path} assets (ingen auth)
   services/
     project_files.py # filsystemslager: slug, mappar, tour.json/map.json, previews
     tiling.py        # trådat tiling-jobb + manifest + apply_multires()
@@ -152,6 +153,20 @@ att spärra/demota sig själv). Batch: `POST /admin/users/batch` (reset_password
 disable/enable/delete). Admin-avatar-routes speglar profile.py (`_process_avatar`
 importeras därifrån). Pre-produktion: schemaändring (t.ex. `active`) = radera
 svk.db + starta om.
+
+## Publik delning (public.py)
+
+Turer kan delas oautentiserat via en oigissbar `Project.share_token`. `/s/{token}`
+renderar samma `viewer.html` som inloggade `/view` men med `asset_base` = `/s/{token}/`
+och tour-paths omskrivna dit; `/s/{token}/{path}` serverar råa filer (läs-only,
+traversal-guard). Skapa/sluta-dela på preview-steget. Nolla token -> länken dör.
+
+## Inställningar & tjänstenamn (services/settings.py)
+
+Super-admin-konfig som DB-override ovanpå env-default (`Setting`-nyckel/värde-tabell,
+in-process-cache). Tjänstenamnet (`SVK_SITE_NAME` default) exponeras som Jinja-globalen
+`site_name` (brand + titlar). Redigeras på `/admin/settings`. Mönster för framtida
+admin-override:bara inställningar (jfr `TILE_CONCURRENCY`/`BASE_URL`).
 
 ## Env-vars (config.py)
 

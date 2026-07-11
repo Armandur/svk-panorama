@@ -176,12 +176,13 @@ Luckor identifierade 2026-07-11 innan team-arbetet.
       + DB-override (`Setting`-tabell, `app/services/settings.py`) redigerbar av
       super-admin på `/admin/settings`. Exponeras som Jinja-globalen `site_name` så
       alla mallar (brand + titlar) läser samma värde. DB-värdet vinner över env.
-- [ ] **Publik delningslänk för en tur.** `/view` kräver inloggning idag; ingen
-      oautentiserad väg att visa en tur för allmänheten in-app (bara bundle-export).
-      Lägg `Project.share_token` (oigissbar), publika routes `/s/{token}` (viewer utan
-      auth) + `/s/{token}/{path}` (läs-only assets, traversal-guard), tour-paths
-      omskrivna `/projects/{slug}/` -> `/s/{token}/`. Dela/sluta-dela-toggle på
-      tursidan. Bundle-export är fortsatt "publicera för self-host".
+- [x] **Publik delningslänk för en tur KLAR (2026-07-11).** `Project.share_token`
+      (oigissbar, `secrets.token_urlsafe`). Publika routes (`app/routes/public.py`):
+      `/s/{token}` renderar vieweren utan auth, `/s/{token}/{path}` serverar
+      läs-only assets med traversal-guard. Tour-paths skrivs om
+      `/projects/{slug}/` -> `/s/{token}/` (viewer.html tar `asset_base`). Skapa/
+      sluta-dela på preview-steget (`/projects/{slug}/share` + `/unshare`); länken dör
+      direkt vid unshare. Bundle-export fortsatt "publicera för self-host".
 
 ## Fas 4 - Team & egna domäner (multi-tenancy nivå 2)
 

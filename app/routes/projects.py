@@ -1,6 +1,8 @@
 """Projektlista, skapa-formulär och hur-man-gör-guide."""
 from __future__ import annotations
 
+import secrets
+
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
@@ -127,6 +129,37 @@ async def delete_project(
     # Admin som raderar en annans tur -> tillbaka till den användarens turlista.
     dest = f"/admin/users/{owner_id}/projects" if acted_on_other else "/"
     return RedirectResponse(url=dest, status_code=303)
+
+
+@router.post("/projects/{slug}/share")
+async def share_project(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+    project: Project = Depends(get_project_or_404),  # gate: ägare eller admin
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Aktivera publik delning: skapa en oigissbar token om ingen finns."""
+    if not project.share_token:
+        project.share_token = secrets.token_urlsafe(16)
+        db.commit()
+    return RedirectResponse(url=f"/projects/{slug}/preview", status_code=303)
+
+
+@router.post("/projects/{slug}/unshare")
+async def unshare_project(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+    project: Project = Depends(get_project_or_404),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Sluta dela: nolla token -> gamla /s/{token}-länken slutar fungera direkt."""
+    project.share_token = None
+    db.commit()
+    return RedirectResponse(url=f"/projects/{slug}/preview", status_code=303)
 
 
 @router.post("/projects/{slug}/rename")

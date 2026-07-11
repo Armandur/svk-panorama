@@ -30,5 +30,6 @@ def view_tour(
             "tour": tour,
             "map_data": read_map(slug),
             "has_map_image": map_image_path(slug).exists(),
+            "asset_base": f"/projects/{slug}/",
         },
     )

@@ -16,6 +16,7 @@ _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 def _hex(value: str, fallback: str) -> str:
     return value if _HEX_RE.match(value or "") else fallback
 
+from app import config
 from app.database import Project
 from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
 from app.services.project_files import _natural_key, map_image_path, read_map, read_tour, tour_lock, write_tour
@@ -50,6 +51,10 @@ def preview_view(
         apply_multires(tour, manifest)
     scene_ids = sorted(tour.get("scenes", {}).keys(), key=_natural_key)
     token = new_csrf_token()
+    share_url = None
+    if project.share_token:
+        origin = config.BASE_URL or str(request.base_url).rstrip("/")
+        share_url = f"{origin}/s/{project.share_token}"
     response = templates.TemplateResponse(
         request,
         "preview.html",
@@ -60,6 +65,7 @@ def preview_view(
             "has_map_image": map_image_path(slug).exists(),
             "scene_ids": scene_ids,
             "csrf_token": token,
+            "share_url": share_url,
         },
     )
     set_csrf_cookie(response, token)

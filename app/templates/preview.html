@@ -105,6 +105,27 @@
 			<a id="export-download" href="/projects/{{ project.slug }}/export/download" role="button" class="secondary" hidden download>Ladda ner zip</a>
 		</div>
 	</article>
+
+	<article>
+		<h3>Publik delningslänk</h3>
+		<p class="hint">Ge en oigissbar länk som visar turen utan inloggning. Bra för att skicka en förhandsvisning. Sluta dela när som helst - då slutar länken fungera.</p>
+		{% if share_url %}
+		<label for="share-url">Länk</label>
+		<input type="text" id="share-url" class="invite-link" readonly value="{{ share_url }}" onclick="this.select()">
+		<div class="save-row">
+			<a href="{{ share_url }}" target="_blank" rel="noopener" role="button" class="secondary">Öppna</a>
+			<form method="post" action="/projects/{{ project.slug }}/unshare">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+				<button type="submit" class="secondary outline">Sluta dela</button>
+			</form>
+		</div>
+		{% else %}
+		<form method="post" action="/projects/{{ project.slug }}/share">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<button type="submit" class="secondary">Skapa delningslänk</button>
+		</form>
+		{% endif %}
+	</article>
 </aside>
 
 <div class="panorama-wrap">
