@@ -253,6 +253,14 @@ Faser (minst till störst):
       relativiseras i bundle-exporten och nås via publika /s-routen. Enkel
       media-hantering i editorn (ladda upp -> få markdown-snutt att klistra in).
 
+- [ ] **Upplösningsväljare i preview-steget (parity med scenvyn).** Preview-steget
+      (`/preview`) defaultar redan till multires (`apply_multires` i `preview.py`,
+      full equirekt som fallback för otilade scener) - så defaulten är rätt. Men det
+      saknar upplösningsväljaren (preview/multires/full) som scenvyn har (`#res-select`
+      i `scene.js`). Lägg en motsvarande väljare i preview.html + `tour-preview.js`
+      (bädda in tiles-manifestet, bygg om scenen vid val), så man kan förhandsvisa i
+      olika upplösningar.
+
 - [ ] **Fler typsnitt i temat (särskilt DM Sans).** Idag är tema-typsnitten
       system-font-stackar (sans/serif/mono/humanist - inga font-filer, självbärande
       bundle). Lägg till fler val, framförallt **DM Sans**. OBS avvägning: riktiga
