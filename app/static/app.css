@@ -16,6 +16,19 @@
 /* Live-preview av hotspot-markdown i editorn. */
 .hs-text-preview { margin-top: 0.5rem; padding: 0.4rem 0.7rem; border: 1px dashed var(--pico-muted-border-color); border-radius: 0.3rem; max-height: 12rem; font-size: 0.9rem; }
 
+/* Fullskärms-ark för expanderbara hotspots ("läs mer"). Delas av editor + runtime
+   (motsvarande regler finns i viewer.css för bundle/publik vy). */
+.hs-sheet { position: fixed; inset: 0; z-index: 5000; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+.hs-sheet[hidden] { display: none; }
+.hs-sheet-inner { position: relative; background: #fff; color: #1c2128; max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 0.5rem; padding: 2.2rem 2rem 1.6rem; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4); }
+.hs-sheet-close { position: absolute; top: 0.5rem; right: 0.7rem; background: none; border: none; font-size: 1.9rem; line-height: 1; cursor: pointer; color: inherit; padding: 0.1rem 0.4rem; }
+@media (max-width: 640px) {
+	.hs-sheet { padding: 0; }
+	.hs-sheet-inner { max-width: none; max-height: 100vh; height: 100%; border-radius: 0; }
+}
+/* Affordans: expanderbara hotspots får ett litet "+"-märke. */
+.pnlm-hotspot.hs-expandable::after { content: "+"; position: absolute; top: -3px; right: -3px; width: 14px; height: 14px; line-height: 13px; text-align: center; font-size: 12px; font-weight: 700; color: #fff; background: var(--current-dot-color, #8b0000); border-radius: 50%; box-shadow: 0 0 2px rgba(0, 0, 0, 0.6); }
+
 /* Markdown i info-hotspot-tooltips. Bredare + normal radbrytning så korta ord
    inte bryts (pannellums default gav t.ex. "Test123" mellan 2 och 3). */
 .pnlm-tooltip span.hs-md {

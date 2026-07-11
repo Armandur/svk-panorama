@@ -248,10 +248,13 @@ Faser (minst till störst):
       live-preview. marked+DOMPurify+markdown.js laddas på scen/preview/viewer och
       inkluderas i bundlen (bundle.py). Gäller även publika /s-vyn. (EasyMDE i själva
       hotspot-modalen valdes bort - textarea+preview räcker och är lättare.)
-- [ ] **3. Expanderbara hotspots (läs mer).** `teaser`/`body`/`expandable` på
-      hotspot. Fullskärms-ark med renderad body. Affordans-ikon. Hover=teaser/
-      klick=öppna på dator, tap=öppna på mobil. Editor: toggle + body-EasyMDE +
-      förhandsvisning.
+- [x] **3. Expanderbara hotspots (läs mer) KLAR (2026-07-12).** Info-hotspots får
+      `expandable` + `body` (markdown). `text` = teaser i tooltipen, klick öppnar ett
+      fullskärms-ark (`markdown.js: openHsSheet`, dimmat panorama, stängs X/backdrop/
+      Escape, responsivt) med renderad body. Affordans: "+"-märke via `cssClass`
+      (`pnlm-hotspot pnlm-info hs-expandable`) + `clickHandlerFunc`. Editor: kryssruta
+      "Expanderbar" (bara info-typ) + body-textarea med live-preview; save persisterar.
+      Fungerar i scen/preview/runtime/bundle/publik /s.
 - [ ] **4. Bilder i hotspot-body.** Ladda upp bilder i projektet (media-/
       attachments-mapp per tur), referera via markdown-bildsyntax. Måste inkluderas +
       relativiseras i bundle-exporten och nås via publika /s-routen. Enkel

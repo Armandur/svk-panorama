@@ -11,7 +11,11 @@ för faser och `WORKFLOW.md` för fotografens arbetsgång.
 - **Backend:** Python 3.12 + FastAPI (uvicorn), SQLAlchemy 2 + SQLite, Jinja2.
 - **Frontend:** vanilla JS + HTML + CSS, ingen bundler. Pico CSS (`static/vendor/`)
   + `tokens.css`. Filer laddas via `<script>`-taggar.
-- **Panorama:** Pannellum (vendored i `app/static/vendor/`, aldrig CDN).
+- **Panorama:** Pannellum (vendored i `app/static/vendor/`, aldrig CDN). **Slå upp
+  API/exempel i pannellums dokumentation** (https://pannellum.org/documentation/overview/)
+  när du jobbar med hotspots, tooltips, config m.m. - t.ex. `createTooltipFunc`,
+  `clickHandlerFunc`, `cssClass` (OBS: `cssClass` ERSÄTTER default-klasserna, ta med
+  `pnlm-hotspot pnlm-info` själv). Gissa inte på pannellum-beteende, kolla docs.
 - **Tiling:** pannellums `generate.py` via Docker-imagen `pannellum-multires`.
 - Beroenden i `requirements.txt`. Körs via `.venv` (uv).
 

@@ -434,6 +434,21 @@
 		}
 	}
 	if (hsText) hsText.addEventListener("input", updateHsPreview);
+	// Expanderbar ("läs mer") - teaser i tooltip, body i fullskärms-ark.
+	const hsExpandable = document.getElementById("hs-expandable");
+	const hsExpandableLabel = document.getElementById("hs-expandable-label");
+	const hsBody = document.getElementById("hs-body");
+	const hsBodyWrap = document.getElementById("hs-body-wrap");
+	const hsBodyPreview = document.getElementById("hs-body-preview");
+	function updateHsBodyPreview() {
+		if (!hsBodyPreview) return;
+		const v = hsBody.value.trim();
+		if (v && window.renderMarkdown) { hsBodyPreview.innerHTML = renderMarkdown(v); hsBodyPreview.hidden = false; }
+		else hsBodyPreview.hidden = true;
+	}
+	function syncBodyWrap() { if (hsBodyWrap) hsBodyWrap.hidden = !(hsExpandable && hsExpandable.checked); }
+	if (hsExpandable) hsExpandable.addEventListener("change", function () { syncBodyWrap(); updateHsBodyPreview(); });
+	if (hsBody) hsBody.addEventListener("input", updateHsBodyPreview);
 	const hsUrl = document.getElementById("hs-url");
 	const hsSceneSel = document.getElementById("hs-scene");
 	const hsTyaw = document.getElementById("hs-tyaw");
@@ -464,6 +479,12 @@
 		hsFieldSceneDir.hidden = ctx.type !== "scene";
 		hsText.value = (ctx.hs && ctx.hs.text != null) ? ctx.hs.text : "";
 		updateHsPreview();
+		// Expanderbar bara för rena info-hotspots (ej URL/scen).
+		if (hsExpandableLabel) hsExpandableLabel.hidden = ctx.type !== "info";
+		if (hsExpandable) hsExpandable.checked = ctx.type === "info" && !!(ctx.hs && ctx.hs.expandable);
+		if (hsBody) hsBody.value = (ctx.hs && ctx.hs.body) || "";
+		syncBodyWrap();
+		updateHsBodyPreview();
 		hsUrl.value = (ctx.hs && ctx.hs.URL) || "";
 		if (ctx.type === "scene") {
 			const target = (ctx.hs && ctx.hs.sceneId) || sceneIds().filter(function (id) { return id !== ctx.cur; })[0];
@@ -542,8 +563,12 @@
 		if (hsCtx.type === "url") {
 			if (!hsUrl.value) { alert("URL krävs."); return; }
 			hs.type = "info"; hs.text = hsText.value; hs.URL = hsUrl.value;
+			delete hs.expandable; delete hs.body;
 		} else if (hsCtx.type === "info") {
 			hs.type = "info"; hs.text = hsText.value; delete hs.URL;
+			if (hsExpandable && hsExpandable.checked && hsBody.value.trim()) {
+				hs.expandable = true; hs.body = hsBody.value;
+			} else { delete hs.expandable; delete hs.body; }
 		} else { // scene
 			const target = hsSceneSel.value;
 			if (!target) { alert("Välj en målscen."); return; }

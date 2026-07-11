@@ -115,6 +115,12 @@
 			<textarea id="hs-text" maxlength="2000" rows="4"></textarea>
 			<p class="hint">Markdown stöds: <code>**fet**</code>, <code>*kursiv*</code>, <code># rubrik</code>, <code>- lista</code>, <code>[länk](https://...)</code>.</p>
 			<div id="hs-text-preview" class="markdown-body hs-text-preview" hidden></div>
+			<label class="fullres-label" id="hs-expandable-label"><input type="checkbox" id="hs-expandable"> Expanderbar - texten ovan blir en teaser, klick öppnar en större ruta</label>
+			<div id="hs-body-wrap" hidden>
+				<label for="hs-body">Innehåll i läs mer-rutan (markdown)</label>
+				<textarea id="hs-body" maxlength="20000" rows="6"></textarea>
+				<div id="hs-body-preview" class="markdown-body hs-text-preview" hidden></div>
+			</div>
 		</div>
 		<div id="hs-field-url">
 			<label for="hs-url">URL</label>

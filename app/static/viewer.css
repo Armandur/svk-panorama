@@ -38,6 +38,29 @@ html, body {
 .hs-md img { max-width: 100%; height: auto; border-radius: 3px; }
 .hs-md code { background: rgba(255, 255, 255, 0.18); padding: 0 0.3em; border-radius: 3px; }
 
+/* Fullskärms-ark för expanderbara hotspots ("läs mer"). */
+.hs-sheet { position: fixed; inset: 0; z-index: 5000; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+.hs-sheet[hidden] { display: none; }
+.hs-sheet-inner { position: relative; background: #fff; color: #1c2128; max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 0.5rem; padding: 2.2rem 2rem 1.6rem; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4); }
+.hs-sheet-close { position: absolute; top: 0.5rem; right: 0.7rem; background: none; border: none; font-size: 1.9rem; line-height: 1; cursor: pointer; color: inherit; padding: 0.1rem 0.4rem; }
+@media (max-width: 640px) {
+	.hs-sheet { padding: 0; }
+	.hs-sheet-inner { max-width: none; max-height: 100vh; height: 100%; border-radius: 0; }
+}
+.pnlm-hotspot.hs-expandable::after { content: "+"; position: absolute; top: -3px; right: -3px; width: 14px; height: 14px; line-height: 13px; text-align: center; font-size: 12px; font-weight: 700; color: #fff; background: var(--current-dot-color, #8b0000); border-radius: 50%; box-shadow: 0 0 2px rgba(0, 0, 0, 0.6); }
+
+/* Renderad markdown i arket. */
+.hs-sheet-body { line-height: 1.6; }
+.hs-sheet-body h1, .hs-sheet-body h2, .hs-sheet-body h3 { margin: 1rem 0 0.4rem; line-height: 1.25; }
+.hs-sheet-body h1 { font-size: 1.5rem; }
+.hs-sheet-body h2 { font-size: 1.25rem; }
+.hs-sheet-body p, .hs-sheet-body ul, .hs-sheet-body ol { margin: 0.6rem 0; }
+.hs-sheet-body ul, .hs-sheet-body ol { padding-left: 1.4rem; }
+.hs-sheet-body img { max-width: 100%; height: auto; border-radius: 0.3rem; }
+.hs-sheet-body a { color: #0a58ca; }
+.hs-sheet-body code { background: #eef0f2; padding: 0.1em 0.35em; border-radius: 0.25rem; }
+.hs-sheet-body pre { background: #eef0f2; padding: 0.7rem; border-radius: 0.35rem; overflow-x: auto; }
+
 #panorama {
 	position: fixed;
 	inset: 0;
