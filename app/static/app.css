@@ -515,13 +515,9 @@ tr[data-preview-scene] { cursor: help; }
 	z-index: 2000; overflow: hidden;
 }
 .account-flyout[hidden] { display: none; }
-.flyout-top {
-	display: flex; align-items: center; justify-content: space-between;
-	padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--pico-muted-border-color);
-	font-size: 0.85rem;
-}
+.flyout-actions { display: flex; justify-content: flex-end; padding: 0.5rem 0.9rem 0; }
 .linklike { background: none; border: 0; margin: 0; padding: 0; width: auto; color: var(--pico-primary); cursor: pointer; font-size: 0.85rem; }
-.flyout-user { display: flex; gap: 1rem; align-items: center; padding: 1rem 0.9rem; }
+.flyout-user { display: flex; gap: 1rem; align-items: center; padding: 0.4rem 0.9rem 1rem; }
 .flyout-meta { min-width: 0; }
 .flyout-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .flyout-email { color: var(--pico-muted-color); font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
