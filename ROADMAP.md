@@ -93,7 +93,26 @@ Kvarvarande arbete är i praktiken auth + multi-tenancy.
       crop i `account.js`), `/admin` sidebar-vy, admin ser bara egna turer på index,
       andras via Användare -> `/admin/users/{id}/projects`.
 
-- [ ] **Skiva 3: admin-hantering av användare + batch-verktyg.** BÖRJA HÄR efter
+- [x] **Skiva 3 KLAR (2026-07-11): admin-hantering av användare + batch-verktyg.**
+      **A. Användardetaljsida** `/admin/users/{id}` (`admin_user_detail.html`): admin
+      sätter namn, lösenord (override, inget nuvarande), byter/tar bort avatar och
+      togglar active/is_admin - allt på användarens vägnar. Avatar-crop generaliserad:
+      `_avatar_modal.html` parameteriserad (data-post-url/data-delete-url + klasser i
+      stället för id:n), crop-logiken bruten ut ur `account.js` till factoryn
+      `static/avatar-crop.js` (`window.initAvatarCrop({modal, openBtn, onOpen})`);
+      `account.js` (egen profil) och `admin-user.js` (target-user) anropar den. Admin-
+      avatar-routes speglar profile.py (`_process_avatar` importeras därifrån).
+      **B. `active`-bool på User** - spärrat konto nekas i `auth._user_from_session`
+      (session ogiltig) + login i `routes/auth.py`. Self-guard: kan inte spärra/
+      demota sig själv.
+      **C. Batch** på `/admin/users`: kryssrutor (`admin-users.js`) + åtgärdsrad ->
+      `POST /admin/users/batch` (reset_password/disable/enable/delete), self- och
+      ägar-guards, summeringsmeddelande. Listan länkar nu e-post till detaljsidan,
+      visar Aktiv/Spärrad/Inbjuden-status.
+      Promota/degradera admin + "skicka om inbjudan" (invite-länk på detaljsidan)
+      ingår. Kvar som framtida förslag: överför ägarskap, last_login, sök/filtrera.
+
+- [ ] ~~**Skiva 3: admin-hantering av användare + batch-verktyg.**~~ BÖRJA HÄR efter
       en clear (läs först minnet `svk-panorama-project.md` + denna fil; starta
       testinstans på ledig port `svc port`, login admin/admin).
       **A. Användardetaljsida** (utöka `/admin/users/{id}/projects` ELLER ny
@@ -121,6 +140,16 @@ Kvarvarande arbete är i praktiken auth + multi-tenancy.
       användare som äger turer - delete-guarden blockerar idag); `last_login`-kolumn
       + kolumn i listan för aktivitetsöversikt; sök/filtrera användare när listan
       växer. Alla gated med `require_admin`, CSRF på POST.
+
+- [ ] **Ta bort enskild tur.** Idag finns ingen funktion för användare/admin att
+      radera en hel tur - bara enskilda scener på uppladdningssidan. Behövs: en
+      radera-knapp (huvudmenyn per tur och/eller projektsidan) som tar bort DB-raden
+      (`Project`) + projektmappen på disk (`projects/<slug>/` med bilder/tiles/
+      export). Endpoint i `app/routes/projects.py`, gated med `get_project_or_404`
+      (ägare eller admin) + CSRF, bekräftelsedialog. Admin ska kunna radera andras
+      turer (nås via Användare -> turer). Städa även ev. pågående tiling/export-jobb
+      för slugen. Löser dessutom delvis "överför/radera turer innan man tar bort en
+      ägande användare" (se admin-verktygsförslagen ovan).
 
 - [ ] **Vid produktionssättning:** återinför Alembic (baslinje ur då-aktuella
       modeller), byt admin/admin mot riktiga creds, ev. Postgres via docker-compose.
