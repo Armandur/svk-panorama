@@ -39,3 +39,14 @@ def tile_job_status(
     project: Project = Depends(get_project_or_404),
 ) -> dict[str, Any]:
     return _state(slug)
+
+
+@router.get("/tile-jobs")
+def tile_jobs() -> dict[str, Any]:
+    """Bulk-status för alla in-memory-jobb (billig, för live-polling på listan
+    och hemsidan). Turer utan jobb i minnet renderas server-side vid sidladdning."""
+    jobs = tiling.all_jobs()
+    return {
+        slug: {"status": j["status"], "done": j["done"], "total": j["total"]}
+        for slug, j in jobs.items()
+    }

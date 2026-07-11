@@ -14,15 +14,21 @@
 			<tr>
 				<th scope="col">Namn</th>
 				<th scope="col">Slug</th>
+				<th scope="col">Tiles</th>
 				<th scope="col">Skapad</th>
 				<th scope="col"></th>
 			</tr>
 		</thead>
 		<tbody>
 			{% for p in projects %}
+			{% set st = tile_states[p.slug] %}
 			<tr>
 				<td>{{ p.name }}</td>
 				<td><code>{{ p.slug }}</code></td>
+				<td>
+					<span class="tile-badge tile-{{ st.status }}" data-slug="{{ p.slug }}"
+						{% if st.status == 'running' %}aria-busy="true"{% endif %}>{%- if st.status == 'running' -%}Genererar tiles {{ st.done }}/{{ st.total }}{%- elif st.status == 'done' -%}Tiles klara{%- elif st.status == 'partial' -%}{{ st.tiled }}/{{ st.tileable }} tilade{%- elif st.status == 'error' -%}Tiling-fel{%- endif -%}</span>
+				</td>
 				<td>{{ p.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
 				<td><a href="/projects/{{ p.slug }}" role="button" class="secondary">Öppna</a></td>
 			</tr>
@@ -53,4 +59,7 @@
 	</details>
 </section>
 
+{% endblock %}
+{% block scripts %}
+<script src="/static/index.js"></script>
 {% endblock %}

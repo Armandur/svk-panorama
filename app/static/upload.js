@@ -155,95 +155,16 @@
 		});
 	}
 
-	// En rad med egen progress-bar per scen som tilas.
-	var tileRows = {};
-	function buildTileRows(scenes) {
-		fileListEl.textContent = "";
-		tileRows = {};
-		scenes.forEach(function (s) {
-			var li = document.createElement("li");
-			li.className = "ufile";
-			var name = document.createElement("span");
-			name.className = "ufile-name";
-			name.textContent = "Scen " + s.id;
-			var bar = document.createElement("progress");
-			bar.className = "ufile-bar";
-			bar.max = 100;
-			bar.value = s.progress || 0;
-			var status = document.createElement("span");
-			status.className = "ufile-status";
-			status.textContent = "väntar";
-			li.appendChild(name);
-			li.appendChild(bar);
-			li.appendChild(status);
-			fileListEl.appendChild(li);
-			tileRows[s.id] = { bar: bar, status: status };
-		});
-	}
-
-	function updateTileRows(scenes) {
-		scenes.forEach(function (s) {
-			var row = tileRows[s.id];
-			if (!row) return;
-			if (s.status === "done") {
-				row.bar.value = 100;
-				setFileStatus(row.status, "done", "klar");
-			} else if (s.status === "error") {
-				row.bar.value = 0;
-				setFileStatus(row.status, "error", "fel");
-			} else if (s.status === "running") {
-				row.bar.value = s.progress || 0;
-				setFileStatus(row.status, "uploading", s.stage || "genererar");
-			} else {
-				row.bar.value = 0;
-				setFileStatus(row.status, "pending", "väntar");
-			}
-		});
-	}
-
-	// Generera multires-tiles för nyuppladdade scener (async-jobb + polling).
-	// Icke-blockerande fel: turen fungerar equirektangulärt även utan tiles.
-	function generateTiles() {
-		return new Promise(function (resolve) {
-			setTitle("Genererar tiles...");
-			setProgress(0);
-			setDetail("Startar...");
-			fetch("/projects/" + encodeURIComponent(slug) + "/tile-job", {
-				method: "POST",
-				headers: { "X-CSRF-Token": window.getCsrfToken ? getCsrfToken() : "" },
-			})
-				.then(function (r) { return r.ok ? r.json() : Promise.reject(new Error("start " + r.status)); })
-				.then(function (state) {
-					if (!state.job || !state.job.total) { resolve(); return; }
-					buildTileRows(state.job.scenes || []);
-					pollTiles(resolve);
-				})
-				.catch(function () {
-					if (window.showToast) showToast("Kunde inte starta tiling (turen fungerar ändå)", "error");
-					resolve();
-				});
-		});
-	}
-
-	function pollTiles(resolve) {
-		fetch("/projects/" + encodeURIComponent(slug) + "/tile-job/status")
-			.then(function (r) { return r.json(); })
-			.then(function (state) {
-				var job = state.job;
-				if (job && job.scenes) updateTileRows(job.scenes);
-				if (job && job.status === "running") {
-					var total = job.total || 1;
-					setProgress(Math.round((job.done / total) * 100));
-					setDetail("Genererar tiles " + job.done + "/" + total);
-					setTimeout(function () { pollTiles(resolve); }, 1000);
-					return;
-				}
-				if (job && job.status === "error" && window.showToast) {
-					showToast("Tiling misslyckades delvis (turen fungerar ändå)", "error");
-				}
-				resolve();
-			})
-			.catch(function () { resolve(); });
+	// Starta tiling i bakgrunden (blockerar inte modalen). Själva progressen
+	// spåras på sidan/huvudmenyn efter reload, inte här. Vi väntar bara in att
+	// jobbet registrerats så statusen syns direkt efter omladdning.
+	function startTilingBackground() {
+		setTitle("Startar bildoptimering...");
+		setProgress(null);
+		return fetch("/projects/" + encodeURIComponent(slug) + "/tile-job", {
+			method: "POST",
+			headers: { "X-CSRF-Token": window.getCsrfToken ? getCsrfToken() : "" },
+		}).catch(function () { /* icke-kritiskt - turen fungerar equirektangulärt */ });
 	}
 
 	function handleImages(form) {
@@ -298,9 +219,12 @@
 		uploadAll()
 			.then(function () {
 				setProgress(100);
-				// Previews och tiles körs parallellt; previews är tysta (tiling
-				// äger UI:t med per-scen-rader).
-				return Promise.all([pregeneratePreviews(succeeded, true), generateTiles()]);
+				return pregeneratePreviews(succeeded, false);
+			})
+			.then(function () {
+				// Tiling startas i bakgrunden och spåras på sidan/huvudmenyn -
+				// modalen blockerar inte längre på den.
+				if (succeeded.length) return startTilingBackground();
 			})
 			.then(function () {
 				if (failed > 0) {

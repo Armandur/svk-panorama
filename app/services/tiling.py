@@ -100,6 +100,34 @@ def job_status(slug: str) -> dict[str, Any] | None:
     return _jobs.get(slug)
 
 
+def all_jobs() -> dict[str, dict[str, Any]]:
+    """Alla in-memory-jobb (körande + nyligen klara) för bulk-polling."""
+    return _jobs
+
+
+def project_tile_state(slug: str) -> dict[str, Any]:
+    """Sammanfattad tiling-status för en tur, för badge på lista/hemsida.
+    status: running | done | error | partial | none."""
+    job = _jobs.get(slug)
+    tiled = len(read_manifest(slug))
+    tileable = len(tileable_scenes(slug))
+    if job:
+        return {
+            "status": job["status"],
+            "done": job["done"],
+            "total": job["total"],
+            "tiled": tiled,
+            "tileable": tileable,
+        }
+    if tileable == 0:
+        status = "none"
+    elif tiled >= tileable:
+        status = "done"
+    else:
+        status = "partial"
+    return {"status": status, "done": tiled, "total": tileable, "tiled": tiled, "tileable": tileable}
+
+
 _TILE_SIZE = 512  # generate.py:s default (vi skickar inte --tileSize)
 
 

@@ -368,6 +368,14 @@ tr[data-preview-scene] { cursor: help; }
 .ufile-uploading { color: var(--pico-primary); }
 .ufile-done { color: var(--svk-ok); }
 .ufile-error { color: var(--svk-danger); }
+
+/* Tiling-status-badge (projektlista + hemsida) */
+.tile-badge { font-size: 0.8rem; white-space: nowrap; }
+.tile-none { display: none; }
+.tile-running { color: var(--pico-primary); }
+.tile-done { color: var(--svk-ok); }
+.tile-partial { color: var(--pico-muted-color); }
+.tile-error { color: var(--svk-danger); }
 #upload-close { margin-top: 0.75rem; }
 #upload-close[hidden] { display: none; }
 

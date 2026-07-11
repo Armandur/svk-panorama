@@ -25,6 +25,7 @@ from app.services.project_files import (
     write_map,
     write_tour,
 )
+from app.services.tiling import project_tile_state
 
 router = APIRouter()
 
@@ -38,12 +39,14 @@ def _read_guide_text() -> str:
 @router.get("/", response_class=HTMLResponse)
 def index(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
     projects = db.query(Project).order_by(Project.created_at.desc()).all()
+    tile_states = {p.slug: project_tile_state(p.slug) for p in projects}
     token = new_csrf_token()
     response = templates.TemplateResponse(
         request,
         "index.html",
         {
             "projects": projects,
+            "tile_states": tile_states,
             "csrf_token": token,
             "guide_text": _read_guide_text(),
         },

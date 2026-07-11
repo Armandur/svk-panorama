@@ -74,6 +74,18 @@
 	{% endif %}
 </section>
 
+<section id="tile-section" hidden>
+	<article>
+		<div class="section-head">
+			<h2>Bildoptimering (tiles)</h2>
+			<span id="tile-overall" class="tile-badge"></span>
+		</div>
+		<p class="hint">Multires-tiles gör att publicerade turer laddar snabbt. Genereras automatiskt efter uppladdning och körs i bakgrunden - du kan lämna sidan; statusen syns även på huvudmenyn. Kör om efter att du bytt bilder.</p>
+		<ul id="tile-rows" class="upload-filelist"></ul>
+		<button id="tile-generate" type="button" class="secondary" hidden>Generera tiles</button>
+	</article>
+</section>
+
 <section class="step-nav">
 	{% if has_map_image and scenes %}
 	<a href="/projects/{{ project.slug }}/plan" role="button">Nästa: placera på kartan -&gt;</a>
@@ -101,4 +113,5 @@
 <script src="/static/preview.js"></script>
 <script src="/static/settings.js"></script>
 <script src="/static/upload.js"></script>
+<script src="/static/tile-status.js"></script>
 {% endblock %}
