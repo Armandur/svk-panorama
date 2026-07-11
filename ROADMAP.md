@@ -82,8 +82,9 @@ Kvarvarande arbete är i praktiken auth + multi-tenancy.
 
 - [x] **Skiva 1: auth + projekt-ägarskap** (commits 5f86954, 9eed826). Sluten
       inbjudan, bcrypt-login, signerad session, `User` + `owner_id`, ägar-gate.
-- [ ] **Skiva 2: admin-UI + inbjudningsflöde** - lista/skapa användare, generera
-      inbjudningslänk (signerad token) så inbjudna sätter eget lösenord.
+- [x] **Skiva 2: admin-UI + inbjudningsflöde** (commit 76f21e7). /admin/users:
+      lista/skapa/ta bort användare, signerad inbjudningslänk (7 dygn) -> den
+      inbjudne sätter eget lösenord (/accept-invite) + auto-login.
 - [ ] Gata `/projects`-static-mounten (råfiler nås idag utan ägar-koll - låg risk
       på sluten värd, men bör stängas för äkta isolering).
 - [ ] **Vid produktionssättning:** återinför Alembic (baslinje ur då-aktuella
