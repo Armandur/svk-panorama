@@ -472,7 +472,7 @@ tr[data-preview-scene] { cursor: help; }
 .login-error { background: var(--svk-danger); color: #fff; padding: 0.5rem 0.7rem; border-radius: 0.3rem; font-size: 0.9rem; }
 .logout-form { margin: 0; }
 /* Stegnavigering: hamburgermeny + kompakta pil-/åtgärdsknappar. */
-.step-menu { position: relative; display: inline-block; }
+.step-menu { position: relative; display: inline-flex; margin: 0; }
 .step-menu-btn, .step-arrow, .step-action {
 	margin: 0; flex: none; display: inline-flex; align-items: center; justify-content: center;
 	min-width: 2.4rem; height: 2.4rem; padding: 0 0.7rem; font-size: 1.05rem; line-height: 1;
@@ -487,6 +487,9 @@ details.step-menu > summary::-webkit-details-marker { display: none; }
 details.step-menu > summary::marker { content: none; }
 /* Pico lägger en chevron via summary::after - göm den (vi vill bara hamburgern). */
 details.step-menu > summary::after { display: none; }
+/* Pico ger summary bottenmarginal i [open] (accordion) -> nolla, annars trycks
+   innehållet ner 16px när menyn fälls ut. Menyn är absolut och ska bara overlaya. */
+.step-menu[open] > .step-menu-btn { margin-bottom: 0; }
 .step-menu[open] > .step-menu-btn { background: var(--pico-secondary-hover-background); }
 .step-menu-list { display: none; position: absolute; top: calc(100% + 0.3rem); left: 0; z-index: 3600; min-width: 13rem; flex-direction: column; padding: 0.3rem; background: var(--pico-background-color); border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius); box-shadow: 0 6px 20px rgba(0,0,0,0.18); }
 .step-menu[open] > .step-menu-list { display: flex; }
