@@ -150,14 +150,14 @@ Kvarvarande arbete är i praktiken auth + multi-tenancy.
       tur -> tillbaka till den användarens turlista. Bekräftelsedialog. Löser delvis
       "radera/överför turer innan man tar bort en ägande användare".
 
-- [ ] **Redigera slug.** Idag sätts slug en gång vid skapande (slugify av namnet)
-      och är global nyckel för URL, projektmapp och jobb-dictar. Behöver kunna ändras:
-      fält på projekt-/inställningssidan -> `POST /projects/{slug}/rename-slug`.
-      Validera (slugify + unik), byt namn på mappen (`os.rename` inom PROJECTS_DIR,
-      traversal-guard), uppdatera DB-raden, glöm jobb på gamla slugen (`forget_job`
-      i tiling+bundle). Vägra eller varna om tiling pågår. OBS: bokmärkta /view-länkar
-      och redan byggda bundlar bryts (som en filflytt) - visa varning. Blir
-      team-scopad unikhet när Fas 4 landar (se nedan).
+- [x] **Redigera slug KLAR (2026-07-11).** `POST /projects/{slug}/rename-slug`
+      (`app/routes/projects.py`), gated med `get_project_or_404` + CSRF. Slugifierar
+      ny slug, vägrar upptagen slug och pågående tiling/export (`_job_running`), byter
+      mappnamn (`rename_project_files`, traversal-guard + vägrar om målet finns),
+      uppdaterar DB-raden och glömmer jobb på gamla slugen (`forget_job`). Diskret
+      utfällbar "Adress (slug)"-sektion på uppladdningssidan med varning om att
+      bokmärkta /view-länkar och byggda bundlar bryts. Blir team-scopad unikhet när
+      Fas 4 landar.
 
 ## Fas 4 - Team & egna domäner (multi-tenancy nivå 2)
 

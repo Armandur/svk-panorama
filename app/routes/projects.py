@@ -17,6 +17,7 @@ from app.deps import (
     verify_csrf_form,
 )
 from app.services.bundle import forget_job as forget_export_job
+from app.services.bundle import job_status as export_job_status
 from app.services.project_files import (
     default_map,
     default_tour,
@@ -24,11 +25,13 @@ from app.services.project_files import (
     ensure_project_structure,
     list_scenes,
     map_image_path,
+    rename_project_files,
     slugify,
     write_map,
     write_tour,
 )
 from app.services.tiling import forget_job as forget_tile_job
+from app.services.tiling import job_status as tile_job_status
 from app.services.tiling import project_tile_state
 
 router = APIRouter()
@@ -126,6 +129,46 @@ async def delete_project(
     return RedirectResponse(url=dest, status_code=303)
 
 
+def _job_running(slug: str) -> bool:
+    for status in (tile_job_status(slug), export_job_status(slug)):
+        if status and status.get("status") == "running":
+            return True
+    return False
+
+
+@router.post("/projects/{slug}/rename-slug")
+async def rename_slug(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+    project: Project = Depends(get_project_or_404),  # gate: ägare eller admin
+    new_slug: str = Form(...),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Byt turens slug: mappnamn + DB-rad + glöm jobb på gamla slugen. Bokmärkta
+    /view-länkar och redan byggda bundlar bryts - varnas för i UI:t."""
+    new_slug = slugify(new_slug)
+    if new_slug == slug:
+        return RedirectResponse(url=f"/projects/{slug}", status_code=303)
+    if db.query(Project).filter(Project.slug == new_slug).first() is not None:
+        return RedirectResponse(
+            url=f"/projects/{slug}?slug_error=Slugen+%C3%A4r+upptagen", status_code=303
+        )
+    if _job_running(slug):
+        return RedirectResponse(
+            url=f"/projects/{slug}?slug_error=V%C3%A4nta+tills+tiling%2Fexport+%C3%A4r+klar",
+            status_code=303,
+        )
+
+    rename_project_files(slug, new_slug)  # flyttar mappen (guardad)
+    project.slug = new_slug
+    db.commit()
+    forget_tile_job(slug)  # in-memory-status nycklad på gamla slugen
+    forget_export_job(slug)
+    return RedirectResponse(url=f"/projects/{new_slug}", status_code=303)
+
+
 @router.get("/projects/{slug}", response_class=HTMLResponse)
 def project_home(
     request: Request,
@@ -143,6 +186,7 @@ def project_home(
             "scenes": scenes,
             "has_map_image": map_image_path(slug).exists(),
             "csrf_token": token,
+            "slug_error": request.query_params.get("slug_error"),
         },
     )
     set_csrf_cookie(response, token)

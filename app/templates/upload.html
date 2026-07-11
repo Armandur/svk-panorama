@@ -10,6 +10,21 @@
 	<p>Steg 1 av 2: ladda upp scenfoton och kartbild.</p>
 </hgroup>
 
+{% if slug_error %}<p class="login-error" role="alert">{{ slug_error }}</p>{% endif %}
+
+<details class="slug-settings">
+	<summary>Adress (slug): <code>{{ project.slug }}</code></summary>
+	<form method="post" action="/projects/{{ project.slug }}/rename-slug" class="slug-form"
+		onsubmit="return confirm('Byt slug? Bokmärkta länkar och redan exporterade bundlar för nuvarande adress slutar fungera.');">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+		<label for="new-slug">Ny slug</label>
+		<input type="text" id="new-slug" name="new_slug" value="{{ project.slug }}"
+			pattern="[a-z0-9-]+" maxlength="120" required>
+		<p class="hint">Ändrar turens adress (URL) och mappnamn. Bara a-z, 0-9 och bindestreck. Bokmärkta <code>/view</code>-länkar och redan byggda bundlar slutar fungera.</p>
+		<button type="submit" class="secondary">Byt slug</button>
+	</form>
+</details>
+
 <nav class="stepper" aria-label="Arbetssteg">
 	<span aria-current="step">1. Uppladdning</span>
 	<span>2. Placering och länkning</span>

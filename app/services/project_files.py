@@ -63,6 +63,21 @@ def delete_project_files(slug: str) -> None:
     shutil.rmtree(d, ignore_errors=True)
 
 
+def rename_project_files(old_slug: str, new_slug: str) -> None:
+    """Byt namn på projektmappen. Guardar mot traversal (båda måste vara direkta
+    barn till PROJECTS_DIR) och vägrar om målmappen redan finns."""
+    root = config.PROJECTS_DIR.resolve()
+    src = project_dir(old_slug).resolve()
+    dst = project_dir(new_slug).resolve()
+    if src.parent != root or dst.parent != root:
+        raise HTTPException(status_code=400, detail="Ogiltig projektsökväg")
+    if not src.exists():
+        return  # mappen skapades kanske aldrig - DB-bytet räcker
+    if dst.exists():
+        raise HTTPException(status_code=409, detail="Målmappen finns redan")
+    os.rename(src, dst)
+
+
 def images_dir(slug: str) -> Path:
     return project_dir(slug) / "images"
 

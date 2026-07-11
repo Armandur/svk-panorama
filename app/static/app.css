@@ -455,6 +455,12 @@ tr[data-preview-scene] { cursor: help; }
 .login-section { max-width: 26rem; margin: 2rem auto; }
 .login-error { background: var(--svk-danger); color: #fff; padding: 0.5rem 0.7rem; border-radius: 0.3rem; font-size: 0.9rem; }
 .logout-form { margin: 0; }
+/* Byt slug: diskret utfällbar sektion på uppladdningssidan. */
+.slug-settings { margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.slug-settings summary { cursor: pointer; color: var(--pico-muted-color); }
+.slug-form { margin-top: 0.6rem; max-width: 28rem; }
+.slug-form button { margin: 0; }
+
 /* Radåtgärder i tabeller (Öppna + Ta bort sida vid sida). */
 .row-actions { display: flex; gap: 0.5rem; align-items: center; }
 .row-actions form { margin: 0; }
