@@ -37,8 +37,17 @@
 		if (w) span.style.width = w + "px";
 		// Centrera + placera ovanför utifrån FAKTISK renderad storlek. Litet glapp;
 		// hover-bryggan i CSS håller hovern kontinuerlig upp till "Läs mer".
-		span.style.marginLeft = -(span.offsetWidth - div.offsetWidth) / 2 + "px";
-		span.style.marginTop = (-span.offsetHeight - 6) + "px";
+		function place() {
+			span.style.marginLeft = -(span.offsetWidth - div.offsetWidth) / 2 + "px";
+			span.style.marginTop = (-span.offsetHeight - 6) + "px";
+		}
+		place();
+		// Bilder laddar asynkront -> höjden ändras efteråt; räkna om positionen så
+		// rutan hamnar ovanför hotspoten och inte centreras över den.
+		var imgs = span.getElementsByTagName("img");
+		for (var i = 0; i < imgs.length; i++) {
+			if (!imgs[i].complete) imgs[i].addEventListener("load", place);
+		}
 	};
 
 	// --- Fullskärms-ark för expanderbara hotspots ("läs mer") ---
