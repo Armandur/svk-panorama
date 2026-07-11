@@ -22,6 +22,7 @@ from app.services.project_files import (
     validate_size,
     write_tour,
 )
+from app.services.tiling import drop_scene_tiles
 
 router = APIRouter()
 
@@ -55,6 +56,7 @@ async def upload_images(
         dest = images_dir(slug) / filename
         dest.write_bytes(content)
         clear_preview(slug, scene_id)  # regenereras lat om bilden ersattes
+        drop_scene_tiles(slug, scene_id)  # ev. tiles blir stale om bilden bytts
 
         panorama_url = f"/projects/{slug}/images/{filename}"
         merge_scene_into_tour(tour, scene_id, panorama_url)
@@ -100,4 +102,5 @@ def delete_image(
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:
     remove_scene(slug, scene_id)
+    drop_scene_tiles(slug, scene_id)
     return RedirectResponse(url=f"/projects/{slug}", status_code=302)

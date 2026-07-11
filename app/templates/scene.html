@@ -70,6 +70,14 @@
 			<button id="discard-tour-btn" type="button" class="secondary outline" hidden>Släng ändringar</button>
 		</div>
 	</article>
+
+	<article>
+		<h3>Bildoptimering</h3>
+		<p class="hint">Generera multires-tiles så publicerade turer laddar snabbt. Tile-generatorn körs på varje scen (kan ta en stund). Kör om efter att du bytt bilder.</p>
+		<p id="tile-state" class="readiness" aria-live="polite"></p>
+		<progress id="tile-progress" value="0" max="1" hidden></progress>
+		<button id="tile-btn" type="button">Generera tiles</button>
+	</article>
 	<article class="settings-article">
 		{% include "_settings_modal.html" %}
 	</article>
@@ -148,4 +156,5 @@
 <script src="/static/preview.js"></script>
 <script src="/static/settings.js"></script>
 <script src="/static/scene.js"></script>
+<script src="/static/tiling.js"></script>
 {% endblock %}
