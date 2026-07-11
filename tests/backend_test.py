@@ -16,7 +16,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fastapi import HTTPException  # noqa: E402
 from PIL import Image  # noqa: E402
 
+from app.auth import hash_password, verify_password  # noqa: E402
 from app.routes.preview import FONT_KEYS, _hex  # noqa: E402
+from app.routes.auth import _safe_next  # noqa: E402
 from app.services.bundle import _relativize  # noqa: E402
 from app.services.project_files import (  # noqa: E402
     _atomic_write_text,
@@ -128,6 +130,19 @@ def test_atomic_write():
     check("inga .tmp kvar", not list(p.parent.glob("*.tmp")))
 
 
+def test_auth():
+    h = hash_password("hemligt123")
+    check("verify korrekt lösen", verify_password("hemligt123", h))
+    check("verify fel lösen", not verify_password("fel", h))
+    check("verify mot None-hash (ej satt)", not verify_password("x", None))
+    check("hash != klartext", h != "hemligt123")
+    # Open redirect-skydd i login-next.
+    check("safe_next lokal", _safe_next("/projects/x") == "/projects/x")
+    check("safe_next extern -> /", _safe_next("//evil.com") == "/")
+    check("safe_next absolut-url -> /", _safe_next("http://evil.com") == "/")
+    check("safe_next None -> /", _safe_next(None) == "/")
+
+
 def main() -> int:
     for fn in (
         test_expected_tile_count,
@@ -136,6 +151,7 @@ def main() -> int:
         test_hex,
         test_slug_and_upload_safety,
         test_atomic_write,
+        test_auth,
     ):
         fn()
     print(f"\n{_passed} passed, {_failed} failed")

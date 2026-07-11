@@ -25,7 +25,9 @@ lokal dev/test**.
 
 | Variabel               | Rekommenderat värde                         | Not |
 |------------------------|---------------------------------------------|-----|
-| `SVK_SECRET_KEY`       | lång slumpsträng                            | annars roteras CSRF-nyckeln per omstart |
+| `SVK_SECRET_KEY`       | lång slumpsträng                            | signerar CSRF- + session-cookies; fast värde annars invalideras inloggningar vid omstart |
+| `SVK_ADMIN_EMAIL`      | din e-post                                  | bootstrap-admin (skapas vid första start om inga användare finns) |
+| `SVK_ADMIN_PASSWORD`   | starkt lösenord                             | krävs för att kunna logga in första gången |
 | `SVK_PROJECTS_DIR`     | `/mnt/user/appdata/svk-panorama/projects`   | se "Tiling" - måste matcha host-path |
 | `SVK_DB_FILE`          | `/mnt/user/appdata/svk-panorama/svk.db`     | absolut path |
 | `SVK_TILE_CONCURRENCY` | `2`                                         | nona är enkeltrådat; håll lågt på delad värd |

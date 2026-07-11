@@ -48,3 +48,8 @@ TILE_CONCURRENCY = max(1, int(os.environ.get("SVK_TILE_CONCURRENCY", "2")))
 # i ett kommande admin-gränssnitt där admin-värdet vinner över env. Konsumeras
 # av bundle-export och delningslänkar (byggs senare).
 BASE_URL = os.environ.get("SVK_BASE_URL", "").rstrip("/")
+
+# Bootstrap-admin: skapas vid uppstart om inga användare finns. Sluten inbjudan
+# -> ingen öppen registrering; admin bjuder in övriga. Sätt i .env i produktion.
+ADMIN_EMAIL = os.environ.get("SVK_ADMIN_EMAIL", "").strip().lower()
+ADMIN_PASSWORD = os.environ.get("SVK_ADMIN_PASSWORD", "")

@@ -5,26 +5,20 @@ from __future__ import annotations
 import hashlib
 import hmac
 import secrets
-from collections.abc import Generator
 
 from fastapi import Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app import config
-from app.database import Project, SessionLocal
+from app.auth import require_user
+from app.database import Project, User, get_db  # get_db bor i database (undviker cirkulär import)
 
 templates = Jinja2Templates(directory=str(config.REPO_ROOT / "app" / "templates"))
 
 CSRF_COOKIE_NAME = "csrf_token"
 
-
-def get_db() -> Generator[Session, None, None]:
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+__all__ = ["get_db", "templates", "CSRF_COOKIE_NAME"]  # get_db re-exporteras här
 
 
 # --- CSRF ----------------------------------------------------------------
@@ -84,8 +78,16 @@ def verify_csrf_header(request: Request) -> None:
         raise HTTPException(status_code=403, detail="Ogiltig eller saknad CSRF-token")
 
 
-def get_project_or_404(slug: str, db: Session = Depends(get_db)) -> Project:
+def get_project_or_404(
+    slug: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+) -> Project:
+    """Kräver inloggning och att projektet ägs av användaren (eller admin).
+    Returnerar 404 även vid fel ägare - läck inte att slugen finns."""
     project = db.query(Project).filter(Project.slug == slug).first()
     if project is None:
+        raise HTTPException(status_code=404, detail="Projektet hittades inte")
+    if not user.is_admin and project.owner_id != user.id:
         raise HTTPException(status_code=404, detail="Projektet hittades inte")
     return project

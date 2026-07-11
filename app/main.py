@@ -3,12 +3,26 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse, RedirectResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
 
 from app import config
 from app.database import init_db
-from app.routes import export, plan, preview, previews, projects, scenes, tiling, uploads, viewer
+from app.routes import (
+    auth,
+    export,
+    plan,
+    preview,
+    previews,
+    projects,
+    scenes,
+    tiling,
+    uploads,
+    viewer,
+)
 
 
 @asynccontextmanager
@@ -18,6 +32,19 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="SVK Panorama", lifespan=lifespan)
+
+# Signerad session-cookie (bär bara användarens id).
+app.add_middleware(SessionMiddleware, secret_key=config.SECRET_KEY, same_site="lax")
+
+
+@app.exception_handler(StarletteHTTPException)
+async def _auth_aware_http_exception(request: Request, exc: StarletteHTTPException):
+    """401 på en sid-navigering -> skicka till /login (med next). Övriga fel och
+    API-anrop (JSON) får vanligt JSON-svar."""
+    wants_html = "text/html" in request.headers.get("accept", "")
+    if exc.status_code == 401 and wants_html:
+        return RedirectResponse(url=f"/login?next={request.url.path}", status_code=303)
+    return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
 
 
 @app.middleware("http")
@@ -30,6 +57,7 @@ async def no_cache_static(request, call_next):
     return response
 
 
+app.include_router(auth.router)
 app.include_router(projects.router)
 app.include_router(uploads.router)
 app.include_router(plan.router)

@@ -6,7 +6,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 from app import config
-from app.database import Project
+from app.auth import require_user
+from app.database import Project, User
 from app.deps import (
     get_db,
     get_project_or_404,
@@ -37,8 +38,15 @@ def _read_guide_text() -> str:
 
 
 @router.get("/", response_class=HTMLResponse)
-def index(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
-    projects = db.query(Project).order_by(Project.created_at.desc()).all()
+def index(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+) -> HTMLResponse:
+    query = db.query(Project).order_by(Project.created_at.desc())
+    if not user.is_admin:  # vanlig användare ser bara sina egna turer
+        query = query.filter(Project.owner_id == user.id)
+    projects = query.all()
     tile_states = {p.slug: project_tile_state(p.slug) for p in projects}
     token = new_csrf_token()
     response = templates.TemplateResponse(
@@ -47,6 +55,7 @@ def index(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
         {
             "projects": projects,
             "tile_states": tile_states,
+            "current_user": user,
             "csrf_token": token,
             "guide_text": _read_guide_text(),
         },
@@ -60,6 +69,7 @@ async def create_project(
     request: Request,
     db: Session = Depends(get_db),
     name: str = Form(...),
+    user: User = Depends(require_user),
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:
     name = name.strip()
@@ -73,7 +83,7 @@ async def create_project(
         slug = f"{base_slug}-{suffix}"
         suffix += 1
 
-    project = Project(slug=slug, name=name)
+    project = Project(slug=slug, name=name, owner_id=user.id)
     db.add(project)
     db.commit()
 

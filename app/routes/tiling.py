@@ -4,8 +4,10 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-from app.database import Project
+from app.auth import require_user
+from app.database import Project, User, get_db
 from app.deps import get_project_or_404, verify_csrf_header
 from app.services import tiling
 
@@ -42,11 +44,19 @@ def tile_job_status(
 
 
 @router.get("/tile-jobs")
-def tile_jobs() -> dict[str, Any]:
-    """Bulk-status för alla in-memory-jobb (billig, för live-polling på listan
-    och hemsidan). Turer utan jobb i minnet renderas server-side vid sidladdning."""
+def tile_jobs(
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+) -> dict[str, Any]:
+    """Bulk-status för in-memory-jobb (billig, för live-polling på listan och
+    hemsidan). Bara användarens egna turer (admin ser alla)."""
     jobs = tiling.all_jobs()
+    query = db.query(Project.slug)
+    if not user.is_admin:
+        query = query.filter(Project.owner_id == user.id)
+    owned = {slug for (slug,) in query.all()}
     return {
         slug: {"status": j["status"], "done": j["done"], "total": j["total"]}
         for slug, j in jobs.items()
+        if slug in owned
     }

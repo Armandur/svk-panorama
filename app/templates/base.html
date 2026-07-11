@@ -13,7 +13,13 @@
 	<header class="site-header">
 		<nav class="container">
 			<ul><li><a href="/"><strong>SVK Panorama</strong></a></li></ul>
-			<ul><li>Editor för virtuella kyrkorundturer</li></ul>
+			<ul>
+				{% if request.session.get('uid') %}
+				<li><form method="post" action="/logout" class="logout-form"><button type="submit" class="secondary outline">Logga ut</button></form></li>
+				{% else %}
+				<li>Editor för virtuella kyrkorundturer</li>
+				{% endif %}
+			</ul>
 		</nav>
 	</header>
 	<main{% block main_attrs %} class="container"{% endblock %}>
