@@ -269,8 +269,14 @@ Faser (minst till störst):
       miniatyrer, ladda upp, radera, välj (infogar markdown-bildlänk). Direktuppladdning
       via EasyMDE:s bild-knapp. **ERSÄTTS av delad pool nedan.**
 
-- [ ] **Mediebibliotek v2: DELAD POOL PER ÄGARE + administrationsvy (BÖRJA HÄR efter
-      clear).** Beslut 2026-07-12 (Rasmus valde pool framför per-projekt): flytta
+- [x] **Mediebibliotek v2: DELAD POOL PER ÄGARE + administrationsvy KLAR (2026-07-12,
+      commit 749dbad).** Egen /media-sida (nav-knapp). Spec nedan implementerad rakt av;
+      backend + hela API-flödet (upload/serve/traversal/list-usage/delete) verifierat
+      via curl, /media-sidan shot-verifierad. EasyMDE-picker-modalen (scene.js) inte
+      driven end-to-end i browser men delar exakt samma fetch/render som den verifierade
+      hanteringsvyn. `_safe_suffix` SANERAR uppladdningsnamn (inte hård avvisning som
+      panorama-filer, hex-prefix ger unikhet). Testdata-attachments städade.
+      Beslut 2026-07-12 (Rasmus valde pool framför per-projekt): flytta
       bilderna från per-projekt (`projects/<slug>/attachments/`) till en **pool per
       ägare**, återanvändbar mellan projekt, med metadata + härledd användning + filter,
       och en dedikerad administrationsvy. "Ägare" = `User` nu (Team i Fas 4).
