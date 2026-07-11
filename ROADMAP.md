@@ -54,8 +54,11 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
       fördröjning, scen-fade, startscen), scenbläddring och val av kartstorlek
       (sparas som `default.mapSize`, respekteras av runtime-vieweren).
 - [ ] **Teman**: valbara typsnitt, färger på kartprickar/linjer m.m.
-- [ ] "Exportera bundle" = zip med tiles + JSON + viewer + vendored pannellum +
-      hosting-instruktioner. Detta är self-host-produkten.
+- [x] **"Exportera bundle"** (route `/export`, `app/services/bundle.py`): async-
+      jobb bygger en självbärande zip (index.html + vendored pannellum + viewer +
+      tiles + map.png + originalbilder för otilade scener + README). Relativa
+      sökvägar -> fungerar oavsett underkatalog, utan server-kod. Verifierad
+      fristående via `python -m http.server`. Self-host-produkten.
 
 ## Admin/inställningar (senare)
 
