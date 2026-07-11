@@ -19,6 +19,7 @@
 
 	var box, inner, cap, actionsEl, viewer, currentKey, showTimer, hideTimer, rafId;
 	var pinned = false;
+	var suppressed = false; // stäng av hover helt (t.ex. medan man drar länkar)
 	var W = 320, H = 180;
 	// Användarspecifika inställningar (localStorage). 0 = av.
 	function setting(key, def) {
@@ -146,7 +147,7 @@
 	// --- Hover (transient) -------------------------------------------------
 
 	function show(slug, sceneId, x, y) {
-		if (pinned) return;
+		if (pinned || suppressed) return;
 		ensureBox();
 		box.style.display = "block";
 		position(x, y);
@@ -233,7 +234,17 @@
 		});
 	}
 
-	window.ScenePreview = { attach: attach, pin: pin, unpin: unpin, driveViewer: driveViewer };
+	// Stäng av/på hover-previewen helt. Vid avstängning: göm ev. synlig ruta och
+	// avbryt väntande visning (annars kan en preview skymma det man drar till).
+	function setSuppressed(v) {
+		suppressed = !!v;
+		if (suppressed) {
+			clearTimeout(showTimer);
+			hide();
+		}
+	}
+
+	window.ScenePreview = { attach: attach, pin: pin, unpin: unpin, driveViewer: driveViewer, setSuppressed: setSuppressed };
 
 	if (document.readyState !== "loading") scan();
 	else document.addEventListener("DOMContentLoaded", scan);

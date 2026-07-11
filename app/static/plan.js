@@ -589,6 +589,8 @@
 
 	function startLink(e, id) {
 		e.preventDefault();
+		// Ingen hover-preview under länk-drag - den kan annars skymma målscenen.
+		if (window.ScenePreview && window.ScenePreview.setSuppressed) window.ScenePreview.setSuppressed(true);
 		const el = e.currentTarget;
 		state.linkFromId = id;
 		state.linkEl = el;
@@ -670,6 +672,7 @@
 
 	function finishLink() {
 		clearRemoveX();
+		if (window.ScenePreview && window.ScenePreview.setSuppressed) window.ScenePreview.setSuppressed(false);
 		const el = state.linkEl;
 		if (el) {
 			el.classList.remove("linking-from");
