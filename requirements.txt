@@ -5,5 +5,4 @@ python-multipart==0.0.32
 sqlalchemy==2.0.51
 pillow==12.3.0
 bcrypt==5.0.0
-alembic==1.18.5
 itsdangerous==2.2.0

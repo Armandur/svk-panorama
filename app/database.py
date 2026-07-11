@@ -49,43 +49,41 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
 def init_db() -> None:
+    # Pre-produktion: inga migrationer. Vid schemaändring - radera svk.db och
+    # starta om, så byggs schemat om och admin seedas ur env. Alembic återinförs
+    # när vi produktionssätter (baslinje genereras då ur de slutliga modellerna).
     config.PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
-    _run_migrations()
+    Base.metadata.create_all(engine)
     _bootstrap_admin()
 
 
-def _run_migrations() -> None:
-    """Kör Alembic-migrationer till head. Adopterar en pre-Alembic-DB (bara
-    `projects`, ingen alembic_version) genom att stampa baslinjen först."""
-    from alembic import command
-    from alembic.config import Config
-    from sqlalchemy import inspect
-
-    cfg = Config(str(config.REPO_ROOT / "alembic.ini"))
-    tables = inspect(engine).get_table_names()
-    if "projects" in tables and "alembic_version" not in tables:
-        command.stamp(cfg, "0001_initial")
-    command.upgrade(cfg, "head")
-
-
 def _bootstrap_admin() -> None:
-    """Skapa bootstrap-admin ur env om inga användare finns (sluten inbjudan),
-    och backfilla ägarlösa projekt till den."""
+    """Säkerställ bootstrap-admin ur env (sluten inbjudan), adoptera projektmappar
+    på disk som saknar DB-rad (t.ex. efter en DB-blåsning pre-produktion) och
+    backfilla ägarlösa projekt - allt till admin."""
     if not config.ADMIN_EMAIL or not config.ADMIN_PASSWORD:
         return
     from app.auth import hash_password
 
     db = SessionLocal()
     try:
-        if db.query(User).count() > 0:
+        admin = db.query(User).filter(User.email == config.ADMIN_EMAIL).first()
+        if admin is None and db.query(User).count() == 0:
+            admin = User(
+                email=config.ADMIN_EMAIL,
+                password_hash=hash_password(config.ADMIN_PASSWORD),
+                is_admin=True,
+            )
+            db.add(admin)
+            db.commit()
+        if admin is None:  # env-admin saknas men andra användare finns -> lämna
             return
-        admin = User(
-            email=config.ADMIN_EMAIL,
-            password_hash=hash_password(config.ADMIN_PASSWORD),
-            is_admin=True,
-        )
-        db.add(admin)
-        db.commit()
+
+        known = {slug for (slug,) in db.query(Project.slug).all()}
+        for child in sorted(config.PROJECTS_DIR.glob("*/tour.json")):
+            slug = child.parent.name
+            if slug not in known:
+                db.add(Project(slug=slug, name=slug, owner_id=admin.id))
         db.query(Project).filter(Project.owner_id.is_(None)).update({"owner_id": admin.id})
         db.commit()
     finally:
