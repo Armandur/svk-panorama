@@ -15,6 +15,8 @@
 	const slug = document.body.dataset.slug;
 	const tour = JSON.parse(document.getElementById("tour-data").textContent);
 	const mapData = JSON.parse(document.getElementById("map-data").textContent);
+	const tilesEl = document.getElementById("tiles-data");
+	const manifest = tilesEl ? JSON.parse(tilesEl.textContent) : {};
 	if (!tour.scenes) tour.scenes = {};
 
 	const positions = {};
@@ -48,7 +50,8 @@
 	const generateBtn = document.getElementById("generate-btn");
 	const sceneTitleInput = document.getElementById("scene-title");
 	const sceneTitleLabel = document.getElementById("scene-title-label");
-	const fullresToggle = document.getElementById("fullres-toggle");
+	const resSelect = document.getElementById("res-select");
+	const resHint = document.getElementById("res-hint");
 	const rollInput = document.getElementById("horizon-roll");
 	const rollNum = document.getElementById("horizon-roll-num");
 	let rollTimer = null;
@@ -68,14 +71,45 @@
 		rollTimer = setTimeout(applyRoll, 900);
 	}
 
-	let fullRes = false, applyingRes = false;
+	// resMode: "preview" | "multires" | "full". Multires används bara för scener
+	// som har genererade tiles (finns i manifest); annars faller vyn till preview.
+	let resMode = "preview", applyingRes = false;
 	function previewUrl(id) { return "/projects/" + encodeURIComponent(slug) + "/previews/" + encodeURIComponent(id) + ".jpg"; }
 	function fullUrl(id) { return tour.scenes[id].panorama; }
+	function hasTiles(id) { return !!manifest[id]; }
+	function effectiveMode(id) { return (resMode === "multires" && !hasTiles(id)) ? "preview" : resMode; }
 	function applyRes(id) {
 		const cfg = viewer.getConfig().scenes[id];
 		if (!cfg) return;
-		const want = fullRes ? fullUrl(id) : previewUrl(id);
-		if (cfg.panorama !== want) { cfg.panorama = want; applyingRes = true; viewer.loadScene(id); }
+		const mode = effectiveMode(id);
+		if (mode === "multires") {
+			if (cfg.type === "multires" && cfg.multiRes === manifest[id]) return;
+			cfg.type = "multires";
+			cfg.multiRes = manifest[id];
+			delete cfg.panorama;
+		} else {
+			const want = mode === "full" ? fullUrl(id) : previewUrl(id);
+			if (cfg.type !== "multires" && cfg.panorama === want) return;
+			cfg.type = "equirectangular";
+			cfg.panorama = want;
+			delete cfg.multiRes;
+		}
+		applyingRes = true;
+		viewer.loadScene(id);
+	}
+	// Uppdatera väljarens tillgänglighet + hint för aktuell scen.
+	function updateResUi(id) {
+		if (!resSelect) return;
+		const multiOpt = resSelect.querySelector('option[value="multires"]');
+		if (multiOpt) {
+			multiOpt.disabled = !hasTiles(id);
+			multiOpt.textContent = hasTiles(id) ? "Multires (tiles)" : "Multires (inga tiles)";
+		}
+		if (resHint && resMode === "multires" && !hasTiles(id)) {
+			resHint.textContent = "Scenen saknar tiles - visar preview. Ladda upp/generera tiles för multires.";
+		} else if (resHint) {
+			resHint.textContent = "Preview är en nedskalad bild (snabbt). Multires använder de genererade tiles-kaklen. Full laddar originalbilden (kan vara stor).";
+		}
 	}
 	// Applicera horizonRoll på aktuell scen (kräver omladdning; behåll vyn).
 	function applyRoll() {
@@ -172,12 +206,13 @@
 		scenes: cfgScenes,
 	});
 
-	viewer.on("load", refreshSidebar);
+	viewer.on("load", function () { refreshSidebar(); updateResUi(viewer.getScene()); });
 	viewer.on("scenechange", function () {
 		setTimeout(function () {
 			refreshSidebar();
+			updateResUi(viewer.getScene());
 			if (applyingRes) { applyingRes = false; return; }
-			applyRes(viewer.getScene()); // ladda full upplösning om läget är på
+			applyRes(viewer.getScene()); // applicera valt upplösningsläge på nya scenen
 		}, 50);
 	});
 
@@ -188,9 +223,11 @@
 		updateTitleLabel(cur);
 		setDirty(true);
 	});
-	if (fullresToggle) fullresToggle.addEventListener("change", function () {
-		fullRes = fullresToggle.checked;
-		applyRes(viewer.getScene());
+	if (resSelect) resSelect.addEventListener("change", function () {
+		resMode = resSelect.value;
+		const cur = viewer.getScene();
+		updateResUi(cur);
+		applyRes(cur);
 	});
 	if (rollInput) rollInput.addEventListener("input", function () { onRollChange(parseFloat(rollInput.value)); });
 	if (rollNum) rollNum.addEventListener("input", function () { onRollChange(parseFloat(rollNum.value)); });

@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from app.database import Project
 from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
 from app.services.project_files import map_image_path, read_map, read_tour, write_tour
+from app.services.tiling import read_manifest
 
 router = APIRouter()
 
@@ -42,6 +43,7 @@ def scene_view(
             "project": project,
             "tour": tour,
             "map_data": map_data,
+            "manifest": read_manifest(slug),
             "has_map_image": map_image_path(slug).exists(),
             "csrf_token": token,
         },

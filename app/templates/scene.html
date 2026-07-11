@@ -32,11 +32,13 @@
 		<p id="calib-state" aria-live="polite"></p>
 		<label for="scene-title">Scenens namn</label>
 		<input type="text" id="scene-title" maxlength="120" placeholder="t.ex. Koret">
-		<label class="fullres-label">
-			<input type="checkbox" id="fullres-toggle" role="switch">
-			Visa full upplösning
-		</label>
-		<p class="hint">Vyn visar en nedskalad preview för snabbhet. Full upplösning laddar originalbilden (kan vara stor).</p>
+		<label for="res-select">Upplösning i vyn</label>
+		<select id="res-select">
+			<option value="preview">Preview (snabb)</option>
+			<option value="multires">Multires (tiles)</option>
+			<option value="full">Full upplösning</option>
+		</select>
+		<p id="res-hint" class="hint">Preview är en nedskalad bild (snabbt). Multires använder de genererade tiles-kaklen. Full laddar originalbilden (kan vara stor).</p>
 		<label for="horizon-roll">Räta upp horisont (grader)</label>
 		<div class="roll-row">
 			<input type="range" id="horizon-roll" min="-20" max="20" step="0.25" value="0">
@@ -140,6 +142,7 @@
 
 <script id="tour-data" type="application/json">{{ tour | tojson }}</script>
 <script id="map-data" type="application/json">{{ map_data | tojson }}</script>
+<script id="tiles-data" type="application/json">{{ manifest | tojson }}</script>
 
 {% endblock %}
 {% block scripts %}
