@@ -55,6 +55,14 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
 - [ ] "Exportera bundle" = zip med tiles + JSON + viewer + vendored pannellum +
       hosting-instruktioner. Detta är self-host-produkten.
 
+## Admin/inställningar (senare)
+
+- [ ] Admin-gränssnitt för att justera bearbetningsinställningar utan omstart:
+      tiling-parallellitet (`SVK_TILE_CONCURRENCY`, redan config-styrd), tile-
+      kvalitet, uppladdnings-parallellitet, previewstorlek m.m.
+- [ ] Ev. finare tiling-progress via filräkning (räkna face*.tif 0-6 under
+      nona-fasen + tile-jpg mot förväntat antal) i stället för bara faser.
+
 ## Fas 3 - SaaS-lager (senare)
 
 - [ ] Auth, multi-tenant, objektlagring, jobbkö för tiling, hosting.
