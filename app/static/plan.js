@@ -228,6 +228,15 @@
 		mapData.edges.push({ from: a, to: b, twoway: twoway });
 	}
 
+	// Skulle ett släpp a->b i aktuellt läge ta bort en befintlig länk (togglas
+	// av)? Samma logik som applyEdges "same" - används för borttagnings-feedback.
+	function wouldRemove(a, b, twoway) {
+		const i = findEdge(a, b);
+		if (i < 0) return false;
+		const e = mapData.edges[i];
+		return twoway ? e.twoway === true : (e.twoway === false && e.from === a && e.to === b);
+	}
+
 	// --- Koordinatkonvertering ------------------------------------------
 
 	function clientToImageCoords(clientX, clientY) {
@@ -602,11 +611,45 @@
 		el.addEventListener("pointercancel", onLinkPointerCancel);
 	}
 
+	// ✕-markörer vid de två scenerna vars länk tas bort (skärmkoordinater, som
+	// scenmarkörerna). Rensas när draget lämnar borttagnings-läget eller släpper.
+	let removeXEls = [];
+	function clearRemoveX() {
+		removeXEls.forEach(function (el) { el.remove(); });
+		removeXEls = [];
+	}
+	function showRemoveX(scenes) {
+		clearRemoveX();
+		scenes.forEach(function (s) {
+			const x = document.createElement("div");
+			x.className = "edge-remove-x";
+			const p = project(s.position.x, s.position.y);
+			x.style.left = p.x + "px";
+			x.style.top = p.y + "px";
+			x.textContent = "✕";
+			markersLayer.appendChild(x);
+			removeXEls.push(x);
+		});
+	}
+
 	function onLinkPointerMove(e) {
 		if (e.pointerId !== state.linkPointerId || !state.rubberEl) return;
 		const pos = clientToImageCoords(e.clientX, e.clientY);
-		state.rubberEl.setAttribute("x2", pos.x);
-		state.rubberEl.setAttribute("y2", pos.y);
+		const target = nearestMarker(pos);
+		// Om släpp här skulle ta bort en länk: snappa rubbern röd till målscenen
+		// (ligger då ovanpå den befintliga länken) och visa ✕ vid båda scenerna.
+		if (target && target !== state.linkFromId && wouldRemove(state.linkFromId, target, state.mode === "two")) {
+			const from = findPlaced(state.linkFromId), to = findPlaced(target);
+			state.rubberEl.setAttribute("x2", to.position.x);
+			state.rubberEl.setAttribute("y2", to.position.y);
+			state.rubberEl.classList.add("removing");
+			showRemoveX([from, to]);
+		} else {
+			state.rubberEl.setAttribute("x2", pos.x);
+			state.rubberEl.setAttribute("y2", pos.y);
+			state.rubberEl.classList.remove("removing");
+			clearRemoveX();
+		}
 	}
 
 	function onLinkPointerUp(e) {
@@ -626,6 +669,7 @@
 	}
 
 	function finishLink() {
+		clearRemoveX();
 		const el = state.linkEl;
 		if (el) {
 			el.classList.remove("linking-from");
