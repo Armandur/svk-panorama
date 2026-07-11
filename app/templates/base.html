@@ -15,9 +15,17 @@
 			<ul><li><a href="/"><strong>SVK Panorama</strong></a></li></ul>
 			<ul>
 				{% if request.session.get('admin') %}
-				<li><a href="/admin/users" role="button" class="secondary outline">Användare</a></li>
+				<li>
+					<details class="dropdown">
+						<summary role="button" class="secondary outline">Admin</summary>
+						<ul>
+							<li><a href="/admin/users">Användare</a></li>
+						</ul>
+					</details>
+				</li>
 				{% endif %}
 				{% if request.session.get('uid') %}
+				<li><a href="/profile" role="button" class="secondary outline">Profil</a></li>
 				<li><form method="post" action="/logout" class="logout-form"><button type="submit" class="secondary outline">Logga ut</button></form></li>
 				{% else %}
 				<li>Editor för virtuella kyrkorundturer</li>

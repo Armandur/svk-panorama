@@ -457,6 +457,7 @@ tr[data-preview-scene] { cursor: help; }
 .logout-form { margin: 0; }
 .invite-details summary { cursor: pointer; font-size: 0.85rem; }
 .invite-link { width: 100%; margin-top: 0.3rem; font-family: ui-monospace, monospace; font-size: 0.78rem; }
+.profile-ok { background: var(--svk-ok); color: #fff; padding: 0.5rem 0.7rem; border-radius: 0.3rem; font-size: 0.9rem; }
 
 /* Tiling-status-badge (projektlista + hemsida) */
 .tile-badge { font-size: 0.8rem; white-space: nowrap; }

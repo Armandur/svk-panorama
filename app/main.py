@@ -13,11 +13,13 @@ from app import config
 from app.database import init_db
 from app.routes import (
     admin,
+    assets,
     auth,
     export,
     plan,
     preview,
     previews,
+    profile,
     projects,
     scenes,
     tiling,
@@ -60,6 +62,7 @@ async def no_cache_static(request, call_next):
 
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(profile.router)
 app.include_router(projects.router)
 app.include_router(uploads.router)
 app.include_router(plan.router)
@@ -69,13 +72,14 @@ app.include_router(tiling.router)
 app.include_router(preview.router)
 app.include_router(export.router)
 app.include_router(viewer.router)
+# SIST: catch-all för råa projektfiler (ägar-koll). Måste ligga efter alla
+# specifika /projects/{slug}/...-routes så de matchar först.
+app.include_router(assets.router)
 
-# Egen statik (CSS/JS för editorn).
+# Egen statik (CSS/JS för editorn) - öppen, inget känsligt.
 app.mount("/static", StaticFiles(directory=str(config.REPO_ROOT / "app" / "static")), name="static")
 
-# Repo-rotens js/ - återanvänds av senare steg (geo.js m.fl.).
+# Repo-rotens js/ - återanvänds av editorn (geo.js m.fl.).
 app.mount("/js", StaticFiles(directory=str(config.REPO_ROOT / "js")), name="repo-js")
 
-# Projektfiler (panoraman + kartbild) - måste finnas innan mount vid uppstart.
 config.PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
-app.mount("/projects", StaticFiles(directory=str(config.PROJECTS_DIR)), name="projects")

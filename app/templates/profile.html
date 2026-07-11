@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Profil - SVK Panorama{% endblock %}
+{% block content %}
+
+<section class="login-section">
+	<hgroup>
+		<h1>Profil</h1>
+		<p>{{ user.email }}{% if user.is_admin %} - administratör{% endif %}</p>
+	</hgroup>
+	{% if msg %}<p class="profile-ok" role="status">{{ msg }}</p>{% endif %}
+	{% if error %}<p class="login-error" role="alert">{{ error }}</p>{% endif %}
+
+	<article>
+		<h2>Uppgifter</h2>
+		<form method="post" action="/profile">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<label for="name">Namn</label>
+			<input type="text" id="name" name="name" value="{{ user.name or '' }}" maxlength="200" placeholder="Ditt namn">
+			<button type="submit">Spara</button>
+		</form>
+	</article>
+
+	<article>
+		<h2>Byt lösenord</h2>
+		<form method="post" action="/profile/password">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<label for="current">Nuvarande lösenord</label>
+			<input type="password" id="current" name="current" required autocomplete="current-password">
+			<label for="new">Nytt lösenord (minst 8 tecken)</label>
+			<input type="password" id="new" name="new" required minlength="8" autocomplete="new-password">
+			<label for="new2">Upprepa nytt lösenord</label>
+			<input type="password" id="new2" name="new2" required autocomplete="new-password">
+			<button type="submit">Byt lösenord</button>
+		</form>
+	</article>
+</section>
+
+{% endblock %}
