@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Förhandsvisa & turinställningar - {{ project.name }}{% endblock %}
-{% block head %}<link rel="stylesheet" href="/static/vendor/pannellum.css">{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/vendor/pannellum.css"><link rel="stylesheet" href="/static/vendor/coloris/coloris.min.css">{% endblock %}
 {% block body_attrs %} class="plan-fullscreen" data-slug="{{ project.slug }}"{% endblock %}
 {% block main_attrs %} class="plan-app"{% endblock %}
 {% block content %}
@@ -82,8 +82,8 @@
 			<option value="mono">Monospace</option>
 		</select>
 		<div class="theme-colors">
-			<label>Kartprickar <input type="color" id="theme-dot" value="#666666"></label>
-			<label>Aktiv scen <input type="color" id="theme-current" value="#8b0000"></label>
+			<label>Kartprickar <input type="text" id="theme-dot" class="coloris-input" data-coloris value="{{ tour.get('default', {}).get('theme', {}).get('dotColor', '#666666') }}"></label>
+			<label>Aktiv scen <input type="text" id="theme-current" class="coloris-input" data-coloris value="{{ tour.get('default', {}).get('theme', {}).get('currentColor', '#8b0000') }}"></label>
 		</div>
 	</article>
 
@@ -171,6 +171,8 @@
 {% endblock %}
 {% block scripts %}
 <script src="/static/vendor/pannellum.js"></script>
+<script src="/static/vendor/coloris/coloris.min.js"></script>
+<script>Coloris({ el: "[data-coloris]", format: "hex", alpha: false });</script>
 <script src="/static/preview.js"></script>
 <script src="/static/settings.js"></script>
 <script src="/static/tour-preview.js"></script>

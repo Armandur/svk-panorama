@@ -454,6 +454,9 @@ tr[data-preview-scene] { cursor: help; }
 .theme-colors { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.5rem; }
 .theme-colors label { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; margin: 0; }
 .theme-colors input[type="color"] { width: 3rem; height: 1.6rem; padding: 0; margin: 0; }
+/* Coloris-fält (ersätter native färgväljare) - håll dem smala i den täta tema-raden. */
+.theme-colors .clr-field { width: 7rem; }
+.theme-colors .coloris-input { width: 7rem; margin: 0; padding: 0.15rem 0.4rem 0.15rem 2rem; height: 1.9rem; font-size: 0.8rem; }
 
 /* Login / inbjudan / admin */
 .login-section { max-width: 26rem; margin: 2rem auto; }

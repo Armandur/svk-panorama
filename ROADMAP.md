@@ -188,10 +188,11 @@ Luckor identifierade 2026-07-11 innan team-arbetet.
 
 Upptäckt 2026-07-11 under genomgång.
 
-- [ ] **Färgväljare-lib i stället för native `<input type="color">`.** Tema-sektionen
-      på preview-steget (`preview.html`: `#theme-dot`, `#theme-current`) använder OS-
-      native färgväljare som ser olika ut per plattform. Byt till ett självhostat JS-
-      färgväljar-lib (ingen CDN, ladda ner till `static/vendor/`, jfr Pico/pannellum).
+- [x] **Färgväljare-lib i stället för native `<input type="color">` KLAR (2026-07-11).**
+      Vendorade **Coloris** (`static/vendor/coloris/`, ingen CDN). Tema-färgerna
+      (`#theme-dot`/`#theme-current`) är nu Coloris-fält (hex, `data-coloris`), initieras
+      i preview.html. Befintlig `input`-wiring och hex-utdata oförändrad (servern
+      validerar `#rrggbb`). Endast editor-sida - påverkar inte bundle/runtime.
 - [x] **Startscen-modalens kartprickar ritas inte FIXAT (2026-07-11).** Prickarna
       byggdes korrekt men var osynliga: `.preview-dot` hade `background: var(--dot-color)`
       utan fallback, och temavariablerna definieras bara på `.panorama-wrap` - start-
