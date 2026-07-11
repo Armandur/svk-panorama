@@ -85,8 +85,9 @@ Kvarvarande arbete är i praktiken auth + multi-tenancy.
 - [x] **Skiva 2: admin-UI + inbjudningsflöde** (commit 76f21e7). /admin/users:
       lista/skapa/ta bort användare, signerad inbjudningslänk (7 dygn) -> den
       inbjudne sätter eget lösenord (/accept-invite) + auto-login.
-- [ ] Gata `/projects`-static-mounten (råfiler nås idag utan ägar-koll - låg risk
-      på sluten värd, men bör stängas för äkta isolering).
+- [x] **Stäng static-lucka + Admin-meny + profilsida** (commit c259c8f). Öppna
+      /projects-mounten ersatt av ägar-koll:ad fil-route; "Användare" under
+      Admin-dropdown; /profile (namn + byt lösenord) per användare.
 - [ ] **Vid produktionssättning:** återinför Alembic (baslinje ur då-aktuella
       modeller), byt admin/admin mot riktiga creds, ev. Postgres via docker-compose.
       Pre-produktion: inga migrationer - schemaändring = radera svk.db + starta om
