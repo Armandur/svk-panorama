@@ -340,8 +340,9 @@ tr[data-preview-scene] { cursor: help; }
 }
 .ufile {
 	display: flex;
+	align-items: center;
 	justify-content: space-between;
-	gap: 0.75rem;
+	gap: 0.6rem;
 	padding: 0.3rem 0.1rem;
 	border-bottom: 1px solid var(--pico-muted-border-color);
 }
@@ -349,15 +350,24 @@ tr[data-preview-scene] { cursor: help; }
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	flex: 0 1 auto;
+}
+.ufile-bar {
+	flex: 1;
+	height: 0.5rem;
+	min-width: 4rem;
+	margin: 0;
 }
 .ufile-status {
 	flex: none;
+	min-width: 5.5rem;
+	text-align: right;
 	color: var(--pico-muted-color);
 	font-variant-numeric: tabular-nums;
 }
 .ufile-uploading { color: var(--pico-primary); }
 .ufile-done { color: var(--svk-ok); }
-.ufile-error { color: var(--svk-danger); white-space: normal; }
+.ufile-error { color: var(--svk-danger); }
 #upload-close { margin-top: 0.75rem; }
 #upload-close[hidden] { display: none; }
 

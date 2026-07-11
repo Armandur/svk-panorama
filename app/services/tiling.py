@@ -96,8 +96,19 @@ def job_status(slug: str) -> dict[str, Any] | None:
     return _jobs.get(slug)
 
 
-def _run_docker(image_fs: Path, out_dir: Path, quality: int) -> dict[str, Any]:
-    """Kör generate.py i Docker, skriv tiles till out_dir, returnera config."""
+# generate.py skriver ut sina faser på stdout; vi mappar dem till ungefärlig
+# progress inom en scen så baren rör sig i stället för att stå still ~20s.
+_STAGES = [
+    ("Processing input", 10, "läser bild"),
+    ("Generating cube faces", 30, "kubfaces"),
+    ("Generating tiles", 65, "genererar tiles"),
+    ("Generating fallback", 90, "fallback"),
+]
+
+
+def _run_docker(image_fs: Path, out_dir: Path, quality: int, on_stage=None) -> dict[str, Any]:
+    """Kör generate.py i Docker, skriv tiles till out_dir, returnera config.
+    Streamar stdout och rapporterar faser via on_stage(progress, etikett)."""
     out_parent = out_dir.parent
     out_parent.mkdir(parents=True, exist_ok=True)
     # Rensa ev. gamla tiles så inte stale nivåer blir kvar vid om-tiling.
@@ -108,6 +119,9 @@ def _run_docker(image_fs: Path, out_dir: Path, quality: int) -> dict[str, Any]:
     cmd = [
         "docker", "run", "--rm",
         "--user", f"{uid}:{gid}",
+        # Obuffrat -> generate.py:s fas-rader når oss live (annars kommer de i
+        # en klump vid slutet och progress-baren hoppar direkt till klar).
+        "-e", "PYTHONUNBUFFERED=1",
         "-v", f"{image_fs.parent}:/in:ro",
         "-v", f"{out_parent}:/out",
         DOCKER_IMAGE,
@@ -115,7 +129,22 @@ def _run_docker(image_fs: Path, out_dir: Path, quality: int) -> dict[str, Any]:
         "--output", f"/out/{out_dir.name}",
         f"/in/{image_fs.name}",
     ]
-    subprocess.run(cmd, check=True, capture_output=True, text=True)
+    proc = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
+    )
+    tail: list[str] = []
+    for line in proc.stdout:
+        tail.append(line.rstrip())
+        if len(tail) > 15:
+            tail.pop(0)
+        if on_stage:
+            for key, pct, label in _STAGES:
+                if key in line:
+                    on_stage(pct, label)
+                    break
+    proc.wait()
+    if proc.returncode != 0:
+        raise subprocess.CalledProcessError(proc.returncode, cmd, output="\n".join(tail))
     return json.loads((out_dir / "config.json").read_text(encoding="utf-8"))
 
 
@@ -127,25 +156,40 @@ def pending_scenes(slug: str) -> list[tuple[str, Path]]:
 
 def _run_job(slug: str, quality: int, scenes: list[tuple[str, Path]]) -> None:
     job = _jobs[slug]
+    entries = {s["id"]: s for s in job["scenes"]}
     manifest = read_manifest(slug)
     try:
         for scene_id, image_fs in scenes:
             job["current"] = scene_id
+            entry = entries[scene_id]
+            entry["status"] = "running"
+            entry["progress"] = 5
+            entry["stage"] = "startar"
+
+            def on_stage(pct, label, _e=entry):
+                _e["progress"] = pct
+                _e["stage"] = label
+
             out_dir = tiles_dir(slug) / scene_id
-            config = _run_docker(image_fs, out_dir, quality)
+            config = _run_docker(image_fs, out_dir, quality, on_stage)
             multires = config["multiRes"]
             multires["basePath"] = f"/projects/{slug}/tiles/{scene_id}"
             manifest[scene_id] = multires
             write_manifest(slug, manifest)  # skriv löpande -> överlever avbrott
+            entry["status"] = "done"
+            entry["progress"] = 100
+            entry["stage"] = "klar"
             job["done"] += 1
         job["current"] = None
         job["status"] = "done"
-    except subprocess.CalledProcessError as exc:
+    except (subprocess.CalledProcessError, Exception) as exc:  # noqa: BLE001 - visa felet i UI:t
+        cur = job.get("current")
+        if cur and cur in entries:
+            entries[cur]["status"] = "error"
+            entries[cur]["stage"] = "fel"
+        detail = getattr(exc, "output", None) or exc
         job["status"] = "error"
-        job["error"] = f"scen {job['current']}: tiling misslyckades ({exc.stderr or exc})"
-    except Exception as exc:  # noqa: BLE001 - vill visa felet i UI:t
-        job["status"] = "error"
-        job["error"] = f"scen {job['current']}: {exc}"
+        job["error"] = f"scen {cur}: {detail}"
 
 
 def start_job(slug: str, quality: int = 80) -> dict[str, Any]:
@@ -162,6 +206,10 @@ def start_job(slug: str, quality: int = 80) -> dict[str, Any]:
             "done": 0,
             "current": None,
             "error": None,
+            "scenes": [
+                {"id": sid, "status": "pending", "progress": 0, "stage": ""}
+                for sid, _ in scenes
+            ],
         }
         _jobs[slug] = job
     if not scenes:
