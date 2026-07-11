@@ -150,6 +150,54 @@ Kvarvarande arbete är i praktiken auth + multi-tenancy.
       tur -> tillbaka till den användarens turlista. Bekräftelsedialog. Löser delvis
       "radera/överför turer innan man tar bort en ägande användare".
 
+- [ ] **Redigera slug.** Idag sätts slug en gång vid skapande (slugify av namnet)
+      och är global nyckel för URL, projektmapp och jobb-dictar. Behöver kunna ändras:
+      fält på projekt-/inställningssidan -> `POST /projects/{slug}/rename-slug`.
+      Validera (slugify + unik), byt namn på mappen (`os.rename` inom PROJECTS_DIR,
+      traversal-guard), uppdatera DB-raden, glöm jobb på gamla slugen (`forget_job`
+      i tiling+bundle). Vägra eller varna om tiling pågår. OBS: bokmärkta /view-länkar
+      och redan byggda bundlar bryts (som en filflytt) - visa varning. Blir
+      team-scopad unikhet när Fas 4 landar (se nedan).
+
+## Fas 4 - Team & egna domäner (multi-tenancy nivå 2)
+
+Bakgrund (2026-07-11): för att erbjuda editorn till andra behöver turer kunna ägas
+av ett **team** (organisation), inte bara en enskild användare, och varje team vill
+kunna köra på **egen domän/subdomän**. Målbild: super-admin (jag) sköter bara infra
+(reverse proxy + TLS-baslinje); team-admin sköter sitt teams användare, turer och
+domän själv. Fortsatt single-host Docker (inget S3/kö/multi-instans, jfr Fas 3).
+
+- [ ] **Team-modell (nivå ovanpå User).** Ny `Team` (id, namn, slug, base_url,
+      created_at). `User.team_id` (FK) + `User.team_role` (member|team_admin) vid
+      sidan av globala `is_admin` (super-admin). `Project.team_id` blir ägaren
+      (teamet äger turen; teammedlemmar ser/redigerar teamets turer, ev. role-gated).
+      Behåll `owner_id` som "skapad av" (spårbarhet) men gaten går på team_id.
+      Bootstrap: super-admin + default-team; vid migrering läggs befintliga användare
+      i var sitt personligt team. Pre-produktion: blås DB + engångsskript som flyttar
+      `projects/<slug>/` in i teamnamespace (se nästa punkt).
+- [ ] **Team-scopad slug + disk-namespace.** Med team behöver slug bara vara unik
+      PER TEAM (teamA och teamB kan båda ha `tour1`). Disklayout blir
+      `projects/<team_slug>/<slug>/`, URL/jobbnycklar blir team-medvetna. Uppdatera
+      alla path-helpers (`project_dir` m.fl.), jobb-dict-nycklar och
+      `get_project_or_404` (team-gate). Stor refaktor - efter team-modellen. Låser upp
+      "Redigera slug" ovan till att bli enklare (unikhet bara inom teamet).
+- [ ] **Team-admin-UI.** Team-admin hanterar sitt teams användare (bjud in/skapa/
+      spärra/promota till team_admin - återanvänd Skiva 2-3-flödet men team-scopat),
+      ser teamets alla turer och sätter teamets `base_url`. Super-admin får team-lista
+      (skapa team, sätt/nolla domän, se alla). `require_team_admin`-gate analogt med
+      `require_admin`.
+- [ ] **Egna domäner per team.** `Team.base_url` används för alla genererings-/
+      delningslänkar (ersätter globala `SVK_BASE_URL`) - invite-länkar, export, /view.
+      Host-baserad tenant-resolution: middleware slår upp request-Host -> team så
+      `kyrkanxyz.se/...` löser teamets innehåll. TLS/proxy: **Caddy on-demand TLS** +
+      ask-endpoint (`GET /internal/tls-allowed?host=`) som svarar 200 bara om ett team
+      claimat domänen -> cert utfärdas automatiskt, super-admin rör inte Caddy per
+      kund (konfigureras en gång). Kund pekar DNS mot servern, team-admin lägger till
+      domänen i appen. **Domänverifiering krävs** (TXT-record/verifieringstoken) innan
+      en domän aktiveras - annars kan team A claima team B:s domän eller trigga
+      cert-utfärdande för godtycklig host. Överväg wildcard-subdomän
+      (`<team>.svk-panorama.se`) som nollkonfig-default före egna domäner.
+
 - [ ] **Vid produktionssättning:** återinför Alembic (baslinje ur då-aktuella
       modeller), byt admin/admin mot riktiga creds, ev. Postgres via docker-compose.
       Pre-produktion: inga migrationer - schemaändring = radera svk.db + starta om
