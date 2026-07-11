@@ -52,11 +52,17 @@ def forget_job(slug: str) -> None:
 def _relativize(slug: str, tour: dict) -> dict:
     """Applicera multires och gör alla asset-sökvägar relativa till bundle-roten."""
     apply_multires(tour, read_manifest(slug))
+    attach_prefix = f"/projects/{slug}/attachments/"
     for scene_id, scene in tour.get("scenes", {}).items():
         if scene.get("type") == "multires" and scene.get("multiRes"):
             scene["multiRes"]["basePath"] = f"tiles/{scene_id}"
         elif scene.get("type") == "equirectangular" and scene.get("panorama"):
             scene["panorama"] = "images/" + Path(scene["panorama"]).name
+        # Bild-URL:er i info-hotspots markdown (teaser/body) -> relativa.
+        for hs in scene.get("hotSpots", []):
+            for key in ("text", "body"):
+                if isinstance(hs.get(key), str) and attach_prefix in hs[key]:
+                    hs[key] = hs[key].replace(attach_prefix, "attachments/")
     tour.setdefault("default", {})["editorMode"] = False
     return tour
 
@@ -93,6 +99,12 @@ def _collect(slug: str, tour: dict) -> list[tuple[str, Path]]:
         for f in td.rglob("*"):
             if f.is_file() and f.name != "manifest.json":
                 files.append(("tiles/" + f.relative_to(td).as_posix(), f))
+
+    ad = project_dir(slug) / "attachments"
+    if ad.exists():
+        for f in ad.rglob("*"):
+            if f.is_file():
+                files.append(("attachments/" + f.relative_to(ad).as_posix(), f))
 
     # Originalbilder bara för scener som inte blev multires (saknar tiles).
     for scene in tour.get("scenes", {}).values():

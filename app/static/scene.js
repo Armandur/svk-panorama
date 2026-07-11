@@ -424,6 +424,22 @@
 	const hsText = document.getElementById("hs-text");
 	const hsBody = document.getElementById("hs-body");
 
+	// Bilduppladdning för EasyMDE: postar till turens attachments-mapp och infogar
+	// markdown-bildlänken. Funkar i både teaser och läs mer (oavsett expanderbar).
+	function uploadHsImage(file, onSuccess, onError) {
+		const fd = new FormData();
+		fd.append("file", file);
+		fetch("/projects/" + encodeURIComponent(slug) + "/attachments", {
+			method: "POST",
+			headers: { "X-CSRF-Token": window.getCsrfToken ? getCsrfToken() : "" },
+			body: fd,
+		}).then(function (r) {
+			if (!r.ok) return r.json().then(function (d) { throw new Error(d.detail || "Uppladdning misslyckades"); });
+			return r.json();
+		}).then(function (d) { onSuccess(d.url); })
+			.catch(function (e) { onError(e.message || "Uppladdning misslyckades"); });
+	}
+
 	// Samma markdown-editor som i admin: EasyMDE med vår sanerade preview. Teasern
 	// får en kompakt toolbar, läs mer-innehållet en fylligare. Initieras en gång;
 	// value() sätts/läses per hotspot och codemirror.refresh() körs när panelen visas.
@@ -436,9 +452,11 @@
 			autoDownloadFontAwesome: false,
 			minHeight: compact ? "60px" : "120px",
 			maxHeight: compact ? "22vh" : "38vh", // skrolla vid mycket text (input + preview)
+			uploadImage: true,
+			imageUploadFunction: uploadHsImage,
 			toolbar: compact
-				? ["bold", "italic", "link", "|", "preview"]
-				: ["bold", "italic", "heading", "|", "unordered-list", "ordered-list", "link", "|", "preview", "guide"],
+				? ["bold", "italic", "link", "upload-image", "|", "preview"]
+				: ["bold", "italic", "heading", "|", "unordered-list", "ordered-list", "link", "upload-image", "|", "preview", "guide"],
 			previewRender: function (t) { return window.renderMarkdown(t); },
 		});
 	}

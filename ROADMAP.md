@@ -255,10 +255,14 @@ Faser (minst till störst):
       (`pnlm-hotspot pnlm-info hs-expandable`) + `clickHandlerFunc`. Editor: kryssruta
       "Expanderbar" (bara info-typ) + body-textarea med live-preview; save persisterar.
       Fungerar i scen/preview/runtime/bundle/publik /s.
-- [ ] **4. Bilder i hotspot-body.** Ladda upp bilder i projektet (media-/
-      attachments-mapp per tur), referera via markdown-bildsyntax. Måste inkluderas +
-      relativiseras i bundle-exporten och nås via publika /s-routen. Enkel
-      media-hantering i editorn (ladda upp -> få markdown-snutt att klistra in).
+- [x] **4. Bilder i info-hotspots KLAR (2026-07-12).** EasyMDE-editorn har
+      bilduppladdning (upload-image-knapp + drag/paste) i BÅDA fälten (teaser + läs
+      mer), oberoende av expanderbar. `POST /projects/{slug}/attachments` sparar till
+      `projects/<slug>/attachments/` (validering + CSRF-header) och returnerar URL som
+      infogas som markdown. Renderas i tooltip/ark/runtime; publika /s skriver om
+      `/projects/<slug>/` -> `/s/{token}/` (befintlig JSON-replace). Bundle: attachments-
+      mappen kopieras och bild-URL:erna relativiseras (`_relativize` + `_collect`).
+      **Markdown-funktionen (fas 1-4) därmed KLAR.**
 
 - [x] **Karta-knappen försvinner i pannellum-helskärm FIXAT (2026-07-12).**
       `viewer.js` flyttar kart-knappen + överlägget in i det fullskärmade elementet
