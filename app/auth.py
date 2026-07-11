@@ -6,9 +6,27 @@ from __future__ import annotations
 
 import bcrypt
 from fastapi import Depends, HTTPException, Request, status
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from sqlalchemy.orm import Session
 
+from app import config
 from app.database import User, get_db
+
+# Inbjudningslänkar: signerad, tidsbegränsad token som bär user-id. Stateless -
+# ingen token lagras i DB; en inbjuden användare har bara password_hash=NULL.
+_invite_serializer = URLSafeTimedSerializer(config.SECRET_KEY, salt="svk-invite")
+INVITE_MAX_AGE = 7 * 24 * 3600  # 7 dygn
+
+
+def make_invite_token(user_id: int) -> str:
+    return _invite_serializer.dumps(user_id)
+
+
+def read_invite_token(token: str) -> int | None:
+    try:
+        return _invite_serializer.loads(token, max_age=INVITE_MAX_AGE)
+    except (BadSignature, SignatureExpired):
+        return None
 
 
 def hash_password(password: str) -> str:

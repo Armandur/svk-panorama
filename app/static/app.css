@@ -451,6 +451,13 @@ tr[data-preview-scene] { cursor: help; }
 .theme-colors label { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; margin: 0; }
 .theme-colors input[type="color"] { width: 3rem; height: 1.6rem; padding: 0; margin: 0; }
 
+/* Login / inbjudan / admin */
+.login-section { max-width: 26rem; margin: 2rem auto; }
+.login-error { background: var(--svk-danger); color: #fff; padding: 0.5rem 0.7rem; border-radius: 0.3rem; font-size: 0.9rem; }
+.logout-form { margin: 0; }
+.invite-details summary { cursor: pointer; font-size: 0.85rem; }
+.invite-link { width: 100%; margin-top: 0.3rem; font-family: ui-monospace, monospace; font-size: 0.78rem; }
+
 /* Tiling-status-badge (projektlista + hemsida) */
 .tile-badge { font-size: 0.8rem; white-space: nowrap; }
 .tile-none { display: none; }

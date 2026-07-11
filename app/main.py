@@ -12,6 +12,7 @@ from starlette.staticfiles import StaticFiles
 from app import config
 from app.database import init_db
 from app.routes import (
+    admin,
     auth,
     export,
     plan,
@@ -58,6 +59,7 @@ async def no_cache_static(request, call_next):
 
 
 app.include_router(auth.router)
+app.include_router(admin.router)
 app.include_router(projects.router)
 app.include_router(uploads.router)
 app.include_router(plan.router)

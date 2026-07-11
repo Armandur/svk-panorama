@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fastapi import HTTPException  # noqa: E402
 from PIL import Image  # noqa: E402
 
-from app.auth import hash_password, verify_password  # noqa: E402
+from app.auth import hash_password, make_invite_token, read_invite_token, verify_password  # noqa: E402
 from app.routes.preview import FONT_KEYS, _hex  # noqa: E402
 from app.routes.auth import _safe_next  # noqa: E402
 from app.services.bundle import _relativize  # noqa: E402
@@ -141,6 +141,11 @@ def test_auth():
     check("safe_next extern -> /", _safe_next("//evil.com") == "/")
     check("safe_next absolut-url -> /", _safe_next("http://evil.com") == "/")
     check("safe_next None -> /", _safe_next(None) == "/")
+    # Inbjudnings-token (signerad, stateless).
+    tok = make_invite_token(42)
+    check("invite round-trip", read_invite_token(tok) == 42)
+    check("invite skräp -> None", read_invite_token("nonsense") is None)
+    check("invite manipulerad -> None", read_invite_token(tok[:-3] + "aaa") is None)
 
 
 def main() -> int:
