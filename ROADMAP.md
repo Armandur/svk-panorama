@@ -168,19 +168,33 @@ kunna köra på **egen domän/subdomän**. Målbild: super-admin (jag) sköter b
 domän själv. Fortsatt single-host Docker (inget S3/kö/multi-instans, jfr Fas 3).
 
 - [ ] **Team-modell (nivå ovanpå User).** Ny `Team` (id, namn, slug, base_url,
-      created_at). `User.team_id` (FK) + `User.team_role` (member|team_admin) vid
-      sidan av globala `is_admin` (super-admin). `Project.team_id` blir ägaren
-      (teamet äger turen; teammedlemmar ser/redigerar teamets turer, ev. role-gated).
-      Behåll `owner_id` som "skapad av" (spårbarhet) men gaten går på team_id.
-      Bootstrap: super-admin + default-team; vid migrering läggs befintliga användare
-      i var sitt personligt team. Pre-produktion: blås DB + engångsskript som flyttar
-      `projects/<slug>/` in i teamnamespace (se nästa punkt).
+      created_at). `User.team_id` (FK, **nullable**) + `User.team_role`
+      (member|team_admin) vid sidan av globala `is_admin` (super-admin).
+      **Beslutade produktval (2026-07-11):**
+      - **Team är valfritt.** En enskild användare kan finnas helt utan team
+        (`team_id=NULL`) och äger då sina turer själv (`Project.owner_id`,
+        `team_id=NULL`). Inget tvingar in någon i ett team.
+      - **Vem som helst kan starta ett team** (self-serve, inte bara super-admin).
+        Skaparen blir `team_admin`. En användare tillhör ett team (enkelt FK; join-
+        tabell för fler-team lämnas till framtiden om det behövs).
+      - **Inom ett team delas allt** - alla medlemmar kan se OCH redigera alla
+        teamets turer (ingen per-tur-rollgrind). Teamet äger turen via
+        `Project.team_id`; `owner_id` behålls bara som "skapad av" (spårbarhet).
+      Gaten i `get_project_or_404` blir: släpp igenom om super-admin ELLER (turen
+      har team och `user.team_id == project.team_id`) ELLER (turen saknar team och
+      `project.owner_id == user.id`). En användare kan alltså ha både personliga
+      turer (team_id NULL) och teamturer samtidigt.
+      Bootstrap: super-admin utan team; befintliga användare/turer förblir team-lösa
+      vid migrering (personliga). Pre-produktion: blås DB + ev. engångsskript om/när
+      disk-namespace ändras (se nästa punkt).
 - [ ] **Team-scopad slug + disk-namespace.** Med team behöver slug bara vara unik
-      PER TEAM (teamA och teamB kan båda ha `tour1`). Disklayout blir
-      `projects/<team_slug>/<slug>/`, URL/jobbnycklar blir team-medvetna. Uppdatera
-      alla path-helpers (`project_dir` m.fl.), jobb-dict-nycklar och
-      `get_project_or_404` (team-gate). Stor refaktor - efter team-modellen. Låser upp
-      "Redigera slug" ovan till att bli enklare (unikhet bara inom teamet).
+      PER TEAM (teamA och teamB kan båda ha `tour1`). Disklayout: teamturer under
+      `projects/<team_slug>/<slug>/`, team-lösa (solo) turer kvar platt i
+      `projects/<slug>/` (eller ett namespace för personliga). Solo-slugs förblir
+      globalt unika; teamslugs unika inom teamet. Uppdatera alla path-helpers
+      (`project_dir` m.fl.), jobb-dict-nycklar och `get_project_or_404` (team-gate).
+      Stor refaktor - efter team-modellen. Låser upp "Redigera slug" ovan till att
+      bli enklare (unikhet bara inom teamet för teamturer).
 - [ ] **Team-admin-UI.** Team-admin hanterar sitt teams användare (bjud in/skapa/
       spärra/promota till team_admin - återanvänd Skiva 2-3-flödet men team-scopat),
       ser teamets alla turer och sätter teamets `base_url`. Super-admin får team-lista
