@@ -480,7 +480,9 @@ tr[data-preview-scene] { cursor: help; }
 }
 .avatar-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .avatar-sm { width: 2.1rem; height: 2.1rem; font-size: 0.9rem; }
-.avatar-lg { width: 4.5rem; height: 4.5rem; font-size: 1.7rem; border: 0; cursor: pointer; padding: 0; }
+/* Högre specificitet (.avatar.avatar-lg) än Pico:s [role=button] så
+   role="button"-spanen inte får knapp-padding/line-height och blir oval. */
+.avatar.avatar-lg { width: 4.5rem; height: 4.5rem; min-height: 0; font-size: 1.7rem; border: 0; cursor: pointer; padding: 0; line-height: 1; }
 .avatar-xl { width: 7rem; height: 7rem; font-size: 2.6rem; }
 /* Genomskinlig kamera-overlay på stora avataren, syns vid hover. */
 .avatar-cam {
@@ -525,11 +527,17 @@ tr[data-preview-scene] { cursor: help; }
 .flyout-email { color: var(--pico-muted-color); font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .flyout-link { display: inline-block; margin-top: 0.4rem; font-size: 0.9rem; }
 
-/* Ändra foto-modal */
+/* Ändra foto-modal + interaktiv beskärning */
 .avatar-modal-article { max-width: 26rem; text-align: center; }
-.avatar-preview-wrap { display: flex; justify-content: center; margin: 0.8rem 0; }
 .avatar-actions { display: flex; gap: 0.6rem; justify-content: center; margin: 0.6rem 0; }
 .avatar-actions button { margin: 0; }
+.crop-stage { position: relative; width: 260px; max-width: 100%; height: 260px; margin: 0.8rem auto; display: flex; align-items: center; justify-content: center; }
+#crop-canvas { width: 260px; height: 260px; border-radius: 50%; touch-action: none; cursor: grab; background: #000; }
+#crop-canvas:active { cursor: grabbing; }
+.crop-controls { display: flex; align-items: center; gap: 0.6rem; justify-content: center; margin: 0.2rem 0 0.6rem; }
+.crop-controls label { margin: 0; font-size: 0.9rem; }
+.crop-controls input[type="range"] { flex: 1; max-width: 12rem; margin: 0; }
+.crop-controls button { margin: 0; padding: 0.3rem 0.7rem; }
 
 /* --- Admin-vy: vänster kategorier + huvudyta --- */
 .admin-layout { display: flex; gap: 1.5rem; align-items: flex-start; }

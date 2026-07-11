@@ -5,13 +5,24 @@
 			<h3>Ändra foto</h3>
 			<button id="avatar-modal-close" type="button" class="secondary outline" aria-label="Stäng">&times;</button>
 		</div>
-		<div class="avatar-preview-wrap">
-			<span class="avatar avatar-xl">
+
+		<div class="crop-stage">
+			<!-- Visas när ingen ny bild valts: nuvarande avatar / initial. -->
+			<span class="avatar avatar-xl" id="crop-current">
 				<span class="avatar-initial">{{ (_dn[:1] | upper) if _dn else '?' }}</span>
-				<img id="avatar-preview" class="avatar-img" src="/profile/avatar" alt="" onerror="this.style.display='none'">
+				<img class="avatar-img" src="/profile/avatar" alt="" onerror="this.style.display='none'">
 			</span>
+			<!-- Visas vid beskärning av en vald bild. -->
+			<canvas id="crop-canvas" width="260" height="260" hidden></canvas>
 		</div>
-		<p class="hint">Bilden center-croppas till en kvadrat.</p>
+
+		<p class="hint" id="crop-hint" hidden>Dra för att flytta, zooma för att rama in. Beskärs till en cirkel.</p>
+		<div class="crop-controls" id="crop-controls" hidden>
+			<label for="crop-zoom">Zoom</label>
+			<input type="range" id="crop-zoom" min="1" max="3" step="0.01" value="1">
+			<button id="crop-rotate" type="button" class="secondary outline">Rotera</button>
+		</div>
+
 		<input type="file" id="avatar-file" accept="image/png,image/jpeg" hidden>
 		<div class="avatar-actions">
 			<button id="avatar-choose" type="button" class="secondary outline">Ändra</button>

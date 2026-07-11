@@ -32,13 +32,13 @@
 							<form method="post" action="/logout" class="logout-form"><button type="submit" class="linklike">Logga ut</button></form>
 						</div>
 						<div class="flyout-user">
-							<button type="button" id="avatar-big" class="avatar avatar-lg" title="Ändra profilbild">
+							<span id="avatar-big" class="avatar avatar-lg" role="button" tabindex="0" title="Ändra profilbild">
 								<span class="avatar-initial">{{ _initial }}</span>
 								<img class="avatar-img" src="/profile/avatar" alt="" onerror="this.remove()">
 								<span class="avatar-cam" aria-hidden="true">
 									<svg viewBox="0 0 24 24" width="26" height="26" fill="#fff"><path d="M9 3l-1.5 2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.5L15 3H9zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
 								</span>
-							</button>
+							</span>
 							<div class="flyout-meta">
 								<div class="flyout-name">{{ _dn }}</div>
 								<div class="flyout-email">{{ request.session.get('email') }}</div>
