@@ -384,11 +384,14 @@
 		return "Scen " + id + (t ? " - " + t : "");
 	}
 	function cloneHs(list) {
-		return (list || []).map(function (h) {
+		const cloned = (list || []).map(function (h) {
 			const c = Object.assign({}, h);
 			if (c.type === "scene") c.text = sceneEditorLabel(c.sceneId);
 			return c;
 		});
+		// Markdown-tooltip på info-hotspots (bara på klonerna som pannellum får).
+		if (window.attachHsTooltips) window.attachHsTooltips(cloned);
+		return cloned;
 	}
 
 	// Skriv om aktuell scens hotspots i pannellum-configen från turen och ladda
@@ -419,6 +422,18 @@
 	const hsFieldSceneTop = document.getElementById("hs-field-scene-top");
 	const hsFieldSceneDir = document.getElementById("hs-field-scene-dir");
 	const hsText = document.getElementById("hs-text");
+	const hsTextPreview = document.getElementById("hs-text-preview");
+	function updateHsPreview() {
+		if (!hsTextPreview) return;
+		const v = hsText.value.trim();
+		if (v && window.renderMarkdown) {
+			hsTextPreview.innerHTML = renderMarkdown(v);
+			hsTextPreview.hidden = false;
+		} else {
+			hsTextPreview.hidden = true;
+		}
+	}
+	if (hsText) hsText.addEventListener("input", updateHsPreview);
 	const hsUrl = document.getElementById("hs-url");
 	const hsSceneSel = document.getElementById("hs-scene");
 	const hsTyaw = document.getElementById("hs-tyaw");
@@ -448,6 +463,7 @@
 		hsFieldSceneTop.hidden = ctx.type !== "scene";
 		hsFieldSceneDir.hidden = ctx.type !== "scene";
 		hsText.value = (ctx.hs && ctx.hs.text != null) ? ctx.hs.text : "";
+		updateHsPreview();
 		hsUrl.value = (ctx.hs && ctx.hs.URL) || "";
 		if (ctx.type === "scene") {
 			const target = (ctx.hs && ctx.hs.sceneId) || sceneIds().filter(function (id) { return id !== ctx.cur; })[0];

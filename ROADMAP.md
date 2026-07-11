@@ -241,10 +241,13 @@ Faser (minst till störst):
       på ny kategori `/admin/settings/texts` (`admin_texts.html`) med EasyMDE (preview
       via renderMarkdown); lagras i `Setting` (`workflow_text`, DB-override, default =
       `WORKFLOW.md` tills admin sparar). `Setting.value` -> `Text` (lång text).
-- [ ] **2. Markdown i info-hotspots (inline).** Hotspot-textfältet blir markdown,
-      renderas i tooltip/popover via `createTooltipFunc`. EasyMDE i hotspot-editorn
-      (`scene.js`-modalen). Fungerar i viewer + bundle + publik /s-vy (vendora
-      renderaren i bundlen).
+- [x] **2. Markdown i info-hotspots (inline) KLAR (2026-07-12).** Info-hotspots
+      renderas som sanerad markdown i tooltipen via pannellums `createTooltipFunc`
+      (`markdown.js`: `mdHotspotTooltip` + `attachHsTooltips`, kopplas på kloner i
+      scene.js/tour-preview.js/viewer.js). Hotspot-editorn: textarea + markdown-hint +
+      live-preview. marked+DOMPurify+markdown.js laddas på scen/preview/viewer och
+      inkluderas i bundlen (bundle.py). Gäller även publika /s-vyn. (EasyMDE i själva
+      hotspot-modalen valdes bort - textarea+preview räcker och är lättare.)
 - [ ] **3. Expanderbara hotspots (läs mer).** `teaser`/`body`/`expandable` på
       hotspot. Fullskärms-ark med renderad body. Affordans-ikon. Hover=teaser/
       klick=öppna på dator, tap=öppna på mobil. Editor: toggle + body-EasyMDE +
@@ -260,12 +263,10 @@ Faser (minst till störst):
       vilket element pannellum fullskärmar. Gäller runtime-viewern + bundlen + publika
       /s-vyn. (Ej browser-testad i äkta helskärm - headless stödjer inte fullscreen.)
 
-- [ ] **Avstavning/radbrytning i små info-hotspot-rutor.** Pannellum-tooltipen
-      (`div.pnlm-tooltip span`, `max-width:200px` + padding) är för smal/har för mycket
-      padding - även korta ord bryts (t.ex. "Test123" radbryts mellan 2 och 3). Fundera
-      över tooltip-bredd, padding och `word-break`/`overflow-wrap`/`hyphens` så korta ord
-      inte bryts. Hör ihop med markdown-i-hotspots (rich text-sektionen) - ta gärna
-      samlat där.
+- [x] **Avstavning/radbrytning i små info-hotspot-rutor FIXAT (2026-07-12).** Löstes
+      ihop med markdown fas 2: `.pnlm-tooltip span.hs-md` fick `word-break: normal`,
+      `overflow-wrap: break-word`, `hyphens: none`, `max-width: 280px` och vänsterställd
+      text (i app.css + viewer.css). Korta ord (t.ex. "Test123") bryts inte längre.
 
 - [x] **Upplösningsväljare i preview-steget KLAR (2026-07-12).** Multires appliceras
       nu klient-side i `tour-preview.js` (defaultar multires) i stället för i

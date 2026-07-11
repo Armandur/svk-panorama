@@ -111,8 +111,10 @@
 			<select id="hs-scene"></select>
 		</div>
 		<div id="hs-field-text">
-			<label for="hs-text">Text (visas vid hover)</label>
-			<input type="text" id="hs-text" maxlength="500">
+			<label for="hs-text">Text (markdown, visas vid hover)</label>
+			<textarea id="hs-text" maxlength="2000" rows="4"></textarea>
+			<p class="hint">Markdown stöds: <code>**fet**</code>, <code>*kursiv*</code>, <code># rubrik</code>, <code>- lista</code>, <code>[länk](https://...)</code>.</p>
+			<div id="hs-text-preview" class="markdown-body hs-text-preview" hidden></div>
 		</div>
 		<div id="hs-field-url">
 			<label for="hs-url">URL</label>
@@ -149,5 +151,8 @@
 <script src="/js/geo.js"></script>
 <script src="/static/preview.js"></script>
 <script src="/static/settings.js"></script>
+<script src="/static/vendor/marked/marked.min.js"></script>
+<script src="/static/vendor/dompurify/purify.min.js"></script>
+<script src="/static/markdown.js"></script>
 <script src="/static/scene.js"></script>
 {% endblock %}

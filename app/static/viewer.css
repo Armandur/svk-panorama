@@ -19,6 +19,25 @@ html, body {
    verkligen slår igenom överallt, inte bara på titelboxen. */
 .pnlm-container { font-family: var(--tour-font) !important; }
 
+/* Markdown i info-hotspot-tooltips: bredare + normal radbrytning (korta ord bryts inte). */
+.pnlm-tooltip span.hs-md {
+	max-width: 280px;
+	text-align: left;
+	white-space: normal;
+	word-break: normal;
+	overflow-wrap: break-word;
+	hyphens: none;
+	line-height: 1.45;
+}
+.hs-md p { margin: 0.3em 0; }
+.hs-md p:first-child { margin-top: 0; }
+.hs-md p:last-child { margin-bottom: 0; }
+.hs-md h1, .hs-md h2, .hs-md h3, .hs-md h4 { margin: 0.4em 0 0.2em; font-size: 1.05em; }
+.hs-md ul, .hs-md ol { margin: 0.3em 0; padding-left: 1.2em; }
+.hs-md a { color: #7cc0ff; }
+.hs-md img { max-width: 100%; height: auto; border-radius: 3px; }
+.hs-md code { background: rgba(255, 255, 255, 0.18); padding: 0 0.3em; border-radius: 3px; }
+
 #panorama {
 	position: fixed;
 	inset: 0;

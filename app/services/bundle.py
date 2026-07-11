@@ -106,6 +106,10 @@ def _collect(slug: str, tour: dict) -> list[tuple[str, Path]]:
         files.append((name, _VENDOR / name))
     for name in ("viewer.js", "viewer.css"):
         files.append((name, _STATIC / name))
+    # Markdown-rendering av info-hotspots i den publicerade turen.
+    files.append(("marked.min.js", _VENDOR / "marked" / "marked.min.js"))
+    files.append(("purify.min.js", _VENDOR / "dompurify" / "purify.min.js"))
+    files.append(("markdown.js", _STATIC / "markdown.js"))
     if map_image_path(slug).exists():
         files.append(("map.png", map_image_path(slug)))
     return files

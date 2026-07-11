@@ -366,6 +366,9 @@
 	if (startModal) startModal.addEventListener("click", function (e) { if (e.target === startModal) closeStartModal(); });
 
 	// --- Start ---
+	// Markdown-tooltip på info-hotspots (funktionerna stannar på objekten över rebuilds).
+	if (window.attachHsTooltips) sceneIds().forEach(function (id) { attachHsTooltips(tour.scenes[id].hotSpots); });
+
 	buildViewer(firstScene, null);
 	if (mapImg) {
 		if (mapImg.complete && mapImg.naturalWidth) buildDots();

@@ -26,6 +26,13 @@
 		root.setProperty("--current-dot-color", t.currentColor || "#8b0000");
 	})();
 
+	// Rendera info-hotspots text som markdown i tooltipen.
+	if (window.attachHsTooltips) {
+		Object.keys(tour.scenes || {}).forEach(function (id) {
+			attachHsTooltips(tour.scenes[id].hotSpots);
+		});
+	}
+
 	const viewer = pannellum.viewer("panorama", tour);
 
 	// --- Kartöverlägg ------------------------------------------------------
