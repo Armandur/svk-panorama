@@ -73,6 +73,17 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
 - [ ] Ev. finare tiling-progress via filräkning (räkna face*.tif 0-6 under
       nona-fasen + tile-jpg mot förväntat antal) i stället för bara faser.
 
-## Fas 3 - SaaS-lager (senare)
+## Fas 3 - Multi-tenant self-host (single-host Docker)
 
-- [ ] Auth, multi-tenant, objektlagring, jobbkö för tiling, hosting.
+Modell (beslutat 2026-07-11): SaaS = self-host via Docker på Unraid, ev. senare
+Hetzner via docker-compose. **Ingen** objektlagring/S3 (lokal disk på volym),
+**ingen** jobbkö (in-process räcker för en instans), **ingen** multi-instans.
+Kvarvarande arbete är i praktiken auth + multi-tenancy.
+
+- [x] **Skiva 1: auth + projekt-ägarskap** (commit 5f86954). Sluten inbjudan,
+      bcrypt-login, signerad session, `User` + `owner_id`, Alembic, ägar-gate.
+- [ ] **Skiva 2: admin-UI + inbjudningsflöde** - lista/skapa användare, generera
+      inbjudningslänk (signerad token) så inbjudna sätter eget lösenord.
+- [ ] Gata `/projects`-static-mounten (råfiler nås idag utan ägar-koll - låg risk
+      på sluten värd, men bör stängas för äkta isolering).
+- [ ] Ev. Postgres via docker-compose när/om det behövs (SQLAlchemy-grunden klar).
