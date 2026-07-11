@@ -40,6 +40,11 @@ html, body {
 	z-index: 60;
 	width: min(42vw, 460px);
 	max-width: calc(100vw - 24px);
+}
+#map-container[data-size="small"] { width: min(30vw, 300px); }
+#map-container[data-size="medium"] { width: min(42vw, 460px); }
+#map-container[data-size="large"] { width: min(60vw, 640px); }
+#map-container {
 	background: rgba(0, 0, 0, 0.55);
 	border: 1px solid rgba(255, 255, 255, 0.25);
 	border-radius: 8px;

@@ -16,6 +16,7 @@
 	// --- Kartöverlägg ------------------------------------------------------
 	const container = document.getElementById("map-container");
 	if (!container) return; // Turen saknar kartbild.
+	container.dataset.size = (tour.default && tour.default.mapSize) || "medium";
 
 	const mapImg = document.getElementById("map-img");
 	const dotsLayer = document.getElementById("map-dots");

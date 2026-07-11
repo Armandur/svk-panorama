@@ -8,7 +8,7 @@ from starlette.staticfiles import StaticFiles
 
 from app import config
 from app.database import init_db
-from app.routes import plan, previews, projects, scenes, tiling, uploads, viewer
+from app.routes import plan, preview, previews, projects, scenes, tiling, uploads, viewer
 
 
 @asynccontextmanager
@@ -36,6 +36,7 @@ app.include_router(plan.router)
 app.include_router(previews.router)
 app.include_router(scenes.router)
 app.include_router(tiling.router)
+app.include_router(preview.router)
 app.include_router(viewer.router)
 
 # Egen statik (CSS/JS för editorn).

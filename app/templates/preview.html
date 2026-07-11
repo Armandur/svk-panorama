@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Förhandsvisa & turinställningar - {{ project.name }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/vendor/pannellum.css">{% endblock %}
+{% block body_attrs %} class="plan-fullscreen" data-slug="{{ project.slug }}"{% endblock %}
+{% block main_attrs %} class="plan-app"{% endblock %}
+{% block content %}
+
+{% if not tour.scenes %}
+<article class="notice">
+	<p>Inga scener ännu. <a href="/projects/{{ project.slug }}">Ladda upp bilder</a> först.</p>
+</article>
+{% else %}
+<aside class="planner-side">
+	<nav class="plan-topnav" aria-label="Arbetssteg">
+		<a href="/" role="button" class="secondary outline" title="Till projektlistan">Huvudmeny</a>
+		<a href="/projects/{{ project.slug }}/scenes" role="button" class="secondary outline">&lt;- Scener</a>
+		<a href="/projects/{{ project.slug }}/view" role="button" class="secondary" target="_blank" rel="noopener">Helskärm</a>
+	</nav>
+	<hgroup class="plan-heading">
+		<h2>{{ project.name }}</h2>
+		<p>Turinställningar: prova autorotate, övergångar m.m. och bläddra mellan scener för att känna efter.</p>
+	</hgroup>
+
+	<article>
+		<div class="section-head">
+			<h3>Autorotate</h3>
+		</div>
+		<label class="fullres-label">
+			<input type="checkbox" id="ar-enabled" role="switch"> Rotera automatiskt
+		</label>
+		<label for="ar-speed">Hastighet (grader/sek)</label>
+		<div class="roll-row">
+			<input type="range" id="ar-speed" min="0.5" max="10" step="0.5" value="2">
+			<input type="number" id="ar-speed-num" class="roll-num" min="0.5" max="10" step="0.5" value="2">
+		</div>
+		<fieldset>
+			<label><input type="radio" name="ar-dir" value="-1" checked> Medurs</label>
+			<label><input type="radio" name="ar-dir" value="1"> Moturs</label>
+		</fieldset>
+		<label for="ar-delay">Återuppta efter inaktivitet (sek)</label>
+		<div class="roll-row">
+			<input type="range" id="ar-delay" min="0" max="15" step="0.5" value="2">
+			<input type="number" id="ar-delay-num" class="roll-num" min="0" max="15" step="0.5" value="2">
+		</div>
+	</article>
+
+	<article>
+		<h3>Övergång & start</h3>
+		<label for="fade">Scen-övergång (sek)</label>
+		<div class="roll-row">
+			<input type="range" id="fade" min="0" max="3" step="0.1" value="1.5">
+			<input type="number" id="fade-num" class="roll-num" min="0" max="3" step="0.1" value="1.5">
+		</div>
+		<label for="first-scene">Startscen</label>
+		<select id="first-scene"></select>
+	</article>
+
+	<article>
+		<h3>Kartstorlek</h3>
+		<p class="hint">Hur stor översiktskartan visas i den publicerade turen.</p>
+		<fieldset>
+			<label><input type="radio" name="map-size" value="small"> Liten</label>
+			<label><input type="radio" name="map-size" value="medium" checked> Mellan</label>
+			<label><input type="radio" name="map-size" value="large"> Stor</label>
+		</fieldset>
+	</article>
+
+	<article>
+		<p id="dirty-badge" class="dirty-badge" hidden>Osparade ändringar</p>
+		<div class="save-row">
+			<button id="save-btn" type="button">Spara inställningar</button>
+			<button id="discard-btn" type="button" class="secondary outline" hidden>Återställ</button>
+		</div>
+	</article>
+</aside>
+
+<div class="panorama-wrap">
+	<div id="panorama"></div>
+	<div class="scene-browse">
+		<button id="prev-scene" type="button" class="secondary" title="Föregående scen">&larr;</button>
+		<span id="cur-scene-label">Scen -</span>
+		<button id="next-scene" type="button" class="secondary" title="Nästa scen">&rarr;</button>
+	</div>
+	{% if has_map_image %}
+	<div id="preview-map" class="preview-map" data-size="medium">
+		<img id="preview-map-img" src="/projects/{{ project.slug }}/map.png" alt="Översiktskarta">
+		<div id="preview-map-dots"></div>
+	</div>
+	{% endif %}
+</div>
+{% endif %}
+
+<script id="tour-data" type="application/json">{{ tour | tojson }}</script>
+<script id="map-data" type="application/json">{{ map_data | tojson }}</script>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/vendor/pannellum.js"></script>
+<script src="/static/tour-preview.js"></script>
+{% endblock %}

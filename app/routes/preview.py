@@ -1,0 +1,77 @@
+"""Turinställningar + förhandsvisning: sätt globala default-inställningar
+(autorotate, fördröjning, scen-fade, förstascen, kartstorlek) och förhandsgranska
+hela turen i multires med scenbläddring."""
+from __future__ import annotations
+
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
+
+from app.database import Project
+from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
+from app.services.project_files import _natural_key, map_image_path, read_map, read_tour, write_tour
+from app.services.tiling import apply_multires, read_manifest
+
+router = APIRouter()
+
+
+class TourSettings(BaseModel):
+    autoLoad: bool = True
+    autoRotateEnabled: bool = True
+    autoRotateSpeed: float = 2.0          # magnitud (grader/sek)
+    autoRotateDir: int = -1               # -1 eller 1 (rotationsriktning)
+    autoRotateInactivityDelay: int = 2000  # ms innan autorotate återupptas
+    sceneFadeDuration: int = 1500          # ms crossfade vid scenbyte
+    firstScene: str = ""
+    mapSize: str = "medium"                # small | medium | large
+
+
+@router.get("/projects/{slug}/preview", response_class=HTMLResponse)
+def preview_view(
+    request: Request,
+    slug: str,
+    project: Project = Depends(get_project_or_404),
+) -> HTMLResponse:
+    tour = read_tour(slug)
+    manifest = read_manifest(slug)
+    if manifest:
+        apply_multires(tour, manifest)
+    scene_ids = sorted(tour.get("scenes", {}).keys(), key=_natural_key)
+    token = new_csrf_token()
+    response = templates.TemplateResponse(
+        request,
+        "preview.html",
+        {
+            "project": project,
+            "tour": tour,
+            "map_data": read_map(slug),
+            "has_map_image": map_image_path(slug).exists(),
+            "scene_ids": scene_ids,
+            "csrf_token": token,
+        },
+    )
+    set_csrf_cookie(response, token)
+    return response
+
+
+@router.post("/projects/{slug}/tour-settings")
+def save_tour_settings(
+    slug: str,
+    payload: TourSettings,
+    project: Project = Depends(get_project_or_404),
+    _csrf: None = Depends(verify_csrf_header),
+) -> dict:
+    tour = read_tour(slug)  # rå (equirektangulär) sanningskälla
+    default = tour.setdefault("default", {})
+    default["autoLoad"] = payload.autoLoad
+    speed = abs(payload.autoRotateSpeed)
+    direction = 1 if payload.autoRotateDir >= 0 else -1
+    default["autoRotate"] = direction * speed if payload.autoRotateEnabled else False
+    default["autoRotateInactivityDelay"] = max(0, payload.autoRotateInactivityDelay)
+    default["sceneFadeDuration"] = max(0, payload.sceneFadeDuration)
+    if payload.firstScene and payload.firstScene in tour.get("scenes", {}):
+        default["firstScene"] = payload.firstScene
+    default["mapSize"] = payload.mapSize if payload.mapSize in ("small", "medium", "large") else "medium"
+    default["editorMode"] = False
+    write_tour(slug, tour)
+    return {"ok": True}

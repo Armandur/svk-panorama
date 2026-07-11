@@ -377,6 +377,47 @@ tr[data-preview-scene] { cursor: help; }
 .ufile-done { color: var(--svk-ok); }
 .ufile-error { color: var(--svk-danger); }
 
+/* Förhandsvisning: scenbläddring + karta */
+.scene-browse {
+	position: absolute;
+	bottom: 0.8rem; left: 50%;
+	transform: translateX(-50%);
+	z-index: 15;
+	display: flex; align-items: center; gap: 0.5rem;
+	background: rgba(0, 0, 0, 0.6);
+	color: #fff;
+	padding: 0.3rem 0.6rem;
+	border-radius: 0.4rem;
+	font-size: 0.9rem;
+}
+.scene-browse button { margin: 0; padding: 0.15rem 0.6rem; width: auto; }
+.preview-map {
+	position: absolute;
+	top: 0.8rem; right: 0.8rem;
+	z-index: 15;
+	border: 2px solid rgba(255, 255, 255, 0.75);
+	border-radius: 0.3rem;
+	overflow: hidden;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+	background: #fff;
+	line-height: 0;
+}
+.preview-map[data-size="small"] { width: 160px; }
+.preview-map[data-size="medium"] { width: 260px; }
+.preview-map[data-size="large"] { width: 380px; }
+.preview-map img { display: block; width: 100%; height: auto; }
+#preview-map-dots { position: absolute; inset: 0; }
+.preview-dot {
+	position: absolute;
+	width: 12px; height: 12px;
+	margin: -6px 0 0 -6px; padding: 0;
+	border-radius: 50%;
+	background: #666; border: 2px solid #fff;
+	cursor: pointer;
+}
+.preview-dot:hover { background: #999; }
+.preview-dot.current { background: darkred; }
+
 /* Tiling-status-badge (projektlista + hemsida) */
 .tile-badge { font-size: 0.8rem; white-space: nowrap; }
 .tile-none { display: none; }
