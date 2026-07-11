@@ -33,7 +33,9 @@
 	});
 
 	form.addEventListener("submit", function (e) {
-		if (apply.disabled) { e.preventDefault(); return; }
+		if (form.dataset.confirmed === "1") { delete form.dataset.confirmed; return; }
+		e.preventDefault();
+		if (apply.disabled) return;
 		var n = checked().length;
 		var labels = {
 			reset_password: "Tvinga lösenordsbyte för " + n + " användare?",
@@ -41,7 +43,16 @@
 			enable: "Aktivera " + n + " konton?",
 			delete: "Ta bort " + n + " användare? Detta går inte att ångra.",
 		};
-		if (!confirm(labels[actionSel.value] || "Utför åtgärd på " + n + " användare?")) e.preventDefault();
+		var isDelete = actionSel.value === "delete";
+		window.confirmDialog(labels[actionSel.value] || "Utför åtgärd på " + n + " användare?", {
+			danger: isDelete,
+			confirmText: isDelete ? "Ta bort" : "Kör",
+		}).then(function (ok) {
+			if (!ok) return;
+			form.dataset.confirmed = "1";
+			if (typeof form.requestSubmit === "function") form.requestSubmit();
+			else form.submit();
+		});
 	});
 
 	sync();

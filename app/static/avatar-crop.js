@@ -184,10 +184,12 @@
 		});
 
 		removeBtn.addEventListener("click", function () {
-			if (!confirm("Ta bort profilbilden?")) return;
-			fetch(deleteUrl, { method: "POST", headers: { "X-CSRF-Token": csrf() } })
-				.then(function () { window.location.reload(); })
-				.catch(function (e) { showErr(e.message); });
+			window.confirmDialog("Ta bort profilbilden?", { danger: true, confirmText: "Ta bort" }).then(function (ok) {
+				if (!ok) return;
+				fetch(deleteUrl, { method: "POST", headers: { "X-CSRF-Token": csrf() } })
+					.then(function () { window.location.reload(); })
+					.catch(function (e) { showErr(e.message); });
+			});
 		});
 	};
 })();

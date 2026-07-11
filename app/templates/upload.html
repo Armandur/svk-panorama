@@ -21,7 +21,7 @@
 		<button type="submit" class="secondary">Spara namn</button>
 	</form>
 	<form method="post" action="/projects/{{ project.slug }}/rename-slug" class="slug-form"
-		onsubmit="return confirm('Byt slug? Bokmärkta länkar och redan exporterade bundlar för nuvarande adress slutar fungera.');">
+		data-confirm="Byt slug? Bokmärkta länkar och redan exporterade bundlar för nuvarande adress slutar fungera." data-confirm-ok="Byt slug">
 		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 		<label for="new-slug">Ny slug</label>
 		<input type="text" id="new-slug" name="new_slug" value="{{ project.slug }}"
@@ -80,7 +80,7 @@
 				<td>{{ (s.size / 1048576) | round(1) }} MB</td>
 				<td>
 					<form method="post" action="/projects/{{ project.slug }}/images/{{ s.id }}/delete"
-						onsubmit="return confirm('Ta bort scen {{ s.id }}? Detta raderar bilden.');">
+						data-confirm="Ta bort scen {{ s.id }}? Detta raderar bilden." data-confirm-danger data-confirm-ok="Ta bort">
 						<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 						<button type="submit" class="secondary outline delete-btn">Ta bort</button>
 					</form>

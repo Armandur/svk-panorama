@@ -99,7 +99,7 @@
 	<h2>Turer</h2>
 	<p><a href="/admin/users/{{ target.id }}/projects" role="button" class="secondary outline">Visa användarens turer ({{ owns }})</a></p>
 	{% if not is_self %}
-	<form method="post" action="/admin/users/{{ target.id }}/delete" onsubmit="return confirm('Ta bort {{ target.email }}?');">
+	<form method="post" action="/admin/users/{{ target.id }}/delete" data-confirm="Ta bort {{ target.email }}?" data-confirm-danger data-confirm-ok="Ta bort">
 		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 		<button type="submit" class="secondary outline delete-btn" {% if owns %}disabled title="Användaren äger {{ owns }} turer - flytta eller ta bort dem först"{% endif %}>Ta bort användare</button>
 	</form>

@@ -73,13 +73,15 @@
 
 	function discardChanges() {
 		if (!state.dirty) return;
-		if (!confirm("Släng alla ändringar sedan senaste sparning?")) return;
-		const snap = JSON.parse(savedSnapshot);
-		mapData.scenes = snap.scenes;
-		mapData.edges = snap.edges;
-		clearDraft();
-		setDirty(false);
-		render();
+		window.confirmDialog("Släng alla ändringar sedan senaste sparning?", { danger: true, confirmText: "Släng" }).then(function (ok) {
+			if (!ok) return;
+			const snap = JSON.parse(savedSnapshot);
+			mapData.scenes = snap.scenes;
+			mapData.edges = snap.edges;
+			clearDraft();
+			setDirty(false);
+			render();
+		});
 	}
 
 	// --- Autospar-utkast (localStorage) - krasch-säkerhet mellan sparningar ---
@@ -492,23 +494,25 @@
 	}
 
 	function deleteSceneFully(id) {
-		if (!confirm("Ta bort scen " + id + " helt? Bilden raderas och måste laddas upp igen.")) return;
-		const fd = new FormData();
-		fd.append("csrf_token", window.getCsrfToken ? window.getCsrfToken() : "");
-		fetch("/projects/" + encodeURIComponent(slug) + "/images/" + encodeURIComponent(id) + "/delete", {
-			method: "POST",
-			body: fd,
-		}).then(function (r) {
-			if (!r.ok) throw new Error("HTTP " + r.status);
-			delete tour.scenes[id];
-			const i = mapData.scenes.findIndex(function (s) { return s.id === id; });
-			if (i >= 0) mapData.scenes.splice(i, 1);
-			mapData.edges = mapData.edges.filter(function (e) { return e.from !== id && e.to !== id; });
-			setDirty(true);
-			render();
-			if (window.showToast) showToast("Scen " + id + " borttagen", "ok");
-		}).catch(function (err) {
-			if (window.showToast) showToast("Kunde inte ta bort: " + err.message, "error");
+		window.confirmDialog("Ta bort scen " + id + " helt? Bilden raderas och måste laddas upp igen.", { danger: true, confirmText: "Ta bort" }).then(function (ok) {
+			if (!ok) return;
+			const fd = new FormData();
+			fd.append("csrf_token", window.getCsrfToken ? window.getCsrfToken() : "");
+			fetch("/projects/" + encodeURIComponent(slug) + "/images/" + encodeURIComponent(id) + "/delete", {
+				method: "POST",
+				body: fd,
+			}).then(function (r) {
+				if (!r.ok) throw new Error("HTTP " + r.status);
+				delete tour.scenes[id];
+				const i = mapData.scenes.findIndex(function (s) { return s.id === id; });
+				if (i >= 0) mapData.scenes.splice(i, 1);
+				mapData.edges = mapData.edges.filter(function (e) { return e.from !== id && e.to !== id; });
+				setDirty(true);
+				render();
+				if (window.showToast) showToast("Scen " + id + " borttagen", "ok");
+			}).catch(function (err) {
+				if (window.showToast) showToast("Kunde inte ta bort: " + err.message, "error");
+			});
 		});
 	}
 

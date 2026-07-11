@@ -774,21 +774,23 @@
 
 	function discard() {
 		if (!state.dirty) return;
-		if (!confirm("Släng alla ändringar sedan senaste sparning?")) return;
-		const snap = JSON.parse(savedSnapshot);
-		Object.keys(tour.scenes).forEach(function (id) {
-			const s = snap[id];
-			if (s.off == null) delete offsets[id]; else offsets[id] = s.off;
-			if (s.cr == null) delete calibRef[id]; else calibRef[id] = s.cr;
-			if (s.ti == null) delete tour.scenes[id].title; else tour.scenes[id].title = s.ti;
-			if (s.ro == null) delete tour.scenes[id].horizonRoll; else tour.scenes[id].horizonRoll = s.ro;
-			const cfg = viewer.getConfig().scenes[id];
-			if (cfg) { cfg.hotSpots = cloneHs(s.hs); cfg.horizonRoll = s.ro || 0; }
-			tour.scenes[id].hotSpots = s.hs;
+		window.confirmDialog("Släng alla ändringar sedan senaste sparning?", { danger: true, confirmText: "Släng" }).then(function (ok) {
+			if (!ok) return;
+			const snap = JSON.parse(savedSnapshot);
+			Object.keys(tour.scenes).forEach(function (id) {
+				const s = snap[id];
+				if (s.off == null) delete offsets[id]; else offsets[id] = s.off;
+				if (s.cr == null) delete calibRef[id]; else calibRef[id] = s.cr;
+				if (s.ti == null) delete tour.scenes[id].title; else tour.scenes[id].title = s.ti;
+				if (s.ro == null) delete tour.scenes[id].horizonRoll; else tour.scenes[id].horizonRoll = s.ro;
+				const cfg = viewer.getConfig().scenes[id];
+				if (cfg) { cfg.hotSpots = cloneHs(s.hs); cfg.horizonRoll = s.ro || 0; }
+				tour.scenes[id].hotSpots = s.hs;
+			});
+			viewer.loadScene(viewer.getScene());
+			setDirty(false);
+			refreshSidebar();
 		});
-		viewer.loadScene(viewer.getScene());
-		setDirty(false);
-		refreshSidebar();
 	}
 
 	// --- Navigering + knappar ---

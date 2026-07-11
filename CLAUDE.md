@@ -119,6 +119,11 @@ Applicerar `tour.default.theme` via CSS-variabler (`--tour-font/--dot-color/
 ## static/-JS (editorn)
 
 - `utils.js` - `apiFetch` (CSRF-header), `showToast`, `escapeHtml`.
+- `confirm-modal.js` - stylad bekräftelsedialog som ersätter native `confirm()`.
+  `window.confirmDialog(msg, {danger,confirmText}) -> Promise<boolean>` + drop-in för
+  `<form data-confirm="..." [data-confirm-danger] [data-confirm-ok="..."]>` (fångar
+  submit, frågar, skickar vid ja). Laddas globalt i base.html. Använd detta - inte
+  `confirm()`.
 - `plan.js` - kartplacering/länkning (zoom/pan, dra länkar, pilar).
 - `scene.js` - scenvyn: kalibrering, hotspots, upplösningsväljare (preview/
   multires/full), klickbar+resizebar minikarta.

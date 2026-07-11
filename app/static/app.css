@@ -729,6 +729,25 @@ tr[data-preview-scene] { cursor: help; }
 .help-modal article { max-width: 30rem; width: 100%; margin: 0; max-height: 90vh; overflow-y: auto; }
 .help-modal p { font-size: 0.9rem; margin: 0.45rem 0; }
 
+/* Stylad bekräftelsedialog (ersätter native confirm()). */
+.confirm-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 4000;
+	background: rgba(0, 0, 0, 0.55);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+}
+.confirm-modal[hidden] { display: none; }
+.confirm-box { max-width: 26rem; width: 100%; margin: 0; }
+.confirm-box h3 { margin: 0 0 0.5rem; }
+.confirm-msg { font-size: 0.95rem; margin: 0 0 1rem; }
+.confirm-actions { display: flex; gap: 0.6rem; justify-content: flex-end; }
+.confirm-actions button { margin: 0; width: auto; }
+.confirm-box.danger .confirm-ok { background: var(--svk-danger); border-color: var(--svk-danger); }
+
 /* Startscen-väljare (modal med karta + hover-preview) */
 .start-scene-btn { width: 100%; text-align: left; }
 .start-modal-article { max-width: 46rem; }

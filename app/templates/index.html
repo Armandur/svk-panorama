@@ -34,7 +34,7 @@
 					<div class="row-actions">
 						<a href="/projects/{{ p.slug }}" role="button" class="secondary">Öppna</a>
 						<form method="post" action="/projects/{{ p.slug }}/delete"
-							onsubmit="return confirm('Ta bort turen {{ p.name }}? Alla bilder, tiles och exporter raderas permanent och går inte att ångra.');">
+							data-confirm="Ta bort turen {{ p.name }}? Alla bilder, tiles och exporter raderas permanent och går inte att ångra." data-confirm-danger data-confirm-ok="Ta bort">
 							<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 							<button type="submit" class="secondary outline delete-btn">Ta bort</button>
 						</form>
