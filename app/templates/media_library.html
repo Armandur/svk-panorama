@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Mediebibliotek - {{ site_name() }}{% endblock %}
+{% block content %}
+
+<section class="login-section media-manage">
+	<hgroup>
+		<h1>Mediebibliotek</h1>
+		<p>Bilder du laddar upp här kan återanvändas i info-hotspots över alla dina turer.</p>
+	</hgroup>
+	<article>
+		<div id="media-manager"></div>
+	</article>
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/media-library.js"></script>
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		window.initMediaManager(document.getElementById("media-manager"));
+	});
+</script>
+{% endblock %}

@@ -1,21 +1,18 @@
 """Uppladdning av panoramabilder och kartbild."""
 from __future__ import annotations
 
-import secrets
-
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse, RedirectResponse
 
 from app import config
 from app.database import Project
-from app.deps import get_project_or_404, verify_csrf_form, verify_csrf_header
+from app.deps import get_project_or_404, verify_csrf_form
 from app.services.project_files import (
     clear_preview,
     ensure_project_structure,
     images_dir,
     map_image_path,
     merge_scene_into_tour,
-    project_dir,
     read_tour,
     remove_scene,
     safe_upload_name,
@@ -99,61 +96,6 @@ async def upload_map_image(
     if "application/json" in request.headers.get("accept", ""):
         return JSONResponse({"ok": True})
     return RedirectResponse(url=f"/projects/{slug}", status_code=302)
-
-
-@router.get("/projects/{slug}/attachments")
-def list_attachments(
-    slug: str,
-    project: Project = Depends(get_project_or_404),
-) -> JSONResponse:
-    """Mediebibliotek: lista turens uppladdade bilder (nyast först)."""
-    attach_dir = project_dir(slug) / "attachments"
-    items = []
-    if attach_dir.exists():
-        for f in sorted(attach_dir.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
-            if f.is_file():
-                items.append({
-                    "name": f.name,
-                    "url": f"/projects/{slug}/attachments/{f.name}",
-                    "size": f.stat().st_size,
-                })
-    return JSONResponse({"items": items})
-
-
-@router.post("/projects/{slug}/attachments/{name}/delete")
-async def delete_attachment(
-    slug: str,
-    name: str,
-    project: Project = Depends(get_project_or_404),
-    _csrf: None = Depends(verify_csrf_header),
-) -> JSONResponse:
-    attach_dir = (project_dir(slug) / "attachments").resolve()
-    target = (attach_dir / name).resolve()
-    if target.parent != attach_dir or not target.is_file():
-        raise HTTPException(status_code=404, detail="Filen hittades inte")
-    target.unlink()
-    return JSONResponse({"ok": True})
-
-
-@router.post("/projects/{slug}/attachments")
-async def upload_attachment(
-    slug: str,
-    file: UploadFile = File(...),
-    project: Project = Depends(get_project_or_404),
-    _csrf: None = Depends(verify_csrf_header),
-) -> JSONResponse:
-    """Ladda upp en bild till turens attachments-mapp (används i info-hotspots
-    markdown, oberoende av expanderbar). Returnerar bildens URL."""
-    filename = file.filename or "bild"
-    validate_extension(filename, config.ALLOWED_MAP_EXT)  # jpg/jpeg/png
-    content = await file.read()
-    validate_size(content, filename, config.MAX_MAP_MB)
-    validate_image_magic(content, filename)
-    attach_dir = project_dir(slug) / "attachments"
-    attach_dir.mkdir(parents=True, exist_ok=True)
-    name = secrets.token_hex(4) + "-" + safe_upload_name(filename)
-    (attach_dir / name).write_bytes(content)
-    return JSONResponse({"url": f"/projects/{slug}/attachments/{name}"})
 
 
 @router.post("/projects/{slug}/images/{scene_id}/delete")

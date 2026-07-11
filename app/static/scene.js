@@ -435,12 +435,12 @@
 	const hsText = document.getElementById("hs-text");
 	const hsBody = document.getElementById("hs-body");
 
-	// Bilduppladdning för EasyMDE: postar till turens attachments-mapp och infogar
+	// Bilduppladdning för EasyMDE: postar till den delade mediepoolen och infogar
 	// markdown-bildlänken. Funkar i både teaser och läs mer (oavsett expanderbar).
 	function uploadHsImage(file, onSuccess, onError) {
 		const fd = new FormData();
 		fd.append("file", file);
-		fetch("/projects/" + encodeURIComponent(slug) + "/attachments", {
+		fetch("/media/upload", {
 			method: "POST",
 			headers: { "X-CSRF-Token": window.getCsrfToken ? getCsrfToken() : "" },
 			body: fd,

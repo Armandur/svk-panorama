@@ -15,6 +15,12 @@ _projects_env = os.environ.get("SVK_PROJECTS_DIR", "projects")
 _projects_path = Path(_projects_env)
 PROJECTS_DIR = _projects_path if _projects_path.is_absolute() else REPO_ROOT / _projects_path
 
+# Delad mediepool per ägare (mediebibliotek v2): bilder som återanvänds i
+# info-hotspots markdown över projekt. Lagras platt under media/<owner_id>/.
+_media_env = os.environ.get("SVK_MEDIA_DIR", "media")
+_media_path = Path(_media_env)
+MEDIA_DIR = _media_path if _media_path.is_absolute() else REPO_ROOT / _media_path
+
 DB_PATH = REPO_ROOT / os.environ.get("SVK_DB_FILE", "svk.db")
 DATABASE_URL = f"sqlite:///{DB_PATH}"
 

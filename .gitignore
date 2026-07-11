@@ -18,6 +18,7 @@ test/
 # FastAPI-app: venv, användarprojekt (proprietära), databas, env
 .venv/
 projects/
+media/
 *.db
 .env
 

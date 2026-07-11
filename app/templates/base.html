@@ -20,6 +20,7 @@
 				{% if request.session.get('admin') %}
 				<li><a href="/admin" role="button" class="secondary outline nav-btn">Admin</a></li>
 				{% endif %}
+				<li><a href="/media" role="button" class="secondary outline nav-btn">Media</a></li>
 				<li class="account">
 					<button type="button" id="account-btn" class="account-card" aria-haspopup="true" aria-expanded="false">
 						<span class="avatar avatar-sm"><span class="avatar-initial">{{ _initial }}</span><img class="avatar-img" src="/profile/avatar" alt="" onerror="this.remove()"></span>

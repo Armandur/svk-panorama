@@ -5,6 +5,7 @@ Alla sökvägar görs relativa så bundlen fungerar oavsett underkatalog och uta
 server-kod. Bygget körs i en bakgrundstråd med progress, som tiling."""
 from __future__ import annotations
 
+import re
 import threading
 import zipfile
 from pathlib import Path
@@ -12,6 +13,7 @@ from typing import Any
 
 from app import config
 from app.deps import templates
+from app.services import media
 from app.services.project_files import (
     images_dir,
     map_image_path,
@@ -29,6 +31,10 @@ _STORED_EXT = {".jpg", ".jpeg", ".png", ".tif"}
 
 _jobs: dict[str, dict[str, Any]] = {}
 _lock = threading.Lock()
+
+# Poolbilds-URL i hotspot-markdown: /media/<owner_id>/<filnamn>. Bundlen kopierar
+# de refererade filerna till media/<filnamn> och skriver om URL:erna dit.
+_MEDIA_REF_RE = re.compile(r"/media/(\d+)/([A-Za-z0-9._-]+)")
 
 
 def export_dir(slug: str) -> Path:
@@ -49,20 +55,32 @@ def forget_job(slug: str) -> None:
         _jobs.pop(slug, None)
 
 
+def _media_refs(tour: dict) -> set[tuple[int, str]]:
+    """(owner_id, filnamn) för alla poolbilder som refereras i hotspot-markdown."""
+    refs: set[tuple[int, str]] = set()
+    for scene in tour.get("scenes", {}).values():
+        for hs in scene.get("hotSpots", []):
+            for key in ("text", "body"):
+                val = hs.get(key)
+                if isinstance(val, str):
+                    for m in _MEDIA_REF_RE.finditer(val):
+                        refs.add((int(m.group(1)), m.group(2)))
+    return refs
+
+
 def _relativize(slug: str, tour: dict) -> dict:
     """Applicera multires och gör alla asset-sökvägar relativa till bundle-roten."""
     apply_multires(tour, read_manifest(slug))
-    attach_prefix = f"/projects/{slug}/attachments/"
     for scene_id, scene in tour.get("scenes", {}).items():
         if scene.get("type") == "multires" and scene.get("multiRes"):
             scene["multiRes"]["basePath"] = f"tiles/{scene_id}"
         elif scene.get("type") == "equirectangular" and scene.get("panorama"):
             scene["panorama"] = "images/" + Path(scene["panorama"]).name
-        # Bild-URL:er i info-hotspots markdown (teaser/body) -> relativa.
+        # Poolbilds-URL:er i info-hotspots markdown (teaser/body) -> relativa.
         for hs in scene.get("hotSpots", []):
             for key in ("text", "body"):
-                if isinstance(hs.get(key), str) and attach_prefix in hs[key]:
-                    hs[key] = hs[key].replace(attach_prefix, "attachments/")
+                if isinstance(hs.get(key), str):
+                    hs[key] = _MEDIA_REF_RE.sub(r"media/\2", hs[key])
     tour.setdefault("default", {})["editorMode"] = False
     return tour
 
@@ -90,7 +108,7 @@ def _readme(project_name: str, slug: str) -> str:
     )
 
 
-def _collect(slug: str, tour: dict) -> list[tuple[str, Path]]:
+def _collect(slug: str, tour: dict, media_refs: set[tuple[int, str]]) -> list[tuple[str, Path]]:
     """(arcname, källfil) för allt statiskt som ska med i zipen."""
     files: list[tuple[str, Path]] = []
 
@@ -100,11 +118,11 @@ def _collect(slug: str, tour: dict) -> list[tuple[str, Path]]:
             if f.is_file() and f.name != "manifest.json":
                 files.append(("tiles/" + f.relative_to(td).as_posix(), f))
 
-    ad = project_dir(slug) / "attachments"
-    if ad.exists():
-        for f in ad.rglob("*"):
-            if f.is_file():
-                files.append(("attachments/" + f.relative_to(ad).as_posix(), f))
+    # Bara de poolbilder som faktiskt refereras i turen (inte hela poolen).
+    for owner_id, name in media_refs:
+        src = media.resolve(owner_id, name)
+        if src is not None:
+            files.append(("media/" + name, src))
 
     # Originalbilder bara för scener som inte blev multires (saknar tiles).
     for scene in tour.get("scenes", {}).values():
@@ -130,7 +148,9 @@ def _collect(slug: str, tour: dict) -> list[tuple[str, Path]]:
 def _build(slug: str, project_name: str) -> None:
     job = _jobs[slug]
     try:
-        tour = _relativize(slug, read_tour(slug))
+        raw_tour = read_tour(slug)
+        media_refs = _media_refs(raw_tour)  # innan URL:erna relativiseras bort
+        tour = _relativize(slug, raw_tour)
         map_data = read_map(slug)
         has_map = map_image_path(slug).exists()
         index_html = templates.env.get_template("bundle_index.html").render(
@@ -140,7 +160,7 @@ def _build(slug: str, project_name: str) -> None:
             ("index.html", index_html.encode("utf-8")),
             ("README.txt", _readme(project_name, slug).encode("utf-8")),
         ]
-        files = _collect(slug, tour)
+        files = _collect(slug, tour, media_refs)
         job["total"] = len(files) + len(generated)
 
         export_dir(slug).mkdir(parents=True, exist_ok=True)

@@ -58,10 +58,12 @@ app/
     export.py        # /export (bygg bundle), status, download
     viewer.py        # /view (inloggad runtime-viewer, multires-merge)
     public.py        # /s/{token} publik delad viewer + /s/{token}/{path} assets (ingen auth)
+    media.py         # /media delad mediepool per ägare (upload/list/delete + capability-serve)
   services/
     project_files.py # filsystemslager: slug, mappar, tour.json/map.json, previews
     tiling.py        # trådat tiling-jobb + manifest + apply_multires()
     bundle.py        # trådat export-jobb: bygger självbärande zip
+    media.py         # delad mediepool: lagring, metadata (PIL), usage-scan
   templates/         # Jinja2. base.html + steg-mallar + _partials
   static/            # CSS/JS (se nedan) + vendor/ (pannellum, pico)
 ```
@@ -128,9 +130,13 @@ Applicerar `tour.default.theme` via CSS-variabler (`--tour-font/--dot-color/
   `<form data-confirm="..." [data-confirm-danger] [data-confirm-ok="..."]>` (fångar
   submit, frågar, skickar vid ja). Laddas globalt i base.html. Använd detta - inte
   `confirm()`.
+- `media-library.js` - delad mediepool (`/media/*`): `window.openMediaLibrary(slug,
+  onPick)` = modal-väljare (slug bara för filtret "denna tur"), `window.initMediaManager(el)`
+  = inbäddad hanteringsvy på `/media`. Delad hämtning/filter/rendering, filter
+  alla/oanvända/per-projekt.
 - `plan.js` - kartplacering/länkning (zoom/pan, dra länkar, pilar).
 - `scene.js` - scenvyn: kalibrering, hotspots, upplösningsväljare (preview/
-  multires/full), klickbar+resizebar minikarta.
+  multires/full), klickbar+resizebar minikarta. EasyMDE-bilder -> `/media/upload`.
 - `tour-preview.js` - `/preview`: pannellum + turinställningar (live autorotate),
   startscen-väljare (kartmodal + hover-preview), tema.
 - `upload.js` - parallell per-fil-uppladdning + previews, startar tiling.
@@ -188,13 +194,30 @@ inställningar (jfr `TILE_CONCURRENCY`/`BASE_URL`).
 och **info-hotspots**: `attachHsTooltips` ger info-hotspots markdown-teaser via
 pannellums `createTooltipFunc`; har hotspoten `body` blir den expanderbar
 (`clickHandlerFunc` -> `openHsSheet`, fullskärms-ark). Hotspot-editorn (scene.js)
-kör EasyMDE i flikar (Teaser/Läs mer, expanderbar härleds ur body-text). Bilder:
-`POST /projects/{slug}/attachments` -> `attachments/`-mappen, infogas som markdown;
-bundlen kopierar + relativiserar, publika /s skriver om URL:en.
+kör EasyMDE i flikar (Teaser/Läs mer, expanderbar härleds ur body-text). Bilder
+kommer ur **mediebiblioteket** (se nedan), infogas som markdown.
+
+## Mediebibliotek (delad pool per ägare - routes/media.py + services/media.py)
+
+Bilder till info-hotspots lagras i en **delad pool per ägare** (`User` nu, `Team`
+i Fas 4), återanvändbar mellan projekt - INTE per projekt. Lagring platt under
+`media/<owner_id>/<name>` (`config.MEDIA_DIR`, gitignorat); filnamn =
+`token_hex(6)-<saniterat basnamn>` (oigissbart). Refereras i hotspot-markdown som
+absoluta `/media/<owner_id>/<name>`. `GET /media/{owner_id}/{name}` serverar
+**publikt per capability-URL** (ingen auth-grind, bara traversal-guard) så samma
+URL funkar identiskt i editor, publika /s-vyn och bundlen UTAN omskrivning (till
+skillnad från de gamla `/projects/<slug>/`-URL:erna). Grindade endpoints (require_user,
+CSRF): `POST /media/upload`, `GET /media/list` (metadata: pixlar/storlek/mtime +
+härledd `usage` genom att skanna ägarens tur-JSON efter URL:en), `POST /media/{name}/delete`.
+`GET /media` = administrationssida (`media_library.html` + `initMediaManager` i
+`media-library.js`). Bundlen: `_media_refs` samlar refererade (owner,name) INNAN
+`_relativize` skriver om `/media/<owner>/<name>` -> `media/<name>`, `_collect`
+kopierar bara de refererade poolbilderna. Usage härleds - ingen DB-tabell.
 
 ## Env-vars (config.py)
 
-`SVK_PORT` (8002), `SVK_HOST`, `SVK_PROJECTS_DIR` (projects), `SVK_DB_FILE`
+`SVK_PORT` (8002), `SVK_HOST`, `SVK_PROJECTS_DIR` (projects), `SVK_MEDIA_DIR`
+(media), `SVK_DB_FILE`
 (svk.db), `SVK_SECRET_KEY` (annars per-start), `SVK_MAX_PANORAMA_MB` (80),
 `SVK_MAX_MAP_MB` (20), `SVK_PREVIEW_MAX_WIDTH` (2048), `SVK_PREVIEW_QUALITY`
 (82), `SVK_TILE_CONCURRENCY` (2), `SVK_BASE_URL` (tom; för framtida export/
