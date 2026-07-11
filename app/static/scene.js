@@ -394,6 +394,17 @@
 		return cloned;
 	}
 
+	// Ren text ur markdown (bilder/länk-URL:er bort) för korta labels.
+	const _plainDiv = document.createElement("div");
+	function plainTeaser(md) {
+		if (!md) return "";
+		if (window.renderMarkdown) {
+			_plainDiv.innerHTML = renderMarkdown(String(md));
+			return (_plainDiv.textContent || "").replace(/\s+/g, " ").trim();
+		}
+		return String(md).replace(/\s+/g, " ").trim();
+	}
+
 	// Skriv om aktuell scens hotspots i pannellum-configen från turen och ladda
 	// om scenen (bevarad vy) så ändringen syns.
 	function syncAndReload(cur) {
@@ -791,9 +802,14 @@
 			const label = document.createElement("span");
 			label.className = "hotspot-label";
 			const kind = hs.type === "scene" ? "Scen" : (hs.URL ? "URL" : "Info");
-			const raw = hs.type === "scene" ? sceneName(hs.sceneId) + (hasReciprocal(cur, hs.sceneId) ? " (dubbel)" : " (enkel)") : (hs.text || "(tom)");
-			// Platt en-rads-label (markdown-tecken + radbrytningar bort); CSS cappar med "...".
-			const body = String(raw).replace(/[#*_`>[\]!]/g, "").replace(/\s+/g, " ").trim();
+			let body;
+			if (hs.type === "scene") {
+				body = sceneName(hs.sceneId) + (hasReciprocal(cur, hs.sceneId) ? " (dubbel)" : " (enkel)");
+			} else {
+				// Ren text ur markdownen (bilder/länk-URL:er faller bort) så labeln
+				// blir begriplig. CSS cappar till en rad med "...".
+				body = plainTeaser(hs.text || "") || "(bild)";
+			}
 			label.textContent = kind + ": " + body;
 			label.title = body;
 			const btns = document.createElement("div");
