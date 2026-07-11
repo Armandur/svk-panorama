@@ -16,10 +16,16 @@
 	var titleEl = document.getElementById("upload-title");
 	var progressEl = document.getElementById("upload-progress");
 	var detailEl = document.getElementById("upload-detail");
+	var fileListEl = document.getElementById("upload-filelist");
+	var noteEl = document.getElementById("upload-note");
+	var closeEl = document.getElementById("upload-close");
 
 	function showOverlay(title) {
 		titleEl.textContent = title;
 		detailEl.textContent = "";
+		if (fileListEl) fileListEl.textContent = "";
+		if (noteEl) noteEl.hidden = true;
+		if (closeEl) closeEl.hidden = true;
 		setProgress(0);
 		overlay.hidden = false;
 	}
@@ -57,6 +63,64 @@
 			});
 			xhr.addEventListener("error", function () { reject(new Error("Natverksfel")); });
 			xhr.send(new FormData(form));
+		});
+	}
+
+	// --- Per-fil-uppladdning ------------------------------------------------
+	// En request per fil så varje fil sparas på servern (bild + tour.json)
+	// innan nästa startar. Avbryts uppladdningen är de klara filerna kvar.
+
+	function buildFileList(files) {
+		fileListEl.textContent = "";
+		var statusEls = [];
+		Array.prototype.forEach.call(files, function (f) {
+			var li = document.createElement("li");
+			li.className = "ufile";
+			var name = document.createElement("span");
+			name.className = "ufile-name";
+			name.textContent = f.name;
+			var status = document.createElement("span");
+			status.className = "ufile-status";
+			status.textContent = "väntar";
+			li.appendChild(name);
+			li.appendChild(status);
+			fileListEl.appendChild(li);
+			statusEls.push(status);
+		});
+		return statusEls;
+	}
+
+	function setFileStatus(el, state, text) {
+		el.className = "ufile-status ufile-" + state;
+		el.textContent = text;
+	}
+
+	// Laddar upp en enda fil. Resolvar med scen-id (eller null), rejectar vid fel.
+	function uploadOneFile(action, csrf, file, onProgress) {
+		return new Promise(function (resolve, reject) {
+			var fd = new FormData();
+			fd.append("csrf_token", csrf);
+			fd.append("files", file, file.name);
+			var xhr = new XMLHttpRequest();
+			xhr.open("POST", action);
+			xhr.setRequestHeader("Accept", "application/json");
+			xhr.upload.addEventListener("progress", function (e) {
+				if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+			});
+			xhr.addEventListener("load", function () {
+				if (xhr.status >= 200 && xhr.status < 300) {
+					try {
+						var d = JSON.parse(xhr.responseText || "{}");
+						resolve(d.scenes && d.scenes[0] ? d.scenes[0] : null);
+					} catch (e) { resolve(null); }
+				} else {
+					var msg = "Fel " + xhr.status;
+					try { msg = JSON.parse(xhr.responseText).detail || msg; } catch (e) { /* ignore */ }
+					reject(new Error(msg));
+				}
+			});
+			xhr.addEventListener("error", function () { reject(new Error("Nätverksfel")); });
+			xhr.send(fd);
 		});
 	}
 
@@ -132,17 +196,57 @@
 	}
 
 	function handleImages(form) {
+		var input = form.querySelector('input[type="file"]');
+		var files = input && input.files ? input.files : [];
+		if (!files.length) { form.submit(); return; }  // låt servern validera "inga filer"
+		var csrfField = form.querySelector('input[name="csrf_token"]');
+		var csrf = csrfField ? csrfField.value : (window.getCsrfToken ? getCsrfToken() : "");
+
 		showOverlay("Laddar upp bilder...");
-		uploadForm(form)
-			.then(function (data) { return pregeneratePreviews(data.scenes || []); })
+		var statusEls = buildFileList(files);
+		noteEl.hidden = false;
+
+		var total = files.length;
+		var succeeded = [];
+		var failed = 0;
+
+		// Sekventiellt: nästa fil startar först när föregående är sparad.
+		var chain = Promise.resolve();
+		Array.prototype.forEach.call(files, function (file, i) {
+			chain = chain.then(function () {
+				setTitle("Laddar upp bilder (" + (i + 1) + "/" + total + ")");
+				setProgress(Math.round((i / total) * 100));
+				setFileStatus(statusEls[i], "uploading", "laddar upp 0%");
+				return uploadOneFile(form.action, csrf, file, function (pct) {
+					setFileStatus(statusEls[i], "uploading", "laddar upp " + pct + "%");
+				}).then(function (sceneId) {
+					setFileStatus(statusEls[i], "done", "sparad");
+					if (sceneId) succeeded.push(sceneId);
+				}).catch(function (err) {
+					failed++;
+					setFileStatus(statusEls[i], "error", err.message);
+				});
+			});
+		});
+
+		chain
+			.then(function () { setProgress(100); return pregeneratePreviews(succeeded); })
 			.then(function () { return generateTiles(); })
-			.then(function () { window.location.reload(); })
-			.catch(function (err) {
-				hideOverlay();
-				if (window.showToast) showToast("Uppladdning misslyckades: " + err.message, "error");
-				else alert("Uppladdning misslyckades: " + err.message);
+			.then(function () {
+				if (failed > 0) {
+					// Behåll overlayn med resultaten - klara filer är sparade.
+					setTitle("Klart, men " + failed + " av " + total + " misslyckades");
+					setDetail(succeeded.length + " bilder sparade. Stäng och försök igen med de som saknas.");
+					setProgress(100);
+					noteEl.hidden = false;
+					closeEl.hidden = false;
+				} else {
+					window.location.reload();
+				}
 			});
 	}
+
+	if (closeEl) closeEl.addEventListener("click", function () { window.location.reload(); });
 
 	function handleMap(form) {
 		showOverlay("Laddar upp karta...");

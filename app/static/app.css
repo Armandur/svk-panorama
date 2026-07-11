@@ -321,12 +321,45 @@ tr[data-preview-scene] { cursor: help; }
 }
 #upload-overlay[hidden] { display: none; }
 #upload-overlay article {
-	max-width: 24rem;
+	max-width: 30rem;
 	width: 100%;
 	text-align: center;
 	margin: 0;
 }
 #upload-overlay progress { width: 100%; }
+
+/* Per-fil-status i uppladdnings-overlayn */
+.upload-filelist {
+	list-style: none;
+	margin: 0.75rem 0 0;
+	padding: 0;
+	max-height: 40vh;
+	overflow-y: auto;
+	text-align: left;
+	font-size: 0.85rem;
+}
+.ufile {
+	display: flex;
+	justify-content: space-between;
+	gap: 0.75rem;
+	padding: 0.3rem 0.1rem;
+	border-bottom: 1px solid var(--pico-muted-border-color);
+}
+.ufile-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.ufile-status {
+	flex: none;
+	color: var(--pico-muted-color);
+	font-variant-numeric: tabular-nums;
+}
+.ufile-uploading { color: var(--pico-primary); }
+.ufile-done { color: var(--svk-ok); }
+.ufile-error { color: var(--svk-danger); white-space: normal; }
+#upload-close { margin-top: 0.75rem; }
+#upload-close[hidden] { display: none; }
 
 /* --- Osparade ändringar (dirty state) --- */
 .dirty-badge {

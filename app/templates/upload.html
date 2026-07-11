@@ -85,10 +85,13 @@
 </section>
 
 <div id="upload-overlay" hidden>
-	<article aria-busy="true">
+	<article>
 		<h3 id="upload-title">Laddar upp...</h3>
 		<progress id="upload-progress" value="0" max="100"></progress>
 		<p id="upload-detail" class="hint"></p>
+		<ul id="upload-filelist" class="upload-filelist"></ul>
+		<p id="upload-note" class="hint" hidden>Varje klar fil är sparad direkt. Avbryts uppladdningen kan du ladda om sidan och fortsätta med de som saknas.</p>
+		<button id="upload-close" type="button" class="secondary" hidden>Stäng</button>
 	</article>
 </div>
 
