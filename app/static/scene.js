@@ -449,6 +449,8 @@
 	function syncBodyWrap() { if (hsBodyWrap) hsBodyWrap.hidden = !(hsExpandable && hsExpandable.checked); }
 	if (hsExpandable) hsExpandable.addEventListener("change", function () { syncBodyWrap(); updateHsBodyPreview(); });
 	if (hsBody) hsBody.addEventListener("input", updateHsBodyPreview);
+	const hsTooltipWidth = document.getElementById("hs-tooltip-width");
+	const hsWidthWrap = document.getElementById("hs-width-wrap");
 	const hsUrl = document.getElementById("hs-url");
 	const hsSceneSel = document.getElementById("hs-scene");
 	const hsTyaw = document.getElementById("hs-tyaw");
@@ -479,7 +481,9 @@
 		hsFieldSceneDir.hidden = ctx.type !== "scene";
 		hsText.value = (ctx.hs && ctx.hs.text != null) ? ctx.hs.text : "";
 		updateHsPreview();
-		// Expanderbar bara för rena info-hotspots (ej URL/scen).
+		// Expanderbar + rutbredd bara för rena info-hotspots (ej URL/scen).
+		if (hsWidthWrap) hsWidthWrap.hidden = ctx.type !== "info";
+		if (hsTooltipWidth) hsTooltipWidth.value = (ctx.hs && ctx.hs.tooltipWidth) || "";
 		if (hsExpandableLabel) hsExpandableLabel.hidden = ctx.type !== "info";
 		if (hsExpandable) hsExpandable.checked = ctx.type === "info" && !!(ctx.hs && ctx.hs.expandable);
 		if (hsBody) hsBody.value = (ctx.hs && ctx.hs.body) || "";
@@ -569,6 +573,8 @@
 			if (hsExpandable && hsExpandable.checked && hsBody.value.trim()) {
 				hs.expandable = true; hs.body = hsBody.value;
 			} else { delete hs.expandable; delete hs.body; }
+			if (hsTooltipWidth && hsTooltipWidth.value) hs.tooltipWidth = hsTooltipWidth.value;
+			else delete hs.tooltipWidth;
 		} else { // scene
 			const target = hsSceneSel.value;
 			if (!target) { alert("Välj en målscen."); return; }

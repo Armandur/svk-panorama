@@ -115,6 +115,15 @@
 			<textarea id="hs-text" maxlength="2000" rows="4"></textarea>
 			<p class="hint">Markdown stöds: <code>**fet**</code>, <code>*kursiv*</code>, <code># rubrik</code>, <code>- lista</code>, <code>[länk](https://...)</code>.</p>
 			<div id="hs-text-preview" class="markdown-body hs-text-preview" hidden></div>
+			<div id="hs-width-wrap">
+				<label for="hs-tooltip-width">Rutbredd (vid hover)</label>
+				<select id="hs-tooltip-width">
+					<option value="">Auto (anpassar sig)</option>
+					<option value="narrow">Smal</option>
+					<option value="medium">Mellan</option>
+					<option value="wide">Bred</option>
+				</select>
+			</div>
 			<label class="fullres-label" id="hs-expandable-label"><input type="checkbox" id="hs-expandable"> Expanderbar - texten ovan blir en teaser, klick öppnar en större ruta</label>
 			<div id="hs-body-wrap" hidden>
 				<label for="hs-body">Innehåll i läs mer-rutan (markdown)</label>

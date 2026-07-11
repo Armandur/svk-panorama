@@ -12,15 +12,33 @@
 	// Pannellum-createTooltipFunc: rendera hotspot-text som (sanerad) markdown i
 	// tooltipen. Replikerar pannellums default-positionering (centrerad ovanför
 	// hotspoten). Klassen .pnlm-tooltip styr hover-visning; .hs-md stylar innehållet.
-	window.mdHotspotTooltip = function (div, text) {
+	// args: {text, body}. text = teaser (markdown), body = ev. läs mer-innehåll.
+	// Expanderbara hotspots får en "Läs mer"-knapp i tooltipen (visas bara vid
+	// hover/tap) som öppnar fullskärms-arket.
+	window.mdHotspotTooltip = function (div, args) {
 		div.classList.add("pnlm-tooltip");
+		var text = (typeof args === "string") ? args : (args && args.text) || "";
+		var body = (args && typeof args === "object") ? args.body : null;
 		var span = document.createElement("span");
 		span.className = "hs-md";
-		span.innerHTML = window.renderMarkdown(text);
+		if (text) span.innerHTML = window.renderMarkdown(text);
+		if (body) {
+			var more = document.createElement("button");
+			more.type = "button";
+			more.className = "hs-more";
+			more.textContent = "Läs mer";
+			more.addEventListener("click", function (e) { e.stopPropagation(); window.openHsSheet(body); });
+			span.appendChild(more);
+		}
 		div.appendChild(span);
-		span.style.width = (span.scrollWidth - 20) + "px";
-		span.style.marginLeft = -(span.scrollWidth - div.offsetWidth) / 2 + "px";
-		span.style.marginTop = (-span.scrollHeight - 12) + "px";
+		// Bredd: preset per hotspot, annars flödar den mellan min/max (CSS).
+		var W = { narrow: 220, medium: 320, wide: 440 };
+		var w = (typeof args === "object" && args) ? W[args.width] : null;
+		if (w) span.style.width = w + "px";
+		// Centrera + placera ovanför utifrån FAKTISK renderad storlek. Litet glapp;
+		// hover-bryggan i CSS håller hovern kontinuerlig upp till "Läs mer".
+		span.style.marginLeft = -(span.offsetWidth - div.offsetWidth) / 2 + "px";
+		span.style.marginTop = (-span.offsetHeight - 6) + "px";
 	};
 
 	// --- Fullskärms-ark för expanderbara hotspots ("läs mer") ---
@@ -51,19 +69,23 @@
 	// Koppla markdown-tooltip (teaser) på rena info-hotspots. Expanderbara får
 	// dessutom en klick-handler som öppnar fullskärms-arket med body + en
 	// affordans-klass. Muterar listan - kalla på KLONER som skickas till pannellum.
+	// Touch-primära enheter (mobil) saknar hover -> öppna INTE arket direkt på tap;
+	// tap ska visa teaser-tooltipen med "Läs mer"-knappen i stället.
+	var _touchPrimary = !!(window.matchMedia && window.matchMedia("(hover: none)").matches);
+
 	window.attachHsTooltips = function (hotSpots) {
 		(hotSpots || []).forEach(function (h) {
 			if (!h || h.type !== "info" || h.URL) return;
-			if (h.text) {
+			var body = (h.expandable && h.body) ? h.body : null;
+			if (h.text || body) {
 				h.createTooltipFunc = window.mdHotspotTooltip;
-				h.createTooltipArgs = h.text;
+				h.createTooltipArgs = { text: h.text || "", body: body, width: h.tooltipWidth || null };
 			}
-			if (h.expandable && h.body) {
-				// Pannellum ersätter default-klasserna när cssClass sätts - ta med
-				// pnlm-hotspot + pnlm-info så ikonen behålls, plus vår affordans.
-				h.cssClass = "pnlm-hotspot pnlm-info hs-expandable";
-				h.clickHandlerFunc = function (e, body) { window.openHsSheet(body); };
-				h.clickHandlerArgs = h.body;
+			// Dator: klick på hotspoten öppnar arket (ingen glapp att pricka).
+			// Mobil: ingen klick-handler -> tap visar tooltipen med "Läs mer".
+			if (body && !_touchPrimary) {
+				h.clickHandlerFunc = function (e, b) { window.openHsSheet(b); };
+				h.clickHandlerArgs = body;
 			}
 		});
 		return hotSpots;

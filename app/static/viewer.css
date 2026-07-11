@@ -21,7 +21,8 @@ html, body {
 
 /* Markdown i info-hotspot-tooltips: bredare + normal radbrytning (korta ord bryts inte). */
 .pnlm-tooltip span.hs-md {
-	max-width: 280px;
+	min-width: 200px;
+	max-width: 440px;
 	text-align: left;
 	white-space: normal;
 	word-break: normal;
@@ -47,7 +48,13 @@ html, body {
 	.hs-sheet { padding: 0; }
 	.hs-sheet-inner { max-width: none; max-height: 100vh; height: 100%; border-radius: 0; }
 }
-.pnlm-hotspot.hs-expandable::after { content: "+"; position: absolute; top: -3px; right: -3px; width: 14px; height: 14px; line-height: 13px; text-align: center; font-size: 12px; font-weight: 700; color: #fff; background: var(--current-dot-color, #8b0000); border-radius: 50%; box-shadow: 0 0 2px rgba(0, 0, 0, 0.6); }
+/* "Läs mer"-knapp i tooltipen (visas bara vid hover/tap). */
+.hs-more { display: block; margin: 0.5em auto 0; background: rgba(255, 255, 255, 0.92); color: #1c2128; border: none; border-radius: 4px; padding: 0.25em 0.7em; font: inherit; font-size: 0.85em; font-weight: 600; cursor: pointer; }
+.hs-more:hover { background: #fff; }
+/* Ta bort pannellums lösa pil + utökat kontinuerligt hover-område (brygga upp
+   till rutan) så man inte tappar hovern på väg mot "Läs mer". */
+.pnlm-tooltip:hover .hs-md::after { display: none; }
+.pnlm-hotspot.pnlm-info.pnlm-tooltip::before { content: ""; position: absolute; left: -16px; right: -16px; top: -20px; bottom: -12px; }
 
 /* Renderad markdown i arket. */
 .hs-sheet-body { line-height: 1.6; }
