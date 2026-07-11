@@ -80,10 +80,13 @@ Hetzner via docker-compose. **Ingen** objektlagring/S3 (lokal disk på volym),
 **ingen** jobbkö (in-process räcker för en instans), **ingen** multi-instans.
 Kvarvarande arbete är i praktiken auth + multi-tenancy.
 
-- [x] **Skiva 1: auth + projekt-ägarskap** (commit 5f86954). Sluten inbjudan,
-      bcrypt-login, signerad session, `User` + `owner_id`, Alembic, ägar-gate.
+- [x] **Skiva 1: auth + projekt-ägarskap** (commits 5f86954, 9eed826). Sluten
+      inbjudan, bcrypt-login, signerad session, `User` + `owner_id`, ägar-gate.
 - [ ] **Skiva 2: admin-UI + inbjudningsflöde** - lista/skapa användare, generera
       inbjudningslänk (signerad token) så inbjudna sätter eget lösenord.
 - [ ] Gata `/projects`-static-mounten (råfiler nås idag utan ägar-koll - låg risk
       på sluten värd, men bör stängas för äkta isolering).
-- [ ] Ev. Postgres via docker-compose när/om det behövs (SQLAlchemy-grunden klar).
+- [ ] **Vid produktionssättning:** återinför Alembic (baslinje ur då-aktuella
+      modeller), byt admin/admin mot riktiga creds, ev. Postgres via docker-compose.
+      Pre-produktion: inga migrationer - schemaändring = radera svk.db + starta om
+      (create_all + seed; projektmappar adopteras av admin).
