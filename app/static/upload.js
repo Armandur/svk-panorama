@@ -125,11 +125,12 @@
 	}
 
 	// För-generera previews på servern med begränsad parallellitet.
-	function pregeneratePreviews(sceneIds) {
+	// silent=true: rör inte titel/bar/detalj (kör parallellt med tiling som
+	// äger overlayns UI; previews är snabba och behöver ingen egen visning).
+	function pregeneratePreviews(sceneIds, silent) {
 		return new Promise(function (resolve) {
 			if (!sceneIds || !sceneIds.length) { resolve(); return; }
-			setTitle("Genererar previews...");
-			setProgress(0);
+			if (!silent) { setTitle("Genererar previews..."); setProgress(0); }
 			var total = sceneIds.length, done = 0, next = 0, active = 0;
 			var CONC = 3;
 
@@ -142,8 +143,10 @@
 						.catch(function () { /* enskilt fel stoppar inte resten */ })
 						.then(function () {
 							active--; done++;
-							setProgress(Math.round((done / total) * 100));
-							setDetail("Genererar preview " + done + "/" + total);
+							if (!silent) {
+								setProgress(Math.round((done / total) * 100));
+								setDetail("Genererar preview " + done + "/" + total);
+							}
 							step();
 						});
 				}
@@ -257,29 +260,48 @@
 		var total = files.length;
 		var succeeded = [];
 		var failed = 0;
+		var uploadDone = 0;
 
-		// Sekventiellt: nästa fil startar först när föregående är sparad.
-		var chain = Promise.resolve();
-		Array.prototype.forEach.call(files, function (file, i) {
-			chain = chain.then(function () {
-				setTitle("Laddar upp bilder (" + (i + 1) + "/" + total + ")");
-				setProgress(Math.round((i / total) * 100));
-				setFileStatus(statusEls[i], "uploading", "laddar upp 0%");
-				return uploadOneFile(form.action, csrf, file, function (pct) {
-					setFileStatus(statusEls[i], "uploading", "laddar upp " + pct + "%");
-				}).then(function (sceneId) {
-					setFileStatus(statusEls[i], "done", "sparad");
-					if (sceneId) succeeded.push(sceneId);
-				}).catch(function (err) {
-					failed++;
-					setFileStatus(statusEls[i], "error", err.message);
-				});
+		// Parallellt med tak (CONC): flera filer laddas upp samtidigt för fart,
+		// men varje fil är en egen request som sparas direkt (per-fil-persistens
+		// kvar). Serverns lås hindrar att parallella skrivningar tappar scener.
+		function uploadAll() {
+			var CONC = 3, next = 0, active = 0;
+			return new Promise(function (resolve) {
+				function pump() {
+					if (uploadDone >= total) { resolve(); return; }
+					while (active < CONC && next < total) {
+						(function (i) {
+							active++;
+							setFileStatus(statusEls[i], "uploading", "laddar upp 0%");
+							uploadOneFile(form.action, csrf, files[i], function (pct) {
+								setFileStatus(statusEls[i], "uploading", "laddar upp " + pct + "%");
+							}).then(function (sceneId) {
+								setFileStatus(statusEls[i], "done", "sparad");
+								if (sceneId) succeeded.push(sceneId);
+							}).catch(function (err) {
+								failed++;
+								setFileStatus(statusEls[i], "error", err.message);
+							}).then(function () {
+								active--; uploadDone++;
+								setTitle("Laddar upp bilder (" + uploadDone + "/" + total + ")");
+								setProgress(Math.round((uploadDone / total) * 100));
+								pump();
+							});
+						})(next++);
+					}
+				}
+				pump();
 			});
-		});
+		}
 
-		chain
-			.then(function () { setProgress(100); return pregeneratePreviews(succeeded); })
-			.then(function () { return generateTiles(); })
+		uploadAll()
+			.then(function () {
+				setProgress(100);
+				// Previews och tiles körs parallellt; previews är tysta (tiling
+				// äger UI:t med per-scen-rader).
+				return Promise.all([pregeneratePreviews(succeeded, true), generateTiles()]);
+			})
 			.then(function () {
 				if (failed > 0) {
 					// Behåll overlayn med resultaten - klara filer är sparade.

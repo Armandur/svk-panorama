@@ -1,6 +1,8 @@
 """Uppladdning av panoramabilder och kartbild."""
 from __future__ import annotations
 
+import asyncio
+
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse, RedirectResponse
 
@@ -26,6 +28,10 @@ from app.services.tiling import drop_scene_tiles
 
 router = APIRouter()
 
+# Serialiserar läs-modifiera-skriv av tour.json så parallella per-fil-
+# uppladdningar inte skriver över varandras scener.
+_tour_lock = asyncio.Lock()
+
 
 @router.post("/projects/{slug}/images")
 async def upload_images(
@@ -39,7 +45,6 @@ async def upload_images(
         raise HTTPException(status_code=400, detail="Inga filer valda")
 
     ensure_project_structure(slug)
-    tour = read_tour(slug)
     scene_ids = []
 
     for upload in files:
@@ -59,10 +64,13 @@ async def upload_images(
         drop_scene_tiles(slug, scene_id)  # ev. tiles blir stale om bilden bytts
 
         panorama_url = f"/projects/{slug}/images/{filename}"
-        merge_scene_into_tour(tour, scene_id, panorama_url)
+        # Per fil: lås runt läs-modifiera-skriv så parallella requests inte
+        # skriver över varandras scener, och varje fil persisteras direkt.
+        async with _tour_lock:
+            tour = read_tour(slug)
+            merge_scene_into_tour(tour, scene_id, panorama_url)
+            write_tour(slug, tour)
         scene_ids.append(scene_id)
-
-    write_tour(slug, tour)
 
     # Fetch-anrop (async uppladdning i webbläsaren) får JSON med scen-id:n så
     # klienten kan för-generera previews med progress. Vanlig formulärpost
