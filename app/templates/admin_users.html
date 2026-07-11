@@ -14,7 +14,7 @@
 	<tbody>
 		{% for u in users %}
 		<tr>
-			<td>{{ u.email }}</td>
+			<td><a href="/admin/users/{{ u.id }}/projects" title="Visa användarens turer">{{ u.email }}</a></td>
 			<td>{{ "Admin" if u.is_admin else "Användare" }}</td>
 			<td>
 				{% if u.pending %}

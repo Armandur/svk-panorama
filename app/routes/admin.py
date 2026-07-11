@@ -9,6 +9,7 @@ from app import config
 from app.auth import make_invite_token, require_admin
 from app.database import Project, User, get_db
 from app.deps import new_csrf_token, set_csrf_cookie, templates, verify_csrf_form
+from app.services.tiling import project_tile_state
 
 router = APIRouter()
 
@@ -48,6 +49,27 @@ def users_page(
     )
     set_csrf_cookie(response, token)
     return response
+
+
+@router.get("/admin/users/{user_id}/projects", response_class=HTMLResponse)
+def user_projects(
+    request: Request,
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+) -> HTMLResponse:
+    target = db.get(User, user_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Användaren finns inte")
+    projects = (
+        db.query(Project).filter(Project.owner_id == user_id).order_by(Project.created_at.desc()).all()
+    )
+    tile_states = {p.slug: project_tile_state(p.slug) for p in projects}
+    return templates.TemplateResponse(
+        request,
+        "admin_user_projects.html",
+        {"target": target, "projects": projects, "tile_states": tile_states, "active": "users"},
+    )
 
 
 @router.post("/admin/users")

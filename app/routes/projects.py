@@ -43,10 +43,14 @@ def index(
     db: Session = Depends(get_db),
     user: User = Depends(require_user),
 ) -> HTMLResponse:
-    query = db.query(Project).order_by(Project.created_at.desc())
-    if not user.is_admin:  # vanlig användare ser bara sina egna turer
-        query = query.filter(Project.owner_id == user.id)
-    projects = query.all()
+    # Alla ser bara sina EGNA turer här (även admin) - andras turer nås via
+    # Admin -> Användare.
+    projects = (
+        db.query(Project)
+        .filter(Project.owner_id == user.id)
+        .order_by(Project.created_at.desc())
+        .all()
+    )
     tile_states = {p.slug: project_tile_state(p.slug) for p in projects}
     token = new_csrf_token()
     response = templates.TemplateResponse(

@@ -1,0 +1,34 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ target.email }} - projekt{% endblock %}
+{% block admin_content %}
+
+<p><a href="/admin/users">&larr; Alla användare</a></p>
+<hgroup>
+	<h1>{{ target.email }}</h1>
+	<p>{{ projects | length }} turer{% if target.is_admin %} - administratör{% endif %}</p>
+</hgroup>
+
+{% if projects %}
+<table>
+	<thead>
+		<tr><th scope="col">Namn</th><th scope="col">Slug</th><th scope="col">Tiles</th><th scope="col"></th></tr>
+	</thead>
+	<tbody>
+		{% for p in projects %}
+		{% set st = tile_states[p.slug] %}
+		<tr>
+			<td>{{ p.name }}</td>
+			<td><code>{{ p.slug }}</code></td>
+			<td>
+				<span class="tile-badge tile-{{ st.status }}">{%- if st.status == 'running' -%}Genererar {{ st.done }}/{{ st.total }}{%- elif st.status == 'done' -%}Tiles klara{%- elif st.status == 'partial' -%}{{ st.tiled }}/{{ st.tileable }} tilade{%- elif st.status == 'error' -%}Tiling-fel{%- endif -%}</span>
+			</td>
+			<td><a href="/projects/{{ p.slug }}" role="button" class="secondary">Öppna</a></td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% else %}
+<p><em>Användaren har inga turer ännu.</em></p>
+{% endif %}
+
+{% endblock %}

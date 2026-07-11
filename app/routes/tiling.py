@@ -51,10 +51,8 @@ def tile_jobs(
     """Bulk-status för in-memory-jobb (billig, för live-polling på listan och
     hemsidan). Bara användarens egna turer (admin ser alla)."""
     jobs = tiling.all_jobs()
-    query = db.query(Project.slug)
-    if not user.is_admin:
-        query = query.filter(Project.owner_id == user.id)
-    owned = {slug for (slug,) in query.all()}
+    # Bara egna turer (index visar bara egna) - andras nås via admin-vyn.
+    owned = {slug for (slug,) in db.query(Project.slug).filter(Project.owner_id == user.id).all()}
     return {
         slug: {"status": j["status"], "done": j["done"], "total": j["total"]}
         for slug, j in jobs.items()
