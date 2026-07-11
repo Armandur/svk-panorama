@@ -13,6 +13,8 @@
 <aside class="planner-side">
 	<nav class="plan-topnav" aria-label="Arbetssteg">
 		<a href="/" role="button" class="secondary outline" title="Till projektlistan">Huvudmeny</a>
+		{% set current_step = 'preview' %}{% set has_scenes = (tour.scenes | length) > 0 %}
+		{% include "_step_nav.html" %}
 		<a href="/projects/{{ project.slug }}/scenes" role="button" class="secondary outline">&lt;- Scener</a>
 		<a href="/projects/{{ project.slug }}/view" role="button" class="secondary" target="_blank" rel="noopener">Helskärm</a>
 	</nav>

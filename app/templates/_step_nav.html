@@ -1,0 +1,24 @@
+{#- Steg-hoppmeny (hamburger). Kräver i context: project, has_map_image, samt att
+    current_step och has_scenes satts före include. Steg gate:as på förutsättningar
+    (t.ex. placering kräver karta + scener). -#}
+{% set _slug = project.slug %}
+{% set _steps = [
+    ('upload', '1. Uppladdning', '/projects/' ~ _slug, true),
+    ('plan', '2. Placering', '/projects/' ~ _slug ~ '/plan', has_map_image and has_scenes),
+    ('scenes', '3. Scenhantering', '/projects/' ~ _slug ~ '/scenes', has_scenes),
+    ('preview', '4. Förhandsvisning', '/projects/' ~ _slug ~ '/preview', has_scenes),
+] %}
+<details class="step-menu">
+	<summary class="step-menu-btn" role="button" title="Hoppa till steg">&#9776; Steg</summary>
+	<div class="step-menu-list">
+		{% for key, label, url, enabled in _steps %}
+		{% if key == current_step %}
+		<span class="step-menu-item current" aria-current="step">{{ label }}</span>
+		{% elif enabled %}
+		<a href="{{ url }}" class="step-menu-item">{{ label }}</a>
+		{% else %}
+		<span class="step-menu-item disabled" title="Inte tillgängligt än - ladda upp scener{% if key == 'plan' %} och karta{% endif %} först">{{ label }}</span>
+		{% endif %}
+		{% endfor %}
+	</div>
+</details>

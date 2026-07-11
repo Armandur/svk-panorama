@@ -58,6 +58,7 @@
 	{% if request.session.get('uid') %}{% include "_avatar_modal.html" %}{% endif %}
 	<script src="/static/utils.js"></script>
 	<script src="/static/confirm-modal.js"></script>
+	<script src="/static/step-menu.js"></script>
 	{% if request.session.get('uid') %}<script src="/static/avatar-crop.js"></script><script src="/static/account.js"></script>{% endif %}
 	{% block scripts %}{% endblock %}
 </body>

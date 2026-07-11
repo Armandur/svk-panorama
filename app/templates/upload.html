@@ -10,6 +10,9 @@
 	<p>Steg 1 av 2: ladda upp scenfoton och kartbild.</p>
 </hgroup>
 
+{% set current_step = 'upload' %}{% set has_scenes = (scenes | length) > 0 %}
+<nav class="step-menu-row" aria-label="Hoppa till steg">{% include "_step_nav.html" %}</nav>
+
 {% if slug_error %}<p class="login-error" role="alert">{{ slug_error }}</p>{% endif %}
 
 <details class="slug-settings">

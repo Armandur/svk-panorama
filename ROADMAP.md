@@ -254,6 +254,14 @@ Faser (minst till störst):
       relativiseras i bundle-exporten och nås via publika /s-routen. Enkel
       media-hantering i editorn (ladda upp -> få markdown-snutt att klistra in).
 
+- [ ] **Karta-knappen försvinner i pannellum-helskärm.** I helskärmsläge visas inte
+      "Karta"-knappen/kartöverlägget i rundturen. Orsak: Fullscreen API renderar bara
+      det fullskärmade elementet + dess barn; pannellum fullskärmar sin egen container
+      medan vår `.map-toggle` + `#map-container` är syskon till `#panorama` (utanför).
+      Fix: flytta in kartöverlägget i pannellum-containern, eller helskärma en wrapper
+      som innehåller både panorama och överläggen. Gäller runtime-viewern (`viewer.html`/
+      `viewer.css`) och därmed även bundlen + publika /s-vyn.
+
 - [ ] **Avstavning/radbrytning i små info-hotspot-rutor.** Pannellum-tooltipen
       (`div.pnlm-tooltip span`, `max-width:200px` + padding) är för smal/har för mycket
       padding - även korta ord bryts (t.ex. "Test123" radbryts mellan 2 och 3). Fundera
