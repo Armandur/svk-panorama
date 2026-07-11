@@ -36,7 +36,6 @@ class TourSettings(BaseModel):
     themeFont: str = "sans"                # sans | serif | mono | humanist
     themeDotColor: str = "#666666"
     themeCurrentColor: str = "#8b0000"
-    themeLineColor: str = "#4a90d9"
 
 
 @router.get("/projects/{slug}/preview", response_class=HTMLResponse)
@@ -89,7 +88,6 @@ def save_tour_settings(
         "font": payload.themeFont if payload.themeFont in FONT_KEYS else "sans",
         "dotColor": _hex(payload.themeDotColor, "#666666"),
         "currentColor": _hex(payload.themeCurrentColor, "#8b0000"),
-        "lineColor": _hex(payload.themeLineColor, "#4a90d9"),
     }
     default["editorMode"] = False
     write_tour(slug, tour)

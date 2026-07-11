@@ -24,7 +24,6 @@
 		root.setProperty("--tour-font", FONTS[t.font] || FONTS.sans);
 		root.setProperty("--dot-color", t.dotColor || "#666666");
 		root.setProperty("--current-dot-color", t.currentColor || "#8b0000");
-		root.setProperty("--line-color", t.lineColor || "#4a90d9");
 	})();
 
 	const viewer = pannellum.viewer("panorama", tour);
@@ -36,37 +35,9 @@
 
 	const mapImg = document.getElementById("map-img");
 	const dotsLayer = document.getElementById("map-dots");
-	const mapInner = mapImg.closest(".map-inner") || mapImg.parentElement;
 	const showBtn = document.getElementById("show-map-btn");
 	const closeBtn = document.getElementById("close-map-btn");
 	const dotEls = {};
-	const SVGNS = "http://www.w3.org/2000/svg";
-
-	// Länklinjer mellan scener (under prickarna), färgade av temat.
-	function buildEdges() {
-		if (!mapImg.naturalWidth || !mapInner) return;
-		const pos = {};
-		(mapData.scenes || []).forEach(function (s) { pos[s.id] = s.position; });
-		let svg = document.getElementById("map-edges");
-		if (!svg) {
-			svg = document.createElementNS(SVGNS, "svg");
-			svg.id = "map-edges";
-			svg.setAttribute("viewBox", "0 0 100 100");
-			svg.setAttribute("preserveAspectRatio", "none");
-			mapInner.insertBefore(svg, dotsLayer);
-		}
-		svg.textContent = "";
-		(mapData.edges || []).forEach(function (e) {
-			const a = pos[e.from], b = pos[e.to];
-			if (!a || !b) return;
-			const line = document.createElementNS(SVGNS, "line");
-			line.setAttribute("x1", a.x / mapImg.naturalWidth * 100);
-			line.setAttribute("y1", a.y / mapImg.naturalHeight * 100);
-			line.setAttribute("x2", b.x / mapImg.naturalWidth * 100);
-			line.setAttribute("y2", b.y / mapImg.naturalHeight * 100);
-			svg.appendChild(line);
-		});
-	}
 
 	function buildDots() {
 		if (!mapImg.naturalWidth) return;
@@ -95,9 +66,8 @@
 		});
 	}
 
-	function buildMap() { buildEdges(); buildDots(); }
-	if (mapImg.complete && mapImg.naturalWidth) buildMap();
-	else mapImg.addEventListener("load", buildMap);
+	if (mapImg.complete && mapImg.naturalWidth) buildDots();
+	else mapImg.addEventListener("load", buildDots);
 
 	viewer.on("scenechange", markCurrent);
 

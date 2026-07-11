@@ -43,7 +43,6 @@
 	const themeFont = document.getElementById("theme-font");
 	const themeDot = document.getElementById("theme-dot");
 	const themeCurrent = document.getElementById("theme-current");
-	const themeLine = document.getElementById("theme-line");
 	const panoramaWrap = document.querySelector(".panorama-wrap");
 
 	// --- Init formulär från tour.default ---
@@ -86,13 +85,11 @@
 	themeFont.value = ["sans", "serif", "mono", "humanist"].indexOf(th.font) !== -1 ? th.font : "sans";
 	themeDot.value = th.dotColor || "#666666";
 	themeCurrent.value = th.currentColor || "#8b0000";
-	themeLine.value = th.lineColor || "#4a90d9";
 	function applyThemeLive() {
 		if (!panoramaWrap) return;
 		panoramaWrap.style.setProperty("--tour-font", FONTS[themeFont.value] || FONTS.sans);
 		panoramaWrap.style.setProperty("--dot-color", themeDot.value);
 		panoramaWrap.style.setProperty("--current-dot-color", themeCurrent.value);
-		panoramaWrap.style.setProperty("--line-color", themeLine.value);
 	}
 	applyThemeLive();
 
@@ -177,32 +174,6 @@
 			dotEls[s.id] = dot;
 		});
 	}
-	function buildPreviewEdges() {
-		if (!previewMap || !mapImg || !mapImg.naturalWidth) return;
-		const pos = {};
-		(mapData.scenes || []).forEach(function (s) { pos[s.id] = s.position; });
-		const ns = "http://www.w3.org/2000/svg";
-		let svg = document.getElementById("preview-map-edges");
-		if (!svg) {
-			svg = document.createElementNS(ns, "svg");
-			svg.id = "preview-map-edges";
-			svg.setAttribute("viewBox", "0 0 100 100");
-			svg.setAttribute("preserveAspectRatio", "none");
-			previewMap.insertBefore(svg, mapDotsEl);
-		}
-		svg.textContent = "";
-		(mapData.edges || []).forEach(function (e) {
-			const a = pos[e.from], b = pos[e.to];
-			if (!a || !b) return;
-			const line = document.createElementNS(ns, "line");
-			line.setAttribute("x1", a.x / mapImg.naturalWidth * 100);
-			line.setAttribute("y1", a.y / mapImg.naturalHeight * 100);
-			line.setAttribute("x2", b.x / mapImg.naturalWidth * 100);
-			line.setAttribute("y2", b.y / mapImg.naturalHeight * 100);
-			svg.appendChild(line);
-		});
-	}
-
 	function markCurrent(id) {
 		Object.keys(dotEls).forEach(function (k) { dotEls[k].classList.toggle("current", k === id); });
 	}
@@ -253,7 +224,7 @@
 		});
 	});
 	themeFont.addEventListener("change", function () { applyThemeLive(); onSettingChange(false); });
-	[themeDot, themeCurrent, themeLine].forEach(function (inp) {
+	[themeDot, themeCurrent].forEach(function (inp) {
 		inp.addEventListener("input", function () { applyThemeLive(); onSettingChange(false); });
 	});
 
@@ -276,7 +247,6 @@
 				themeFont: themeFont.value,
 				themeDotColor: themeDot.value,
 				themeCurrentColor: themeCurrent.value,
-				themeLineColor: themeLine.value,
 			},
 		}).then(function () {
 			setDirty(false);
@@ -360,9 +330,8 @@
 
 	// --- Start ---
 	buildViewer(firstScene, null);
-	function buildPreviewMap() { buildPreviewEdges(); buildDots(); }
 	if (mapImg) {
-		if (mapImg.complete && mapImg.naturalWidth) buildPreviewMap();
-		else mapImg.addEventListener("load", buildPreviewMap);
+		if (mapImg.complete && mapImg.naturalWidth) buildDots();
+		else mapImg.addEventListener("load", buildDots);
 	}
 })();

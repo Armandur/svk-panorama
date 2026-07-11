@@ -408,9 +408,7 @@ tr[data-preview-scene] { cursor: help; }
 .preview-map img { display: block; width: 100%; height: auto; }
 #preview-map-dots { position: absolute; inset: 0; }
 /* Temavariabler sätts live på .panorama-wrap av tour-preview.js. */
-.panorama-wrap { --dot-color: #666666; --current-dot-color: #8b0000; --line-color: #4a90d9; }
-#preview-map-edges { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-#preview-map-edges line { stroke: var(--line-color); stroke-width: 2; vector-effect: non-scaling-stroke; opacity: 0.85; }
+.panorama-wrap { --dot-color: #666666; --current-dot-color: #8b0000; }
 .preview-dot {
 	position: absolute;
 	width: 12px; height: 12px;
