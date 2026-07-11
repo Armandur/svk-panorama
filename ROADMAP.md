@@ -57,9 +57,12 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
 
 ## Admin/inställningar (senare)
 
-- [ ] Admin-gränssnitt för att justera bearbetningsinställningar utan omstart:
-      tiling-parallellitet (`SVK_TILE_CONCURRENCY`, redan config-styrd), tile-
-      kvalitet, uppladdnings-parallellitet, previewstorlek m.m.
+- [ ] Admin-gränssnitt för att justera inställningar utan omstart. Mönster:
+      **env sätter default, admin-override vinner** (kräver en settings-store,
+      t.ex. DB-tabell/JSON). Inställningar: bas-URL (`SVK_BASE_URL`, redan
+      config-styrd - för export/delningslänkar), tiling-parallellitet
+      (`SVK_TILE_CONCURRENCY`), tile-kvalitet, uppladdnings-parallellitet,
+      previewstorlek m.m.
 - [ ] Ev. finare tiling-progress via filräkning (räkna face*.tif 0-6 under
       nona-fasen + tile-jpg mot förväntat antal) i stället för bara faser.
 

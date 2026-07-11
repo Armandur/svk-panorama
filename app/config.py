@@ -42,3 +42,9 @@ PREVIEW_QUALITY = int(os.environ.get("SVK_PREVIEW_QUALITY", "82"))
 # Tiling: antal scener som tilas parallellt. Lågt default för delad VM;
 # tänkt att kunna justeras i ett kommande admin-gränssnitt (skriver env/config).
 TILE_CONCURRENCY = max(1, int(os.environ.get("SVK_TILE_CONCURRENCY", "2")))
+
+# Publik bas-URL för turer/export (t.ex. https://turer.exempel.se). Tom sträng
+# = använd relativa vägar / request-host. Env-default; tänkt att kunna överridas
+# i ett kommande admin-gränssnitt där admin-värdet vinner över env. Konsumeras
+# av bundle-export och delningslänkar (byggs senare).
+BASE_URL = os.environ.get("SVK_BASE_URL", "").rstrip("/")
