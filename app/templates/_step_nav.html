@@ -1,24 +1,37 @@
-{#- Steg-hoppmeny (hamburger). Kräver i context: project, has_map_image, samt att
-    current_step och has_scenes satts före include. Steg gate:as på förutsättningar
-    (t.ex. placering kräver karta + scener). -#}
+{#- Stegnavigering: hamburgermeny (Huvudmeny + steg) + fram/bak-pilar.
+    Kräver i context: project, has_map_image, current_step, has_scenes.
+    Steg gate:as på förutsättningar. Renderar hela topnav-raden. -#}
 {% set _slug = project.slug %}
 {% set _steps = [
-    ('upload', '1. Uppladdning', '/projects/' ~ _slug, true),
-    ('plan', '2. Placering', '/projects/' ~ _slug ~ '/plan', has_map_image and has_scenes),
-    ('scenes', '3. Scenhantering', '/projects/' ~ _slug ~ '/scenes', has_scenes),
-    ('preview', '4. Förhandsvisning', '/projects/' ~ _slug ~ '/preview', has_scenes),
+    {'key': 'upload', 'title': 'Uppladdning', 'url': '/projects/' ~ _slug, 'enabled': true},
+    {'key': 'plan', 'title': 'Placering', 'url': '/projects/' ~ _slug ~ '/plan', 'enabled': has_map_image and has_scenes},
+    {'key': 'scenes', 'title': 'Scenhantering', 'url': '/projects/' ~ _slug ~ '/scenes', 'enabled': has_scenes},
+    {'key': 'preview', 'title': 'Förhandsvisning', 'url': '/projects/' ~ _slug ~ '/preview', 'enabled': has_scenes},
 ] %}
-<details class="step-menu">
-	<summary class="step-menu-btn" role="button" title="Hoppa till steg">&#9776; Steg</summary>
-	<div class="step-menu-list">
-		{% for key, label, url, enabled in _steps %}
-		{% if key == current_step %}
-		<span class="step-menu-item current" aria-current="step">{{ label }}</span>
-		{% elif enabled %}
-		<a href="{{ url }}" class="step-menu-item">{{ label }}</a>
-		{% else %}
-		<span class="step-menu-item disabled" title="Inte tillgängligt än - ladda upp scener{% if key == 'plan' %} och karta{% endif %} först">{{ label }}</span>
-		{% endif %}
-		{% endfor %}
-	</div>
-</details>
+{% set ns = namespace(idx=0) %}
+{% for s in _steps %}{% if s.key == current_step %}{% set ns.idx = loop.index0 %}{% endif %}{% endfor %}
+{% set _prev = _steps[ns.idx - 1] if ns.idx > 0 else none %}
+{% set _next = _steps[ns.idx + 1] if ns.idx < (_steps | length - 1) else none %}
+<nav class="plan-topnav" aria-label="Arbetssteg">
+	<details class="step-menu">
+		<summary class="step-menu-btn" title="Meny" aria-label="Meny">&#9776;</summary>
+		<div class="step-menu-list">
+			<a href="/" class="step-menu-item step-menu-home">Huvudmeny</a>
+			<div class="step-menu-sep"></div>
+			{% for s in _steps %}
+			{% if s.key == current_step %}
+			<span class="step-menu-item current" aria-current="step">{{ s.title }}</span>
+			{% elif s.enabled %}
+			<a href="{{ s.url }}" class="step-menu-item">{{ s.title }}</a>
+			{% else %}
+			<span class="step-menu-item disabled" title="Inte tillgängligt än - ladda upp scener{% if s.key == 'plan' %} och karta{% endif %} först">{{ s.title }}</span>
+			{% endif %}
+			{% endfor %}
+		</div>
+	</details>
+	{% if current_step != 'upload' %}
+	{% if _prev %}<a href="{{ _prev.url }}" class="step-arrow" role="button" title="Föregående: {{ _prev.title }}" aria-label="Föregående: {{ _prev.title }}">&larr;</a>{% endif %}
+	{% if _next and _next.enabled %}<a href="{{ _next.url }}" class="step-arrow" role="button" title="Nästa: {{ _next.title }}" aria-label="Nästa: {{ _next.title }}">&rarr;</a>{% endif %}
+	{% endif %}
+	{% if current_step == 'preview' %}<a href="/projects/{{ _slug }}/view" class="step-action" role="button" target="_blank" rel="noopener" title="Öppna turen i helskärm">Helskärm</a>{% endif %}
+</nav>

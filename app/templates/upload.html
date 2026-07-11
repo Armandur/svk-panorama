@@ -2,21 +2,20 @@
 {% block title %}Uppladdning - {{ project.name }}{% endblock %}
 {% block head %}<link rel="stylesheet" href="/static/vendor/pannellum.css">{% endblock %}
 {% block body_attrs %} data-slug="{{ project.slug }}"{% endblock %}
-{% block brand %}<a href="/" role="button" class="secondary outline nav-btn" title="Till projektlistan">Huvudmeny</a>{% endblock %}
 {% block content %}
 
-<hgroup>
-	<h1>{{ project.name }}</h1>
-	<p>Steg 1 av 2: ladda upp scenfoton och kartbild.</p>
-</hgroup>
-
 {% set current_step = 'upload' %}{% set has_scenes = (scenes | length) > 0 %}
-<nav class="step-menu-row" aria-label="Hoppa till steg">{% include "_step_nav.html" %}</nav>
+{% include "_step_nav.html" %}
+
+<hgroup>
+	<h1>Uppladdning</h1>
+	<p>{{ project.name }}</p>
+</hgroup>
 
 {% if slug_error %}<p class="login-error" role="alert">{{ slug_error }}</p>{% endif %}
 
 <details class="slug-settings">
-	<summary>Turinställningar (namn &amp; adress)</summary>
+	<summary>Turinställningar - namn &amp; adress</summary>
 	<form method="post" action="/projects/{{ project.slug }}/rename" class="slug-form">
 		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 		<label for="tour-name">Visningsnamn</label>
@@ -33,11 +32,6 @@
 		<button type="submit" class="secondary">Byt slug</button>
 	</form>
 </details>
-
-<nav class="stepper" aria-label="Arbetssteg">
-	<span aria-current="step">1. Uppladdning</span>
-	<span>2. Placering och länkning</span>
-</nav>
 
 <section class="upload-grid">
 	<article>

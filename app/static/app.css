@@ -74,16 +74,9 @@ main.plan-app {
 .plan-topnav {
 	display: flex;
 	flex-wrap: wrap;
+	align-items: center;
 	gap: 0.4rem;
 	margin-bottom: 0.75rem;
-}
-.plan-topnav [role="button"] {
-	margin: 0;
-	flex: 1 1 auto;
-	text-align: center;
-	white-space: nowrap;
-	font-size: 0.78rem;
-	padding: 0.4rem 0.45rem;
 }
 .plan-heading { margin-bottom: 1rem; }
 .plan-heading h2 { margin-bottom: 0.1rem; }
@@ -478,12 +471,22 @@ tr[data-preview-scene] { cursor: help; }
 .login-section { max-width: 26rem; margin: 2rem auto; }
 .login-error { background: var(--svk-danger); color: #fff; padding: 0.5rem 0.7rem; border-radius: 0.3rem; font-size: 0.9rem; }
 .logout-form { margin: 0; }
-/* Steg-hoppmeny (hamburger) - hoppa mellan arbetsstegen. */
-.step-menu-row { margin: 0.4rem 0 1rem; }
+/* Stegnavigering: hamburgermeny + kompakta pil-/åtgärdsknappar. */
 .step-menu { position: relative; display: inline-block; }
-.step-menu-btn { display: inline-block; cursor: pointer; list-style: none; margin: 0; padding: 0.4rem 0.9rem; font-size: 0.9rem; border: 1px solid var(--pico-secondary); border-radius: var(--pico-border-radius); background: var(--pico-secondary-background); color: var(--pico-secondary-inverse); }
-.step-menu-btn::-webkit-details-marker { display: none; }
-.step-menu-btn::marker { content: ""; }
+.step-menu-btn, .step-arrow, .step-action {
+	margin: 0; flex: none; display: inline-flex; align-items: center; justify-content: center;
+	min-width: 2.4rem; height: 2.4rem; padding: 0 0.7rem; font-size: 1.05rem; line-height: 1;
+	cursor: pointer; list-style: none; text-decoration: none;
+	border: 1px solid var(--pico-secondary); border-radius: var(--pico-border-radius);
+	background: var(--pico-secondary-background); color: var(--pico-secondary-inverse);
+}
+.step-action { font-size: 0.85rem; }
+.step-menu-btn:hover, .step-arrow:hover, .step-action:hover { background: var(--pico-secondary-hover-background); color: var(--pico-secondary-inverse); }
+details.step-menu > summary { list-style: none; }
+details.step-menu > summary::-webkit-details-marker { display: none; }
+details.step-menu > summary::marker { content: none; }
+/* Pico lägger en chevron via summary::after - göm den (vi vill bara hamburgern). */
+details.step-menu > summary::after { display: none; }
 .step-menu[open] > .step-menu-btn { background: var(--pico-secondary-hover-background); }
 .step-menu-list { display: none; position: absolute; top: calc(100% + 0.3rem); left: 0; z-index: 3600; min-width: 13rem; flex-direction: column; padding: 0.3rem; background: var(--pico-background-color); border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius); box-shadow: 0 6px 20px rgba(0,0,0,0.18); }
 .step-menu[open] > .step-menu-list { display: flex; }
@@ -491,11 +494,19 @@ tr[data-preview-scene] { cursor: help; }
 a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .step-menu-item.current { font-weight: 700; background: var(--pico-secondary-background); }
 .step-menu-item.disabled { color: var(--pico-muted-color); cursor: not-allowed; }
+.step-menu-home { font-weight: 600; }
+.step-menu-sep { height: 1px; background: var(--pico-muted-border-color); margin: 0.3rem 0.2rem; }
 
 /* Byt slug: diskret utfällbar sektion på uppladdningssidan. */
-.slug-settings { margin: 0.5rem 0 1rem; font-size: 0.9rem; }
-.slug-settings summary { cursor: pointer; color: var(--pico-muted-color); }
-.slug-form { margin-top: 0.6rem; max-width: 28rem; }
+.slug-settings { margin: 0.6rem 0 1.2rem; font-size: 0.9rem; border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius); overflow: hidden; }
+.slug-settings > summary { cursor: pointer; list-style: none; padding: 0.7rem 1rem; font-weight: 600; background: var(--pico-secondary-background); display: flex; align-items: center; gap: 0.5rem; }
+.slug-settings > summary::-webkit-details-marker { display: none; }
+.slug-settings > summary::before { content: "\2699"; font-size: 1.05rem; }
+.slug-settings > summary::after { content: "\25be"; margin-left: auto; opacity: 0.6; }
+.slug-settings[open] > summary { border-bottom: 1px solid var(--pico-muted-border-color); }
+.slug-settings[open] > summary::after { content: "\25b4"; }
+.slug-form { margin: 0; padding: 0.6rem 1rem; max-width: 30rem; }
+.slug-form + .slug-form { border-top: 1px dashed var(--pico-muted-border-color); }
 .slug-form button { margin: 0; }
 
 /* Turnamn som primär öppna-länk i projektlistan. */

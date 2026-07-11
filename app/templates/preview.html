@@ -11,16 +11,11 @@
 </article>
 {% else %}
 <aside class="planner-side">
-	<nav class="plan-topnav" aria-label="Arbetssteg">
-		<a href="/" role="button" class="secondary outline" title="Till projektlistan">Huvudmeny</a>
-		{% set current_step = 'preview' %}{% set has_scenes = (tour.scenes | length) > 0 %}
-		{% include "_step_nav.html" %}
-		<a href="/projects/{{ project.slug }}/scenes" role="button" class="secondary outline">&lt;- Scener</a>
-		<a href="/projects/{{ project.slug }}/view" role="button" class="secondary" target="_blank" rel="noopener">Helskärm</a>
-	</nav>
+	{% set current_step = 'preview' %}{% set has_scenes = (tour.scenes | length) > 0 %}
+	{% include "_step_nav.html" %}
 	<hgroup class="plan-heading">
-		<h2>{{ project.name }}</h2>
-		<p>Turinställningar: prova autorotate, övergångar m.m. och bläddra mellan scener för att känna efter.</p>
+		<h2>Förhandsvisning</h2>
+		<p>{{ project.name }}</p>
 	</hgroup>
 
 	<article>

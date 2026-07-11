@@ -11,16 +11,11 @@
 </article>
 {% else %}
 <aside class="planner-side">
-	<nav class="plan-topnav" aria-label="Arbetssteg">
-		<a href="/" role="button" class="secondary outline" title="Till projektlistan">Huvudmeny</a>
-		{% set current_step = 'plan' %}{% set has_scenes = (tour.scenes | length) > 0 %}
-		{% include "_step_nav.html" %}
-		<a href="/projects/{{ project.slug }}" role="button" class="secondary outline">&lt;- Uppladdning</a>
-		<a id="next-step-link" href="/projects/{{ project.slug }}/scenes" role="button" class="secondary">Scenhantering -&gt;</a>
-	</nav>
+	{% set current_step = 'plan' %}{% set has_scenes = (tour.scenes | length) > 0 %}
+	{% include "_step_nav.html" %}
 	<hgroup class="plan-heading">
-		<h2>{{ project.name }}</h2>
-		<p>Steg 2 av 2: placera och länka scenerna.</p>
+		<h2>Placering</h2>
+		<p>{{ project.name }}</p>
 	</hgroup>
 	<article>
 		<div class="section-head">
