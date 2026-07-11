@@ -79,6 +79,17 @@
 			<button id="discard-btn" type="button" class="secondary outline" hidden>Återställ</button>
 		</div>
 	</article>
+
+	<article>
+		<h3>Exportera</h3>
+		<p class="hint">Ladda ner en självbärande zip (tiles + viewer + pannellum + hosting-instruktioner) att lägga på valfri webbserver.</p>
+		<p id="export-state" class="readiness" aria-live="polite"></p>
+		<progress id="export-progress" value="0" max="1" hidden></progress>
+		<div class="save-row">
+			<button id="export-btn" type="button">Exportera bundle</button>
+			<a id="export-download" href="/projects/{{ project.slug }}/export/download" role="button" class="secondary" hidden download>Ladda ner zip</a>
+		</div>
+	</article>
 </aside>
 
 <div class="panorama-wrap">
@@ -127,4 +138,5 @@
 <script src="/static/preview.js"></script>
 <script src="/static/settings.js"></script>
 <script src="/static/tour-preview.js"></script>
+<script src="/static/export.js"></script>
 {% endblock %}

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="sv">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{{ project_name }}</title>
+	<link rel="stylesheet" href="pannellum.css">
+	<link rel="stylesheet" href="viewer.css">
+</head>
+<body>
+	<div id="panorama"></div>
+
+	{% if has_map_image %}
+	<button id="show-map-btn" type="button" class="map-toggle">Karta</button>
+	<div id="map-container" hidden>
+		<button id="close-map-btn" type="button" class="map-close" aria-label="Stäng karta">&times;</button>
+		<div class="map-inner">
+			<img id="map-img" src="map.png" alt="Översiktskarta">
+			<div id="map-dots"></div>
+		</div>
+	</div>
+	{% endif %}
+
+	<script id="tour-data" type="application/json">{{ tour | tojson }}</script>
+	<script id="map-data" type="application/json">{{ map_data | tojson }}</script>
+	<script src="pannellum.js"></script>
+	<script src="viewer.js"></script>
+</body>
+</html>
