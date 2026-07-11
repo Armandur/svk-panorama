@@ -88,6 +88,40 @@ Kvarvarande arbete är i praktiken auth + multi-tenancy.
 - [x] **Stäng static-lucka + Admin-meny + profilsida** (commit c259c8f). Öppna
       /projects-mounten ersatt av ägar-koll:ad fil-route; "Användare" under
       Admin-dropdown; /profile (namn + byt lösenord) per användare.
+- [x] **Kontokort (M365) + avatar + admin-vy + admin ser egna** (commits b17af32,
+      550131f, b536880, a30793c). Kontokort med utfällning, avatar (blob + interaktiv
+      crop i `account.js`), `/admin` sidebar-vy, admin ser bara egna turer på index,
+      andras via Användare -> `/admin/users/{id}/projects`.
+
+- [ ] **Skiva 3: admin-hantering av användare + batch-verktyg.** BÖRJA HÄR efter
+      en clear (läs först minnet `svk-panorama-project.md` + denna fil; starta
+      testinstans på ledig port `svc port`, login admin/admin).
+      **A. Användardetaljsida** (utöka `/admin/users/{id}/projects` ELLER ny
+      `/admin/users/{id}`): admin ska kunna göra allt användaren gör via sin
+      Inställningar-knapp, PÅ användarens vägnar - byt namn, byt lösenord (utan att
+      kräva nuvarande, admin overrider), byt/ta bort profilbild, + kommande
+      inställningar. ÅTERANVÄND logiken i `app/routes/profile.py`
+      (`_process_avatar`, `hash_password`, avatar-routes) men gör admin-varianter
+      som tar `user_id` + `require_admin` i stället för `require_user`. Avatar-crop-
+      UI:t finns i `account.js` + `_avatar_modal.html` - kan generaliseras till att
+      posta mot en target-user-route.
+      **B. Spärra/avaktivera konto:** lägg `active`/`disabled`-bool på `User`
+      (`app/database.py`; pre-produktion = blås svk.db). Kontrollera i
+      `app/auth.py` (`_user_from_session` + login i `routes/auth.py`) så en spärrad
+      användare inte kan logga in / får sessionen nekad. Toggle i användardetaljen.
+      **C. Batch-verktyg på `/admin/users`:** kryssrutor per rad + en åtgärdsrad
+      (markera flera -> kör). Minst: tvinga lösenordsbyte/reset (nolla
+      `password_hash` -> användaren måste sätta nytt via inbjudningslänk, ELLER en
+      `must_change_password`-flagga som tvingar byte vid nästa login), inaktivera/
+      aktivera, ta bort. Formulär postar valda id:n till en batch-endpoint i
+      `app/routes/admin.py`.
+      **Fler verktygsförslag:** promota/degradera admin (toggla `is_admin`, saknas i
+      UI idag); "skicka om inbjudan" (länken visas redan för pending); överför
+      ägarskap av en användares turer till annan (behövs innan man tar bort en
+      användare som äger turer - delete-guarden blockerar idag); `last_login`-kolumn
+      + kolumn i listan för aktivitetsöversikt; sök/filtrera användare när listan
+      växer. Alla gated med `require_admin`, CSRF på POST.
+
 - [ ] **Vid produktionssättning:** återinför Alembic (baslinje ur då-aktuella
       modeller), byt admin/admin mot riktiga creds, ev. Postgres via docker-compose.
       Pre-produktion: inga migrationer - schemaändring = radera svk.db + starta om
