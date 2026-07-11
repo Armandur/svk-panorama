@@ -1,0 +1,37 @@
+{% extends "admin_base.html" %}
+{% block title %}Texter - Admin{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/vendor/fontawesome/css/font-awesome.min.css"><link rel="stylesheet" href="/static/vendor/easymde/easymde.min.css">{% endblock %}
+{% block admin_content %}
+
+<hgroup>
+	<h1>Texter</h1>
+	<p>Redigera återkommande texter i tjänsten. Markdown.</p>
+</hgroup>
+
+{% if msg %}<p class="profile-ok" role="status">{{ msg }}</p>{% endif %}
+
+<article>
+	<h2>Startsidans arbetsgångstext</h2>
+	<p class="hint">Visas under "Hur funkar det? (arbetsgång)" på startsidan. Standard hämtas från <code>WORKFLOW.md</code>; det du sparar här vinner.</p>
+	<form method="post" action="/admin/settings/texts">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+		<textarea id="workflow-editor" name="workflow_text">{{ workflow_text }}</textarea>
+		<button type="submit">Spara</button>
+	</form>
+</article>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/vendor/easymde/easymde.min.js"></script>
+<script src="/static/vendor/marked/marked.min.js"></script>
+<script src="/static/vendor/dompurify/purify.min.js"></script>
+<script src="/static/markdown.js"></script>
+<script>
+	new EasyMDE({
+		element: document.getElementById("workflow-editor"),
+		spellChecker: false,
+		status: false,
+		previewRender: function (plainText) { return renderMarkdown(plainText); },
+	});
+</script>
+{% endblock %}

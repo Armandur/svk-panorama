@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, LargeBinary, String, create_engine
+from sqlalchemy import Boolean, DateTime, ForeignKey, LargeBinary, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
 from app import config
@@ -53,7 +53,7 @@ class Setting(Base):
     __tablename__ = "settings"
 
     key: Mapped[str] = mapped_column(String(64), primary_key=True)
-    value: Mapped[str] = mapped_column(String(500))
+    value: Mapped[str] = mapped_column(Text)  # kan vara lång (t.ex. arbetsgångstext)
 
 
 engine = create_engine(

@@ -7,7 +7,6 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
-from app import config
 from app.auth import require_user
 from app.database import Project, User
 from app.deps import (
@@ -32,17 +31,12 @@ from app.services.project_files import (
     write_map,
     write_tour,
 )
+from app.services import settings as site_settings
 from app.services.tiling import forget_job as forget_tile_job
 from app.services.tiling import job_status as tile_job_status
 from app.services.tiling import project_tile_state
 
 router = APIRouter()
-
-
-def _read_guide_text() -> str:
-    if not config.WORKFLOW_MD_PATH.exists():
-        return "Ingen arbetsgångsguide hittades (WORKFLOW.md saknas)."
-    return config.WORKFLOW_MD_PATH.read_text(encoding="utf-8")
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -69,7 +63,7 @@ def index(
             "tile_states": tile_states,
             "current_user": user,
             "csrf_token": token,
-            "guide_text": _read_guide_text(),
+            "guide_text": site_settings.get_workflow_text(),
         },
     )
     set_csrf_cookie(response, token)

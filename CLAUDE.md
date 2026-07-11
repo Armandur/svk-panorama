@@ -169,9 +169,19 @@ traversal-guard). Skapa/sluta-dela på preview-steget. Nolla token -> länken d�
 ## Inställningar & tjänstenamn (services/settings.py)
 
 Super-admin-konfig som DB-override ovanpå env-default (`Setting`-nyckel/värde-tabell,
-in-process-cache). Tjänstenamnet (`SVK_SITE_NAME` default) exponeras som Jinja-globalen
-`site_name` (brand + titlar). Redigeras på `/admin/settings`. Mönster för framtida
-admin-override:bara inställningar (jfr `TILE_CONCURRENCY`/`BASE_URL`).
+`Text`, in-process-cache). Tjänstenamnet (`SVK_SITE_NAME` default) exponeras som
+Jinja-globalen `site_name` (brand + titlar), redigeras på `/admin/settings`.
+Arbetsgångstexten (`workflow_text`, default = `WORKFLOW.md`) redigeras på
+`/admin/settings/texts` med EasyMDE. Mönster för framtida admin-override:bara
+inställningar (jfr `TILE_CONCURRENCY`/`BASE_URL`).
+
+## Markdown (static/markdown.js + vendored libs)
+
+`window.renderMarkdown(md)` = marked -> DOMPurify-sanerad HTML (kräver att
+`vendor/marked` + `vendor/dompurify` laddats). Redigering via `vendor/easymde`
+(EasyMDE, `previewRender` = renderMarkdown) - toolbar-ikoner via `vendor/fontawesome`
+(FA 4.7). Renderad markdown stylas med `.markdown-body`. Används av arbetsgångstexten
+idag; info-hotspots (rich text) enligt ROADMAP-fas 2-4.
 
 ## Env-vars (config.py)
 

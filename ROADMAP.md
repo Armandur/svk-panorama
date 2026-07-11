@@ -233,13 +233,14 @@ Expanderbara hotspots får en affordans-ikon (t.ex. "+"). Pannellum:
 
 Faser (minst till störst):
 
-- [ ] **1. Markdown-infra + redigerbar arbetsgångstext.** Vendora marked + DOMPurify
-      + EasyMDE. Delad `renderMarkdown`. Rendera "Hur funkar det (arbetsgång)" på
-      startsidan som markdown i stället för `<pre>` (idag `guide_text` från
-      `WORKFLOW.md`). Gör texten redigerbar av super-admin i en ny kategori på
-      `/admin/settings` (t.ex. "Texter"/"Startsida") med EasyMDE; lagras i `Setting`
-      (DB-override, default = `WORKFLOW.md`). Detta testar render- + editor-libbet i
-      liten skala innan hotspot-arbetet.
+- [x] **1. Markdown-infra + redigerbar arbetsgångstext KLAR (2026-07-11).** Vendorade
+      marked + DOMPurify + EasyMDE + FontAwesome 4.7 (EasyMDE:s toolbar-ikoner), allt
+      självhostat i `static/vendor/`. Delad `static/markdown.js`
+      (`window.renderMarkdown` = marked -> DOMPurify). Startsidans "Hur funkar det
+      (arbetsgång)" renderas som markdown (`.markdown-body`). Redigerbar av super-admin
+      på ny kategori `/admin/settings/texts` (`admin_texts.html`) med EasyMDE (preview
+      via renderMarkdown); lagras i `Setting` (`workflow_text`, DB-override, default =
+      `WORKFLOW.md` tills admin sparar). `Setting.value` -> `Text` (lång text).
 - [ ] **2. Markdown i info-hotspots (inline).** Hotspot-textfältet blir markdown,
       renderas i tooltip/popover via `createTooltipFunc`. EasyMDE i hotspot-editorn
       (`scene.js`-modalen). Fungerar i viewer + bundle + publik /s-vy (vendora
@@ -252,6 +253,13 @@ Faser (minst till störst):
       attachments-mapp per tur), referera via markdown-bildsyntax. Måste inkluderas +
       relativiseras i bundle-exporten och nås via publika /s-routen. Enkel
       media-hantering i editorn (ladda upp -> få markdown-snutt att klistra in).
+
+- [ ] **Avstavning/radbrytning i små info-hotspot-rutor.** Pannellum-tooltipen
+      (`div.pnlm-tooltip span`, `max-width:200px` + padding) är för smal/har för mycket
+      padding - även korta ord bryts (t.ex. "Test123" radbryts mellan 2 och 3). Fundera
+      över tooltip-bredd, padding och `word-break`/`overflow-wrap`/`hyphens` så korta ord
+      inte bryts. Hör ihop med markdown-i-hotspots (rich text-sektionen) - ta gärna
+      samlat där.
 
 - [ ] **Upplösningsväljare i preview-steget (parity med scenvyn).** Preview-steget
       (`/preview`) defaultar redan till multires (`apply_multires` i `preview.py`,

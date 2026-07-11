@@ -82,6 +82,37 @@ async def save_settings(
     return RedirectResponse(url="/admin/settings?msg=Sparat", status_code=303)
 
 
+@router.get("/admin/settings/texts", response_class=HTMLResponse)
+def texts_page(
+    request: Request,
+    admin: User = Depends(require_admin),
+) -> HTMLResponse:
+    token = new_csrf_token()
+    response = templates.TemplateResponse(
+        request,
+        "admin_texts.html",
+        {
+            "active": "texts",
+            "workflow_text": site_settings.get_workflow_text(),
+            "csrf_token": token,
+            "msg": request.query_params.get("msg"),
+        },
+    )
+    set_csrf_cookie(response, token)
+    return response
+
+
+@router.post("/admin/settings/texts")
+async def save_texts(
+    request: Request,
+    admin: User = Depends(require_admin),
+    workflow_text: str = Form(""),
+    _csrf: None = Depends(verify_csrf_form),
+):
+    site_settings.set_workflow_text(workflow_text)
+    return RedirectResponse(url="/admin/settings/texts?msg=Sparat", status_code=303)
+
+
 @router.get("/admin/users", response_class=HTMLResponse)
 def users_page(
     request: Request,
