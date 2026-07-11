@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
-from app.auth import hash_password, read_invite_token, verify_password
+from app.auth import hash_password, read_invite_token, set_user_session, verify_password
 from app.database import User, get_db
 from app.deps import new_csrf_token, set_csrf_cookie, templates, verify_csrf_form
 
@@ -48,8 +48,7 @@ async def login(
     user = db.query(User).filter(User.email == email.strip().lower()).first()
     if user is None or not verify_password(password, user.password_hash):
         return _render_login(request, next, error="Fel e-post eller lösenord.")
-    request.session["uid"] = user.id
-    request.session["admin"] = bool(user.is_admin)
+    set_user_session(request, user)
     return RedirectResponse(url=_safe_next(next), status_code=303)
 
 
@@ -99,6 +98,5 @@ async def accept_invite(
         return _render_accept(request, token, valid=True, email=user.email, error="Lösenorden matchar inte.")
     user.password_hash = hash_password(password)
     db.commit()
-    request.session["uid"] = user.id
-    request.session["admin"] = bool(user.is_admin)
+    set_user_session(request, user)
     return RedirectResponse(url="/", status_code=303)

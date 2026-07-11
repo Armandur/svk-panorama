@@ -10,33 +10,55 @@
 	{% block head %}{% endblock %}
 </head>
 <body{% block body_attrs %}{% endblock %}>
+	{% set _dn = request.session.get('name') or request.session.get('email') or '' %}
+	{% set _initial = (_dn[:1] | upper) if _dn else '?' %}
 	<header class="site-header">
 		<nav class="container">
 			<ul><li><a href="/"><strong>SVK Panorama</strong></a></li></ul>
-			<ul>
+			{% if request.session.get('uid') %}
+			<ul class="nav-right">
 				{% if request.session.get('admin') %}
-				<li>
-					<details class="dropdown">
-						<summary role="button" class="secondary outline">Admin</summary>
-						<ul>
-							<li><a href="/admin/users">Användare</a></li>
-						</ul>
-					</details>
+				<li><a href="/admin" role="button" class="secondary outline nav-btn">Admin</a></li>
+				{% endif %}
+				<li class="account">
+					<button type="button" id="account-btn" class="account-card" aria-haspopup="true" aria-expanded="false">
+						<span class="avatar avatar-sm"><span class="avatar-initial">{{ _initial }}</span><img class="avatar-img" src="/profile/avatar" alt="" onerror="this.remove()"></span>
+						<span class="account-name">{{ _dn }}</span>
+						<span class="account-caret" aria-hidden="true">&#9662;</span>
+					</button>
+					<div id="account-flyout" class="account-flyout" hidden>
+						<div class="flyout-top">
+							<span class="flyout-org">Svenska kyrkan</span>
+							<form method="post" action="/logout" class="logout-form"><button type="submit" class="linklike">Logga ut</button></form>
+						</div>
+						<div class="flyout-user">
+							<button type="button" id="avatar-big" class="avatar avatar-lg" title="Ändra profilbild">
+								<span class="avatar-initial">{{ _initial }}</span>
+								<img class="avatar-img" src="/profile/avatar" alt="" onerror="this.remove()">
+								<span class="avatar-cam" aria-hidden="true">
+									<svg viewBox="0 0 24 24" width="26" height="26" fill="#fff"><path d="M9 3l-1.5 2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.5L15 3H9zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+								</span>
+							</button>
+							<div class="flyout-meta">
+								<div class="flyout-name">{{ _dn }}</div>
+								<div class="flyout-email">{{ request.session.get('email') }}</div>
+								<a href="/profile" class="flyout-link">Inställningar</a>
+							</div>
+						</div>
+					</div>
 				</li>
-				{% endif %}
-				{% if request.session.get('uid') %}
-				<li><a href="/profile" role="button" class="secondary outline">Profil</a></li>
-				<li><form method="post" action="/logout" class="logout-form"><button type="submit" class="secondary outline">Logga ut</button></form></li>
-				{% else %}
-				<li>Editor för virtuella kyrkorundturer</li>
-				{% endif %}
 			</ul>
+			{% else %}
+			<ul><li>Editor för virtuella kyrkorundturer</li></ul>
+			{% endif %}
 		</nav>
 	</header>
 	<main{% block main_attrs %} class="container"{% endblock %}>
 		{% block content %}{% endblock %}
 	</main>
+	{% if request.session.get('uid') %}{% include "_avatar_modal.html" %}{% endif %}
 	<script src="/static/utils.js"></script>
+	{% if request.session.get('uid') %}<script src="/static/account.js"></script>{% endif %}
 	{% block scripts %}{% endblock %}
 </body>
 </html>

@@ -13,6 +13,11 @@ from app.deps import new_csrf_token, set_csrf_cookie, templates, verify_csrf_for
 router = APIRouter()
 
 
+@router.get("/admin")
+def admin_home(admin: User = Depends(require_admin)) -> RedirectResponse:
+    return RedirectResponse(url="/admin/users", status_code=302)
+
+
 def _invite_url(request: Request, user_id: int) -> str:
     base = config.BASE_URL or str(request.base_url).rstrip("/")
     return f"{base}/accept-invite?token={make_invite_token(user_id)}"
@@ -39,7 +44,7 @@ def users_page(
     response = templates.TemplateResponse(
         request,
         "admin_users.html",
-        {"users": rows, "me": admin.id, "error": request.query_params.get("error"), "csrf_token": token},
+        {"users": rows, "me": admin.id, "active": "users", "error": request.query_params.get("error"), "csrf_token": token},
     )
     set_csrf_cookie(response, token)
     return response

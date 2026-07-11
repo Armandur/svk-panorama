@@ -65,3 +65,11 @@ def require_admin(user: User = Depends(require_user)) -> User:
     if not user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Adminbehörighet krävs")
     return user
+
+
+def set_user_session(request: Request, user: User) -> None:
+    """Fyll sessionen med det nav/kontokortet behöver (id + visningsdata)."""
+    request.session["uid"] = user.id
+    request.session["admin"] = bool(user.is_admin)
+    request.session["name"] = user.name or ""
+    request.session["email"] = user.email

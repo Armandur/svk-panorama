@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, create_engine
+from sqlalchemy import Boolean, DateTime, ForeignKey, LargeBinary, String, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
 from app import config
@@ -22,6 +22,7 @@ class User(Base):
     # Null tills en inbjuden användare satt sitt lösenord (sluten inbjudan).
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    avatar: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)  # PNG, center-croppad
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow

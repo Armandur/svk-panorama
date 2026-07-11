@@ -1,0 +1,26 @@
+{% set _dn = request.session.get('name') or request.session.get('email') or '' %}
+<div id="avatar-modal" class="help-modal" hidden>
+	<article class="avatar-modal-article">
+		<div class="section-head">
+			<h3>Ändra foto</h3>
+			<button id="avatar-modal-close" type="button" class="secondary outline" aria-label="Stäng">&times;</button>
+		</div>
+		<div class="avatar-preview-wrap">
+			<span class="avatar avatar-xl">
+				<span class="avatar-initial">{{ (_dn[:1] | upper) if _dn else '?' }}</span>
+				<img id="avatar-preview" class="avatar-img" src="/profile/avatar" alt="" onerror="this.style.display='none'">
+			</span>
+		</div>
+		<p class="hint">Bilden center-croppas till en kvadrat.</p>
+		<input type="file" id="avatar-file" accept="image/png,image/jpeg" hidden>
+		<div class="avatar-actions">
+			<button id="avatar-choose" type="button" class="secondary outline">Ändra</button>
+			<button id="avatar-remove" type="button" class="secondary outline">Ta bort</button>
+		</div>
+		<p id="avatar-error" class="login-error" hidden></p>
+		<div class="save-row">
+			<button id="avatar-save" type="button" disabled>Spara</button>
+			<button id="avatar-cancel" type="button" class="secondary outline">Avbryt</button>
+		</div>
+	</article>
+</div>

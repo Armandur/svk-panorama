@@ -1,57 +1,53 @@
-{% extends "base.html" %}
-{% block title %}Användare - SVK Panorama{% endblock %}
-{% block content %}
+{% extends "admin_base.html" %}
+{% block title %}Användare - Admin{% endblock %}
+{% block admin_content %}
 
-<section>
-	<hgroup>
-		<h1>Användare</h1>
-		<p>Sluten inbjudan - skapa konton och dela inbjudningslänken. Den inbjudne sätter själv sitt lösenord (länken gäller 7 dagar).</p>
-	</hgroup>
-	{% if error %}<p class="login-error" role="alert">{{ error }}</p>{% endif %}
-	<table>
-		<thead>
-			<tr><th scope="col">E-post</th><th scope="col">Roll</th><th scope="col">Status</th><th scope="col"></th></tr>
-		</thead>
-		<tbody>
-			{% for u in users %}
-			<tr>
-				<td>{{ u.email }}</td>
-				<td>{{ "Admin" if u.is_admin else "Användare" }}</td>
-				<td>
-					{% if u.pending %}
-					<details class="invite-details">
-						<summary class="tile-partial">Inbjuden - visa länk</summary>
-						<input class="invite-link" type="text" readonly value="{{ u.invite_url }}" onclick="this.select()">
-					</details>
-					{% else %}
-					<span class="tile-done">Aktiv</span>
-					{% endif %}
-				</td>
-				<td>
-					{% if u.id != me %}
-					<form method="post" action="/admin/users/{{ u.id }}/delete" onsubmit="return confirm('Ta bort {{ u.email }}?');">
-						<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-						<button type="submit" class="secondary outline delete-btn">Ta bort</button>
-					</form>
-					{% endif %}
-				</td>
-			</tr>
-			{% endfor %}
-		</tbody>
-	</table>
-</section>
+<hgroup>
+	<h1>Användare</h1>
+	<p>Sluten inbjudan - skapa konton och dela inbjudningslänken. Den inbjudne sätter själv sitt lösenord (länken gäller 7 dagar).</p>
+</hgroup>
+{% if error %}<p class="login-error" role="alert">{{ error }}</p>{% endif %}
+<table>
+	<thead>
+		<tr><th scope="col">E-post</th><th scope="col">Roll</th><th scope="col">Status</th><th scope="col"></th></tr>
+	</thead>
+	<tbody>
+		{% for u in users %}
+		<tr>
+			<td>{{ u.email }}</td>
+			<td>{{ "Admin" if u.is_admin else "Användare" }}</td>
+			<td>
+				{% if u.pending %}
+				<details class="invite-details">
+					<summary class="tile-partial">Inbjuden - visa länk</summary>
+					<input class="invite-link" type="text" readonly value="{{ u.invite_url }}" onclick="this.select()">
+				</details>
+				{% else %}
+				<span class="tile-done">Aktiv</span>
+				{% endif %}
+			</td>
+			<td>
+				{% if u.id != me %}
+				<form method="post" action="/admin/users/{{ u.id }}/delete" onsubmit="return confirm('Ta bort {{ u.email }}?');">
+					<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+					<button type="submit" class="secondary outline delete-btn">Ta bort</button>
+				</form>
+				{% endif %}
+			</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
 
-<section>
-	<article>
-		<h2>Ny användare</h2>
-		<form method="post" action="/admin/users">
-			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-			<label for="email">E-post</label>
-			<input type="email" id="email" name="email" required placeholder="namn@exempel.se">
-			<label><input type="checkbox" name="is_admin" value="on"> Administratör</label>
-			<button type="submit">Skapa och generera inbjudan</button>
-		</form>
-	</article>
-</section>
+<article class="admin-create">
+	<h2>Ny användare</h2>
+	<form method="post" action="/admin/users">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+		<label for="email">E-post</label>
+		<input type="email" id="email" name="email" required placeholder="namn@exempel.se">
+		<label><input type="checkbox" name="is_admin" value="on"> Administratör</label>
+		<button type="submit">Skapa och generera inbjudan</button>
+	</form>
+</article>
 
 {% endblock %}

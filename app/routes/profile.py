@@ -1,15 +1,33 @@
-"""Profil: användarspecifika inställningar (namn, byt lösenord)."""
+"""Profil: användarspecifika inställningar (namn, lösenord, profilbild)."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Form, Request
-from fastapi.responses import HTMLResponse
+import io
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import HTMLResponse, Response
+from PIL import Image
 from sqlalchemy.orm import Session
 
 from app.auth import hash_password, require_user, verify_password
 from app.database import User, get_db
-from app.deps import new_csrf_token, set_csrf_cookie, templates, verify_csrf_form
+from app.deps import new_csrf_token, set_csrf_cookie, templates, verify_csrf_form, verify_csrf_header
+from app.services.project_files import validate_image_magic, validate_size
 
 router = APIRouter()
+
+AVATAR_SIZE = 256
+
+
+def _process_avatar(data: bytes) -> bytes:
+    """Center-croppa till kvadrat och skala till en PNG-avatar."""
+    im = Image.open(io.BytesIO(data)).convert("RGB")
+    w, h = im.size
+    s = min(w, h)
+    left, top = (w - s) // 2, (h - s) // 2
+    im = im.crop((left, top, left + s, top + s)).resize((AVATAR_SIZE, AVATAR_SIZE), Image.LANCZOS)
+    buf = io.BytesIO()
+    im.save(buf, "PNG")
+    return buf.getvalue()
 
 
 def _render(request: Request, user: User, msg=None, error=None) -> HTMLResponse:
@@ -36,6 +54,7 @@ async def update_profile(
 ):
     user.name = name.strip() or None
     db.commit()
+    request.session["name"] = user.name or ""  # kontokortet uppdateras
     return _render(request, user, msg="Profil sparad.")
 
 
@@ -58,3 +77,39 @@ async def change_password(
     user.password_hash = hash_password(new)
     db.commit()
     return _render(request, user, msg="Lösenordet ändrat.")
+
+
+@router.get("/profile/avatar")
+def get_avatar(user: User = Depends(require_user)) -> Response:
+    if not user.avatar:
+        raise HTTPException(status_code=404, detail="Ingen profilbild")
+    return Response(content=user.avatar, media_type="image/png", headers={"Cache-Control": "no-cache"})
+
+
+@router.post("/profile/avatar")
+async def upload_avatar(
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+    file: UploadFile = File(...),
+    _csrf: None = Depends(verify_csrf_header),
+) -> dict:
+    content = await file.read()
+    validate_size(content, file.filename or "bild", max_mb=10)
+    validate_image_magic(content, file.filename or "bild")
+    try:
+        user.avatar = _process_avatar(content)
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="Kunde inte läsa bilden")
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/profile/avatar/delete")
+async def delete_avatar(
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+    _csrf: None = Depends(verify_csrf_header),
+) -> dict:
+    user.avatar = None
+    db.commit()
+    return {"ok": True}
