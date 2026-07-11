@@ -154,6 +154,9 @@ omstart (tänkt admin-UI).
 
 ## Testning
 
+- `tests/backend_test.py` - plain-assert-tester (ingen pytest) för ren
+  backend-logik: tiling-mattematik, multires-merge, bundle-relativisering
+  (path-säkerhet), färg-/slug-validering. Kör: `.venv/bin/python tests/backend_test.py`.
 - `tools/geo.test.js` - node-tester för kartgeometrin (`js/geo.js`).
 - Ingen browser? Verifiera JS-tunga vyer med Playwright via shot-venvet
   (`~/.local/share/shot-venv/bin/python`) - det KAN driva filväljare
