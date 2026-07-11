@@ -49,8 +49,10 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
       multires (`type: multires`) istället for hela equirektangulära JPG:er, för
       snabb laddning. Se pannellums generate.py-docs (multires).
 - [ ] En templatead viewer istället for 13 nästan identiska HTML-filer.
-- [ ] **Förhandsvisa hela turen** (med kartan) i editorn innan export, med val av
-      kartstorlek för olika skärmstorlekar.
+- [x] **Förhandsvisa hela turen + turinställningar** (route `/preview`): inbäddad
+      multires-viewer med kartan, globala default-inställningar (autorotate,
+      fördröjning, scen-fade, startscen), scenbläddring och val av kartstorlek
+      (sparas som `default.mapSize`, respekteras av runtime-vieweren).
 - [ ] **Teman**: valbara typsnitt, färger på kartprickar/linjer m.m.
 - [ ] "Exportera bundle" = zip med tiles + JSON + viewer + vendored pannellum +
       hosting-instruktioner. Detta är self-host-produkten.
