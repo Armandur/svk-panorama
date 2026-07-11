@@ -569,6 +569,18 @@ tr[data-preview-scene] { cursor: help; }
 .help-modal article { max-width: 30rem; width: 100%; margin: 0; max-height: 90vh; overflow-y: auto; }
 .help-modal p { font-size: 0.9rem; margin: 0.45rem 0; }
 
+/* Startscen-väljare (modal med karta + hover-preview) */
+.start-scene-btn { width: 100%; text-align: left; }
+.start-modal-article { max-width: 46rem; }
+.start-modal-tools { display: flex; gap: 0.5rem; align-items: center; }
+.start-picker { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start; }
+/* Id-selektor -> högre specificitet än pannellums .pnlm-container{height:100%;
+   width:100%} som annars kollapsar boxen (pannellum.css laddas efter app.css). */
+#start-preview { width: 320px; height: 200px; flex: none; border-radius: 0.3rem; overflow: hidden; background: #000; }
+.start-map { position: relative; flex: 1; min-width: 220px; line-height: 0; border: 1px solid var(--pico-muted-border-color); border-radius: 0.3rem; overflow: hidden; }
+.start-map img { display: block; width: 100%; height: auto; }
+#start-map-dots { position: absolute; inset: 0; }
+
 /* Spara/släng-rad */
 .save-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .save-row button { margin: 0; flex: 1; }

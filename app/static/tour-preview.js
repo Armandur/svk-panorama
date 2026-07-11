@@ -28,7 +28,9 @@
 	const arDelayNum = document.getElementById("ar-delay-num");
 	const fade = document.getElementById("fade");
 	const fadeNum = document.getElementById("fade-num");
-	const firstSceneSel = document.getElementById("first-scene");
+	const arDirToggle = document.getElementById("ar-dir-toggle");
+	const firstSceneSel = document.getElementById("first-scene");    // fallback utan karta
+	const firstSceneBtn = document.getElementById("first-scene-btn"); // kartbaserad väljare
 	const dirtyBadge = document.getElementById("dirty-badge");
 	const saveBtn = document.getElementById("save-btn");
 	const discardBtn = document.getElementById("discard-btn");
@@ -40,20 +42,28 @@
 	const mapDotsEl = document.getElementById("preview-map-dots");
 
 	// --- Init formulär från tour.default ---
-	firstSceneSel.innerHTML = "";
-	sceneIds().forEach(function (id) {
-		const o = document.createElement("option");
-		o.value = id;
-		o.textContent = "Scen " + id + (tour.scenes[id].title ? " - " + tour.scenes[id].title : "");
-		firstSceneSel.appendChild(o);
-	});
-	firstSceneSel.value = d.firstScene && tour.scenes[d.firstScene] ? d.firstScene : sceneIds()[0];
+	let firstScene = d.firstScene && tour.scenes[d.firstScene] ? d.firstScene : sceneIds()[0];
+	function sceneLabel(id) { return "Scen " + id + (tour.scenes[id] && tour.scenes[id].title ? " - " + tour.scenes[id].title : ""); }
+
+	if (firstSceneSel) {
+		firstSceneSel.innerHTML = "";
+		sceneIds().forEach(function (id) {
+			const o = document.createElement("option");
+			o.value = id;
+			o.textContent = sceneLabel(id);
+			firstSceneSel.appendChild(o);
+		});
+		firstSceneSel.value = firstScene;
+	}
+	function updateFirstSceneBtn() { if (firstSceneBtn) firstSceneBtn.textContent = sceneLabel(firstScene); }
+	updateFirstSceneBtn();
 
 	const ar = d.autoRotate;
 	const arOn = typeof ar === "number" && ar !== 0;
 	arEnabled.checked = arOn;
 	setPair(arSpeed, arSpeedNum, arOn ? Math.abs(ar) : 2);
-	document.querySelector('input[name="ar-dir"][value="' + (arOn && ar > 0 ? "1" : "-1") + '"]').checked = true;
+	// Toggle: Höger (checked) = negativ rotation (som default -2); Vänster = positiv.
+	arDirToggle.checked = !(arOn && ar > 0);
 	setPair(arDelay, arDelayNum, (d.autoRotateInactivityDelay != null ? d.autoRotateInactivityDelay : 2000) / 1000);
 	setPair(fade, fadeNum, (d.sceneFadeDuration != null ? d.sceneFadeDuration : 1500) / 1000);
 	const initMapSize = ["small", "medium", "large"].indexOf(d.mapSize) !== -1 ? d.mapSize : "medium";
@@ -61,7 +71,13 @@
 	if (previewMap) previewMap.dataset.size = initMapSize;
 
 	function setPair(range, num, val) { range.value = val; num.value = val; }
-	function dirVal() { return parseInt(document.querySelector('input[name="ar-dir"]:checked').value, 10); }
+	function updateArDirLabels() {
+		const l = document.getElementById("ar-dir-left"), r = document.getElementById("ar-dir-right");
+		if (l) l.classList.toggle("active", !arDirToggle.checked);
+		if (r) r.classList.toggle("active", arDirToggle.checked);
+	}
+	updateArDirLabels();
+	function dirVal() { return arDirToggle.checked ? -1 : 1; }
 	function mapSizeVal() { return document.querySelector('input[name="map-size"]:checked').value; }
 	function signedSpeed() { return dirVal() * (parseFloat(arSpeed.value) || 2); }
 
@@ -71,11 +87,11 @@
 
 	function buildViewer(sceneId, view) {
 		if (viewer) { try { viewer.destroy(); } catch (e) { /* borta */ } }
-		const startId = sceneId || firstSceneSel.value || sceneIds()[0];
+		const startId = sceneId || firstScene || sceneIds()[0];
 		if (curLabel) curLabel.textContent = "Scen " + startId; // visa direkt, inte "Scen -"
 		viewer = pannellum.viewer("panorama", {
 			default: {
-				firstScene: sceneId || firstSceneSel.value || sceneIds()[0],
+				firstScene: startId,
 				autoLoad: true,
 				autoRotate: arEnabled.checked ? signedSpeed() : false,
 				autoRotateInactivityDelay: Math.round((parseFloat(arDelay.value) || 0) * 1000),
@@ -174,12 +190,10 @@
 
 	arEnabled.addEventListener("change", function () { applyAutoRotate(); onSettingChange(false); });
 	linkPair(arSpeed, arSpeedNum, function () { applyAutoRotate(); onSettingChange(false); });
-	document.querySelectorAll('input[name="ar-dir"]').forEach(function (r) {
-		r.addEventListener("change", function () { applyAutoRotate(); onSettingChange(false); });
-	});
+	arDirToggle.addEventListener("change", function () { updateArDirLabels(); applyAutoRotate(); onSettingChange(false); });
 	linkPair(arDelay, arDelayNum, function () { onSettingChange(true); });
 	linkPair(fade, fadeNum, function () { onSettingChange(true); });
-	firstSceneSel.addEventListener("change", function () { onSettingChange(false); });
+	if (firstSceneSel) firstSceneSel.addEventListener("change", function () { firstScene = firstSceneSel.value; onSettingChange(false); });
 	document.querySelectorAll('input[name="map-size"]').forEach(function (r) {
 		r.addEventListener("change", function () {
 			if (previewMap) previewMap.dataset.size = mapSizeVal();
@@ -201,7 +215,7 @@
 				autoRotateDir: dirVal(),
 				autoRotateInactivityDelay: Math.round((parseFloat(arDelay.value) || 0) * 1000),
 				sceneFadeDuration: Math.round((parseFloat(fade.value) || 0) * 1000),
-				firstScene: firstSceneSel.value,
+				firstScene: firstScene,
 				mapSize: mapSizeVal(),
 			},
 		}).then(function () {
@@ -214,8 +228,78 @@
 
 	if (discardBtn) discardBtn.addEventListener("click", function () { window.location.reload(); });
 
+	// --- Startscen-väljare (modal med karta + hover-preview) ---------------
+	const startModal = document.getElementById("start-modal");
+	const startMapImg = document.getElementById("start-map-img");
+	const startMapDots = document.getElementById("start-map-dots");
+	const startPreviewEl = document.getElementById("start-preview");
+	const startClose = document.getElementById("start-close");
+	let startViewer = null, startStop = null, startDotsBuilt = false;
+
+	function destroyStartPreview() {
+		if (startStop) { try { startStop(); } catch (e) { /* borta */ } startStop = null; }
+		if (startViewer) { try { startViewer.destroy(); } catch (e) { /* borta */ } startViewer = null; }
+	}
+	// Samma preview-vy (nedskalad bild, autoRotate:0) driven av de delade
+	// preview-inställningarna - precis som hotspot-modalens scenpreview.
+	function showStartPreview(sceneId) {
+		destroyStartPreview();
+		if (!startPreviewEl || !sceneId || !window.pannellum) return;
+		void startPreviewEl.offsetHeight;
+		startViewer = pannellum.viewer(startPreviewEl, {
+			type: "equirectangular",
+			panorama: "/projects/" + encodeURIComponent(slug) + "/previews/" + encodeURIComponent(sceneId) + ".jpg",
+			autoLoad: true, autoRotate: 0,
+			showControls: false, showZoomCtrl: false, showFullscreenCtrl: false,
+			mouseZoom: false, draggable: false, hfov: 110,
+		});
+		if (window.ScenePreview && window.ScenePreview.driveViewer) startStop = window.ScenePreview.driveViewer(startViewer);
+	}
+
+	const startDotEls = {};
+	function buildStartDots() {
+		if (startDotsBuilt || !startMapDots || !startMapImg || !startMapImg.naturalWidth) return;
+		startMapDots.textContent = "";
+		(mapData.scenes || []).forEach(function (s) {
+			const dot = document.createElement("button");
+			dot.type = "button";
+			dot.className = "preview-dot";
+			dot.style.left = (s.position.x / startMapImg.naturalWidth * 100) + "%";
+			dot.style.top = (s.position.y / startMapImg.naturalHeight * 100) + "%";
+			dot.title = "Scen " + s.id;
+			dot.addEventListener("mouseenter", function () { showStartPreview(s.id); });
+			dot.addEventListener("click", function () {
+				firstScene = s.id;
+				updateFirstSceneBtn();
+				markStartCurrent();
+				onSettingChange(false);
+				closeStartModal();
+			});
+			startMapDots.appendChild(dot);
+			startDotEls[s.id] = dot;
+		});
+		startDotsBuilt = true;
+	}
+	function markStartCurrent() {
+		Object.keys(startDotEls).forEach(function (k) { startDotEls[k].classList.toggle("current", k === firstScene); });
+	}
+	function openStartModal() {
+		startModal.hidden = false;
+		if (startMapImg.complete && startMapImg.naturalWidth) buildStartDots();
+		else startMapImg.addEventListener("load", buildStartDots, { once: true });
+		markStartCurrent();
+		showStartPreview(firstScene);
+	}
+	function closeStartModal() {
+		startModal.hidden = true;
+		destroyStartPreview();
+	}
+	if (firstSceneBtn) firstSceneBtn.addEventListener("click", openStartModal);
+	if (startClose) startClose.addEventListener("click", closeStartModal);
+	if (startModal) startModal.addEventListener("click", function (e) { if (e.target === startModal) closeStartModal(); });
+
 	// --- Start ---
-	buildViewer(firstSceneSel.value, null);
+	buildViewer(firstScene, null);
 	if (mapImg) {
 		if (mapImg.complete && mapImg.naturalWidth) buildDots();
 		else mapImg.addEventListener("load", buildDots);

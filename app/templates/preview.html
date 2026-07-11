@@ -33,10 +33,12 @@
 			<input type="range" id="ar-speed" min="0.5" max="10" step="0.5" value="2">
 			<input type="number" id="ar-speed-num" class="roll-num" min="0.5" max="10" step="0.5" value="2">
 		</div>
-		<fieldset>
-			<label><input type="radio" name="ar-dir" value="-1" checked> Medurs</label>
-			<label><input type="radio" name="ar-dir" value="1"> Moturs</label>
-		</fieldset>
+		<label id="ar-dir-label">Rotationsriktning</label>
+		<div class="dir-toggle">
+			<span id="ar-dir-left">Vänster</span>
+			<input type="checkbox" id="ar-dir-toggle" role="switch" aria-label="Rotationsriktning (vänster/höger)">
+			<span id="ar-dir-right">Höger</span>
+		</div>
 		<label for="ar-delay">Återuppta efter inaktivitet (sek)</label>
 		<div class="roll-row">
 			<input type="range" id="ar-delay" min="0" max="15" step="0.5" value="2">
@@ -51,8 +53,13 @@
 			<input type="range" id="fade" min="0" max="3" step="0.1" value="1.5">
 			<input type="number" id="fade-num" class="roll-num" min="0" max="3" step="0.1" value="1.5">
 		</div>
-		<label for="first-scene">Startscen</label>
+		<label>Startscen</label>
+		{% if has_map_image %}
+		<button id="first-scene-btn" type="button" class="secondary outline start-scene-btn">Scen -</button>
+		<p class="hint">Öppnar kartan - hovra en punkt för att förhandsvisa, klicka för att välja start.</p>
+		{% else %}
 		<select id="first-scene"></select>
+		{% endif %}
 	</article>
 
 	<article>
@@ -88,6 +95,27 @@
 	</div>
 	{% endif %}
 </div>
+{% if has_map_image %}
+<div id="start-modal" class="help-modal" hidden>
+	<article class="start-modal-article">
+		<div class="section-head">
+			<h3>Välj startscen</h3>
+			<div class="start-modal-tools">
+				{% include "_settings_modal.html" %}
+				<button id="start-close" type="button" class="secondary outline" aria-label="Stäng">&times;</button>
+			</div>
+		</div>
+		<p class="hint">Hovra en kartpunkt för att förhandsvisa scenen, klicka för att välja den som startscen.</p>
+		<div class="start-picker">
+			<div id="start-preview" class="start-preview"></div>
+			<div id="start-map" class="start-map">
+				<img id="start-map-img" src="/projects/{{ project.slug }}/map.png" alt="Översiktskarta">
+				<div id="start-map-dots"></div>
+			</div>
+		</div>
+	</article>
+</div>
+{% endif %}
 {% endif %}
 
 <script id="tour-data" type="application/json">{{ tour | tojson }}</script>
@@ -96,5 +124,7 @@
 {% endblock %}
 {% block scripts %}
 <script src="/static/vendor/pannellum.js"></script>
+<script src="/static/preview.js"></script>
+<script src="/static/settings.js"></script>
 <script src="/static/tour-preview.js"></script>
 {% endblock %}
