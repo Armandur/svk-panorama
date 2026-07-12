@@ -603,8 +603,8 @@
 		hsFieldSceneDir.hidden = ctx.type !== "scene";
 		const teaser = (ctx.hs && ctx.hs.text != null) ? ctx.hs.text : "";
 		if (hsTextEditor) hsTextEditor.value(teaser); else hsText.value = teaser;
-		// Expanderbar + rutbredd bara för rena info-hotspots (ej URL/scen).
-		if (hsWidthWrap) hsWidthWrap.hidden = ctx.type !== "info";
+		// Rutbredd (teaser-tooltip) för info OCH scen-hotspots; ej URL.
+		if (hsWidthWrap) hsWidthWrap.hidden = ctx.type === "url";
 		if (hsTooltipWidth) hsTooltipWidth.value = (ctx.hs && ctx.hs.tooltipWidth) || "";
 		const bodyVal = (ctx.hs && ctx.hs.body) || "";
 		if (hsBodyEditor) hsBodyEditor.value(bodyVal); else if (hsBody) hsBody.value = bodyVal;
@@ -702,6 +702,8 @@
 			hs.type = "scene"; hs.sceneId = target; hs.targetPitch = 0;
 			hs.targetYaw = parseFloat(hsTyaw.value) || 0;
 			if (teaserV) hs.text = teaserV; else delete hs.text;
+			if (hsTooltipWidth && hsTooltipWidth.value) hs.tooltipWidth = hsTooltipWidth.value;
+			else delete hs.tooltipWidth;
 			delete hs.URL;
 			const two = document.querySelector('input[name="hs-dir"]:checked').value === "two";
 			hs.twoway = two;
