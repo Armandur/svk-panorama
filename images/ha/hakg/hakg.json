@@ -13,6 +13,20 @@
 			"panorama": "/images/ha/hakg/1.jpg",
 			"hotSpots": [
 				{
+					"pitch": -1.18,
+					"yaw": 22.06,
+					"type": "info",
+					"id": 3,
+					"text": "På grund av kyrkogångsplikten blev den gamla kyrkan för liten och den nuvarande uppfördes 1785 på samma plats. Arkitekt Per Hagmansson, Sundsvall fick uppdraget att göra ritningar och bygget utfördes som dagsverken av socknens bönder. Kyrktornet tillkom 1845."
+				},
+				{
+					"pitch": -1.35,
+					"yaw": -7.95,
+					"type": "info",
+					"id": 2,
+					"text": "Häggdångers äldsta kyrka uppfördes under 1200-talet. Den var liten och mätte ungefär 10 x 4.5 meter. Kyrkan saknade torn och kyrkklockan hängde i en stapel av trä bredvid. Sakristian och vapenhuset var sannolikt uppförda i trä."
+				},
+				{
 					"pitch": -3.06,
 					"yaw": 94.38,
 					"type": "scene",
@@ -29,20 +43,6 @@
 					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": -6.57
-				},
-				{
-					"pitch": -1.35,
-					"yaw": -7.95,
-					"type": "info",
-					"id": 2,
-					"text": "Häggdångers äldsta kyrka uppfördes under 1200-talet. Den var liten och mätte ungefär 10 x 4.5 meter. Kyrkan saknade torn och kyrkklockan hängde i en stapel av trä bredvid. Sakristian och vapenhuset var sannolikt uppförda i trä."
-				},
-				{
-					"pitch": -1.18,
-					"yaw": 22.06,
-					"type": "info",
-					"id": 3,
-					"text": "På grund av kyrkogångsplikten blev den gamla kyrkan för liten och den nuvarande uppfördes 1785 på samma plats. Arkitekt Per Hagmansson, Sundsvall fick uppdraget att göra ritningar och bygget utfördes som dagsverken av socknens bönder. Kyrktornet tillkom 1845."
 				}
 			]
 		},
@@ -283,7 +283,7 @@
 					"yaw": -134.35,
 					"type": "scene",
 					"sceneId": "32",
-					"id": 1,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": 42.92
 				},
@@ -292,7 +292,7 @@
 					"yaw": 67.01,
 					"type": "scene",
 					"sceneId": "4",
-					"id": 2,
+					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": -90.73
 				},
@@ -301,7 +301,7 @@
 					"yaw": 152.23,
 					"type": "scene",
 					"sceneId": "6",
-					"id": 0,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": -102.65
 				},
@@ -334,7 +334,7 @@
 					"yaw": 83.64,
 					"type": "scene",
 					"sceneId": "4",
-					"id": 5,
+					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": -64.66
 				},
@@ -343,7 +343,7 @@
 					"yaw": 63.1,
 					"type": "scene",
 					"sceneId": "3",
-					"id": 1,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": -91.01
 				},
@@ -352,7 +352,7 @@
 					"yaw": 39.42,
 					"type": "scene",
 					"sceneId": "2",
-					"id": 2,
+					"id": 3,
 					"targetPitch": 0,
 					"targetYaw": -121.18
 				},
@@ -361,7 +361,7 @@
 					"yaw": 148.37,
 					"type": "scene",
 					"sceneId": "7",
-					"id": 3,
+					"id": 4,
 					"targetPitch": 0,
 					"targetYaw": 154.28
 				},
@@ -370,7 +370,7 @@
 					"yaw": -91.96,
 					"type": "scene",
 					"sceneId": "33",
-					"id": 6,
+					"id": 5,
 					"targetPitch": 0,
 					"targetYaw": -91.96
 				},
@@ -379,7 +379,7 @@
 					"yaw": -29.55,
 					"type": "scene",
 					"sceneId": "9",
-					"id": 4,
+					"id": 6,
 					"targetPitch": 0,
 					"targetYaw": -130.32
 				}
@@ -394,7 +394,7 @@
 					"yaw": 87.4,
 					"type": "scene",
 					"sceneId": "32",
-					"id": 3,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": 8.26
 				},
@@ -403,7 +403,7 @@
 					"yaw": 3.48,
 					"type": "scene",
 					"sceneId": "4",
-					"id": 2,
+					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": -51.36
 				},
@@ -412,7 +412,7 @@
 					"yaw": 49.68,
 					"type": "scene",
 					"sceneId": "8",
-					"id": 0,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": 150.45
 				},
@@ -421,7 +421,7 @@
 					"yaw": -41.86,
 					"type": "scene",
 					"sceneId": "2",
-					"id": 1,
+					"id": 3,
 					"targetPitch": 0,
 					"targetYaw": -94.6
 				},
@@ -520,7 +520,7 @@
 					"yaw": -0.06,
 					"type": "scene",
 					"sceneId": "13",
-					"id": 2,
+					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": 1.02
 				},
@@ -529,7 +529,7 @@
 					"yaw": 177.61,
 					"type": "scene",
 					"sceneId": "11",
-					"id": 1,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": 176.89
 				}
@@ -577,7 +577,7 @@
 					"yaw": 0.3,
 					"type": "scene",
 					"sceneId": "16",
-					"id": 2,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": -102.23
 				},
@@ -595,7 +595,7 @@
 					"yaw": 108.17,
 					"type": "scene",
 					"sceneId": "13",
-					"id": 0,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": -179.43
 				}
@@ -703,7 +703,7 @@
 					"yaw": 73.96,
 					"type": "scene",
 					"sceneId": "14",
-					"id": 2,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": 73.96
 				},
@@ -721,7 +721,7 @@
 					"yaw": -177.4,
 					"type": "scene",
 					"sceneId": "18",
-					"id": 0,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": 179.34
 				},
@@ -757,7 +757,7 @@
 					"yaw": -88.36,
 					"type": "scene",
 					"sceneId": "19",
-					"id": 1,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": 179.29
 				},
@@ -766,7 +766,7 @@
 					"yaw": -0.66,
 					"type": "scene",
 					"sceneId": "17",
-					"id": 0,
+					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": 2.6
 				}
@@ -781,7 +781,7 @@
 					"yaw": -165.03,
 					"type": "scene",
 					"sceneId": "20",
-					"id": 1,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": -179.02
 				},
@@ -790,7 +790,7 @@
 					"yaw": -0.71,
 					"type": "scene",
 					"sceneId": "18",
-					"id": 0,
+					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": 91.64
 				}
@@ -862,7 +862,7 @@
 					"yaw": -118.49,
 					"type": "scene",
 					"sceneId": "21",
-					"id": 4,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": 179.85
 				},
@@ -871,7 +871,7 @@
 					"yaw": 140.9,
 					"type": "scene",
 					"sceneId": "29",
-					"id": 0,
+					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": 140.9
 				},
@@ -880,7 +880,7 @@
 					"yaw": -37.2,
 					"type": "scene",
 					"sceneId": "23",
-					"id": 1,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": 94.79
 				},
@@ -898,7 +898,7 @@
 					"yaw": 74.48,
 					"type": "scene",
 					"sceneId": "25",
-					"id": 2,
+					"id": 4,
 					"targetPitch": 0,
 					"targetYaw": -73.68
 				}
@@ -913,7 +913,7 @@
 					"yaw": -32.14,
 					"type": "scene",
 					"sceneId": "21",
-					"id": 2,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": -32.14
 				},
@@ -931,7 +931,7 @@
 					"yaw": -116.78,
 					"type": "scene",
 					"sceneId": "25",
-					"id": 3,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": -33.21
 				},
@@ -940,7 +940,7 @@
 					"yaw": -176.22,
 					"type": "scene",
 					"sceneId": "24",
-					"id": 0,
+					"id": 3,
 					"targetPitch": 0,
 					"targetYaw": -89.15
 				}
@@ -955,7 +955,7 @@
 					"yaw": 46.16,
 					"type": "scene",
 					"sceneId": "22",
-					"id": 2,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": -166.72
 				},
@@ -973,7 +973,7 @@
 					"yaw": 0.11,
 					"type": "scene",
 					"sceneId": "25",
-					"id": 0,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": 6.9
 				}
@@ -988,7 +988,7 @@
 					"yaw": 146.79,
 					"type": "scene",
 					"sceneId": "23",
-					"id": 4,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": 63.22
 				},
@@ -997,7 +997,7 @@
 					"yaw": 106.32,
 					"type": "scene",
 					"sceneId": "22",
-					"id": 0,
+					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": -105.52
 				},
@@ -1006,7 +1006,7 @@
 					"yaw": 35.72,
 					"type": "scene",
 					"sceneId": "29",
-					"id": 1,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": 35.72
 				},
@@ -1015,7 +1015,7 @@
 					"yaw": -173.1,
 					"type": "scene",
 					"sceneId": "24",
-					"id": 2,
+					"id": 3,
 					"targetPitch": 0,
 					"targetYaw": -179.89
 				},
@@ -1024,7 +1024,7 @@
 					"yaw": 1.07,
 					"type": "scene",
 					"sceneId": "26",
-					"id": 3,
+					"id": 4,
 					"targetPitch": 0,
 					"targetYaw": -0.91
 				}
@@ -1039,7 +1039,7 @@
 					"yaw": 96.03,
 					"type": "scene",
 					"sceneId": "29",
-					"id": 1,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": -86.97
 				},
@@ -1048,7 +1048,7 @@
 					"yaw": 179.09,
 					"type": "scene",
 					"sceneId": "25",
-					"id": 2,
+					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": -178.93
 				},
@@ -1057,7 +1057,7 @@
 					"yaw": 0.92,
 					"type": "scene",
 					"sceneId": "27",
-					"id": 0,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": -1.34
 				}
@@ -1072,7 +1072,7 @@
 					"yaw": 139.83,
 					"type": "scene",
 					"sceneId": "29",
-					"id": 2,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": 139.83
 				},
@@ -1081,7 +1081,7 @@
 					"yaw": 37.69,
 					"type": "scene",
 					"sceneId": "32",
-					"id": 4,
+					"id": 1,
 					"targetPitch": 0,
 					"targetYaw": 37.69
 				},
@@ -1090,7 +1090,7 @@
 					"yaw": 178.66,
 					"type": "scene",
 					"sceneId": "26",
-					"id": 3,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": -179.08
 				},
@@ -1099,7 +1099,7 @@
 					"yaw": 90.91,
 					"type": "scene",
 					"sceneId": "28",
-					"id": 1,
+					"id": 3,
 					"targetPitch": 0,
 					"targetYaw": -85.57
 				},
@@ -1108,7 +1108,7 @@
 					"yaw": -3.48,
 					"type": "scene",
 					"sceneId": "27b",
-					"id": 0,
+					"id": 4,
 					"targetPitch": 0,
 					"targetYaw": 1.25
 				}
@@ -1141,7 +1141,7 @@
 					"yaw": 35.86,
 					"type": "scene",
 					"sceneId": "26",
-					"id": 5,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": 35.86
 				},
@@ -1150,7 +1150,7 @@
 					"yaw": -99.28,
 					"type": "scene",
 					"sceneId": "30",
-					"id": 2,
+					"id": 3,
 					"targetPitch": 0,
 					"targetYaw": 180
 				},
@@ -1159,7 +1159,7 @@
 					"yaw": 179.1,
 					"type": "scene",
 					"sceneId": "32",
-					"id": 3,
+					"id": 4,
 					"targetPitch": 0,
 					"targetYaw": -135.05
 				},
@@ -1168,7 +1168,7 @@
 					"yaw": 94.43,
 					"type": "scene",
 					"sceneId": "27",
-					"id": 4,
+					"id": 5,
 					"targetPitch": 0,
 					"targetYaw": -89.09
 				}
@@ -1249,7 +1249,7 @@
 					"yaw": 148.85,
 					"type": "scene",
 					"sceneId": "20",
-					"id": 2,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": 148.85
 				},
@@ -1257,7 +1257,7 @@
 					"pitch": -4.36,
 					"yaw": 34.2,
 					"type": "info",
-					"id": 0,
+					"id": 1,
 					"text": "En minneslund är ett gemensamt, anonymt gravskick. Askan efter den avlidne nedsätts utan att anhöriga närvar och utan att askans exakta placering registreras."
 				},
 				{
@@ -1265,7 +1265,7 @@
 					"yaw": -162.41,
 					"type": "scene",
 					"sceneId": "30",
-					"id": 1,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": 84.29
 				}
@@ -1413,6 +1413,20 @@
 					"id": 4,
 					"targetPitch": 0,
 					"targetYaw": 96.37
+				},
+				{
+					"pitch": 38.63,
+					"yaw": -0.29,
+					"type": "info",
+					"id": 5,
+					"text": "ÅR 1785 | TÅ | KONVNG GVSTAF III | REGERADE VARANDE | LÄNETS HÖFDINGE | COMMENDEVREN BARON CARL BVNGE | FÖRSAMLINGENS KYRKOHERDE | BISKOPEN DOCTOR ERIC HESSELGREN | COMMINISTER PEHR SVNDWALL | KYRKOVÄRDAR | OMBUDSMANNEN OLOF TIERNBERG | OCH NILS ERICSSON I LINDOM | BYGGDES THENNA KYRKA | AF PEHR HAGMANSSON"
+				},
+				{
+					"pitch": 2.35,
+					"yaw": -29.01,
+					"type": "info",
+					"id": 6,
+					"text": "ÅR 1785 | TÅ | KONVNG GVSTAF III | REGERADE VARANDE | LÄNETS HÖFDINGE | COMMENDEVREN BARON CARL BVNGE | FÖRSAMLINGENS KYRKOHERDE | BISKOPEN DOCTOR ERIC HESSELGREN | COMMINISTER PEHR SVNDWALL | KYRKOVÄRDAR | OMBUDSMANNEN OLOF TIERNBERG | OCH NILS ERICSSON I LINDOM | BYGGDES THENNA KYRKA | AF PEHR HAGMANSSON"
 				}
 			]
 		},
@@ -1425,7 +1439,7 @@
 					"yaw": 136.69,
 					"type": "scene",
 					"sceneId": "28",
-					"id": 2,
+					"id": 0,
 					"targetPitch": 0,
 					"targetYaw": -35.03
 				},
@@ -1443,7 +1457,7 @@
 					"yaw": -178.75,
 					"type": "scene",
 					"sceneId": "27",
-					"id": 0,
+					"id": 2,
 					"targetPitch": 0,
 					"targetYaw": 176.52
 				}
