@@ -142,6 +142,22 @@ main.plan-app {
 .plan-heading h2 { margin-bottom: 0.1rem; }
 .plan-heading p { font-size: 0.85rem; color: var(--pico-muted-color); margin: 0; }
 
+/* Hopfällbara panelgrupper (preview-steget): grupperar tema/beteende/publicera så
+   panelen inte blir 4+ skärmar att skrolla. Öppet/stängt sparas i localStorage. */
+.panel-group { border: 1px solid var(--pico-muted-border-color); border-radius: 0.4rem; margin-bottom: 0.6rem; overflow: hidden; }
+.panel-group > summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; padding: 0.55rem 0.75rem; font-weight: 600; background: var(--pico-card-sectioning-background-color, rgba(115, 130, 140, 0.06)); }
+.panel-group > summary::-webkit-details-marker { display: none; }
+.panel-group > summary::after { content: "\25BE"; color: var(--pico-muted-color); transition: transform 0.15s ease; }
+.panel-group:not([open]) > summary::after { transform: rotate(-90deg); }
+.panel-group > summary:hover { background: var(--pico-card-sectioning-background-color, rgba(115, 130, 140, 0.12)); }
+.panel-group-body { padding: 0 0.75rem; }
+/* Artiklar inuti en grupp = sektioner utan egen kort-chrome, delade av en tunn linje. */
+.planner-side .panel-group-body article { border: none; box-shadow: none; background: none; margin: 0; padding: 0.7rem 0; border-top: 1px solid var(--pico-muted-border-color); }
+.planner-side .panel-group-body article:first-child { border-top: none; }
+/* Alltid synlig spar-rad längst ner i panelen (planner-side är skroll-container). */
+.panel-save-bar { position: sticky; bottom: 0; margin: 0.4rem -0.9rem -0.75rem; padding: 0.55rem 0.9rem; background: var(--pico-background-color, #fff); border-top: 1px solid var(--pico-muted-border-color); }
+.panel-save-bar .dirty-badge { margin-top: 0; }
+
 .planner-map {
 	flex: 1;
 	min-height: 0;
@@ -1175,7 +1191,8 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .settings-inline .settings-btn { width: auto; }
 
 /* --- Hotspot-lista i scenhanteringen --- */
-.hotspot-list { list-style: none; padding: 0; margin: 0.5rem 0 0; }
+/* Egen inre scroll så en scen med många hotspots inte gör hela panelen oändligt lång. */
+.hotspot-list { list-style: none; padding: 0; margin: 0.5rem 0 0; max-height: 40vh; overflow-y: auto; }
 .hotspot-list li.hint { padding: 0.3rem 0; }
 .hotspot-item {
 	border: 1px solid var(--pico-muted-border-color);

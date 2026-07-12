@@ -18,174 +18,185 @@
 		<p>{{ project.name }}</p>
 	</hgroup>
 
-	<article>
-		<div class="section-head">
-			<h3>Vy</h3>
-		</div>
-		<label for="res-select">Upplösning i förhandsvisningen</label>
-		<select id="res-select">
-			<option value="preview">Preview (snabb)</option>
-			<option value="multires" selected>Multires (tiles)</option>
-			<option value="full">Full upplösning</option>
-		</select>
-		<p id="res-hint" class="hint">Multires använder de genererade tiles-kaklen (som i publicerade turen). Preview är en nedskalad bild (snabbt). Full laddar originalbilderna (kan vara stora). Scener utan tiles visas i preview.</p>
-	</article>
-
-	<article>
-		<div class="section-head">
-			<h3>Autorotate</h3>
-		</div>
-		<label class="fullres-label">
-			<input type="checkbox" id="ar-enabled" role="switch"> Rotera automatiskt
-		</label>
-		<div id="ar-sub">
-			<label for="ar-speed">Hastighet (grader/sek)</label>
-			<div class="roll-row">
-				<input type="range" id="ar-speed" min="0.5" max="10" step="0.5" value="2">
-				<input type="number" id="ar-speed-num" class="roll-num" min="0.5" max="10" step="0.5" value="2">
-			</div>
-			<label id="ar-dir-label">Rotationsriktning</label>
-			<div class="dir-toggle">
-				<span id="ar-dir-left">Vänster</span>
-				<input type="checkbox" id="ar-dir-toggle" role="switch" aria-label="Rotationsriktning (vänster/höger)">
-				<span id="ar-dir-right">Höger</span>
-			</div>
-			<label for="ar-delay">Återuppta efter inaktivitet (sek)</label>
-			<div class="roll-row">
-				<input type="range" id="ar-delay" min="0" max="15" step="0.5" value="2">
-				<input type="number" id="ar-delay-num" class="roll-num" min="0" max="15" step="0.5" value="2">
-			</div>
-		</div>
-	</article>
-
-	<article>
-		<h3>Övergång & start</h3>
-		<label for="fade">Scen-övergång (sek)</label>
-		<div class="roll-row">
-			<input type="range" id="fade" min="0" max="3" step="0.1" value="1.5">
-			<input type="number" id="fade-num" class="roll-num" min="0" max="3" step="0.1" value="1.5">
-		</div>
-		<label>Startscen</label>
-		{% if has_map_image %}
-		<button id="first-scene-btn" type="button" class="secondary outline start-scene-btn">Scen -</button>
-		<p class="hint">Öppnar kartan - hovra en punkt för att förhandsvisa, klicka för att välja start.</p>
-		{% else %}
-		<select id="first-scene"></select>
-		{% endif %}
-	</article>
-
-	<article>
-		<h3>Kartstorlek</h3>
-		<p class="hint">Hur stor översiktskartan visas i den publicerade turen.</p>
-		<fieldset>
-			<label><input type="radio" name="map-size" value="small"> Liten</label>
-			<label><input type="radio" name="map-size" value="medium" checked> Mellan</label>
-			<label><input type="radio" name="map-size" value="large"> Stor</label>
-		</fieldset>
-	</article>
-
-	<article>
-		<h3>Tema</h3>
-		<label for="theme-font">Typsnitt</label>
-		<select id="theme-font">
-			<option value="sans">Sans (standard)</option>
-			<option value="serif">Serif</option>
-			<option value="humanist">Humanist</option>
-			<option value="mono">Monospace</option>
-		</select>
-		<div class="theme-colors">
-			<label>Kartprickar <input type="text" id="theme-dot" class="coloris-input" data-coloris value="{{ tour.get('default', {}).get('theme', {}).get('dotColor', '#666666') }}"></label>
-			<label>Aktiv kartprick <input type="text" id="theme-current" class="coloris-input" data-coloris value="{{ tour.get('default', {}).get('theme', {}).get('currentColor', '#8b0000') }}"></label>
-		</div>
-	</article>
-
-	<article>
-		<h3>Branding / logotyp</h3>
-		<p class="hint">Ett litet överlägg i den publicerade turen - t.ex. en logotyp eller församlingens namn med länk. Markdown stöds: använd bild-knappen i verktygsraden för att infoga ur mediebiblioteket eller skriv <code>[text](https://...)</code>. Lämna tomt för ingen branding.</p>
-		<textarea id="branding-content" placeholder="![Logotyp](...) eller **Församlingen**"></textarea>
-		<div class="branding-opts">
-			<label>Storlek
-				<select id="branding-size">
-					<option value="small">Liten</option>
-					<option value="medium" selected>Mellan</option>
-					<option value="large">Stor</option>
+	<details class="panel-group" data-group="pv-utseende" open>
+		<summary>Utseende</summary>
+		<div class="panel-group-body">
+			<article>
+				<h3>Tema</h3>
+				<label for="theme-font">Typsnitt</label>
+				<select id="theme-font">
+					<option value="sans">Sans (standard)</option>
+					<option value="serif">Serif</option>
+					<option value="humanist">Humanist</option>
+					<option value="mono">Monospace</option>
 				</select>
-			</label>
-			<label>Position
-				<select id="branding-position">
-					<option value="bottom-left">Nere vänster</option>
-					<option value="bottom-right" selected>Nere höger</option>
-					<option value="top-left">Uppe vänster</option>
-					<option value="top-right">Uppe höger</option>
+				<div class="theme-colors">
+					<label>Kartprickar <input type="text" id="theme-dot" class="coloris-input" data-coloris value="{{ tour.get('default', {}).get('theme', {}).get('dotColor', '#666666') }}"></label>
+					<label>Aktiv kartprick <input type="text" id="theme-current" class="coloris-input" data-coloris value="{{ tour.get('default', {}).get('theme', {}).get('currentColor', '#8b0000') }}"></label>
+				</div>
+			</article>
+
+			<article>
+				<h3>Branding / logotyp</h3>
+				<p class="hint">Ett litet överlägg i den publicerade turen - t.ex. en logotyp eller församlingens namn med länk. Markdown stöds: använd bild-knappen i verktygsraden för att infoga ur mediebiblioteket eller skriv <code>[text](https://...)</code>. Lämna tomt för ingen branding.</p>
+				<textarea id="branding-content" placeholder="![Logotyp](...) eller **Församlingen**"></textarea>
+				<div class="branding-opts">
+					<label>Storlek
+						<select id="branding-size">
+							<option value="small">Liten</option>
+							<option value="medium" selected>Mellan</option>
+							<option value="large">Stor</option>
+						</select>
+					</label>
+					<label>Position
+						<select id="branding-position">
+							<option value="bottom-left">Nere vänster</option>
+							<option value="bottom-right" selected>Nere höger</option>
+							<option value="top-left">Uppe vänster</option>
+							<option value="top-right">Uppe höger</option>
+						</select>
+					</label>
+				</div>
+			</article>
+
+			<article>
+				<h3>Kartstorlek</h3>
+				<p class="hint">Hur stor översiktskartan visas i den publicerade turen.</p>
+				<fieldset>
+					<label><input type="radio" name="map-size" value="small"> Liten</label>
+					<label><input type="radio" name="map-size" value="medium" checked> Mellan</label>
+					<label><input type="radio" name="map-size" value="large"> Stor</label>
+				</fieldset>
+			</article>
+		</div>
+	</details>
+
+	<details class="panel-group" data-group="pv-beteende" open>
+		<summary>Beteende</summary>
+		<div class="panel-group-body">
+			<article>
+				<h3>Vy</h3>
+				<label for="res-select">Upplösning i förhandsvisningen</label>
+				<select id="res-select">
+					<option value="preview">Preview (snabb)</option>
+					<option value="multires" selected>Multires (tiles)</option>
+					<option value="full">Full upplösning</option>
 				</select>
-			</label>
-		</div>
-	</article>
+				<p id="res-hint" class="hint">Multires använder de genererade tiles-kaklen (som i publicerade turen). Preview är en nedskalad bild (snabbt). Full laddar originalbilderna (kan vara stora). Scener utan tiles visas i preview.</p>
+			</article>
 
-	<article>
-		<h3>Mallar</h3>
-		<p class="hint">Spara nuvarande tema eller branding som mall, eller bläddra bland sparade mallar (tema + branding) och tillämpa. Redigera och sätt "standard för nya turer" på <a href="/mallar">Mallar</a>.</p>
-		<div class="preset-row">
-			<button id="preset-save" type="button" class="secondary outline">Spara tema som mall...</button>
-			<button id="brand-preset-save" type="button" class="secondary outline">Spara branding som mall...</button>
-			<button id="preset-browse" type="button" class="secondary">Bläddra mallar</button>
-		</div>
-	</article>
+			<article>
+				<h3>Autorotate</h3>
+				<label class="fullres-label">
+					<input type="checkbox" id="ar-enabled" role="switch"> Rotera automatiskt
+				</label>
+				<div id="ar-sub">
+					<label for="ar-speed">Hastighet (grader/sek)</label>
+					<div class="roll-row">
+						<input type="range" id="ar-speed" min="0.5" max="10" step="0.5" value="2">
+						<input type="number" id="ar-speed-num" class="roll-num" min="0.5" max="10" step="0.5" value="2">
+					</div>
+					<label id="ar-dir-label">Rotationsriktning</label>
+					<div class="dir-toggle">
+						<span id="ar-dir-left">Vänster</span>
+						<input type="checkbox" id="ar-dir-toggle" role="switch" aria-label="Rotationsriktning (vänster/höger)">
+						<span id="ar-dir-right">Höger</span>
+					</div>
+					<label for="ar-delay">Återuppta efter inaktivitet (sek)</label>
+					<div class="roll-row">
+						<input type="range" id="ar-delay" min="0" max="15" step="0.5" value="2">
+						<input type="number" id="ar-delay-num" class="roll-num" min="0" max="15" step="0.5" value="2">
+					</div>
+				</div>
+			</article>
 
-	<article>
+			<article>
+				<h3>Övergång & start</h3>
+				<label for="fade">Scen-övergång (sek)</label>
+				<div class="roll-row">
+					<input type="range" id="fade" min="0" max="3" step="0.1" value="1.5">
+					<input type="number" id="fade-num" class="roll-num" min="0" max="3" step="0.1" value="1.5">
+				</div>
+				<label>Startscen</label>
+				{% if has_map_image %}
+				<button id="first-scene-btn" type="button" class="secondary outline start-scene-btn">Scen -</button>
+				<p class="hint">Öppnar kartan - hovra en punkt för att förhandsvisa, klicka för att välja start.</p>
+				{% else %}
+				<select id="first-scene"></select>
+				{% endif %}
+			</article>
+		</div>
+	</details>
+
+	<details class="panel-group" data-group="pv-publicera">
+		<summary>Publicera &amp; dela</summary>
+		<div class="panel-group-body">
+			<article>
+				<h3>Mallar</h3>
+				<p class="hint">Spara nuvarande tema eller branding som mall, eller bläddra bland sparade mallar (tema + branding) och tillämpa. Redigera och sätt "standard för nya turer" på <a href="/mallar">Mallar</a>.</p>
+				<div class="preset-row">
+					<button id="preset-save" type="button" class="secondary outline">Spara tema som mall...</button>
+					<button id="brand-preset-save" type="button" class="secondary outline">Spara branding som mall...</button>
+					<button id="preset-browse" type="button" class="secondary">Bläddra mallar</button>
+				</div>
+			</article>
+
+			<article>
+				<h3>Exportera</h3>
+				<p class="hint">Ladda ner en självbärande zip (tiles + viewer + pannellum + hosting-instruktioner) att lägga på valfri webbserver.</p>
+				<div id="export-readiness" class="export-readiness" hidden aria-live="polite"></div>
+				<p id="export-state" class="readiness" aria-live="polite"></p>
+				<progress id="export-progress" value="0" max="1" hidden></progress>
+				<label class="export-originals">
+					<input type="checkbox" id="export-originals"> Inkludera originalbilder (arkiv/åter­redigering)
+					<small class="hint">Utan detta är zip:en en ren visningskopia. Med det kan den åter-tilas senare, men filen blir större.</small>
+				</label>
+				<div class="save-row">
+					<button id="export-btn" type="button">Exportera bundle</button>
+					<a id="export-download" href="/projects/{{ project.slug }}/export/download" role="button" class="secondary" hidden download>Ladda ner zip</a>
+				</div>
+			</article>
+
+			<article>
+				<h3>Säkerhetskopiera projekt</h3>
+				<p class="hint">Ladda ner en REDIGERBAR projekt-zip (scener, karta, alla originalbilder, tiles och media). För backup eller att flytta/importera turen i en annan instans - skiljer sig från visnings-bundlen ovan.</p>
+				<p id="backup-state" class="readiness" aria-live="polite"></p>
+				<progress id="backup-progress" value="0" max="1" hidden></progress>
+				<div class="save-row">
+					<button id="backup-btn" type="button">Skapa säkerhetskopia</button>
+					<a id="backup-download" href="/projects/{{ project.slug }}/backup/download" role="button" class="secondary" hidden download>Ladda ner zip</a>
+				</div>
+			</article>
+
+			<article id="share-article">
+				<h3>Publik delningslänk</h3>
+				<p class="hint">Ge en oigissbar länk som visar turen utan inloggning. Bra för att skicka en förhandsvisning. Sluta dela när som helst - då slutar länken fungera.</p>
+				<div class="share-active"{% if not share_url %} hidden{% endif %}>
+					<label for="share-url">Länk</label>
+					<input type="text" id="share-url" class="invite-link" readonly value="{{ share_url or '' }}" onclick="this.select()">
+					<div class="save-row">
+						<a id="share-open" href="{{ share_url or '#' }}" target="_blank" rel="noopener" role="button" class="secondary">Öppna</a>
+						<form method="post" action="/projects/{{ project.slug }}/unshare" class="share-form" data-share-action="unshare">
+							<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+							<button type="submit" class="secondary outline">Sluta dela</button>
+						</form>
+					</div>
+				</div>
+				<form method="post" action="/projects/{{ project.slug }}/share" class="share-create share-form" data-share-action="share"{% if share_url %} hidden{% endif %}>
+					<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+					<button type="submit" class="secondary">Skapa delningslänk</button>
+				</form>
+			</article>
+		</div>
+	</details>
+
+	<div class="panel-save-bar">
 		<p id="dirty-badge" class="dirty-badge" hidden>Osparade ändringar</p>
 		<div class="save-row">
 			<button id="save-btn" type="button">Spara inställningar</button>
 			<button id="discard-btn" type="button" class="secondary outline" hidden>Återställ</button>
 		</div>
-	</article>
-
-	<article>
-		<h3>Exportera</h3>
-		<p class="hint">Ladda ner en självbärande zip (tiles + viewer + pannellum + hosting-instruktioner) att lägga på valfri webbserver.</p>
-		<div id="export-readiness" class="export-readiness" hidden aria-live="polite"></div>
-		<p id="export-state" class="readiness" aria-live="polite"></p>
-		<progress id="export-progress" value="0" max="1" hidden></progress>
-		<label class="export-originals">
-			<input type="checkbox" id="export-originals"> Inkludera originalbilder (arkiv/åter­redigering)
-			<small class="hint">Utan detta är zip:en en ren visningskopia. Med det kan den åter-tilas senare, men filen blir större.</small>
-		</label>
-		<div class="save-row">
-			<button id="export-btn" type="button">Exportera bundle</button>
-			<a id="export-download" href="/projects/{{ project.slug }}/export/download" role="button" class="secondary" hidden download>Ladda ner zip</a>
-		</div>
-	</article>
-
-	<article>
-		<h3>Säkerhetskopiera projekt</h3>
-		<p class="hint">Ladda ner en REDIGERBAR projekt-zip (scener, karta, alla originalbilder, tiles och media). För backup eller att flytta/importera turen i en annan instans - skiljer sig från visnings-bundlen ovan.</p>
-		<p id="backup-state" class="readiness" aria-live="polite"></p>
-		<progress id="backup-progress" value="0" max="1" hidden></progress>
-		<div class="save-row">
-			<button id="backup-btn" type="button">Skapa säkerhetskopia</button>
-			<a id="backup-download" href="/projects/{{ project.slug }}/backup/download" role="button" class="secondary" hidden download>Ladda ner zip</a>
-		</div>
-	</article>
-
-	<article id="share-article">
-		<h3>Publik delningslänk</h3>
-		<p class="hint">Ge en oigissbar länk som visar turen utan inloggning. Bra för att skicka en förhandsvisning. Sluta dela när som helst - då slutar länken fungera.</p>
-		<div class="share-active"{% if not share_url %} hidden{% endif %}>
-			<label for="share-url">Länk</label>
-			<input type="text" id="share-url" class="invite-link" readonly value="{{ share_url or '' }}" onclick="this.select()">
-			<div class="save-row">
-				<a id="share-open" href="{{ share_url or '#' }}" target="_blank" rel="noopener" role="button" class="secondary">Öppna</a>
-				<form method="post" action="/projects/{{ project.slug }}/unshare" class="share-form" data-share-action="unshare">
-					<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-					<button type="submit" class="secondary outline">Sluta dela</button>
-				</form>
-			</div>
-		</div>
-		<form method="post" action="/projects/{{ project.slug }}/share" class="share-create share-form" data-share-action="share"{% if share_url %} hidden{% endif %}>
-			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-			<button type="submit" class="secondary">Skapa delningslänk</button>
-		</form>
-	</article>
+	</div>
 </aside>
 
 <div class="panorama-wrap">
@@ -252,4 +263,19 @@
 <script src="/static/export.js"></script>
 <script src="/static/backup.js"></script>
 <script src="/static/share.js"></script>
+<script>
+	// Hopfällbara panelgrupper: kom ihåg öppet/stängt per grupp (localStorage).
+	// Mallens open-attribut är default; sparat val vinner över det.
+	document.querySelectorAll(".panel-group[data-group]").forEach(function (d) {
+		var key = "pv-group:" + d.dataset.group;
+		try {
+			var saved = localStorage.getItem(key);
+			if (saved === "open") d.open = true;
+			else if (saved === "closed") d.open = false;
+		} catch (e) { /* privatläge */ }
+		d.addEventListener("toggle", function () {
+			try { localStorage.setItem(key, d.open ? "open" : "closed"); } catch (e) { /* ignore */ }
+		});
+	});
+</script>
 {% endblock %}
