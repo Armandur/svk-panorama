@@ -1,11 +1,12 @@
-/* Delad mediepool (mediebibliotek v2): bläddra/ladda upp/radera/välj bilder ur
-   den inloggade ägarens pool (/media/*), återanvändbara mellan projekt.
+/* Delad mediepool (mediebibliotek): bläddra/ladda upp/radera/välj bilder ur den
+   inloggade ägarens pool (/media/*), återanvändbara mellan projekt.
 
-   Två lägen delar samma hämtning/filtrering/rendering:
-   - window.openMediaLibrary(slug, onPick)  -> modal-väljare (onPick(url) vid val).
-     slug = aktuell tur, bara för filtret "Används i denna tur".
-   - window.initMediaManager(container)     -> inbäddad hanteringsvy (/media-sidan)
-     med metadata (mått/storlek/datum) + härledd användning + radera. */
+   EN komponent (mountLibrary) driver båda ytorna (DRY):
+   - window.initMediaManager(container)     -> /media-sidan (inbäddad hanteringsvy).
+   - window.openMediaLibrary(slug, onPick)  -> samma komponent i ett modal-skal
+     (väljare i scenhanteringen); onPick(url) anropas vid val, sedan stängs modalen.
+   Bägge: uppladdning (flera filer + progress), filter, metadata, härledd
+   användning (breadcrumbs) och radering med användnings-varning. */
 (function () {
 	"use strict";
 
@@ -210,134 +211,57 @@
 		return fig;
 	}
 
-	// --- Modal-väljare -----------------------------------------------------
-	var modal, grid, fileInput, curSlug, curOnPick, pickerData, pickerFilter;
-
-	function build() {
-		modal = document.createElement("div");
-		modal.className = "media-modal help-modal";
-		modal.hidden = true;
-		modal.innerHTML =
-			'<article class="media-article">' +
-			'<div class="section-head"><h3>Mediebibliotek</h3>' +
-			'<button type="button" class="secondary outline media-close" aria-label="Stäng">&times;</button></div>' +
-			'<div class="media-actions"><button type="button" class="secondary media-upload">Ladda upp bilder</button>' +
-			'<span class="media-filter-wrap"></span>' +
-			'<input type="file" class="media-file" accept="image/png,image/jpeg" multiple hidden></div>' +
-			'<p class="media-hint hint"></p>' +
-			'<div class="media-upload-progress" hidden></div>' +
-			'<p class="media-error login-error" hidden></p>' +
-			'<div class="media-manage-grid media-grid-scroll"></div></article>';
-		document.body.appendChild(modal);
-		grid = modal.querySelector(".media-manage-grid");
-		fileInput = modal.querySelector(".media-file");
-		modal.querySelector(".media-hint").textContent = "JPG eller PNG, max " + maxMb() + " MB per bild.";
-		modal.querySelector(".media-close").addEventListener("click", close);
-		modal.addEventListener("click", function (e) { if (e.target === modal) close(); });
-		modal.querySelector(".media-upload").addEventListener("click", function () { fileInput.click(); });
-		fileInput.addEventListener("change", function () {
-			var files = fileInput.files;
-			if (files && files.length) {
-				showErr("");
-				uploadFiles(files, modal.querySelector(".media-upload-progress"), pickerLoad);
-			}
-			fileInput.value = "";
-		});
-		document.addEventListener("keydown", function (e) { if (e.key === "Escape" && modal && !modal.hidden) close(); });
-	}
-
-	function close() { if (modal) modal.hidden = true; }
-	function showErr(m) { var e = modal.querySelector(".media-error"); e.textContent = m || ""; e.hidden = !m; }
-
-	function pickerLoad() {
-		showErr("");
-		grid.innerHTML = '<p class="hint">Laddar...</p>';
-		fetchPool().then(function (d) {
-			pickerData = d;
-			var wrap = modal.querySelector(".media-filter-wrap");
-			wrap.innerHTML = "";
-			wrap.appendChild(buildFilterSelect(d.projects, pickerFilter, function (v) { pickerFilter = v; pickerRender(); }));
-			pickerRender();
-		}).catch(function (e) { grid.innerHTML = ""; showErr(e.message || "Kunde inte hämta biblioteket."); });
-	}
-
-	function pickerRender() {
-		var items = applyFilter(pickerData.items || [], pickerFilter);
-		grid.innerHTML = "";
-		if (!items.length) { grid.innerHTML = '<p class="hint">Inga bilder. Ladda upp en.</p>'; return; }
-		items.forEach(function (it) {
-			grid.appendChild(buildCell(it, {
-				onPick: function (picked) { if (curOnPick) curOnPick(picked.url); close(); },
-				onDelete: pickerDelete,
-			}));
-		});
-	}
-
-	function pickerDelete(it) {
-		var used = it.usage && it.usage.length;
-		var msg = used
-			? "Bilden används i " + usageText(it.usage) + ". Ta bort ändå? Hotspots får en bruten bild."
-			: "Ta bort bilden?";
-		var ask = window.confirmDialog
-			? confirmDialog(msg, { danger: true, confirmText: "Ta bort" })
-			: Promise.resolve(window.confirm(msg));
-		ask.then(function (ok) {
-			if (!ok) return;
-			deleteFile(it.name).then(function () { pickerLoad(); }).catch(function () { showErr("Kunde inte ta bort."); });
-		});
-	}
-
-	window.openMediaLibrary = function (slug, onPick) {
-		if (!modal) build();
-		curSlug = slug;
-		curOnPick = onPick;
-		pickerFilter = "all";
-		modal.hidden = false;
-		pickerLoad();
-	};
-
-	// --- Inbäddad hanteringsvy (/media) ------------------------------------
-	window.initMediaManager = function (container) {
-		var mgrData, mgrFilter = "all";
+	// --- Enhetlig bibliotekskomponent (DRY) --------------------------------
+	// Renderar hela biblioteket (uppladdning + filter + rutnät) i valfri container.
+	// SAMMA komponent driver både /media-sidan och väljar-modalen i scenhanteringen.
+	// opts.onPick (valfri) gör bilderna klickbara för val -> plockar url:en.
+	function mountLibrary(container, opts) {
+		opts = opts || {};
+		var data = { items: [], projects: [] };
+		var filter = "all";
 		container.innerHTML =
-			'<div class="media-actions"><button type="button" class="secondary mgr-upload">Ladda upp bilder</button>' +
-			'<span class="mgr-filter-wrap"></span>' +
-			'<input type="file" class="mgr-file" accept="image/png,image/jpeg" multiple hidden></div>' +
-			'<p class="mgr-hint hint"></p>' +
+			'<div class="media-actions">' +
+			'<button type="button" class="secondary lib-upload">Ladda upp bilder</button>' +
+			'<span class="lib-filter-wrap"></span>' +
+			'</div>' +
+			'<input type="file" class="lib-file" accept="image/png,image/jpeg" multiple hidden>' +
+			'<p class="lib-hint hint"></p>' +
 			'<div class="media-upload-progress" hidden></div>' +
-			'<p class="mgr-error login-error" hidden></p>' +
+			'<p class="lib-error login-error" hidden></p>' +
 			'<div class="media-manage-grid"></div>';
-		var mgrGrid = container.querySelector(".media-manage-grid");
-		var mgrFile = container.querySelector(".mgr-file");
-		var mgrErr = container.querySelector(".mgr-error");
-		var mgrProgress = container.querySelector(".media-upload-progress");
-		container.querySelector(".mgr-hint").textContent = "JPG eller PNG, max " + maxMb() + " MB per bild.";
-		function err(m) { mgrErr.textContent = m || ""; mgrErr.hidden = !m; }
-		container.querySelector(".mgr-upload").addEventListener("click", function () { mgrFile.click(); });
-		mgrFile.addEventListener("change", function () {
-			var files = mgrFile.files;
-			if (files && files.length) { err(""); uploadFiles(files, mgrProgress, load); }
-			mgrFile.value = "";
+		var grid = container.querySelector(".media-manage-grid");
+		var fileInput = container.querySelector(".lib-file");
+		var errEl = container.querySelector(".lib-error");
+		var progress = container.querySelector(".media-upload-progress");
+		container.querySelector(".lib-hint").textContent = "JPG eller PNG, max " + maxMb() + " MB per bild.";
+		function err(m) { errEl.textContent = m || ""; errEl.hidden = !m; }
+		container.querySelector(".lib-upload").addEventListener("click", function () { fileInput.click(); });
+		fileInput.addEventListener("change", function () {
+			if (fileInput.files && fileInput.files.length) { err(""); uploadFiles(fileInput.files, progress, load); }
+			fileInput.value = "";
 		});
 
 		function load() {
 			err("");
-			mgrGrid.innerHTML = '<p class="hint">Laddar...</p>';
+			grid.innerHTML = '<p class="hint">Laddar...</p>';
 			fetchPool().then(function (d) {
-				mgrData = d;
-				var wrap = container.querySelector(".mgr-filter-wrap");
+				data = d;
+				var wrap = container.querySelector(".lib-filter-wrap");
 				wrap.innerHTML = "";
-				wrap.appendChild(buildFilterSelect(d.projects, mgrFilter, function (v) { mgrFilter = v; render(); }));
+				wrap.appendChild(buildFilterSelect(d.projects, filter, function (v) { filter = v; render(); }));
 				render();
-			}).catch(function (e) { mgrGrid.innerHTML = ""; err(e.message || "Kunde inte hämta biblioteket."); });
+			}).catch(function (e) { grid.innerHTML = ""; err(e.message || "Kunde inte hämta biblioteket."); });
 		}
 
 		function render() {
-			var items = applyFilter(mgrData.items || [], mgrFilter);
-			mgrGrid.innerHTML = "";
-			if (!items.length) { mgrGrid.innerHTML = '<p class="hint">Inga bilder i det här urvalet.</p>'; return; }
+			var items = applyFilter(data.items || [], filter);
+			grid.innerHTML = "";
+			if (!items.length) { grid.innerHTML = '<p class="hint">Inga bilder i det här urvalet.</p>'; return; }
 			items.forEach(function (it) {
-				mgrGrid.appendChild(buildCell(it, { onDelete: remove }));
+				grid.appendChild(buildCell(it, {
+					onPick: opts.onPick ? function (picked) { opts.onPick(picked.url); } : null,
+					onDelete: remove,
+				}));
 			});
 		}
 
@@ -356,5 +280,35 @@
 		}
 
 		load();
+		return { reload: load };
+	}
+
+	// --- Modal-skal som hostar biblioteket (väljare i scenhanteringen) -----
+	var modal, modalBody;
+	function buildModal() {
+		modal = document.createElement("div");
+		modal.className = "media-modal help-modal";
+		modal.hidden = true;
+		modal.innerHTML =
+			'<article class="media-article">' +
+			'<div class="section-head"><h3>Mediebibliotek</h3>' +
+			'<button type="button" class="secondary outline media-close" aria-label="Stäng">&times;</button></div>' +
+			'<div class="media-modal-body"></div></article>';
+		document.body.appendChild(modal);
+		modalBody = modal.querySelector(".media-modal-body");
+		modal.querySelector(".media-close").addEventListener("click", closeModal);
+		modal.addEventListener("click", function (e) { if (e.target === modal) closeModal(); });
+		document.addEventListener("keydown", function (e) { if (e.key === "Escape" && modal && !modal.hidden) closeModal(); });
+	}
+	function closeModal() { if (modal) modal.hidden = true; }
+
+	// Väljar-modal (scenhantering): samma komponent, med onPick -> stäng vid val.
+	window.openMediaLibrary = function (slug, onPick) {
+		if (!modal) buildModal();
+		mountLibrary(modalBody, { onPick: function (url) { if (onPick) onPick(url); closeModal(); } });
+		modal.hidden = false;
 	};
+
+	// Inbäddad hanteringsvy (/media-sidan): samma komponent, utan onPick.
+	window.initMediaManager = function (container) { mountLibrary(container, {}); };
 })();
