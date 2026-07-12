@@ -401,6 +401,25 @@ Faser (minst till störst):
       "flytta/säkerhetskopiera en redigerbar tur" (granskningens produkt-"bör") och att
       bundlen saknade källbilder för tilade scener.
 
+- [ ] **Reda ut version/schema-kompatibilitet för turer & arkiv (Rasmus 2026-07-12).**
+      Risk: en tur exporterad/skriven med en version av verktyget kan bli inkompatibel
+      när schemat (tour.json) ändras - gäller BÅDE projekt-import (arkiv från annan/äldre
+      instans) OCH tour.json på disk när verktyget uppdateras. Idag: `project.json` bär
+      `format`+`version` (VERSION=1 i backup.py) men importen kollar bara `format`, inte
+      version-intervall; tour.json har ingen egen version. Att utreda/besluta:
+      - **Additiv-schema-först (billigast, matchar pre-prod-etoset):** nya fält är
+        valfria med defaults, ta aldrig bort/döp om -> gammal och ny läser varandra,
+        okända fält ignoreras. Bumpa version BARA vid brytande ändring.
+      - **Version-koll vid import:** avvisa arkiv vars version > verktygets max-stödda med
+        tydligt meddelande ("skapad med en nyare version, uppdatera verktyget"). Äldre ->
+        acceptera (om additivt) eller migrera.
+      - **Migrationskedja för tour.json** (v1->v2 ...) vid brytande ändringar - en liten
+        registry av migrate-funktioner som körs vid import OCH vid läsning av gammal
+        tour.json på disk (jfr Alembic men för JSON). Lägg ev. app/schema-version + verktygs-
+        version (git-SHA) i project.json/tour.json för diagnostik.
+      - Beslut: sätt en `SCHEMA_VERSION`-konstant, definiera kompat-policy (troligen
+        additiv-först + version-gate vid import), och dokumentera i CLAUDE.md.
+
 - [x] **Tema-förinställningar KLAR (2026-07-12).** Namngivna tema-/inställnings-presets
       per ägare (`ThemePreset`, services/presets.py, routes/presets.py). Spara/använd/
       radera på preview-steget + "standard för nya turer" (nya turer ärver via
