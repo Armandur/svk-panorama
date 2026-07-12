@@ -121,6 +121,17 @@
 		</div>
 	</article>
 
+	<article>
+		<h3>Säkerhetskopiera projekt</h3>
+		<p class="hint">Ladda ner en REDIGERBAR projekt-zip (scener, karta, alla originalbilder, tiles och media). För backup eller att flytta/importera turen i en annan instans - skiljer sig från visnings-bundlen ovan.</p>
+		<p id="backup-state" class="readiness" aria-live="polite"></p>
+		<progress id="backup-progress" value="0" max="1" hidden></progress>
+		<div class="save-row">
+			<button id="backup-btn" type="button">Skapa säkerhetskopia</button>
+			<a id="backup-download" href="/projects/{{ project.slug }}/backup/download" role="button" class="secondary" hidden download>Ladda ner zip</a>
+		</div>
+	</article>
+
 	<article id="share-article">
 		<h3>Publik delningslänk</h3>
 		<p class="hint">Ge en oigissbar länk som visar turen utan inloggning. Bra för att skicka en förhandsvisning. Sluta dela när som helst - då slutar länken fungera.</p>
@@ -195,5 +206,6 @@
 <script src="/static/markdown.js"></script>
 <script src="/static/tour-preview.js"></script>
 <script src="/static/export.js"></script>
+<script src="/static/backup.js"></script>
 <script src="/static/share.js"></script>
 {% endblock %}

@@ -58,6 +58,14 @@
 			<button type="submit">Skapa projekt</button>
 		</form>
 	</article>
+
+	<article id="import-project">
+		<h2>Importera projekt</h2>
+		<p class="hint">Läs in en redigerbar projekt-zip (säkerhetskopia) och skapa en kopia som ny tur. Alla scener, kartan, bilder och media följer med.</p>
+		<input type="file" id="import-file" accept=".zip,application/zip" hidden>
+		<button type="button" id="import-btn" class="secondary">Välj projekt-zip...</button>
+		<p id="import-state" class="hint" aria-live="polite"></p>
+	</article>
 </section>
 
 <section>
@@ -80,4 +88,5 @@
 	})();
 </script>
 <script src="/static/index.js"></script>
+<script src="/static/import-project.js"></script>
 {% endblock %}

@@ -147,6 +147,42 @@ def test_export_readiness():
         config.PROJECTS_DIR = old
 
 
+def test_backup_security():
+    import io
+    import zipfile as _zip
+
+    from app.services.backup import _media_refs, _validate_members
+
+    def zf_with(name):
+        buf = io.BytesIO()
+        with _zip.ZipFile(buf, "w") as z:
+            z.writestr(name, "x")
+        buf.seek(0)
+        return _zip.ZipFile(buf)
+
+    # Zip-slip: farliga arcnames avvisas.
+    for bad in ("../evil.txt", "/etc/passwd", "a/../b", "images/../../x", "..\\evil"):
+        try:
+            _validate_members(zf_with(bad))
+            check(f"avvisar '{bad}'", False)
+        except ValueError:
+            check(f"avvisar '{bad}'", True)
+    # Ofarliga vägar tillåts.
+    ok = True
+    try:
+        _validate_members(zf_with("images/1.jpg"))
+        _validate_members(zf_with("tiles/2/f0_0.jpg"))
+        _validate_members(zf_with("media/abc-x.jpg"))
+    except ValueError:
+        ok = False
+    check("tillåter normala vägar", ok)
+
+    tour = {"scenes": {"1": {"hotSpots": [
+        {"text": "![](/media/7/ab-x.jpg)", "body": "igen /media/7/y.png"},
+    ]}}}
+    check("backup media_refs", _media_refs(tour) == {(7, "ab-x.jpg"), (7, "y.png")})
+
+
 def test_media_pool():
     import io
 
@@ -275,6 +311,7 @@ def main() -> int:
         test_apply_multires,
         test_relativize,
         test_export_readiness,
+        test_backup_security,
         test_media_pool,
         test_hex,
         test_slug_and_upload_safety,

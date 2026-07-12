@@ -56,6 +56,7 @@ app/
     tiling.py        # POST /tile-job, GET status, GET /tile-jobs (bulk)
     preview.py       # /preview (förhandsvisa + turinställningar) + /tour-settings
     export.py        # /export (bygg bundle), status, download
+    backup.py        # /backup (redigerbar projekt-zip) + /projects/import
     viewer.py        # /view (inloggad runtime-viewer, multires-merge)
     public.py        # /s/{token} publik delad viewer + /s/{token}/{path} assets (ingen auth)
     media.py         # /media delad mediepool per ägare (upload/list/delete + capability-serve)
@@ -63,6 +64,7 @@ app/
     project_files.py # filsystemslager: slug, mappar, tour.json/map.json, previews
     tiling.py        # trådat tiling-jobb + manifest + apply_multires()
     bundle.py        # trådat export-jobb: bygger självbärande zip
+    backup.py        # projekt-backup: exportera/importera REDIGERBAR projekt-zip
     media.py         # delad mediepool: lagring, metadata (PIL), usage-scan
   templates/         # Jinja2. base.html + steg-mallar + _partials
   static/            # CSS/JS (se nedan) + vendor/ (pannellum, pico)
@@ -114,6 +116,21 @@ tiles/<id>`, `panorama -> images/<fil>`, assets utan `/static`), så bundlen
 fungerar i valfri underkatalog utan server-kod. Verifieras med
 `python -m http.server`.
 
+## Projekt-backup/import (services/backup.py, routes/backup.py)
+
+Skilt från bundle-exporten (visnings-produkt): en **redigerbar** projekt-zip för
+backup / att flytta en tur mellan instanser. Innehåller RÅDATA: `project.json`
+(manifest: format `svk-project`, slug, name) + tour.json + map.json + map.png +
+`images/` + `tiles/` (+ manifest) + `media/` (bara REFERERADE poolbilder).
+Export: trådat jobb (som bundle), `POST /projects/{slug}/backup` + status/download,
+knapp på preview-steget (`backup.js`). Import: `POST /projects/import` (uppladdning),
+`import_project()` skapar nytt Project (unik slug), extraherar med **zip-slip-guard**
+(`_validate_members` + commonpath), kopierar media in i importörens pool och skriver
+om referenser: `/projects/<gammal-slug>/` -> nya slugen och `/media/<gammal-owner>/`
+-> importörens owner_id (i tour.json + tiles/manifest.json). UI: import-knapp på
+startsidan (`import-project.js`) -> redirect till nya turen. `_backup/`-zip i
+projektmappen (gitignorad).
+
 ## Runtime-viewern (viewer.js/css)
 
 Path-agnostisk: läser inbäddad `tour`/`map` (JSON-script-taggar), bygger
@@ -160,6 +177,8 @@ Applicerar `tour.default.theme` via CSS-variabler (`--tour-font/--dot-color/
 - `upload.js` - parallell per-fil-uppladdning + previews, startar tiling.
 - `tile-status.js` / `index.js` - tiling-status på hemsida / huvudmeny.
 - `export.js` - bundle-export-progress + readiness-varningar + opt-in originalbilder.
+- `backup.js` - projekt-backup-progress (redigerbar zip) på preview-steget.
+- `import-project.js` - importera projekt-zip på startsidan -> redirect till nya turen.
 - `share.js` - publik delningslänk på preview-steget: skapa/sluta dela async (fetch,
   JSON-svar) så länken dyker upp/försvinner i rutan utan omladdning. Progressiv
   förbättring (forms funkar utan JS via redirect).

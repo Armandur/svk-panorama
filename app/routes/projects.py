@@ -18,6 +18,7 @@ from app.deps import (
     templates,
     verify_csrf_form,
 )
+from app.services.backup import forget_job as forget_backup_job
 from app.services.bundle import forget_job as forget_export_job
 from app.services.bundle import job_status as export_job_status
 from app.services.project_files import (
@@ -119,6 +120,7 @@ async def delete_project(
 
     forget_tile_job(slug)
     forget_export_job(slug)
+    forget_backup_job(slug)
     delete_project_files(slug)
 
     # Admin som raderar en annans tur -> tillbaka till den användarens turlista.
@@ -227,6 +229,7 @@ async def rename_slug(
     db.commit()
     forget_tile_job(slug)  # in-memory-status nycklad på gamla slugen
     forget_export_job(slug)
+    forget_backup_job(slug)
     return RedirectResponse(url=f"/projects/{new_slug}", status_code=303)
 
 

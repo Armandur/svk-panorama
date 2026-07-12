@@ -393,6 +393,14 @@ Faser (minst till störst):
       textfärg på arket i editor-kontexten (app.css) - kolla att viewern/bundlen/publika
       /s inte påverkas.
 
+- [x] **Projekt-backup/import KLAR (2026-07-12).** Redigerbar projekt-zip (rådata:
+      tour/map/map.png/images/tiles/media + manifest) via `services/backup.py` +
+      `routes/backup.py`. Export = trådat jobb + knapp på preview-steget; import =
+      `POST /projects/import` (zip-slip-guard, media in i importörens pool, `/projects/
+      <slug>/` + `/media/<owner>/` skrivs om), import-knapp på startsidan. Löser
+      "flytta/säkerhetskopiera en redigerbar tur" (granskningens produkt-"bör") och att
+      bundlen saknade källbilder för tilade scener. Grund för "duplicera tur som mall".
+
 - [ ] **Fler typsnitt i temat (särskilt DM Sans).** Idag är tema-typsnitten
       system-font-stackar (sans/serif/mono/humanist - inga font-filer, självbärande
       bundle). Lägg till fler val, framförallt **DM Sans**. OBS avvägning: riktiga

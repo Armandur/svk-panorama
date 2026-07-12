@@ -15,6 +15,7 @@ from app.routes import (
     admin,
     assets,
     auth,
+    backup,
     export,
     media,
     plan,
@@ -92,6 +93,7 @@ app.include_router(scenes.router)
 app.include_router(tiling.router)
 app.include_router(preview.router)
 app.include_router(export.router)
+app.include_router(backup.router)
 app.include_router(viewer.router)
 app.include_router(public.router)
 app.include_router(media.router)  # delad mediepool (före assets-catchall)
