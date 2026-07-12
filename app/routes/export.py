@@ -16,10 +16,11 @@ router = APIRouter()
 @router.post("/projects/{slug}/export")
 def start_export(
     slug: str,
+    originals: bool = False,
     project: Project = Depends(get_project_or_404),
     _csrf: None = Depends(verify_csrf_header),
 ) -> dict[str, Any]:
-    bundle.start_job(slug, project.name)
+    bundle.start_job(slug, project.name, include_originals=originals)
     return bundle.state(slug)
 
 

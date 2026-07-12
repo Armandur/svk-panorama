@@ -100,6 +100,53 @@ def test_relativize():
     check("basePath ej absolut", not bp.startswith("/") and ".." not in bp)
 
 
+def test_export_readiness():
+    from app import config
+    from app.services import bundle, project_files
+
+    tmp = Path(tempfile.mkdtemp())
+    old = config.PROJECTS_DIR
+    config.PROJECTS_DIR = tmp / "projects"
+    try:
+        (config.PROJECTS_DIR / "t").mkdir(parents=True)
+        # Tom tur -> "inga scener".
+        project_files.write_tour("t", {"scenes": {}})
+        r = bundle.readiness("t")
+        check("readiness tom -> 1 issue", len(r) == 1 and "inga scener" in r[0]["msg"])
+
+        # scen 3 oplacerad, scen 2 okalibrerad (i graf), scen 1 har dangling scen-hotspot.
+        project_files.write_tour("t", {
+            "default": {"firstScene": "1"},
+            "scenes": {
+                "1": {"northOffset": 10.0, "hotSpots": [{"type": "scene", "sceneId": "9"}]},
+                "2": {},
+                "3": {"northOffset": 5.0},
+            },
+        })
+        project_files.write_map("t", {
+            "scenes": [{"id": "1", "x": 1, "y": 1}, {"id": "2", "x": 2, "y": 2}],
+            "edges": [{"from": "1", "to": "2", "twoway": True}],
+        })
+        msgs = " | ".join(i["msg"] for i in bundle.readiness("t"))
+        check("readiness varnar oplacerad (3)", "oplacerade" in msgs and "3" in msgs)
+        check("readiness varnar okalibrerad (2)", "Okalibrerade" in msgs and "scen 2" in msgs)
+        check("readiness varnar dangling hotspot", "borttagen scen" in msgs)
+        check("readiness ej falsk isolerad", "utan länk" not in msgs)  # 1 & 2 är länkade
+
+        # Allt i sin ordning -> inga issues.
+        project_files.write_tour("t", {
+            "default": {"firstScene": "1"},
+            "scenes": {"1": {"northOffset": 10.0}, "2": {"northOffset": 5.0}},
+        })
+        project_files.write_map("t", {
+            "scenes": [{"id": "1", "x": 1, "y": 1}, {"id": "2", "x": 2, "y": 2}],
+            "edges": [{"from": "1", "to": "2", "twoway": True}],
+        })
+        check("readiness allt ok -> inga issues", bundle.readiness("t") == [])
+    finally:
+        config.PROJECTS_DIR = old
+
+
 def test_media_pool():
     import io
 
@@ -218,6 +265,7 @@ def main() -> int:
         test_expected_tile_count,
         test_apply_multires,
         test_relativize,
+        test_export_readiness,
         test_media_pool,
         test_hex,
         test_slug_and_upload_safety,

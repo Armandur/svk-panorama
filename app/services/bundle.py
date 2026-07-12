@@ -15,6 +15,7 @@ from app import config
 from app.deps import templates
 from app.services import media
 from app.services.project_files import (
+    _natural_key,
     images_dir,
     map_image_path,
     project_dir,
@@ -94,7 +95,7 @@ def _readme(project_name: str, slug: str) -> str:
         "  pannellum.*   - panoramabiblioteket (vendored)\n"
         "  viewer.*      - visningslogik\n"
         "  tiles/        - multires-kakel per scen\n"
-        "  images/       - originalbilder for ev. otilade scener\n"
+        "  images/       - kalla-panorama (otilade scener; ev. alla vid arkiv-export)\n"
         "  map.png       - oversiktskarta\n\n"
         "Hosting:\n"
         "  Lagg hela mappen pa valfri webbserver och peka besokaren pa index.html.\n"
@@ -108,9 +109,12 @@ def _readme(project_name: str, slug: str) -> str:
     )
 
 
-def _collect(slug: str, tour: dict, media_refs: set[tuple[int, str]]) -> list[tuple[str, Path]]:
+def _collect(
+    slug: str, tour: dict, media_refs: set[tuple[int, str]], include_originals: bool = False
+) -> list[tuple[str, Path]]:
     """(arcname, källfil) för allt statiskt som ska med i zipen."""
     files: list[tuple[str, Path]] = []
+    img_added: set[str] = set()
 
     td = tiles_dir(slug)
     if td.exists():
@@ -124,13 +128,25 @@ def _collect(slug: str, tour: dict, media_refs: set[tuple[int, str]]) -> list[tu
         if src is not None:
             files.append(("media/" + name, src))
 
-    # Originalbilder bara för scener som inte blev multires (saknar tiles).
+    # Originalbilder krävs för scener som inte blev multires (saknar tiles) -
+    # vieweren visar dem equirektangulärt.
     for scene in tour.get("scenes", {}).values():
         if scene.get("type") == "equirectangular" and scene.get("panorama"):
             fn = Path(scene["panorama"]).name
             src = images_dir(slug) / fn
             if src.exists():
                 files.append(("images/" + fn, src))
+                img_added.add(fn)
+
+    # Opt-in: arkivera ALLA källoriginal (även tilade scener) så bundlen kan
+    # åter-tilas/återredigeras senare. Utan detta är bundlen en ren visningskopia.
+    if include_originals:
+        idir = images_dir(slug)
+        if idir.exists():
+            for f in sorted(idir.iterdir()):
+                if f.is_file() and f.name not in img_added:
+                    files.append(("images/" + f.name, f))
+                    img_added.add(f.name)
 
     for name in ("pannellum.js", "pannellum.css"):
         files.append((name, _VENDOR / name))
@@ -145,7 +161,7 @@ def _collect(slug: str, tour: dict, media_refs: set[tuple[int, str]]) -> list[tu
     return files
 
 
-def _build(slug: str, project_name: str) -> None:
+def _build(slug: str, project_name: str, include_originals: bool = False) -> None:
     job = _jobs[slug]
     try:
         raw_tour = read_tour(slug)
@@ -160,7 +176,7 @@ def _build(slug: str, project_name: str) -> None:
             ("index.html", index_html.encode("utf-8")),
             ("README.txt", _readme(project_name, slug).encode("utf-8")),
         ]
-        files = _collect(slug, tour, media_refs)
+        files = _collect(slug, tour, media_refs, include_originals)
         job["total"] = len(files) + len(generated)
 
         export_dir(slug).mkdir(parents=True, exist_ok=True)
@@ -181,15 +197,64 @@ def _build(slug: str, project_name: str) -> None:
         job["error"] = str(exc)
 
 
-def start_job(slug: str, project_name: str) -> dict[str, Any]:
+def start_job(slug: str, project_name: str, include_originals: bool = False) -> dict[str, Any]:
     with _lock:
         existing = _jobs.get(slug)
         if existing and existing["status"] == "running":
             return existing
         job = {"status": "running", "total": 0, "done": 0, "error": None}
         _jobs[slug] = job
-    threading.Thread(target=_build, args=(slug, project_name), daemon=True).start()
+    threading.Thread(target=_build, args=(slug, project_name, include_originals), daemon=True).start()
     return job
+
+
+def readiness(slug: str) -> list[dict[str, str]]:
+    """Icke-blockerande förvarningar inför export: samma kriterier som editorns
+    per-steg-readiness (plan.js/scene.js) fast samlat. Varnar men stoppar inte -
+    en tur kan ha medvetna 'dead ends'. Returnerar [{level, msg}]."""
+    tour = read_tour(slug)
+    scenes = tour.get("scenes", {})
+    issues: list[dict[str, str]] = []
+    if not scenes:
+        return [{"level": "warn", "msg": "Turen har inga scener än."}]
+
+    mp = read_map(slug)
+    placed = {s.get("id") for s in mp.get("scenes", [])}
+    linked: set = set()
+    for e in mp.get("edges", []):
+        linked.add(e.get("from"))
+        linked.add(e.get("to"))
+
+    def _fmt(ids: list) -> str:
+        return ", ".join(sorted(ids, key=_natural_key))
+
+    unplaced = [sid for sid in scenes if sid not in placed]
+    if unplaced:
+        issues.append({"level": "warn", "msg": f"{len(unplaced)} oplacerade scener (scen {_fmt(unplaced)}) - saknar position på kartan."})
+
+    if len(scenes) > 1:
+        isolated = [sid for sid in scenes if sid in placed and sid not in linked]
+        if isolated:
+            issues.append({"level": "warn", "msg": f"{len(isolated)} scener utan länk (scen {_fmt(isolated)}) - besökaren kan inte navigera dit."})
+
+    uncal = [sid for sid in scenes if sid in linked and scenes[sid].get("northOffset") is None]
+    if uncal:
+        issues.append({"level": "warn", "msg": f"Okalibrerade scener (scen {_fmt(uncal)}) - hotspot-riktningar kan bli fel."})
+
+    dangling = {
+        hs.get("sceneId")
+        for sc in scenes.values()
+        for hs in sc.get("hotSpots", [])
+        if hs.get("type") == "scene" and hs.get("sceneId") not in scenes
+    }
+    if dangling:
+        issues.append({"level": "warn", "msg": f"{len(dangling)} scen-hotspots pekar mot en borttagen scen."})
+
+    first = tour.get("default", {}).get("firstScene")
+    if first and first not in scenes:
+        issues.append({"level": "warn", "msg": "Startscenen finns inte längre - välj en ny i turinställningarna."})
+
+    return issues
 
 
 def state(slug: str) -> dict[str, Any]:
@@ -198,4 +263,5 @@ def state(slug: str) -> dict[str, Any]:
         "hasZip": zip_path(slug).exists(),
         "tileable": len(tileable_scenes(slug)),
         "tiled": len(read_manifest(slug)),
+        "readiness": readiness(slug),
     }

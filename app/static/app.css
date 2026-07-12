@@ -733,6 +733,14 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .readiness.ok { color: var(--svk-ok); }
 .readiness.warn { color: var(--svk-warn); font-weight: 600; }
 
+/* Export-förvarningar: samlad readiness-ruta på export-steget (icke-blockerande). */
+.export-readiness { border: 1px solid var(--svk-warn); border-radius: 0.4rem; padding: 0.6rem 0.8rem; margin: 0.5rem 0; background: color-mix(in srgb, var(--svk-warn) 8%, transparent); }
+.export-readiness p { margin: 0.2rem 0; }
+.export-readiness ul { margin: 0.3rem 0 0.2rem; padding-left: 1.2rem; font-size: 0.85rem; }
+.export-readiness li { margin: 0.15rem 0; }
+.export-originals { display: block; margin: 0.4rem 0 0.6rem; font-size: 0.9rem; }
+.export-originals .hint { display: block; margin: 0.1rem 0 0 1.7rem; }
+
 .legend { font-size: 0.8rem; }
 .legend b { letter-spacing: -1px; }
 

@@ -8,11 +8,29 @@
 	const stateEl = document.getElementById("export-state");
 	const progress = document.getElementById("export-progress");
 	const download = document.getElementById("export-download");
+	const readyEl = document.getElementById("export-readiness");
 	if (!slug || !btn) return;
 
 	let polling = false;
 
+	function renderReadiness(issues) {
+		if (!readyEl) return;
+		if (!issues || !issues.length) {
+			readyEl.hidden = true;
+			readyEl.innerHTML = "";
+			return;
+		}
+		let html = '<p class="readiness warn"><strong>Innan du exporterar - att se över:</strong></p><ul>';
+		issues.forEach(function (it) {
+			html += "<li>" + escapeHtml(it.msg) + "</li>";
+		});
+		html += "</ul><p class=\"hint\">Du kan exportera ändå - det här är bara en påminnelse.</p>";
+		readyEl.innerHTML = html;
+		readyEl.hidden = false;
+	}
+
 	function render(state) {
+		renderReadiness(state.readiness);
 		const job = state.job;
 		const running = job && job.status === "running";
 		btn.disabled = running;
@@ -63,7 +81,9 @@
 
 	btn.addEventListener("click", async function () {
 		try {
-			const state = await apiFetch("/projects/" + slug + "/export", { method: "POST" });
+			const originals = document.getElementById("export-originals");
+			const q = originals && originals.checked ? "?originals=1" : "";
+			const state = await apiFetch("/projects/" + slug + "/export" + q, { method: "POST" });
 			render(state);
 			poll();
 		} catch (e) {

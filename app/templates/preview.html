@@ -108,8 +108,13 @@
 	<article>
 		<h3>Exportera</h3>
 		<p class="hint">Ladda ner en självbärande zip (tiles + viewer + pannellum + hosting-instruktioner) att lägga på valfri webbserver.</p>
+		<div id="export-readiness" class="export-readiness" hidden aria-live="polite"></div>
 		<p id="export-state" class="readiness" aria-live="polite"></p>
 		<progress id="export-progress" value="0" max="1" hidden></progress>
+		<label class="export-originals">
+			<input type="checkbox" id="export-originals"> Inkludera originalbilder (arkiv/åter­redigering)
+			<small class="hint">Utan detta är zip:en en ren visningskopia. Med det kan den åter-tilas senare, men filen blir större.</small>
+		</label>
 		<div class="save-row">
 			<button id="export-btn" type="button">Exportera bundle</button>
 			<a id="export-download" href="/projects/{{ project.slug }}/export/download" role="button" class="secondary" hidden download>Ladda ner zip</a>
