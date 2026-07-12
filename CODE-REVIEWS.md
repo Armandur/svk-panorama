@@ -2,6 +2,45 @@
 
 Nyast först. Varje fynd markerat åtgärdat/avfärdat med commit-ref.
 
+## 2026-07-12 - Helhetsgranskning (säkerhet, UI/UX, produkt)
+
+Tre oberoende Fable-subagenter (eget kontext) granskade hela `app/` efter
+mediebibliotek v2. Säkerhetsspåret gick igenom auth/CSRF/traversal/injection/
+concurrency; UI/UX-spåret hela editorflödet; produktspåret föreslog funktioner.
+Två verifierade säkerhetsfynd åtgärdade; övrigt loggat nedan/på ROADMAP.
+
+- **[ÅTGÄRDAT 383ef84] S1 (KRITISK) Stored XSS via pannellum `escapeHTML`.**
+  Scen-titel och text på scen/URL-hotspots renderades oescapat (`title.innerHTML=
+  D(...)`, `escapeHTML` aldrig satt). `<img onerror=...>` i en titel kördes i alla
+  som visade turen - inkl. publik /s och en admin som öppnar användarens tur
+  (JS-läsbar CSRF-cookie -> självupphöjning). Fix: `escapeHTML: true` TOP-LEVEL
+  (inte i default-blocket - propagerar ej) i viewer.js/tour-preview.js/scene.js.
+  Info-hotspots opåverkade (egen DOMPurify-väg). Verifierat: payload kördes före,
+  escapas efter (Playwright, /view + /scenes + /preview).
+- **[ÅTGÄRDAT 0ae6257] S2 (HÖG) Invite-token kunde kapa aktivt konto.**
+  `accept-invite` krävde inte `password_hash is None` -> läckt men giltig invite
+  (7 dygn) kunde sätta nytt lösenord på aktivt konto. Fix: guard i GET+POST.
+  Verifierat live: aktivt kontos token avvisas, lösenord oförändrat.
+- **[SENARELAGT -> produktionshärdning] S3 (MEDEL)** rate limiting bara på login;
+  `request.client.host` blir fel bakom proxy (ingen XFF-parsing).
+- **[SENARELAGT] S4 (MEDEL)** race på map.json (plan.py:s `write_map` utanför
+  `tour_lock`) - "last write wins", ingen korruption (atomisk skrivning). Låg risk
+  i enanvändarläge.
+- **[SENARELAGT -> produktion] S5 (LÅG)** lösenordspolicy (bara >=8), ingen
+  pixelgräns på bilder utöver MB-tak, default admin/admin.
+- **[VERIFIERAT RENT] Ingen fynd:** traversal-guards (media/public/assets),
+  CSRF-täckning (alla muterande POST/DELETE utom medvetet /logout), auth-gates +
+  self-guards, `_safe_suffix` i mediepoolen, markdown-XSS (info-hotspots via
+  DOMPurify), hex/tema-validering, bundle-relativisering, tour.json-concurrency.
+
+UI/UX-fynd (åtgärdas efter behov, ej blockerande): mobil-sidopanel utan
+max-height, saknad fokusfälla/ARIA på `.help-modal`, små touch-mål, saknad
+spinner vid mediebibliotek-upp, inline-validering bara på lösenordspar, stavfel
+"pa servern" (upload.js). **OBS:** projektet är desktop-först (se minne), så rent
+mobila fynd är låg prioritet. Produktförslag (bundle saknar originalbilder,
+export-readiness-validering, djuplänkning, projekt-backup/import, temamallar)
+förda till beslut/ROADMAP.
+
 ## 2026-07-11 - Fas 2 (viewer, tiling, parallellism, bundle, teman)
 
 Oberoende granskning (Claude-subagent, eget kontext) av `git diff 7252b14..HEAD`
