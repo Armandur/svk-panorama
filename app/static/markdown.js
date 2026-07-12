@@ -90,7 +90,7 @@
 		_sheet.hidden = true;
 		_sheet.innerHTML =
 			'<div class="hs-sheet-inner">' +
-			'<button type="button" class="hs-sheet-close" aria-label="Stäng">&times;</button>' +
+			'<button type="button" class="hs-sheet-close close-x" aria-label="Stäng">&times;</button>' +
 			'<div class="hs-sheet-body markdown-body"></div>' +
 			'</div>';
 		document.body.appendChild(_sheet);

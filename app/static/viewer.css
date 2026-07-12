@@ -57,12 +57,14 @@ html, body {
 .hs-sheet { position: fixed; inset: 0; z-index: 5000; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
 .hs-sheet[hidden] { display: none; }
 .hs-sheet-inner { position: relative; background: #fff; color: #1c2128; max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 3px; padding: 2.2rem 2rem 1.6rem; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4); }
-/* Kryss ritas med två roterade streck (font-oberoende -> alltid exakt centrerat,
-   till skillnad från &times;-tecknet som har sneda metrik). font-size:0 döljer tecknet. */
+/* Återanvändbart centrerat stäng-kryss: ritas med två roterade streck (font-
+   oberoende -> alltid exakt centrerat, till skillnad från &times;-tecknets sneda
+   metrik). Läggs som klass `close-x` på en position:relative/absolute-knapp med
+   font-size:0 (döljer ev. &times;-fallback); färg = currentColor. */
+.close-x::before, .close-x::after { content: ""; position: absolute; top: 50%; left: 50%; width: 14px; height: 2px; background: currentColor; }
+.close-x::before { transform: translate(-50%, -50%) rotate(45deg); }
+.close-x::after { transform: translate(-50%, -50%) rotate(-45deg); }
 .hs-sheet-close { position: absolute; top: 0.5rem; right: 0.5rem; width: 30px; height: 30px; padding: 0; background: none; border: none; border-radius: 3px; font-size: 0; cursor: pointer; color: inherit; }
-.hs-sheet-close::before, .hs-sheet-close::after { content: ""; position: absolute; top: 50%; left: 50%; width: 15px; height: 2px; background: currentColor; }
-.hs-sheet-close::before { transform: translate(-50%, -50%) rotate(45deg); }
-.hs-sheet-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
 .hs-sheet-close:hover { background: rgba(0, 0, 0, 0.08); }
 @media (max-width: 640px) {
 	.hs-sheet { padding: 0; }
@@ -173,14 +175,11 @@ html, body {
    kartprick/fotoscen. Samma pannellum-kontrollstil som Karta-knappen. */
 .map-bar { display: flex; justify-content: flex-end; line-height: 0; }
 .map-close {
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	position: relative;
 	width: 26px;
 	height: 26px;
 	padding: 0;
-	font-size: 18px;
-	line-height: 1;
+	font-size: 0;
 	color: #000;
 	background: #fff;
 	border: 1px solid rgba(0, 0, 0, 0.4);

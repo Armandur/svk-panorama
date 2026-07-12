@@ -24,11 +24,12 @@
 /* Pico (editor/preview) sätter color direkt på p/h/li -> slår arvet från .hs-sheet-inner
    och texten blev grå. Tvinga arket att ärva den mörka färgen. */
 .hs-sheet-body p, .hs-sheet-body li, .hs-sheet-body h1, .hs-sheet-body h2, .hs-sheet-body h3, .hs-sheet-body h4, .hs-sheet-body blockquote { color: inherit; }
-/* Kryss ritas med två roterade streck (font-oberoende -> alltid exakt centrerat). */
+/* Återanvändbart centrerat stäng-kryss (ritat -> font-oberoende). Läggs som klass
+   `close-x` på en position:relative/absolute-knapp med font-size:0. Se viewer.css. */
+.close-x::before, .close-x::after { content: ""; position: absolute; top: 50%; left: 50%; width: 14px; height: 2px; background: currentColor; }
+.close-x::before { transform: translate(-50%, -50%) rotate(45deg); }
+.close-x::after { transform: translate(-50%, -50%) rotate(-45deg); }
 .hs-sheet-close { position: absolute; top: 0.5rem; right: 0.5rem; width: 30px; height: 30px; padding: 0; background: none; border: none; border-radius: 3px; font-size: 0; cursor: pointer; color: inherit; }
-.hs-sheet-close::before, .hs-sheet-close::after { content: ""; position: absolute; top: 50%; left: 50%; width: 15px; height: 2px; background: currentColor; }
-.hs-sheet-close::before { transform: translate(-50%, -50%) rotate(45deg); }
-.hs-sheet-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
 .hs-sheet-close:hover { background: rgba(0, 0, 0, 0.08); }
 @media (max-width: 640px) {
 	.hs-sheet { padding: 0; }
@@ -511,8 +512,8 @@ tr[data-preview-scene] { cursor: help; }
 .panorama-wrap .map-toggle[hidden] { display: none; }
 .preview-map .map-bar { display: flex; justify-content: flex-end; line-height: 0; }
 .preview-map .map-close {
-	display: flex; align-items: center; justify-content: center;
-	width: 26px; height: 26px; padding: 0; font-size: 18px; line-height: 1;
+	position: relative;
+	width: 26px; height: 26px; padding: 0; font-size: 0;
 	color: #000; background: #fff; border: 1px solid rgba(0, 0, 0, 0.4);
 	border-radius: 3px; cursor: pointer;
 }
