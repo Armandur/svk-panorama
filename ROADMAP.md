@@ -452,11 +452,11 @@ Faser (minst till störst):
       mot att behålla systemstackar som lätta default. Uppdatera `FONTS` i
       `tour-preview.js` + `viewer.css` + font-validering på servern.
 
-- [ ] **Uppdatera WORKFLOW.md.** Verkar inaktuell och stundtals för teknisk för sin
-      publik (fotografer) - t.ex. referenser till `js/geo.js` m.m. Skriv om till en
-      användarnära arbetsgång (den renderas ju nu som markdown på startsidan och är
-      redigerbar av super-admin). Skilj på fotografens steg-för-steg och de tekniska
-      utvecklarnoterna (de senare hör hemma i CLAUDE.md, inte WORKFLOW.md).
+- [x] **Uppdatera WORKFLOW.md KLAR (2026-07-12).** Omskriven till en fotograf-vänlig
+      guide i appens faktiska flöde (skapa/ladda upp -> placera/länka -> kalibrera/
+      hotspots -> förhandsvisa/ställ in -> publicera), utan dev-referenser (js/geo.js,
+      map.json, tangenter). Täcker nya funktioner: auto-tiling, mediebibliotek, rich
+      text, startriktning, tema-förinställningar, delningslänk, backup/import.
 
 ## Fas 4 - Team & egna domäner (multi-tenancy nivå 2)
 
