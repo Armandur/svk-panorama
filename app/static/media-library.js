@@ -191,16 +191,24 @@
 		cell.className = "media-cell";
 		var img = document.createElement("img");
 		img.src = it.thumb || it.url; img.alt = it.name; img.loading = "lazy"; img.title = it.name;
+		function lightbox() { if (window.openLightbox) openLightbox(it.url, it.name); }
 		if (opts.onPick) {
 			img.style.cursor = "pointer";
 			img.addEventListener("click", function () { opts.onPick(it); });
 		} else {
-			img.style.cursor = "default";
+			img.style.cursor = "zoom-in";
+			img.addEventListener("click", lightbox);
 		}
 		var del = document.createElement("button");
 		del.type = "button"; del.className = "media-del"; del.title = "Ta bort"; del.innerHTML = "&times;";
 		del.addEventListener("click", function (e) { e.stopPropagation(); opts.onDelete(it); });
-		cell.appendChild(img); cell.appendChild(del);
+		// Förhandsvisa-knapp (lightbox) i BÅDA lägen - i väljarläget plockar bildklick,
+		// så den här knappen ger förhandsvisning utan att välja.
+		var zoom = document.createElement("button");
+		zoom.type = "button"; zoom.className = "media-zoom"; zoom.title = "Förhandsvisa"; zoom.setAttribute("aria-label", "Förhandsvisa");
+		zoom.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="21" y2="21"/></svg>';
+		zoom.addEventListener("click", function (e) { e.stopPropagation(); lightbox(); });
+		cell.appendChild(img); cell.appendChild(del); cell.appendChild(zoom);
 
 		var cap = document.createElement("figcaption");
 		var dims = (it.width && it.height) ? it.width + "×" + it.height + " px" : "";

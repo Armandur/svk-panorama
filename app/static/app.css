@@ -1035,6 +1035,14 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .media-cell img:hover { opacity: 0.85; }
 .media-del { position: absolute; top: 2px; right: 2px; width: 1.5rem; height: 1.5rem; padding: 0; margin: 0; display: flex; align-items: center; justify-content: center; line-height: 1; border: none; border-radius: 50%; background: rgba(0, 0, 0, 0.6); color: #fff; cursor: pointer; font-size: 1.05rem; }
 .media-del:hover { background: var(--svk-danger); }
+.media-zoom { position: absolute; top: 2px; left: 2px; width: 1.5rem; height: 1.5rem; padding: 0; margin: 0; display: flex; align-items: center; justify-content: center; border: none; border-radius: 50%; background: rgba(0, 0, 0, 0.6); color: #fff; cursor: pointer; }
+.media-zoom:hover { background: rgba(0, 0, 0, 0.85); }
+
+/* Lightbox: fullstor förhandsvisning. */
+.media-lightbox { z-index: 6000; background: rgba(0, 0, 0, 0.85); }
+.media-lb-img { max-width: 94vw; max-height: 90vh; object-fit: contain; border-radius: 4px; box-shadow: 0 6px 40px rgba(0, 0, 0, 0.6); }
+.media-lb-close { position: fixed; top: 1rem; right: 1rem; width: 2.6rem; height: 2.6rem; display: flex; align-items: center; justify-content: center; padding: 0; margin: 0; border: none; border-radius: 50%; background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 1.6rem; cursor: pointer; }
+.media-lb-close:hover { background: rgba(0, 0, 0, 0.9); }
 
 /* Mediebibliotekets filter-väljare (både modal och hanteringsvy). */
 .media-filter, .mgr-filter-wrap select { width: auto; margin: 0; display: inline-block; }
