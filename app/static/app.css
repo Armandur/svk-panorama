@@ -618,7 +618,10 @@ tr[data-preview-scene] { cursor: help; }
 .preset-edit-body { display: flex; flex-direction: column; gap: 0.6rem; }
 .preset-edit-body label { display: block; font-size: 0.9rem; margin: 0; }
 .preset-edit-body input[type="text"], .preset-edit-body input[type="number"], .preset-edit-body select, .preset-edit-body textarea { width: 100%; margin: 0.2rem 0 0; }
-.preset-edit-body input[type="color"] { width: 100%; height: 2.2rem; margin-top: 0.2rem; padding: 2px; }
+/* Coloris-färgfält: swatchen kvadratisk (aspect-ratio) och full inputhöjd, som editorn. */
+.preset-edit-body .clr-field { display: block; width: 100%; }
+.preset-edit-body .clr-field .coloris-input { width: 100%; padding-right: 2.8rem; }
+.preset-edit-body .clr-field button { width: auto; aspect-ratio: 1; right: 1px; height: calc(100% - 2px); top: 1px; transform: none; border-radius: 3px; }
 .pe-row { display: flex; gap: 0.8rem; }
 .pe-row > label, .pe-row > .pe-field { flex: 1; }
 .pe-field-label { display: block; font-size: 0.9rem; }
