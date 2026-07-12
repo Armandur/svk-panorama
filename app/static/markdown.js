@@ -102,6 +102,11 @@
 	function closeSheet() { if (_sheet) _sheet.hidden = true; }
 	window.openHsSheet = function (md) {
 		if (!_sheet) buildSheet();
+		// I pannellums helskärm renderas bara det fullskärmade elementet + dess barn.
+		// Arket ligger annars på body (utanför) -> flytta in det i fullscreen-elementet
+		// vid öppning så "Läs mer" fungerar även i helskärm (som karta/branding-relocate).
+		var fs = document.fullscreenElement || document.webkitFullscreenElement;
+		(fs || document.body).appendChild(_sheet);
 		_sheetBody.innerHTML = window.renderMarkdown(md);
 		_sheetBody.scrollTop = 0;
 		_sheet.hidden = false;

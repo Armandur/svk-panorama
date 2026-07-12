@@ -643,11 +643,13 @@
 	// --- Karta: fäll in/ut (samma beteende som runtime-vieweren) ------------
 	const previewMapToggle = document.getElementById("preview-map-toggle");
 	const previewMapClose = document.getElementById("preview-map-close");
+	// Dölj branding-överlägget helt när kartan är utfälld (samma som runtime).
+	function setBrandingForMap(mapOpen) { if (brandingEl) brandingEl.style.display = mapOpen ? "none" : ""; }
 	if (previewMapToggle && previewMap) {
-		previewMapToggle.addEventListener("click", function () { previewMap.hidden = false; previewMapToggle.hidden = true; });
+		previewMapToggle.addEventListener("click", function () { previewMap.hidden = false; previewMapToggle.hidden = true; setBrandingForMap(true); });
 	}
 	if (previewMapClose && previewMap) {
-		previewMapClose.addEventListener("click", function () { previewMap.hidden = true; if (previewMapToggle) previewMapToggle.hidden = false; });
+		previewMapClose.addEventListener("click", function () { previewMap.hidden = true; if (previewMapToggle) previewMapToggle.hidden = false; setBrandingForMap(false); });
 	}
 
 	// --- Start ---

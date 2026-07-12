@@ -154,13 +154,18 @@
 
 	viewer.on("scenechange", markCurrent);
 
+	// När kartan är utfälld döljs branding-överlägget helt (annars ligger det
+	// transparent ovanpå den transparenta kartpopupen -> rörigt).
+	function setBrandingForMap(mapOpen) { if (brandingEl) brandingEl.style.display = mapOpen ? "none" : ""; }
 	showBtn.addEventListener("click", function () {
 		container.hidden = false;
 		showBtn.hidden = true;
+		setBrandingForMap(true);
 	});
 	closeBtn.addEventListener("click", function () {
 		container.hidden = true;
 		showBtn.hidden = false;
+		setBrandingForMap(false);
 	});
 
 	// Pannellums helskärm renderar bara det fullskärmade elementet + dess barn.

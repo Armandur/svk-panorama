@@ -21,8 +21,10 @@ html, body {
 
 /* Scennamn-boxen (pannellums title-box) sitter default tryckt mot vänsterkanten
    (left:0, rundad bara till höger). Ge den samma 4px-avstånd och fulla 3px-radie
-   som pannellums övriga kontroller så kanterna blir inbördes konsekventa. */
-.pnlm-panorama-info { left: 4px; border-radius: 3px; }
+   som pannellums övriga kontroller så kanterna blir inbördes konsekventa.
+   padding-right:5px matchar title-boxens padding-left:5px (pannellum har annars
+   10px höger -> osymmetriskt). */
+.pnlm-panorama-info { left: 4px; border-radius: 3px; padding-right: 5px; }
 
 /* Markdown i info-hotspot-tooltips: bredare + normal radbrytning (korta ord bryts inte). */
 .pnlm-tooltip span.hs-md {
@@ -106,12 +108,14 @@ html, body {
 .tour-branding.branding-small { max-width: 130px; font-size: 0.8em; }
 .tour-branding.branding-medium { max-width: 200px; font-size: 0.95em; }
 .tour-branding.branding-large { max-width: 300px; font-size: 1.15em; }
-/* Nere-vänster hamnar ovanför ev. scennamn (info-boxen ~31px vid bottom:4px) så
-   de inte täcker varandra. */
-.tour-branding.branding-bottom-left { bottom: 40px; left: 4px; }
+/* Positioner viker undan för pannellums inbyggda kontroller med vårt 4px-mellanrum:
+   nere-vänster ovanför scentiteln (info-box topp ~35px), uppe-vänster till höger om
+   zoom-kolumnen (slutar ~32px), uppe-höger under Karta-knappen (slutar ~30px).
+   Nere-höger är fritt. */
+.tour-branding.branding-bottom-left { bottom: 39px; left: 4px; }
 .tour-branding.branding-bottom-right { bottom: 4px; right: 4px; }
-.tour-branding.branding-top-left { top: 4px; left: 4px; }
-.tour-branding.branding-top-right { top: 4px; right: 4px; }
+.tour-branding.branding-top-left { top: 4px; left: 36px; }
+.tour-branding.branding-top-right { top: 34px; right: 4px; }
 
 /* "Karta"-knappen som öppnar överlägget. Stylad som pannellums inbyggda kontroller
    (vit, tunn kant, 3px radie) och placerad på samma kantavstånd (4px). */
@@ -147,7 +151,9 @@ html, body {
 	background: rgba(0, 0, 0, 0.55);
 	border: 1px solid rgba(0, 0, 0, 0.4);
 	border-radius: 3px;
-	padding: 6px;
+	/* padding = gap (4px) -> stäng-knappen får samma avstånd till popupkanten som
+	   till kartan under. */
+	padding: 4px;
 	backdrop-filter: blur(2px);
 	display: flex;
 	flex-direction: column;
@@ -184,7 +190,8 @@ html, body {
 	display: block;
 	width: 100%;
 	height: auto;
-	border-radius: 4px;
+	/* Något mindre radie än den rundade rutan runtom (3px) så hörnen lirar. */
+	border-radius: 2px;
 }
 
 #map-dots {
