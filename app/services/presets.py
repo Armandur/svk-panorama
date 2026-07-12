@@ -123,6 +123,18 @@ def _default_row(db: Session, Model: Any, owner_id: int) -> Any:
     )
 
 
+def _guard_name_clash(db: Session, Model: Any, owner_id: int, name: str, preset_id: int) -> None:
+    """Namnbyte får inte kollidera med en ANNAN mall - annars kan den namn-baserade
+    upserten (_save, "Spara som mall") senare träffa fel rad. Kastar ValueError."""
+    clash = (
+        db.query(Model)
+        .filter(Model.owner_id == owner_id, Model.name == name, Model.id != preset_id)
+        .first()
+    )
+    if clash is not None:
+        raise ValueError("Namnet används redan av en annan mall")
+
+
 # --- Tema-presets ---
 def list_presets(db: Session, owner_id: int) -> list[dict[str, Any]]:
     return _list(db, ThemePreset, owner_id)
@@ -137,7 +149,9 @@ def update_preset(db: Session, owner_id: int, preset_id: int, name: str, config:
     row = db.query(ThemePreset).filter(ThemePreset.owner_id == owner_id, ThemePreset.id == preset_id).first()
     if row is None:
         return None
-    row.name = (name or "").strip()[:120] or row.name
+    new_name = (name or "").strip()[:120] or row.name
+    _guard_name_clash(db, ThemePreset, owner_id, new_name, preset_id)
+    row.name = new_name
     row.config = json.dumps(sanitize_config(config), ensure_ascii=False)
     db.commit()
     return _dump(row)
@@ -173,15 +187,18 @@ def save_branding_preset(db: Session, owner_id: int, name: str, config: dict[str
 
 
 def update_branding_preset(db: Session, owner_id: int, preset_id: int, name: str, config: dict[str, Any]) -> dict[str, Any] | None:
-    """Redigera en befintlig branding-mall (id). None om saknas eller tom content."""
+    """Redigera en befintlig branding-mall (id). None = hittades inte (404).
+    Kastar ValueError vid tom content eller namnkollision (400)."""
     row = db.query(BrandingPreset).filter(BrandingPreset.owner_id == owner_id, BrandingPreset.id == preset_id).first()
     if row is None:
         return None
     c = config or {}
     sb = sanitize_branding(c.get("content"), c.get("size"), c.get("position"))
     if not sb:
-        return None
-    row.name = (name or "").strip()[:120] or row.name
+        raise ValueError("Branding får inte vara tom")
+    new_name = (name or "").strip()[:120] or row.name
+    _guard_name_clash(db, BrandingPreset, owner_id, new_name, preset_id)
+    row.name = new_name
     row.config = json.dumps(sb, ensure_ascii=False)
     db.commit()
     return _dump(row)

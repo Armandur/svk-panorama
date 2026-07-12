@@ -25,7 +25,10 @@
 	function jpost(url, bodyObj) {
 		var opt = { method: "POST", headers: { "X-CSRF-Token": csrf() } };
 		if (bodyObj) { opt.headers["Content-Type"] = "application/json"; opt.body = JSON.stringify(bodyObj); }
-		return fetch(url, opt).then(function (r) { if (!r.ok) throw new Error(); return r; });
+		return fetch(url, opt).then(function (r) {
+			if (!r.ok) return r.json().then(function (d) { throw new Error((d && d.detail) || "Något gick fel"); }, function () { throw new Error("Något gick fel"); });
+			return r;
+		});
 	}
 
 	// --- Datakällor ---
@@ -253,7 +256,7 @@
 			};
 			jpost(isNew ? "/presets" : "/presets/" + p.id, { name: name, config: config })
 				.then(function () { toast("Tema-mall sparad", "ok"); closeEdit(); reload(); })
-				.catch(function () { toast("Kunde inte spara", "error"); });
+				.catch(function (e) { toast(e.message || "Kunde inte spara", "error"); });
 		});
 	}
 
@@ -297,7 +300,7 @@
 			if (!q(".pe-content").value.trim()) { toast("Innehåll krävs", "error"); return; }
 			jpost(isNew ? "/branding-presets" : "/branding-presets/" + p.id, { name: name, config: { content: q(".pe-content").value, size: q(".pe-size").value, position: q(".pe-pos").value } })
 				.then(function () { toast("Branding-mall sparad", "ok"); closeEdit(); reload(); })
-				.catch(function () { toast("Kunde inte spara", "error"); });
+				.catch(function (e) { toast(e.message || "Kunde inte spara", "error"); });
 		});
 	}
 

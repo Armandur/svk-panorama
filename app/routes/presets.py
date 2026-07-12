@@ -56,7 +56,10 @@ async def update_preset(
     name = (data.get("name") or "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="Namn krävs")
-    preset = presets.update_preset(db, user.id, preset_id, name, data.get("config") or {})
+    try:
+        preset = presets.update_preset(db, user.id, preset_id, name, data.get("config") or {})
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     if preset is None:
         raise HTTPException(status_code=404, detail="Förinställningen hittades inte")
     return JSONResponse({"preset": preset})
@@ -123,9 +126,12 @@ async def update_branding(
     name = (data.get("name") or "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="Namn krävs")
-    preset = presets.update_branding_preset(db, user.id, preset_id, name, data.get("config") or {})
+    try:
+        preset = presets.update_branding_preset(db, user.id, preset_id, name, data.get("config") or {})
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     if preset is None:
-        raise HTTPException(status_code=400, detail="Branding-mallen hittades inte eller är tom")
+        raise HTTPException(status_code=404, detail="Branding-mallen hittades inte")
     return JSONResponse({"preset": preset})
 
 
