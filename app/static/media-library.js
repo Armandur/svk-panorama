@@ -450,8 +450,10 @@
 				grid.appendChild(buildCell(it, {
 					onPick: opts.onPick ? function (picked) { opts.onPick(picked.url); } : null,
 					onDelete: remove,
-					selection: selection,
-					onSelectChange: updateBatch,
+					// Batch-markering bara i hanteringsläget (/media) - INTE i väljar-
+					// modalen (där man plockar EN bild; massradering hör inte hemma där).
+					selection: opts.onPick ? null : selection,
+					onSelectChange: opts.onPick ? null : updateBatch,
 				}));
 			});
 			updateBatch();

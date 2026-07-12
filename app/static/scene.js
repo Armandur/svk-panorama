@@ -324,6 +324,7 @@
 		el.addEventListener("input", function () { draggingSlider = true; try { setter(parseFloat(el.value)); } catch (e) { /* ignore */ } });
 		el.addEventListener("change", function () { draggingSlider = false; });
 		el.addEventListener("pointerup", function () { draggingSlider = false; });
+		el.addEventListener("pointercancel", function () { draggingSlider = false; });
 	}
 	wireSlider(yawSlider, function (v) { viewer.setYaw(v, false); });
 	wireSlider(pitchSlider, function (v) { viewer.setPitch(v, false); });
@@ -976,8 +977,15 @@
 				if (s.cr == null) delete calibRef[id]; else calibRef[id] = s.cr;
 				if (s.ti == null) delete tour.scenes[id].title; else tour.scenes[id].title = s.ti;
 				if (s.ro == null) delete tour.scenes[id].horizonRoll; else tour.scenes[id].horizonRoll = s.ro;
+				if (s.ya == null) delete tour.scenes[id].yaw; else tour.scenes[id].yaw = s.ya;
+				if (s.pi == null) delete tour.scenes[id].pitch; else tour.scenes[id].pitch = s.pi;
 				const cfg = viewer.getConfig().scenes[id];
-				if (cfg) { cfg.hotSpots = cloneHs(s.hs); cfg.horizonRoll = s.ro || 0; }
+				if (cfg) {
+					cfg.hotSpots = cloneHs(s.hs);
+					cfg.horizonRoll = s.ro || 0;
+					if (s.ya == null) delete cfg.yaw; else cfg.yaw = s.ya;
+					if (s.pi == null) delete cfg.pitch; else cfg.pitch = s.pi;
+				}
 				tour.scenes[id].hotSpots = s.hs;
 			});
 			viewer.loadScene(viewer.getScene());
