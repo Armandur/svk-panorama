@@ -16,6 +16,23 @@ from app.database import ThemePreset
 _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 _FONTS = {"sans", "serif", "mono", "humanist"}
 _MAP_SIZES = {"small", "medium", "large"}
+_BRANDING_SIZES = {"small", "medium", "large"}
+_BRANDING_POS = {"bottom-left", "bottom-right", "top-left", "top-right"}
+_BRANDING_MAX = 2000
+
+
+def sanitize_branding(content: Any, size: Any, position: Any) -> dict[str, Any] | None:
+    """Branding-block (logotyp/text/länk som markdown) för vieweren. Rå markdown
+    lagras (renderas + DOMPurify-saneras vid visning som hotspots). None = ingen."""
+    content = (content or "")
+    content = content.strip() if isinstance(content, str) else ""
+    if not content:
+        return None
+    return {
+        "content": content[:_BRANDING_MAX],
+        "size": size if size in _BRANDING_SIZES else "medium",
+        "position": position if position in _BRANDING_POS else "bottom-left",
+    }
 
 
 def _hex(v: Any, fallback: str) -> str:
@@ -32,7 +49,7 @@ def sanitize_config(c: dict[str, Any]) -> dict[str, Any]:
     ar = c.get("autoRotate")
     auto_rotate: Any = ar if (isinstance(ar, (int, float)) and -20 <= ar <= 20) else False
     th = c.get("theme") or {}
-    return {
+    out: dict[str, Any] = {
         "autoRotate": auto_rotate,
         "autoRotateInactivityDelay": _clamp_int(c.get("autoRotateInactivityDelay"), 2000, 0, 60000),
         "sceneFadeDuration": _clamp_int(c.get("sceneFadeDuration"), 1500, 0, 10000),
@@ -43,6 +60,12 @@ def sanitize_config(c: dict[str, Any]) -> dict[str, Any]:
             "currentColor": _hex(th.get("currentColor"), "#8b0000"),
         },
     }
+    b = c.get("branding")
+    if isinstance(b, dict):
+        sb = sanitize_branding(b.get("content"), b.get("size"), b.get("position"))
+        if sb:
+            out["branding"] = sb
+    return out
 
 
 def _dump(row: ThemePreset) -> dict[str, Any]:

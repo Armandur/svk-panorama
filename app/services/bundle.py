@@ -57,7 +57,8 @@ def forget_job(slug: str) -> None:
 
 
 def _media_refs(tour: dict) -> set[tuple[int, str]]:
-    """(owner_id, filnamn) för alla poolbilder som refereras i hotspot-markdown."""
+    """(owner_id, filnamn) för alla poolbilder som refereras i hotspot-markdown
+    OCH i branding-blocket (logotyp)."""
     refs: set[tuple[int, str]] = set()
     for scene in tour.get("scenes", {}).values():
         for hs in scene.get("hotSpots", []):
@@ -66,6 +67,10 @@ def _media_refs(tour: dict) -> set[tuple[int, str]]:
                 if isinstance(val, str):
                     for m in _MEDIA_REF_RE.finditer(val):
                         refs.add((int(m.group(1)), m.group(2)))
+    branding = (tour.get("default") or {}).get("branding") or {}
+    if isinstance(branding.get("content"), str):
+        for m in _MEDIA_REF_RE.finditer(branding["content"]):
+            refs.add((int(m.group(1)), m.group(2)))
     return refs
 
 
@@ -82,7 +87,11 @@ def _relativize(slug: str, tour: dict) -> dict:
             for key in ("text", "body"):
                 if isinstance(hs.get(key), str):
                     hs[key] = _MEDIA_REF_RE.sub(r"media/\2", hs[key])
-    tour.setdefault("default", {})["editorMode"] = False
+    default = tour.setdefault("default", {})
+    branding = default.get("branding") or {}
+    if isinstance(branding.get("content"), str):
+        branding["content"] = _MEDIA_REF_RE.sub(r"media/\2", branding["content"])
+    default["editorMode"] = False
     return tour
 
 

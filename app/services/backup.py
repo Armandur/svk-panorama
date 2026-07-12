@@ -72,6 +72,10 @@ def _media_refs(tour: dict) -> set[tuple[int, str]]:
                 if isinstance(v, str):
                     for m in _MEDIA_REF_RE.finditer(v):
                         refs.add((int(m.group(1)), m.group(2)))
+    branding = (tour.get("default") or {}).get("branding") or {}
+    if isinstance(branding.get("content"), str):
+        for m in _MEDIA_REF_RE.finditer(branding["content"]):
+            refs.add((int(m.group(1)), m.group(2)))
     return refs
 
 
