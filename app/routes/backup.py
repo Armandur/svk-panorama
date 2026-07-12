@@ -57,8 +57,13 @@ async def import_backup(
     """Importera ett projektarkiv (zip) som ett nytt projekt ägt av användaren."""
     tmp = Path(tempfile.mkstemp(suffix=".zip")[1])
     try:
+        cap = backup.MAX_BACKUP_MB * 1024 * 1024
+        size = 0
         with open(tmp, "wb") as out:
             while chunk := await file.read(1024 * 1024):
+                size += len(chunk)
+                if size > cap:
+                    raise HTTPException(status_code=413, detail=f"Arkivet är för stort (max {backup.MAX_BACKUP_MB} MB).")
                 out.write(chunk)
         try:
             project = backup.import_project(tmp, user, db)

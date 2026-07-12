@@ -176,22 +176,26 @@ def test_backup_security():
         buf.seek(0)
         return _zip.ZipFile(buf)
 
-    # Zip-slip: farliga arcnames avvisas.
-    for bad in ("../evil.txt", "/etc/passwd", "a/../b", "images/../../x", "..\\evil"):
+    # Zip-slip + otillåtna filtyper + media-undermapp avvisas.
+    for bad in ("../evil.txt", "/etc/passwd", "a/../b", "images/../../x", "..\\evil",
+                "media/x.html", "logo.svg", "images/a.js", "media/sub/x.jpg", "x.php"):
         try:
             _validate_members(zf_with(bad))
             check(f"avvisar '{bad}'", False)
         except ValueError:
             check(f"avvisar '{bad}'", True)
-    # Ofarliga vägar tillåts.
+    # Ofarliga vägar/filtyper tillåts.
     ok = True
     try:
+        _validate_members(zf_with("tour.json"))
         _validate_members(zf_with("images/1.jpg"))
+        _validate_members(zf_with("map.png"))
         _validate_members(zf_with("tiles/2/f0_0.jpg"))
+        _validate_members(zf_with("tiles/manifest.json"))
         _validate_members(zf_with("media/abc-x.jpg"))
     except ValueError:
         ok = False
-    check("tillåter normala vägar", ok)
+    check("tillåter normala vägar/filtyper", ok)
 
     tour = {"scenes": {"1": {"hotSpots": [
         {"text": "![](/media/7/ab-x.jpg)", "body": "igen /media/7/y.png"},

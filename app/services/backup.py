@@ -33,6 +33,13 @@ _MEDIA_REF_RE = re.compile(r"/media/(\d+)/([A-Za-z0-9._-]+)")
 # Tillåtna arcnames i arkivet (ingen absolut väg / ".." / konstiga tecken).
 _SAFE_ARC_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*$")
 _STORED_EXT = {".jpg", ".jpeg", ".png", ".tif"}
+# Import: whitelist filtyper (blockar .html/.svg/.js m.m. som annars kunde serveras
+# same-origin via capability-URL:er) + magic-koll på bilder + zip-bomb-tak.
+_ALLOWED_EXT = {".json", ".jpg", ".jpeg", ".png", ".tif", ".tiff"}
+_IMAGE_EXT = {".jpg", ".jpeg", ".png"}
+_JPEG_MAGIC = b"\xff\xd8\xff"
+_PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
+MAX_BACKUP_MB = int(os.environ.get("SVK_MAX_BACKUP_MB", "3000"))
 
 _jobs: dict[str, dict[str, Any]] = {}
 _lock = threading.Lock()
@@ -130,13 +137,25 @@ def state(slug: str) -> dict[str, Any]:
 
 # --- Import ---------------------------------------------------------------
 def _validate_members(zf: zipfile.ZipFile) -> None:
-    """Zip-slip-skydd: alla arcnames måste vara relativa och ofarliga."""
+    """Förvalidering av arkivet FÖRE extrahering: traversal-säkra arcnames,
+    whitelistade filtyper, media/ utan undermappar, och tak på total uppackad
+    storlek (zip-bomb-skydd)."""
+    total = 0
+    cap = MAX_BACKUP_MB * 1024 * 1024
     for info in zf.infolist():
         n = info.filename
         if n.endswith("/"):
             continue
         if n.startswith("/") or ".." in n.split("/") or not _SAFE_ARC_RE.match(n):
             raise ValueError(f"Osäker sökväg i arkivet: {n}")
+        ext = os.path.splitext(n)[1].lower()
+        if ext not in _ALLOWED_EXT:
+            raise ValueError(f"Otillåten filtyp i arkivet: {n}")
+        if n.startswith("media/") and "/" in n[len("media/"):]:
+            raise ValueError(f"Osäkert medienamn: {n}")
+        total += info.file_size
+        if total > cap:
+            raise ValueError(f"Arkivet är för stort (max {MAX_BACKUP_MB} MB uppackat).")
 
 
 def _unique_slug(db, base: str) -> str:
@@ -169,32 +188,47 @@ def import_project(src_zip: Path, user, db) -> Project:
         project = Project(slug=slug, name=name, owner_id=user.id)
         db.add(project)
         db.commit()
-
-        ensure_project_structure(slug)
-        pd = project_dir(slug).resolve()
-        pool = media.owner_dir(user.id)
-
-        for info in z.infolist():
-            n = info.filename
-            if n.endswith("/") or n == "project.json":
-                continue
-            if n.startswith("media/"):
-                mname = n[len("media/"):]
-                if "/" in mname or not mname:
-                    raise ValueError(f"Osäkert medienamn: {n}")
-                pool.mkdir(parents=True, exist_ok=True)
-                with z.open(info) as srcf, open(pool / mname, "wb") as dst:
-                    shutil.copyfileobj(srcf, dst)
-                continue
-            target = (pd / n).resolve()
-            if os.path.commonpath([str(pd), str(target)]) != str(pd):
-                raise ValueError(f"Osäker sökväg i arkivet: {n}")
-            target.parent.mkdir(parents=True, exist_ok=True)
-            with z.open(info) as srcf, open(target, "wb") as dst:
-                shutil.copyfileobj(srcf, dst)
-
-    _rewrite_refs(slug, old_slug, user.id)
+        # Allt efter DB-raden: rulla tillbaka (radera rad + halvskriven mapp) om
+        # extrahering/omskrivning kraschar, så ingen spöktur blir kvar.
+        try:
+            _extract(z, slug, user.id)
+            _rewrite_refs(slug, old_slug, user.id)
+        except Exception as exc:  # noqa: BLE001 - rollback + rent fel till klienten
+            db.delete(project)
+            db.commit()
+            shutil.rmtree(project_dir(slug), ignore_errors=True)
+            if isinstance(exc, ValueError):
+                raise
+            raise ValueError("Importen misslyckades - arkivet kunde inte packas upp.") from exc
     return project
+
+
+def _extract(z: zipfile.ZipFile, slug: str, owner_id: int) -> None:
+    """Extrahera arkivet (efter _validate_members). Magic-kollar bilder så en
+    riggad `.jpg`/`.png` som egentligen är HTML avvisas."""
+    ensure_project_structure(slug)
+    pd = project_dir(slug).resolve()
+    pool = media.owner_dir(owner_id)
+    for info in z.infolist():
+        n = info.filename
+        if n.endswith("/") or n == "project.json":
+            continue
+        if n.startswith("media/"):
+            pool.mkdir(parents=True, exist_ok=True)
+            dest = pool / n[len("media/"):]
+        else:
+            dest = (pd / n).resolve()
+            if os.path.commonpath([str(pd), str(dest)]) != str(pd):
+                raise ValueError(f"Osäker sökväg i arkivet: {n}")
+            dest.parent.mkdir(parents=True, exist_ok=True)
+        ext = os.path.splitext(n)[1].lower()
+        with z.open(info) as srcf:
+            head = srcf.read(8)
+            if ext in _IMAGE_EXT and not (head.startswith(_JPEG_MAGIC) or head.startswith(_PNG_MAGIC)):
+                raise ValueError(f"{n} är inte en giltig bild.")
+            with open(dest, "wb") as out:
+                out.write(head)
+                shutil.copyfileobj(srcf, out)
 
 
 def _rewrite_refs(new_slug: str, old_slug: str, owner_id: int) -> None:
