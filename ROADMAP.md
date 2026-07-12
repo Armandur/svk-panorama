@@ -359,6 +359,24 @@ Faser (minst till störst):
       scener utan tiles faller till preview. Fixade även att aktuell scen inte
       markerades på kartan förrän man bytte scen (`buildDots` kallar nu `markCurrent`).
 
+- [ ] **Scen-hotspots: rendera markdown + dubbla rutor (text ovanför, "leder till"-etikett
+      nedanför).** Rasmus 2026-07-12. Två delar:
+      (1) BUGG: markdown-text i en scen-hotspot (type=scene) renderas INTE som MD i
+      /preview/viewern. Orsak: `attachHsTooltips` (markdown.js) villkorar MD-tooltipen på
+      `h.type === "info"` -> scen/URL-hotspots får bara pannellums default-D()-rendering
+      (nu escapad = platt text). Fix: låt attachHsTooltips MD-rendera även scen-hotspots
+      med text.
+      (2) UX: scen-hotspots ska visa teaser-texten (MD) OVANFÖR hotspoten och en
+      "-> leder till Scen X"-etikett NEDANFÖR - i BÅDE /scenes-editorn och /preview (idag
+      måste man till /preview för att se texten). Editorns `cloneHs` (scene.js) skriver
+      idag ÖVER scen-hotspotens text med "Scen X"-etiketten -> användarens text göms.
+      Ändra så texten behålls (teaser ovanför) och scen-etiketten läggs som en separat
+      ruta nedanför. Kräver: ny/utökad createTooltipFunc i markdown.js som kan rita en
+      etikett under hotspoten (positiv marginTop) utöver teasern ovanför; attachHsTooltips
+      behöver målscenens namn (`tour.scenes[sceneId].title`) - resolva före anropet i
+      viewer.js/tour-preview.js/scene.js. Fiddligt pannellum-tooltip-arbete över 4 filer
+      -> browser-verifiera (shot/Playwright) i editor, /preview, /view och bundle.
+
 - [ ] **BUGG: grå text i expanderad hotspot i scenvyn.** I `/projects/X/scenes` är
       texten i det expanderade hotspot-arket (`.hs-sheet` / `.hs-sheet-body.markdown-body`,
       byggs i `app/static/markdown.js` `openHsSheet`) grå i stället for svart. Färgerna
