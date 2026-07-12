@@ -38,21 +38,23 @@
 		<label class="fullres-label">
 			<input type="checkbox" id="ar-enabled" role="switch"> Rotera automatiskt
 		</label>
-		<label for="ar-speed">Hastighet (grader/sek)</label>
-		<div class="roll-row">
-			<input type="range" id="ar-speed" min="0.5" max="10" step="0.5" value="2">
-			<input type="number" id="ar-speed-num" class="roll-num" min="0.5" max="10" step="0.5" value="2">
-		</div>
-		<label id="ar-dir-label">Rotationsriktning</label>
-		<div class="dir-toggle">
-			<span id="ar-dir-left">Vänster</span>
-			<input type="checkbox" id="ar-dir-toggle" role="switch" aria-label="Rotationsriktning (vänster/höger)">
-			<span id="ar-dir-right">Höger</span>
-		</div>
-		<label for="ar-delay">Återuppta efter inaktivitet (sek)</label>
-		<div class="roll-row">
-			<input type="range" id="ar-delay" min="0" max="15" step="0.5" value="2">
-			<input type="number" id="ar-delay-num" class="roll-num" min="0" max="15" step="0.5" value="2">
+		<div id="ar-sub">
+			<label for="ar-speed">Hastighet (grader/sek)</label>
+			<div class="roll-row">
+				<input type="range" id="ar-speed" min="0.5" max="10" step="0.5" value="2">
+				<input type="number" id="ar-speed-num" class="roll-num" min="0.5" max="10" step="0.5" value="2">
+			</div>
+			<label id="ar-dir-label">Rotationsriktning</label>
+			<div class="dir-toggle">
+				<span id="ar-dir-left">Vänster</span>
+				<input type="checkbox" id="ar-dir-toggle" role="switch" aria-label="Rotationsriktning (vänster/höger)">
+				<span id="ar-dir-right">Höger</span>
+			</div>
+			<label for="ar-delay">Återuppta efter inaktivitet (sek)</label>
+			<div class="roll-row">
+				<input type="range" id="ar-delay" min="0" max="15" step="0.5" value="2">
+				<input type="number" id="ar-delay-num" class="roll-num" min="0" max="15" step="0.5" value="2">
+			</div>
 		</div>
 	</article>
 

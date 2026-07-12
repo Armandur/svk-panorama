@@ -255,6 +255,16 @@
 		else viewer.stopAutoRotate();
 	}
 
+	// Gråa ut/inaktivera hastighet, riktning och återuppta när autorotate är av -
+	// de har ingen effekt då (samma som tema-mall-editorn).
+	function syncArState() {
+		var on = arEnabled.checked;
+		var sub = document.getElementById("ar-sub");
+		if (sub) sub.classList.toggle("ar-dim", !on);
+		[arSpeed, arSpeedNum, arDelay, arDelayNum, arDirToggle].forEach(function (el) { if (el) el.disabled = !on; });
+	}
+	syncArState();
+
 	// --- Karta ---
 	const dotEls = {};
 	function buildDots() {
@@ -324,7 +334,7 @@
 		num.addEventListener("input", function () { range.value = num.value; onChange(); });
 	}
 
-	arEnabled.addEventListener("change", function () { applyAutoRotate(); onSettingChange(false); });
+	arEnabled.addEventListener("change", function () { applyAutoRotate(); syncArState(); onSettingChange(false); });
 	linkPair(arSpeed, arSpeedNum, function () { applyAutoRotate(); onSettingChange(false); });
 	arDirToggle.addEventListener("change", function () { updateArDirLabels(); applyAutoRotate(); onSettingChange(false); });
 	linkPair(arDelay, arDelayNum, function () { onSettingChange(true); });
@@ -420,6 +430,7 @@
 			themeDot.value = th.dotColor || "#666666";
 			themeCurrent.value = th.currentColor || "#8b0000";
 			updateArDirLabels();
+			syncArState();
 			applyThemeLive();
 			setDirty(true);
 			rebuildKeepView();
