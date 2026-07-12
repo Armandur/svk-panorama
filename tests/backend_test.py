@@ -172,6 +172,9 @@ def test_media_pool():
         check("list_pool mått", items[0]["width"] == 40 and items[0]["height"] == 30)
         check("list_pool url", items[0]["url"] == f"/media/1/{name}")
         check("list_pool thumb-url", items[0]["thumb"] == f"/media/1/thumb/{name}")
+        # Visningsnamn = originalnamnet (saniterat) utan hex-prefix.
+        check("display_name strippar hex-prefix", media.display_name(name) == "min-bild.jpg")
+        check("list_pool orig", items[0]["orig"] == "min-bild.jpg")
         # Tumnagel genereras + cachas, och ligger i dold .thumbs (ej listad).
         th = media.ensure_thumb(1, name)
         check("ensure_thumb skapar fil", th is not None and th.is_file())

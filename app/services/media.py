@@ -22,6 +22,13 @@ from app.services.project_files import read_tour
 # basnamn). Används för usage-scan och bundle-relativisering.
 _NAME_CHARS = r"[A-Za-z0-9._-]+"
 _UNSAFE_RE = re.compile(r"[^A-Za-z0-9._-]+")
+# Lagrat namn = token_hex(6) + "-" + saniterat originalnamn. Strippa prefixet för
+# ett läsbart visningsnamn (originalfilen, saniterad).
+_HEX_PREFIX_RE = re.compile(r"^[0-9a-f]{12}-")
+
+
+def display_name(name: str) -> str:
+    return _HEX_PREFIX_RE.sub("", name)
 
 
 def _safe_suffix(orig_name: str) -> str:
@@ -116,6 +123,7 @@ def list_pool(owner_id: int) -> list[dict[str, Any]]:
                 w, h = _dimensions(f)
                 items.append({
                     "name": f.name,
+                    "orig": display_name(f.name),
                     "url": media_url(owner_id, f.name),
                     "thumb": thumb_url(owner_id, f.name),
                     "size": st.st_size,

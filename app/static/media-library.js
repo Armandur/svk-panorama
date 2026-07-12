@@ -226,9 +226,16 @@
 		}
 
 		var cap = document.createElement("figcaption");
+		var fname = document.createElement("div");
+		fname.className = "media-fname";
+		fname.textContent = it.orig || it.name;
+		fname.title = it.orig || it.name;
+		cap.appendChild(fname);
 		var dims = (it.width && it.height) ? it.width + "×" + it.height + " px" : "";
-		var meta = [dims, fmtSize(it.size), fmtDate(it.mtime)].filter(Boolean).join(" · ");
-		cap.innerHTML = '<div class="media-meta">' + meta + "</div>";
+		var metaEl = document.createElement("div");
+		metaEl.className = "media-meta";
+		metaEl.textContent = [dims, fmtSize(it.size), fmtDate(it.mtime)].filter(Boolean).join(" · ");
+		cap.appendChild(metaEl);
 		cap.appendChild(buildUsage(it.usage));
 		fig.appendChild(cell); fig.appendChild(cap);
 		return fig;
@@ -245,6 +252,7 @@
 		container.innerHTML =
 			'<div class="media-actions">' +
 			'<button type="button" class="secondary lib-upload">Ladda upp bilder</button>' +
+			'<input type="search" class="lib-search" placeholder="Sök filnamn..." aria-label="Sök filnamn">' +
 			'<span class="lib-filter-wrap"></span>' +
 			'<button type="button" class="secondary outline lib-view"></button>' +
 			'</div>' +
@@ -265,6 +273,13 @@
 		container.querySelector(".lib-hint").textContent = "JPG eller PNG, max " + maxMb() + " MB per bild.";
 		function err(m) { errEl.textContent = m || ""; errEl.hidden = !m; }
 		container.querySelector(".lib-upload").addEventListener("click", function () { fileInput.click(); });
+
+		// Fritextsök på filnamn (kombineras med kategori-filtret).
+		var query = "";
+		container.querySelector(".lib-search").addEventListener("input", function (e) {
+			query = e.target.value.trim().toLowerCase();
+			render();
+		});
 
 		// Kort-/list-vy (sparas i localStorage, delas mellan /media och modalen).
 		var view = "card";
@@ -330,6 +345,9 @@
 
 		function render() {
 			var items = applyFilter(data.items || [], filter);
+			if (query) {
+				items = items.filter(function (it) { return (it.orig || it.name).toLowerCase().indexOf(query) !== -1; });
+			}
 			grid.innerHTML = "";
 			if (!items.length) { grid.innerHTML = '<p class="hint">Inga bilder i det här urvalet.</p>'; updateBatch(); return; }
 			items.forEach(function (it) {

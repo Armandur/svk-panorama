@@ -1055,6 +1055,7 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 
 /* Mediebibliotekets filter-väljare (både modal och hanteringsvy). */
 .media-filter, .mgr-filter-wrap select { width: auto; margin: 0; display: inline-block; }
+.lib-search { width: auto; margin: 0; min-width: 12rem; flex: 1 1 12rem; max-width: 22rem; }
 .media-actions { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
 .media-hint, .mgr-hint { font-size: 0.8rem; margin: 0 0 0.5rem; }
 
@@ -1075,6 +1076,7 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .media-manage-cell { margin: 0; }
 .media-manage-cell .media-cell { aspect-ratio: 4 / 3; }
 .media-manage-cell figcaption { margin-top: 0.35rem; font-size: 0.78rem; line-height: 1.35; }
+.media-fname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .media-manage-cell .media-meta { color: var(--pico-muted-color); }
 .media-usage { margin-top: 0.15rem; word-break: break-word; }
 .media-usage.media-unused { color: var(--pico-muted-color); font-style: italic; }
