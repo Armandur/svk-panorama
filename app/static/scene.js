@@ -452,21 +452,18 @@
 	// tour är ren sanningskälla; pannellum får kloner (annars smutsas datan ner
 	// med DOM-referenser som bryter JSON.stringify vid spara/snapshot).
 
-	// Editorn visar alltid vilken scen en scen-hotspot länkar till. Det görs som
-	// en injicerad etikett i pannellum-klonen (tour-datans text lämnas orörd, så
-	// den färdiga turen bara får tooltip om användaren skrivit egen text).
-	function sceneEditorLabel(id) {
-		const t = tour.scenes[id] && tour.scenes[id].title;
-		return "Scen " + id + (t ? " - " + t : "");
+	// id -> titel för scen-hotspotarnas "leder till"-etikett (attachHsTooltips).
+	function sceneNamesMap() {
+		const m = {};
+		Object.keys(tour.scenes).forEach(function (id) { m[id] = tour.scenes[id].title || ("Scen " + id); });
+		return m;
 	}
 	function cloneHs(list) {
-		const cloned = (list || []).map(function (h) {
-			const c = Object.assign({}, h);
-			if (c.type === "scene") c.text = sceneEditorLabel(c.sceneId);
-			return c;
-		});
-		// Markdown-tooltip på info-hotspots (bara på klonerna som pannellum får).
-		if (window.attachHsTooltips) window.attachHsTooltips(cloned);
+		// KLONER till pannellum (tour-datan lämnas orörd). Scen-hotspotens text
+		// bevaras nu som teaser; attachHsTooltips lägger MD-teaser ovanför + scen-
+		// etikett nedanför (samma som i preview/publicerad tur).
+		const cloned = (list || []).map(function (h) { return Object.assign({}, h); });
+		if (window.attachHsTooltips) window.attachHsTooltips(cloned, sceneNamesMap());
 		return cloned;
 	}
 

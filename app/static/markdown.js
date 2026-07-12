@@ -15,38 +15,49 @@
 	// args: {text, body}. text = teaser (markdown), body = ev. läs mer-innehåll.
 	// Expanderbara hotspots får en "Läs mer"-knapp i tooltipen (visas bara vid
 	// hover/tap) som öppnar fullskärms-arket.
+	// args: {text, body, width, belowLabel}. text = teaser (markdown, ovanför),
+	// body = ev. läs mer, belowLabel = etikett NEDANFÖR hotspoten (t.ex. scen-mål).
 	window.mdHotspotTooltip = function (div, args) {
 		div.classList.add("pnlm-tooltip");
 		var text = (typeof args === "string") ? args : (args && args.text) || "";
 		var body = (args && typeof args === "object") ? args.body : null;
-		var span = document.createElement("span");
-		span.className = "hs-md";
-		if (text) span.innerHTML = window.renderMarkdown(text);
-		if (body) {
-			var more = document.createElement("button");
-			more.type = "button";
-			more.className = "hs-more";
-			more.textContent = "Läs mer";
-			more.addEventListener("click", function (e) { e.stopPropagation(); window.openHsSheet(body); });
-			span.appendChild(more);
+		var belowLabel = (args && typeof args === "object") ? args.belowLabel : null;
+
+		if (text || body) {
+			var span = document.createElement("span");
+			span.className = "hs-md";
+			if (text) span.innerHTML = window.renderMarkdown(text);
+			if (body) {
+				var more = document.createElement("button");
+				more.type = "button";
+				more.className = "hs-more";
+				more.textContent = "Läs mer";
+				more.addEventListener("click", function (e) { e.stopPropagation(); window.openHsSheet(body); });
+				span.appendChild(more);
+			}
+			div.appendChild(span);
+			// Bredd: preset per hotspot, annars flödar den mellan min/max (CSS).
+			var W = { narrow: 220, medium: 320, wide: 440 };
+			var w = (typeof args === "object" && args) ? W[args.width] : null;
+			if (w) span.style.width = w + "px";
+			// Centrera + placera ovanför utifrån FAKTISK renderad storlek.
+			var place = function () {
+				span.style.marginLeft = -(span.offsetWidth - div.offsetWidth) / 2 + "px";
+				span.style.marginTop = (-span.offsetHeight - 6) + "px";
+			};
+			place();
+			// Bilder laddar asynkront -> höjden ändras; räkna om positionen.
+			var imgs = span.getElementsByTagName("img");
+			for (var i = 0; i < imgs.length; i++) {
+				if (!imgs[i].complete) imgs[i].addEventListener("load", place);
+			}
 		}
-		div.appendChild(span);
-		// Bredd: preset per hotspot, annars flödar den mellan min/max (CSS).
-		var W = { narrow: 220, medium: 320, wide: 440 };
-		var w = (typeof args === "object" && args) ? W[args.width] : null;
-		if (w) span.style.width = w + "px";
-		// Centrera + placera ovanför utifrån FAKTISK renderad storlek. Litet glapp;
-		// hover-bryggan i CSS håller hovern kontinuerlig upp till "Läs mer".
-		function place() {
-			span.style.marginLeft = -(span.offsetWidth - div.offsetWidth) / 2 + "px";
-			span.style.marginTop = (-span.offsetHeight - 6) + "px";
-		}
-		place();
-		// Bilder laddar asynkront -> höjden ändras efteråt; räkna om positionen så
-		// rutan hamnar ovanför hotspoten och inte centreras över den.
-		var imgs = span.getElementsByTagName("img");
-		for (var i = 0; i < imgs.length; i++) {
-			if (!imgs[i].complete) imgs[i].addEventListener("load", place);
+		// Etikett nedanför hotspoten (t.ex. scen-hotspotens mål). CSS positionerar den.
+		if (belowLabel) {
+			var lbl = document.createElement("span");
+			lbl.className = "hs-scenelabel";
+			lbl.textContent = belowLabel;
+			div.appendChild(lbl);
 		}
 	};
 
@@ -82,19 +93,31 @@
 	// tap ska visa teaser-tooltipen med "Läs mer"-knappen i stället.
 	var _touchPrimary = !!(window.matchMedia && window.matchMedia("(hover: none)").matches);
 
-	window.attachHsTooltips = function (hotSpots) {
+	// sceneNames: {sceneId: titel} för scen-hotspotarnas "leder till"-etikett.
+	window.attachHsTooltips = function (hotSpots, sceneNames) {
+		sceneNames = sceneNames || {};
 		(hotSpots || []).forEach(function (h) {
-			if (!h || h.type !== "info" || h.URL) return;
-			var body = (h.expandable && h.body) ? h.body : null;
-			if (h.text || body) {
+			if (!h) return;
+			if (h.type === "info" && !h.URL) {
+				var body = (h.expandable && h.body) ? h.body : null;
+				if (h.text || body) {
+					h.createTooltipFunc = window.mdHotspotTooltip;
+					h.createTooltipArgs = { text: h.text || "", body: body, width: h.tooltipWidth || null };
+				}
+				// Dator: klick på hotspoten öppnar arket. Mobil: tap visar tooltip + "Läs mer".
+				if (body && !_touchPrimary) {
+					h.clickHandlerFunc = function (e, b) { window.openHsSheet(b); };
+					h.clickHandlerArgs = body;
+				}
+			} else if (h.type === "scene") {
+				// Scen-hotspot: ev. teaser (MD) ovanför + "-> leder till"-etikett nedanför.
+				var target = sceneNames[h.sceneId] || ("Scen " + h.sceneId);
 				h.createTooltipFunc = window.mdHotspotTooltip;
-				h.createTooltipArgs = { text: h.text || "", body: body, width: h.tooltipWidth || null };
-			}
-			// Dator: klick på hotspoten öppnar arket (ingen glapp att pricka).
-			// Mobil: ingen klick-handler -> tap visar tooltipen med "Läs mer".
-			if (body && !_touchPrimary) {
-				h.clickHandlerFunc = function (e, b) { window.openHsSheet(b); };
-				h.clickHandlerArgs = body;
+				h.createTooltipArgs = { text: h.text || "", width: h.tooltipWidth || null, belowLabel: "→ " + target };
+			} else if (h.URL && h.text) {
+				// URL-hotspot: rendera texten som MD-teaser (samma väg, inget ark).
+				h.createTooltipFunc = window.mdHotspotTooltip;
+				h.createTooltipArgs = { text: h.text, width: h.tooltipWidth || null };
 			}
 		});
 		return hotSpots;

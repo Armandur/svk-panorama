@@ -47,6 +47,9 @@
 	hyphens: none;
 	line-height: 1.45;
 }
+/* Scen-hotspotens "leder till"-etikett: nedanför hotspoten (teaser ligger ovanför).
+   Överrid pannellums default-span (margin-left:-220px, ingen left/top). */
+.pnlm-tooltip span.hs-scenelabel { margin-left: 0; left: 50%; top: 12px; transform: translateX(-50%); max-width: 260px; white-space: nowrap; background: rgba(0, 0, 0, 0.72); font-size: 0.82em; padding: 3px 8px; }
 .hs-md p { margin: 0.3em 0; }
 .hs-md p:first-child { margin-top: 0; }
 .hs-md p:last-child { margin-bottom: 0; }

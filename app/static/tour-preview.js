@@ -378,7 +378,11 @@
 
 	// --- Start ---
 	// Markdown-tooltip på info-hotspots (funktionerna stannar på objekten över rebuilds).
-	if (window.attachHsTooltips) sceneIds().forEach(function (id) { attachHsTooltips(tour.scenes[id].hotSpots); });
+	if (window.attachHsTooltips) {
+		var sceneNames = {};
+		sceneIds().forEach(function (id) { sceneNames[id] = tour.scenes[id].title || ("Scen " + id); });
+		sceneIds().forEach(function (id) { attachHsTooltips(tour.scenes[id].hotSpots, sceneNames); });
+	}
 
 	buildViewer(firstScene, null);
 	if (mapImg) {

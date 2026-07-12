@@ -32,8 +32,10 @@
 
 	// Rendera info-hotspots text som markdown i tooltipen.
 	if (window.attachHsTooltips) {
+		var sceneNames = {};
+		Object.keys(tour.scenes || {}).forEach(function (id) { sceneNames[id] = tour.scenes[id].title || ("Scen " + id); });
 		Object.keys(tour.scenes || {}).forEach(function (id) {
-			attachHsTooltips(tour.scenes[id].hotSpots);
+			attachHsTooltips(tour.scenes[id].hotSpots, sceneNames);
 		});
 	}
 

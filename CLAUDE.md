@@ -212,11 +212,15 @@ inställningar (jfr `TILE_CONCURRENCY`/`BASE_URL`).
 `vendor/marked` + `vendor/dompurify` laddats). Redigering via `vendor/easymde`
 (EasyMDE, `previewRender` = renderMarkdown) - toolbar-ikoner via `vendor/fontawesome`
 (FA 4.7). Renderad markdown stylas med `.markdown-body`. Används av arbetsgångstexten
-och **info-hotspots**: `attachHsTooltips` ger info-hotspots markdown-teaser via
-pannellums `createTooltipFunc`; har hotspoten `body` blir den expanderbar
-(`clickHandlerFunc` -> `openHsSheet`, fullskärms-ark). Hotspot-editorn (scene.js)
-kör EasyMDE i flikar (Teaser/Läs mer, expanderbar härleds ur body-text). Bilder
-kommer ur **mediebiblioteket** (se nedan), infogas som markdown.
+och **hotspots**: `attachHsTooltips(hotSpots, sceneNames)` ger markdown-teaser via
+pannellums `createTooltipFunc` (`mdHotspotTooltip`, teaser ovanför hotspoten):
+info-hotspots (body -> expanderbart `openHsSheet`-ark via `clickHandlerFunc`),
+scen-hotspots (teaser MD ovanför + "→ målscen"-etikett NEDANFÖR via `belowLabel`,
+`sceneNames`-map ger målets titel) och URL-hotspots (MD-teaser). Alla vyer bygger
+`sceneNames` och passar den (viewer.js/tour-preview.js/scene.js `cloneHs`). OBS:
+`escapeHTML: true` globalt påverkar inte dessa (createTooltipFunc bygger egen DOM).
+Hotspot-editorn (scene.js) kör EasyMDE i flikar (Teaser/Läs mer, expanderbar
+härleds ur body-text). Bilder kommer ur **mediebiblioteket** (se nedan).
 
 ## Mediebibliotek (delad pool per ägare - routes/media.py + services/media.py)
 

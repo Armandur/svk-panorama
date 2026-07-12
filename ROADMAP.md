@@ -359,8 +359,12 @@ Faser (minst till störst):
       scener utan tiles faller till preview. Fixade även att aktuell scen inte
       markerades på kartan förrän man bytte scen (`buildDots` kallar nu `markCurrent`).
 
-- [ ] **Scen-hotspots: rendera markdown + dubbla rutor (text ovanför, "leder till"-etikett
-      nedanför).** Rasmus 2026-07-12. Två delar:
+- [x] **Scen-hotspots: rendera markdown + dubbla rutor KLAR (2026-07-12).**
+      `attachHsTooltips(hotSpots, sceneNames)` MD-renderar nu scen- OCH URL-hotspots;
+      scen-hotspots får teaser (MD) ovanför + "→ målscen"-etikett (`belowLabel`,
+      `.hs-scenelabel`) nedanför. `cloneHs` slutade skriva över texten. Callers bygger
+      `sceneNames` (viewer.js/tour-preview.js/scene.js). Verifierat i editor + /view.
+      Ursprunglig spec:
       (1) BUGG: markdown-text i en scen-hotspot (type=scene) renderas INTE som MD i
       /preview/viewern. Orsak: `attachHsTooltips` (markdown.js) villkorar MD-tooltipen på
       `h.type === "info"` -> scen/URL-hotspots får bara pannellums default-D()-rendering
