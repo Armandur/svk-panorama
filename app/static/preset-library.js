@@ -223,7 +223,7 @@
 		editBody.innerHTML =
 			'<label>Namn <input type="text" class="pe-name" maxlength="120"></label>' +
 			'<label>Typsnitt <select class="pe-font"><option value="sans">Sans</option><option value="serif">Serif</option><option value="humanist">Humanist</option><option value="mono">Monospace</option></select></label>' +
-			'<div class="pe-row"><label>Kartprickar <input type="text" class="pe-dot coloris-input" data-coloris></label><label>Aktiv scen <input type="text" class="pe-cur coloris-input" data-coloris></label></div>' +
+			'<div class="pe-row"><label>Kartprickar <input type="text" class="pe-dot coloris-input" data-coloris></label><label>Aktiv kartprick <input type="text" class="pe-cur coloris-input" data-coloris></label></div>' +
 			'<label class="pe-switch"><input type="checkbox" class="pe-ar" role="switch"> Rotera automatiskt</label>' +
 			'<div class="pe-row"><label>Hastighet (°/s) <input type="number" class="pe-speed" min="0.5" max="10" step="0.5"></label>' +
 			'<div class="pe-field"><span class="pe-field-label">Riktning</span><div class="dir-toggle"><span class="pe-dir-left">Vänster</span><input type="checkbox" class="pe-dir" role="switch" aria-label="Rotationsriktning (vänster/höger)"><span class="pe-dir-right">Höger</span></div></div></div>' +
