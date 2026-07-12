@@ -253,7 +253,10 @@
 			'<div class="media-actions">' +
 			'<button type="button" class="secondary lib-upload">Ladda upp bilder</button>' +
 			'<span class="lib-search-wrap">' +
-			'<input type="search" class="lib-search" placeholder="Sök filnamn, eller tur: ..." aria-label="Sök">' +
+			'<div class="lib-search-box">' +
+			'<span class="lib-chips"></span>' +
+			'<input type="text" class="lib-search-input" placeholder="Sök filnamn, eller tur:" aria-label="Sök">' +
+			'</div>' +
 			'<div class="lib-suggest" hidden></div>' +
 			'</span>' +
 			'<span class="lib-filter-wrap"></span>' +
@@ -277,73 +280,105 @@
 		function err(m) { errEl.textContent = m || ""; errEl.hidden = !m; }
 		container.querySelector(".lib-upload").addEventListener("click", function () { fileInput.click(); });
 
-		// Sök: fritext på filnamn + Discord-lik `tur:<slug>`-token (AND-filtrering).
-		// När man skriver tur: dyker en autocomplete-lista med turer upp.
-		var searchInput = container.querySelector(".lib-search");
+		// Sök: tur-filter som chips (Discord-stil) + fritext på filnamn. Skriv tur:
+		// -> autocomplete med turer (pil upp/ner + Enter, eller klick) -> blir ett chip.
+		// AND mellan textterm(er) + tur-filtret; OR mellan flera tur-chips.
+		var searchBox = container.querySelector(".lib-search-box");
+		var searchInput = container.querySelector(".lib-search-input");
+		var chipsEl = container.querySelector(".lib-chips");
 		var suggest = container.querySelector(".lib-suggest");
+		var tourFilters = [];   // [{slug, name}]
+		var suggestHits = [];   // aktuella autocomplete-träffar
+		var activeIdx = -1;     // markerat alternativ (tangentbord)
 
-		function parseQuery() {
-			var tours = [], terms = [];
-			searchInput.value.trim().split(/\s+/).forEach(function (tok) {
-				if (!tok) return;
-				if (tok.toLowerCase().indexOf("tur:") === 0) {
-					var v = tok.slice(4).toLowerCase();
-					if (v) tours.push(v);
-				} else {
-					terms.push(tok.toLowerCase());
-				}
+		function renderChips() {
+			chipsEl.innerHTML = "";
+			tourFilters.forEach(function (t, i) {
+				var chip = document.createElement("span");
+				chip.className = "lib-chip";
+				var label = document.createElement("span");
+				label.textContent = "tur: " + t.name;
+				chip.appendChild(label);
+				var x = document.createElement("button");
+				x.type = "button"; x.className = "lib-chip-x"; x.setAttribute("aria-label", "Ta bort tur-filter"); x.innerHTML = "&times;";
+				x.addEventListener("click", function () { tourFilters.splice(i, 1); renderChips(); render(); searchInput.focus(); });
+				chip.appendChild(x);
+				chipsEl.appendChild(chip);
 			});
-			return { tours: tours, terms: terms };
 		}
-		function matchesSearch(it, q) {
-			if (q.tours.length) {
+		function inputTokens() { return searchInput.value.split(/\s+/).filter(Boolean); }
+		function currentPartial() {  // tur:-token som håller på att skrivas
+			var toks = inputTokens();
+			for (var i = toks.length - 1; i >= 0; i--) {
+				if (toks[i].toLowerCase().indexOf("tur:") === 0) return toks[i].slice(4).toLowerCase();
+			}
+			return null;
+		}
+		function textTerms() {  // fritexttermer (icke-tur-tokens)
+			return inputTokens().filter(function (t) { return t.toLowerCase().indexOf("tur:") !== 0; }).map(function (t) { return t.toLowerCase(); });
+		}
+		function matchesSearch(it) {
+			if (tourFilters.length) {
 				var usage = it.usage || [];
-				var ok = q.tours.some(function (tok) {
-					return usage.some(function (u) {
-						return u.slug.toLowerCase().indexOf(tok) !== -1 || (u.project || "").toLowerCase().indexOf(tok) !== -1;
-					});
-				});
+				var ok = tourFilters.some(function (t) { return usage.some(function (u) { return u.slug === t.slug; }); });
 				if (!ok) return false;
 			}
 			var fn = (it.orig || it.name).toLowerCase();
-			return q.terms.every(function (t) { return fn.indexOf(t) !== -1; });
+			return textTerms().every(function (t) { return fn.indexOf(t) !== -1; });
 		}
-		function tourPartial() {
-			// Aktiv token vid markören - visar autocomplete bara om den börjar med tur:.
-			var upto = searchInput.value.slice(0, searchInput.selectionStart);
-			var last = upto.split(/\s+/).pop();
-			return last.toLowerCase().indexOf("tur:") === 0 ? last.slice(4).toLowerCase() : null;
+
+		function setActive(i) {
+			var items = suggest.querySelectorAll(".lib-suggest-item");
+			activeIdx = i;
+			Array.prototype.forEach.call(items, function (el, idx) { el.classList.toggle("active", idx === activeIdx); });
+			if (items[activeIdx]) items[activeIdx].scrollIntoView({ block: "nearest" });
 		}
 		function renderSuggest() {
-			var partial = tourPartial();
-			if (partial === null) { suggest.hidden = true; return; }
-			var hits = (data.projects || []).filter(function (p) {
+			var partial = currentPartial();
+			if (partial === null) { suggest.hidden = true; suggestHits = []; return; }
+			var chosen = {};
+			tourFilters.forEach(function (t) { chosen[t.slug] = 1; });
+			suggestHits = (data.projects || []).filter(function (p) {
+				if (chosen[p.slug]) return false;
 				return !partial || p.name.toLowerCase().indexOf(partial) !== -1 || p.slug.toLowerCase().indexOf(partial) !== -1;
 			}).slice(0, 8);
 			suggest.innerHTML = "";
-			if (!hits.length) { suggest.hidden = true; return; }
-			hits.forEach(function (p) {
+			if (!suggestHits.length) { suggest.hidden = true; return; }
+			suggestHits.forEach(function (p, idx) {
 				var b = document.createElement("button");
 				b.type = "button"; b.className = "lib-suggest-item";
 				var nm = document.createElement("strong"); nm.textContent = p.name;
-				var sg = document.createElement("span"); sg.textContent = p.slug;
-				b.appendChild(nm); b.appendChild(sg);
+				b.appendChild(nm);
+				if (p.slug !== p.name) { var sg = document.createElement("span"); sg.textContent = p.slug; b.appendChild(sg); }
+				b.addEventListener("mouseenter", function () { setActive(idx); });
 				b.addEventListener("mousedown", function (e) { e.preventDefault(); pickTour(p); });
 				suggest.appendChild(b);
 			});
 			suggest.hidden = false;
+			setActive(0);
 		}
 		function pickTour(p) {
-			var parts = searchInput.value.replace(/\s+$/, "").split(/\s+/);
-			parts[parts.length - 1] = "tur:" + p.slug;
-			searchInput.value = parts.join(" ") + " ";
+			if (!tourFilters.some(function (t) { return t.slug === p.slug; })) tourFilters.push({ slug: p.slug, name: p.name });
+			// ta bort tur:-token som skrevs, behåll ev. textterm(er)
+			searchInput.value = inputTokens().filter(function (t) { return t.toLowerCase().indexOf("tur:") !== 0; }).join(" ");
+			if (searchInput.value) searchInput.value += " ";
 			suggest.hidden = true;
+			renderChips();
 			searchInput.focus();
 			render();
 		}
+
 		searchInput.addEventListener("input", function () { renderSuggest(); render(); });
-		searchInput.addEventListener("keydown", function (e) { if (e.key === "Escape") suggest.hidden = true; });
+		searchInput.addEventListener("keydown", function (e) {
+			var open = !suggest.hidden && suggestHits.length;
+			if (open && e.key === "ArrowDown") { e.preventDefault(); setActive(Math.min(activeIdx + 1, suggestHits.length - 1)); }
+			else if (open && e.key === "ArrowUp") { e.preventDefault(); setActive(Math.max(activeIdx - 1, 0)); }
+			else if (open && e.key === "Enter") { e.preventDefault(); if (suggestHits[activeIdx]) pickTour(suggestHits[activeIdx]); }
+			else if (e.key === "Escape") { suggest.hidden = true; }
+			else if (e.key === "Backspace" && !searchInput.value && tourFilters.length) { tourFilters.pop(); renderChips(); render(); }
+		});
 		searchInput.addEventListener("blur", function () { setTimeout(function () { suggest.hidden = true; }, 150); });
+		searchBox.addEventListener("click", function (e) { if (e.target === searchBox || e.target === chipsEl) searchInput.focus(); });
 
 		// Kort-/list-vy (sparas i localStorage, delas mellan /media och modalen).
 		var view = "card";
@@ -408,8 +443,7 @@
 		});
 
 		function render() {
-			var q = parseQuery();
-			var items = applyFilter(data.items || [], filter).filter(function (it) { return matchesSearch(it, q); });
+			var items = applyFilter(data.items || [], filter).filter(matchesSearch);
 			grid.innerHTML = "";
 			if (!items.length) { grid.innerHTML = '<p class="hint">Inga bilder i det här urvalet.</p>'; updateBatch(); return; }
 			items.forEach(function (it) {
