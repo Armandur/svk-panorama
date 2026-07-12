@@ -24,7 +24,11 @@
 /* Pico (editor/preview) sätter color direkt på p/h/li -> slår arvet från .hs-sheet-inner
    och texten blev grå. Tvinga arket att ärva den mörka färgen. */
 .hs-sheet-body p, .hs-sheet-body li, .hs-sheet-body h1, .hs-sheet-body h2, .hs-sheet-body h3, .hs-sheet-body h4, .hs-sheet-body blockquote { color: inherit; }
-.hs-sheet-close { position: absolute; top: 0.5rem; right: 0.5rem; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; background: none; border: none; border-radius: 3px; font-size: 1.6rem; line-height: 1; cursor: pointer; color: inherit; }
+/* Kryss ritas med två roterade streck (font-oberoende -> alltid exakt centrerat). */
+.hs-sheet-close { position: absolute; top: 0.5rem; right: 0.5rem; width: 30px; height: 30px; padding: 0; background: none; border: none; border-radius: 3px; font-size: 0; cursor: pointer; color: inherit; }
+.hs-sheet-close::before, .hs-sheet-close::after { content: ""; position: absolute; top: 50%; left: 50%; width: 15px; height: 2px; background: currentColor; }
+.hs-sheet-close::before { transform: translate(-50%, -50%) rotate(45deg); }
+.hs-sheet-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
 .hs-sheet-close:hover { background: rgba(0, 0, 0, 0.08); }
 @media (max-width: 640px) {
 	.hs-sheet { padding: 0; }
