@@ -4,9 +4,10 @@ from __future__ import annotations
 import secrets
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
+from app import config
 from app.auth import require_user
 from app.database import Project, User
 from app.deps import (
@@ -125,6 +126,15 @@ async def delete_project(
     return RedirectResponse(url=dest, status_code=303)
 
 
+def _share_url(request: Request, token: str) -> str:
+    origin = config.BASE_URL or str(request.base_url).rstrip("/")
+    return f"{origin}/s/{token}"
+
+
+def _wants_json(request: Request) -> bool:
+    return "application/json" in request.headers.get("accept", "")
+
+
 @router.post("/projects/{slug}/share")
 async def share_project(
     request: Request,
@@ -133,11 +143,15 @@ async def share_project(
     user: User = Depends(require_user),
     project: Project = Depends(get_project_or_404),  # gate: ägare eller admin
     _csrf: None = Depends(verify_csrf_form),
-) -> RedirectResponse:
-    """Aktivera publik delning: skapa en oigissbar token om ingen finns."""
+):
+    """Aktivera publik delning: skapa en oigissbar token om ingen finns. JS-anrop
+    (Accept: application/json) får länken tillbaka och uppdaterar rutan utan omladdning;
+    vanlig formulärpost (utan JS) faller tillbaka på redirect."""
     if not project.share_token:
         project.share_token = secrets.token_urlsafe(16)
         db.commit()
+    if _wants_json(request):
+        return JSONResponse({"share_url": _share_url(request, project.share_token)})
     return RedirectResponse(url=f"/projects/{slug}/preview", status_code=303)
 
 
@@ -149,10 +163,12 @@ async def unshare_project(
     user: User = Depends(require_user),
     project: Project = Depends(get_project_or_404),
     _csrf: None = Depends(verify_csrf_form),
-) -> RedirectResponse:
+):
     """Sluta dela: nolla token -> gamla /s/{token}-länken slutar fungera direkt."""
     project.share_token = None
     db.commit()
+    if _wants_json(request):
+        return JSONResponse({"share_url": None})
     return RedirectResponse(url=f"/projects/{slug}/preview", status_code=303)
 
 

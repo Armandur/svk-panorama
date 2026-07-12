@@ -146,7 +146,10 @@ Applicerar `tour.default.theme` via CSS-variabler (`--tour-font/--dot-color/
   startscen-väljare (kartmodal + hover-preview), tema.
 - `upload.js` - parallell per-fil-uppladdning + previews, startar tiling.
 - `tile-status.js` / `index.js` - tiling-status på hemsida / huvudmeny.
-- `export.js` - bundle-export-progress.
+- `export.js` - bundle-export-progress + readiness-varningar + opt-in originalbilder.
+- `share.js` - publik delningslänk på preview-steget: skapa/sluta dela async (fetch,
+  JSON-svar) så länken dyker upp/försvinner i rutan utan omladdning. Progressiv
+  förbättring (forms funkar utan JS via redirect).
 - `preview.js` (`ScenePreview`) + `settings.js` - delad hover-preview + dess
   inställningar (snurr/riktning/vagg i localStorage). Används av scen- och
   preview-vyn.
