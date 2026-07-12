@@ -2,6 +2,55 @@
 
 Nyast först. Varje fynd markerat åtgärdat/avfärdat med commit-ref.
 
+## 2026-07-12 - Sessionsgranskning (diff 1ecce63..HEAD, 39 commits)
+
+Tre parallella oberoende Fable-subagenter (eget kontext) granskade hela sessionens
+diff: säkerhet, backend-korrekthet, frontend-korrekthet. Fokus: nya
+backup/import + presets + mediebibliotek v3 + startriktning + scen-hotspot-rendering.
+Alla bekräftade allvarliga fynd åtgärdade.
+
+- **[ÅTGÄRDAT 06582ce] KRITISK (säkerhet) Zip-import validerade inte filtyp -> stored
+  XSS via capability-URL:er.** En riggad `media/x.html`/`.svg` i en projekt-zip hamnade
+  i mediepoolen och serverades `text/html` same-origin via de auth-fria `/media/`- och
+  publika `/s/`-URL:erna; med den JS-läsbara CSRF-cookien = sessionskapning av den som
+  klickar (inkl. admin). Fix: filtyp-whitelist + magic-koll (`_validate_members`/
+  `_extract`) - `.jpg`/`.png` med HTML-innehåll avvisas.
+- **[ÅTGÄRDAT 06582ce] HÖG (backend) Import lämnade spök-DB-rad vid fel.** DB-raden
+  commit:ades före extrahering; ett fel mitt i lämnade en tur pekande på halvskriven mapp,
+  och icke-ValueError blev 500. Fix: try/except runt rad+extrahering -> rollback (radera
+  rad + rmtree) + rent 400.
+- **[ÅTGÄRDAT 06582ce] MEDEL (säkerhet) Ingen storleks-/zip-bomb-gräns på import.** Fix:
+  tak på uppladdad (komprimerad) + total uppackad storlek (`SVK_MAX_BACKUP_MB=3000`).
+- **[ÅTGÄRDAT d22268a] HÖG (frontend) "Släng alla ändringar" reverterade inte
+  startriktning (yaw/pitch)** -> ett kasserat värde kunde tyst sparas senare. Fix:
+  discard() återställer nu ya/pi + cfg. Verifierat: Sätt 90° -> Släng -> tillbaka till sparade.
+- **[ÅTGÄRDAT d22268a] MEDEL (frontend) Batch-massradering läckte in i bild-VÄLJAREN.**
+  Kryssrutor + "Ta bort markerade" i modalen där man plockar EN bild. Fix: gate:a selection
+  på `!opts.onPick`.
+- **[ÅTGÄRDAT f202512] MEDEL (backend) `ensure_thumb` ej atomisk** -> race kunde ge
+  permanent trasig cachad tumnagel. Fix: temp + `os.replace`.
+- **[ÅTGÄRDAT f202512] MEDEL (backend) readiness/export varnade inte om RADERAD refererad
+  poolbild** -> tyst trasig bild i publicerad tur. Fix: readiness() varnar.
+- **[ÅTGÄRDAT d22268a] LÅG (frontend) Slider fastnade i drag-läge utan `pointercancel`.**
+- **[SENARELAGT] LÅG (frontend) tour-preview.js klonar inte hotspots** (bryter det
+  dokumenterade klon-kontraktet). Ej akut - `tour-preview.js` serialiserar aldrig
+  `tour.scenes` till servern (bara `default`/presets). Förebyggande fix (kör hotspots
+  genom klon-mönstret som scene.js) skjuten för att inte riskera preview-regression nu.
+- **[AVFÄRDAT] LÅG Medieimport återanvänder exportörens filnamn** (blind overwrite):
+  48-bitars hex-prefix -> kollision praktiskt omöjlig; re-import är idempotent.
+- **[AVFÄRDAT] LÅG/INFO** `ensure_thumb`/`generate_preview` saknar explicit
+  decompression-bomb-hantering (fångas av brett `except`), och `setInterval` för
+  view-indikatorn rensas aldrig (ofarligt i MPA - dör med sidan).
+- **[VERIFIERAT RENT]** preset-sanering + ägar-scoping, CSRF-täckning på alla nya
+  muterande endpoints, media-ägarskap + traversal-guards, XSS (escapeHTML + DOMPurify,
+  belowLabel via textContent), invite-fixen, djuplänknings-prioritet, reciprok-fixen,
+  delsträngs-slug-omskrivning, `display_name` hex-strippning.
+
+Verifiering: 101 backend-tester gröna (nya: filtyp-whitelist, saknad-poolbild). Kritiska
+fixarna verifierade end-to-end (riggad `.html`/`.jpg` -> 400 + rollback; discard-revert;
+väljare utan batch; atomisk thumb). Ny todo i ROADMAP: version/schema-kompatibilitet för
+turer & arkiv.
+
 ## 2026-07-12 - Helhetsgranskning (säkerhet, UI/UX, produkt)
 
 Tre oberoende Fable-subagenter (eget kontext) granskade hela `app/` efter
