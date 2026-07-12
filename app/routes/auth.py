@@ -89,7 +89,10 @@ def _render_accept(request, token, valid, email, error, status_code=200):
 def accept_invite_form(request: Request, token: str = "", db: Session = Depends(get_db)) -> HTMLResponse:
     uid = read_invite_token(token)
     user = db.get(User, uid) if uid else None
-    return _render_accept(request, token, valid=user is not None, email=user.email if user else None, error=None)
+    # Bara ett konto som ännu inte satt lösenord får aktiveras via länken - annars
+    # kan en läckt (men ännu giltig) inbjudan kapa ett redan aktivt konto.
+    pending = user is not None and user.password_hash is None
+    return _render_accept(request, token, valid=pending, email=user.email if pending else None, error=None)
 
 
 @router.post("/accept-invite")
@@ -105,6 +108,10 @@ async def accept_invite(
     user = db.get(User, uid) if uid else None
     if user is None:
         return _render_accept(request, token, valid=False, email=None, error="Länken är ogiltig eller har gått ut.")
+    if user.password_hash is not None:
+        # Kontot är redan aktiverat - en engångslänk får inte återanvändas för att
+        # sätta ett nytt lösenord på ett befintligt konto (kontokapning).
+        return _render_accept(request, token, valid=False, email=None, error="Länken är redan använd. Be en administratör om en ny inbjudan eller logga in.")
     if len(password) < 8:
         return _render_accept(request, token, valid=True, email=user.email, error="Lösenordet måste vara minst 8 tecken.")
     if password != password2:
