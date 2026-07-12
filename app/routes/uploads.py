@@ -19,6 +19,7 @@ from app.services.project_files import (
     scene_id_from_filename,
     tour_lock,
     validate_extension,
+    validate_image_dimensions,
     validate_image_magic,
     validate_size,
     write_tour,
@@ -52,6 +53,7 @@ async def upload_images(
         content = await upload.read()
         validate_size(content, filename, config.MAX_PANORAMA_MB)
         validate_image_magic(content, filename)
+        validate_image_dimensions(content, filename)
 
         dest = images_dir(slug) / filename
         dest.write_bytes(content)
@@ -89,6 +91,7 @@ async def upload_map_image(
     content = await file.read()
     validate_size(content, filename, config.MAX_MAP_MB)
     validate_image_magic(content, filename)
+    validate_image_dimensions(content, filename)
 
     ensure_project_structure(slug)
     map_image_path(slug).write_bytes(content)

@@ -376,6 +376,39 @@ def test_schema_version():
     check("samma version godtas (raises=False)", not raises({"version": config.SCHEMA_VERSION}))
 
 
+def test_password_policy():
+    from app.auth import password_error
+    check("för kort avvisas", password_error("abc123") is not None)
+    check("bara siffror avvisas", password_error("87654321") is not None)
+    check("vanligt lösenord avvisas", password_error("password") is not None)
+    check("rimligt lösenord godkänns", password_error("solros-42-blå") is None)
+
+
+def test_image_dimension_guard():
+    import io as _io
+
+    from fastapi import HTTPException
+    from PIL import Image as PImage
+
+    from app import config
+    from app.services.project_files import validate_image_dimensions
+    buf = _io.BytesIO(); PImage.new("RGB", (12, 12)).save(buf, "PNG"); png = buf.getvalue()
+    validate_image_dimensions(png, "ok.png")  # liten -> ok, ingen exception
+
+    def raises(content, mp_cap=None):
+        orig = config.MAX_IMAGE_MEGAPIXELS
+        if mp_cap is not None:
+            config.MAX_IMAGE_MEGAPIXELS = mp_cap
+        try:
+            validate_image_dimensions(content, "x.png"); return False
+        except HTTPException:
+            return True
+        finally:
+            config.MAX_IMAGE_MEGAPIXELS = orig
+    check("bild över megapixel-tak avvisas", raises(png, mp_cap=0))
+    check("icke-bild avvisas", raises(b"inte en bild"))
+
+
 def main() -> int:
     for fn in (
         test_expected_tile_count,
@@ -385,6 +418,8 @@ def main() -> int:
         test_preset_sanitize,
         test_branding_sanitize,
         test_schema_version,
+        test_password_policy,
+        test_image_dimension_guard,
         test_backup_security,
         test_media_pool,
         test_hex,

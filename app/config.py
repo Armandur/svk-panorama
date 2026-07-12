@@ -38,6 +38,12 @@ SCHEMA_VERSION = 1
 # ogiltiga, vilket är helt okej för detta lokala verktyg.
 SECRET_KEY = os.environ.get("SVK_SECRET_KEY") or secrets.token_hex(32)
 
+# Bakom en reverse proxy (produktion) är request.client.host proxyns IP - då blir
+# alla klienter samma IP och rate limiting värdelös. Sätt SVK_TRUST_PROXY=1 bara när
+# appen körs bakom en betrodd proxy som sätter X-Forwarded-For; annars (default) är
+# den AV så en klient inte kan spoofa sin IP via headern.
+TRUST_PROXY = os.environ.get("SVK_TRUST_PROXY", "").strip().lower() in ("1", "true", "yes", "on")
+
 # Uppladdning: panoramabilder.
 ALLOWED_PANORAMA_EXT = {".jpg", ".jpeg", ".png"}
 MAX_PANORAMA_MB = int(os.environ.get("SVK_MAX_PANORAMA_MB", "80"))
@@ -45,6 +51,11 @@ MAX_PANORAMA_MB = int(os.environ.get("SVK_MAX_PANORAMA_MB", "80"))
 # Uppladdning: kartbild.
 ALLOWED_MAP_EXT = {".jpg", ".jpeg", ".png"}
 MAX_MAP_MB = int(os.environ.get("SVK_MAX_MAP_MB", "20"))
+
+# Skydd mot dekomprimeringsbomber: en liten fil kan ha enorma pixelmått. Utöver
+# MB-taket avvisas bilder över detta megapixel-tak. Generöst satt (panorama är
+# stora, equirektangulärt), men stoppar gigapixel-bomber.
+MAX_IMAGE_MEGAPIXELS = int(os.environ.get("SVK_MAX_IMAGE_MP", "300"))
 
 MAP_IMAGE_FILENAME = "map.png"
 

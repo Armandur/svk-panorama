@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session
 
 from app import config
-from app.auth import hash_password, make_invite_token, require_admin
+from app.auth import hash_password, make_invite_token, password_error, require_admin
 from app.database import Project, User, get_db
 from app.deps import (
     new_csrf_token,
@@ -230,8 +230,9 @@ async def admin_set_password(
     _csrf: None = Depends(verify_csrf_form),
 ):
     target = _target_or_404(db, user_id)
-    if len(new) < 8:
-        return _back(user_id, error="Lösenordet måste vara minst 8 tecken.")
+    pw_err = password_error(new)
+    if pw_err:
+        return _back(user_id, error=pw_err)
     if new != new2:
         return _back(user_id, error="Lösenorden matchar inte.")
     target.password_hash = hash_password(new)  # admin override - inget nuvarande krävs

@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse, Response
 from PIL import Image
 from sqlalchemy.orm import Session
 
-from app.auth import hash_password, require_user, verify_password
+from app.auth import hash_password, password_error, require_user, verify_password
 from app.database import User, get_db
 from app.deps import new_csrf_token, set_csrf_cookie, templates, verify_csrf_form, verify_csrf_header
 from app.services.project_files import validate_image_magic, validate_size
@@ -70,8 +70,9 @@ async def change_password(
 ):
     if not verify_password(current, user.password_hash):
         return _render(request, user, error="Fel nuvarande lösenord.")
-    if len(new) < 8:
-        return _render(request, user, error="Nytt lösenord måste vara minst 8 tecken.")
+    pw_err = password_error(new)
+    if pw_err:
+        return _render(request, user, error=pw_err)
     if new != new2:
         return _render(request, user, error="De nya lösenorden matchar inte.")
     user.password_hash = hash_password(new)

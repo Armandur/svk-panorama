@@ -23,6 +23,7 @@ from app.deps import new_csrf_token, set_csrf_cookie, templates, verify_csrf_hea
 from app.services import media
 from app.services.project_files import (
     validate_extension,
+    validate_image_dimensions,
     validate_image_magic,
     validate_size,
 )
@@ -50,6 +51,7 @@ async def upload_media(
     content = await file.read()
     validate_size(content, filename, config.MAX_MAP_MB)
     validate_image_magic(content, filename)
+    validate_image_dimensions(content, filename)
     name = media.store(user.id, filename, content)
     return JSONResponse({"url": media.media_url(user.id, name), "name": name})
 

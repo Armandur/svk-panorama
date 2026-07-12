@@ -34,6 +34,10 @@ from app.routes import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Global backstop mot dekomprimeringsbomber i ALLA PIL-vägar (tiling, previews,
+    # import) utöver upload-validerarna. PIL varnar över detta och kastar över 2x.
+    from PIL import Image
+    Image.MAX_IMAGE_PIXELS = config.MAX_IMAGE_MEGAPIXELS * 1_000_000
     init_db()
     yield
 

@@ -29,6 +29,27 @@ def read_invite_token(token: str) -> int | None:
         return None
 
 
+# Litet urval uppenbart svaga lösenord (lowercase-jämförelse). Ingen ambition att
+# vara heltäckande - bara stoppa de allra vanligaste vid kontoskapande.
+_WEAK_PASSWORDS = {
+    "password", "passw0rd", "lösenord", "losenord", "12345678", "123456789",
+    "1234567890", "qwertyui", "qwerty123", "adminadmin", "administrator",
+    "iloveyou", "welcome1", "changeme",
+}
+
+
+def password_error(password: str) -> str | None:
+    """Enkel lösenordspolicy (slutanvändartext, svenska). None = godkänt.
+    Minst 8 tecken, inte enbart siffror, inte ett uppenbart svagt lösenord."""
+    if len(password) < 8:
+        return "Lösenordet måste vara minst 8 tecken."
+    if password.isdigit():
+        return "Lösenordet får inte bestå av enbart siffror."
+    if password.strip().lower() in _WEAK_PASSWORDS:
+        return "Lösenordet är för vanligt - välj något som är svårare att gissa."
+    return None
+
+
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 

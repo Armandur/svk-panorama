@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import threading
 import time
+from typing import Any
+
+from app import config
 
 _lock = threading.Lock()
 _hits: dict[str, list[float]] = {}
@@ -38,3 +41,16 @@ def record_failure(key: str) -> None:
 def reset(key: str) -> None:
     with _lock:
         _hits.pop(key, None)
+
+
+def client_ip(request: Any) -> str:
+    """Klientens IP för rate-limit-nyckeln. Bakom betrodd proxy (config.TRUST_PROXY)
+    tas första IP:n i X-Forwarded-For; annars request.client.host. TRUST_PROXY måste
+    vara AV utan proxy - annars kan en klient spoofa headern och kringgå gränsen."""
+    if config.TRUST_PROXY:
+        xff = request.headers.get("x-forwarded-for", "")
+        if xff:
+            first = xff.split(",")[0].strip()
+            if first:
+                return first
+    return request.client.host if request.client else "unknown"

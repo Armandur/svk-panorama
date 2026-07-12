@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
-from app.auth import hash_password, read_invite_token, set_user_session, verify_password
+from app.auth import hash_password, password_error, read_invite_token, set_user_session, verify_password
 from app.database import User, get_db
 from app.deps import new_csrf_token, set_csrf_cookie, templates, verify_csrf_form
 from app.services import ratelimit
@@ -46,8 +46,8 @@ async def login(
     next: str = Form("/"),
     _csrf: None = Depends(verify_csrf_form),
 ):
-    ip = request.client.host if request.client else "unknown"
-    if ratelimit.too_many(ip):
+    key = "login:" + ratelimit.client_ip(request)
+    if ratelimit.too_many(key):
         return _render_login(
             request, next,
             error="För många misslyckade försök. Vänta en stund och försök igen.",
@@ -55,12 +55,12 @@ async def login(
         )
     user = db.query(User).filter(User.email == email.strip().lower()).first()
     if user is None or not verify_password(password, user.password_hash):
-        ratelimit.record_failure(ip)
+        ratelimit.record_failure(key)
         return _render_login(request, next, error="Fel e-post eller lösenord.")
     if not user.active:
-        ratelimit.record_failure(ip)
+        ratelimit.record_failure(key)
         return _render_login(request, next, error="Kontot är spärrat. Kontakta en administratör.")
-    ratelimit.reset(ip)
+    ratelimit.reset(key)
     set_user_session(request, user)
     return RedirectResponse(url=_safe_next(next), status_code=303)
 
@@ -104,19 +104,29 @@ async def accept_invite(
     password2: str = Form(...),
     _csrf: None = Depends(verify_csrf_form),
 ):
+    # Rate-limita mot token-gissning (tokens är signerade -> infeasibelt, men billig
+    # defense-in-depth). Räkna bara ogiltig/använd token som "försök"; legitima
+    # lösenordsfel (för kort/matchar inte) triggar inte gränsen.
+    key = "invite:" + ratelimit.client_ip(request)
+    if ratelimit.too_many(key):
+        return _render_accept(request, token, valid=False, email=None, error="För många försök. Vänta en stund och försök igen.")
     uid = read_invite_token(token)
     user = db.get(User, uid) if uid else None
     if user is None:
+        ratelimit.record_failure(key)
         return _render_accept(request, token, valid=False, email=None, error="Länken är ogiltig eller har gått ut.")
     if user.password_hash is not None:
         # Kontot är redan aktiverat - en engångslänk får inte återanvändas för att
         # sätta ett nytt lösenord på ett befintligt konto (kontokapning).
+        ratelimit.record_failure(key)
         return _render_accept(request, token, valid=False, email=None, error="Länken är redan använd. Be en administratör om en ny inbjudan eller logga in.")
-    if len(password) < 8:
-        return _render_accept(request, token, valid=True, email=user.email, error="Lösenordet måste vara minst 8 tecken.")
+    pw_err = password_error(password)
+    if pw_err:
+        return _render_accept(request, token, valid=True, email=user.email, error=pw_err)
     if password != password2:
         return _render_accept(request, token, valid=True, email=user.email, error="Lösenorden matchar inte.")
     user.password_hash = hash_password(password)
     db.commit()
+    ratelimit.reset(key)
     set_user_session(request, user)
     return RedirectResponse(url="/", status_code=303)

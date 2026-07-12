@@ -5,6 +5,7 @@ JSON-filer i projektmappen - det är samma format som Pannellum-touren och
 exporten konsumerar, så det finns ingen mellanhand i databasen."""
 from __future__ import annotations
 
+import io
 import json
 import os
 import re
@@ -295,6 +296,22 @@ def validate_image_magic(content: bytes, filename: str) -> None:
         raise HTTPException(
             status_code=400,
             detail=f"{filename} verkar inte vara en giltig JPEG/PNG-bild",
+        )
+
+
+def validate_image_dimensions(content: bytes, filename: str) -> None:
+    """Megapixel-tak mot dekomprimeringsbomber (liten fil, enorma pixelmått). Läser
+    bara bildhuvudet (im.size), ingen full avkodning."""
+    from PIL import Image
+    try:
+        with Image.open(io.BytesIO(content)) as im:
+            megapixels = (im.width * im.height) / 1_000_000
+    except Exception:
+        raise HTTPException(status_code=400, detail=f"{filename} kunde inte läsas som en giltig bild")
+    if megapixels > config.MAX_IMAGE_MEGAPIXELS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{filename} har för stora mått ({megapixels:.0f} MP, max {config.MAX_IMAGE_MEGAPIXELS} MP)",
         )
 
 
