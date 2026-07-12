@@ -582,7 +582,9 @@ tr[data-preview-scene] { cursor: help; }
 /* Bredare än login-formulär (ärver annars .login-section 26rem), som /media. */
 .login-section.preset-manage { max-width: 64rem; }
 .preset-section { margin-bottom: 1.5rem; }
-.preset-section > h3 { margin-bottom: 0.2rem; }
+.preset-section-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.2rem; }
+.preset-section-head h3 { margin: 0; }
+.preset-new { margin: 0; padding: 0.3rem 0.8rem; font-size: 0.9rem; white-space: nowrap; }
 .preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.8rem; margin-top: 0.6rem; }
 .preset-card { margin: 0; padding: 0.7rem; border: 1px solid var(--pico-muted-border-color, rgba(115, 130, 140, 0.3)); border-radius: 3px; display: flex; flex-direction: column; gap: 0.5rem; background: var(--pico-card-background-color, #fff); }
 .preset-card-head { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; }

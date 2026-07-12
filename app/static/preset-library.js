@@ -161,15 +161,18 @@
 		opts = opts || {};
 		// Hanteringsläge (ingen väljare) -> korten får Redigera-knapp.
 		opts.manage = !(opts.onPickTheme || opts.onPickBranding);
+		function newBtn(cls, label) { return opts.manage ? '<button type="button" class="preset-new secondary ' + cls + '">' + label + '</button>' : ''; }
 		container.innerHTML =
-			'<div class="preset-section"><h3>Teman</h3>' +
-			'<p class="hint">Tema + inställningar (typsnitt, färger, autorotate, kartstorlek). Skapas genom att spara på förhandsvisningssteget.</p>' +
+			'<div class="preset-section"><div class="preset-section-head"><h3>Teman</h3>' + newBtn("preset-new-theme", "+ Ny tema-mall") + '</div>' +
+			'<p class="hint">Tema + inställningar (typsnitt, färger, autorotate, kartstorlek).</p>' +
 			'<div class="preset-grid preset-grid-theme"></div></div>' +
-			'<div class="preset-section"><h3>Branding</h3>' +
-			'<p class="hint">Logotyp/text-överlägg. Skapas genom att spara på förhandsvisningssteget.</p>' +
+			'<div class="preset-section"><div class="preset-section-head"><h3>Branding</h3>' + newBtn("preset-new-brand", "+ Ny branding-mall") + '</div>' +
+			'<p class="hint">Logotyp/text-överlägg.</p>' +
 			'<div class="preset-grid preset-grid-brand"></div></div>';
 		var themeGrid = container.querySelector(".preset-grid-theme");
 		var brandGrid = container.querySelector(".preset-grid-brand");
+		var ntBtn = container.querySelector(".preset-new-theme"); if (ntBtn) ntBtn.addEventListener("click", function () { openThemeEdit(null, load); });
+		var nbBtn = container.querySelector(".preset-new-brand"); if (nbBtn) nbBtn.addEventListener("click", function () { openBrandingEdit(null, load); });
 
 		function load() {
 			themeGrid.innerHTML = '<p class="hint">Laddar...</p>';
@@ -210,8 +213,9 @@
 	function showEdit(title) { if (!editModal) buildEditModal(); editModal.querySelector(".preset-edit-title").textContent = title; editModal.hidden = false; }
 
 	function openThemeEdit(p, reload) {
-		showEdit('Redigera tema');
-		var c = p.config || {}, th = c.theme || {};
+		var isNew = !(p && p.id);
+		showEdit(isNew ? 'Ny tema-mall' : 'Redigera tema');
+		var c = (p && p.config) || {}, th = c.theme || {};
 		var ar = c.autoRotate, arOn = typeof ar === "number" && ar !== 0;
 		editBody.innerHTML =
 			'<label>Namn <input type="text" class="pe-name" maxlength="120"></label>' +
@@ -223,7 +227,7 @@
 			'<label>Kartstorlek <select class="pe-map"><option value="small">Liten</option><option value="medium">Mellan</option><option value="large">Stor</option></select></label>' +
 			'<div class="preset-edit-actions"><button type="button" class="pe-save">Spara</button><button type="button" class="pe-cancel secondary outline">Avbryt</button></div>';
 		var q = function (s) { return editBody.querySelector(s); };
-		q(".pe-name").value = p.name;
+		q(".pe-name").value = (p && p.name) || "";
 		q(".pe-font").value = ["sans", "serif", "humanist", "mono"].indexOf(th.font) !== -1 ? th.font : "sans";
 		q(".pe-dot").value = /^#[0-9a-fA-F]{6}$/.test(th.dotColor) ? th.dotColor : "#666666";
 		q(".pe-cur").value = /^#[0-9a-fA-F]{6}$/.test(th.currentColor) ? th.currentColor : "#8b0000";
@@ -247,15 +251,16 @@
 				mapSize: q(".pe-map").value,
 				theme: { font: q(".pe-font").value, dotColor: q(".pe-dot").value, currentColor: q(".pe-cur").value },
 			};
-			jpost("/presets/" + p.id, { name: name, config: config })
+			jpost(isNew ? "/presets" : "/presets/" + p.id, { name: name, config: config })
 				.then(function () { toast("Tema-mall sparad", "ok"); closeEdit(); reload(); })
 				.catch(function () { toast("Kunde inte spara", "error"); });
 		});
 	}
 
 	function openBrandingEdit(p, reload) {
-		showEdit('Redigera branding');
-		var c = p.config || {};
+		var isNew = !(p && p.id);
+		showEdit(isNew ? 'Ny branding-mall' : 'Redigera branding');
+		var c = (p && p.config) || {};
 		editBody.innerHTML =
 			'<label>Namn <input type="text" class="pe-name" maxlength="120"></label>' +
 			'<label>Innehåll (markdown) <textarea class="pe-content" rows="4"></textarea></label>' +
@@ -264,7 +269,7 @@
 			'<div class="preset-brand-stage pe-preview"><div></div></div>' +
 			'<div class="preset-edit-actions"><button type="button" class="pe-save">Spara</button><button type="button" class="pe-cancel secondary outline">Avbryt</button></div>';
 		var q = function (s) { return editBody.querySelector(s); };
-		q(".pe-name").value = p.name;
+		q(".pe-name").value = (p && p.name) || "";
 		q(".pe-content").value = c.content || "";
 		q(".pe-size").value = ["small", "medium", "large"].indexOf(c.size) !== -1 ? c.size : "medium";
 		q(".pe-pos").value = ["bottom-left", "bottom-right", "top-left", "top-right"].indexOf(c.position) !== -1 ? c.position : "bottom-right";
@@ -290,7 +295,7 @@
 			var name = q(".pe-name").value.trim();
 			if (!name) { toast("Namn krävs", "error"); return; }
 			if (!q(".pe-content").value.trim()) { toast("Innehåll krävs", "error"); return; }
-			jpost("/branding-presets/" + p.id, { name: name, config: { content: q(".pe-content").value, size: q(".pe-size").value, position: q(".pe-pos").value } })
+			jpost(isNew ? "/branding-presets" : "/branding-presets/" + p.id, { name: name, config: { content: q(".pe-content").value, size: q(".pe-size").value, position: q(".pe-pos").value } })
 				.then(function () { toast("Branding-mall sparad", "ok"); closeEdit(); reload(); })
 				.catch(function () { toast("Kunde inte spara", "error"); });
 		});
