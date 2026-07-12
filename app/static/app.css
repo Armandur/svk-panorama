@@ -1031,7 +1031,7 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .media-cell { position: relative; aspect-ratio: 1; border: 1px solid var(--pico-muted-border-color); border-radius: 0.3rem; overflow: hidden; }
 .media-cell img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: block; }
 .media-cell img:hover { opacity: 0.85; }
-.media-del { position: absolute; top: 2px; right: 2px; width: 1.5rem; height: 1.5rem; padding: 0; margin: 0; line-height: 1; border: none; border-radius: 50%; background: rgba(0, 0, 0, 0.6); color: #fff; cursor: pointer; font-size: 1rem; }
+.media-del { position: absolute; top: 2px; right: 2px; width: 1.5rem; height: 1.5rem; padding: 0; margin: 0; display: flex; align-items: center; justify-content: center; line-height: 1; border: none; border-radius: 50%; background: rgba(0, 0, 0, 0.6); color: #fff; cursor: pointer; font-size: 1.05rem; }
 .media-del:hover { background: var(--svk-danger); }
 
 /* Mediebibliotekets filter-väljare (både modal och hanteringsvy). */
