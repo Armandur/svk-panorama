@@ -183,6 +183,20 @@
 							<button type="submit" class="secondary outline">Sluta dela</button>
 						</form>
 					</div>
+
+					<div class="share-qr">
+						<label>QR-kod <small class="hint">- skanna för att öppna turen, t.ex. på en skylt</small></label>
+						<div class="qr-row">
+							<img id="share-qr-img" width="160" height="160" alt="QR-kod till delningslänken">
+							<a id="share-qr-download" role="button" class="secondary outline" download="qr-kod.gif" href="#">Ladda ner QR</a>
+						</div>
+					</div>
+
+					<div class="share-embed">
+						<label for="share-embed-code">Bädda in på egen webbsida</label>
+						<textarea id="share-embed-code" class="invite-link" readonly rows="3" onclick="this.select()"></textarea>
+						<button type="button" id="share-embed-copy" class="secondary outline">Kopiera embed-kod</button>
+					</div>
 				</div>
 				<form method="post" action="/projects/{{ project.slug }}/share" class="share-create share-form" data-share-action="share"{% if share_url %} hidden{% endif %}>
 					<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -264,6 +278,7 @@
 <script src="/static/tour-preview.js"></script>
 <script src="/static/export.js"></script>
 <script src="/static/backup.js"></script>
+<script src="/static/vendor/qrcode/qrcode.js"></script>
 <script src="/static/share.js"></script>
 <script>
 	// Hopfällbara panelgrupper: kom ihåg öppet/stängt per grupp (localStorage).

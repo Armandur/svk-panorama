@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from sqlalchemy.orm import Session
 
+from app import config
 from app.database import Project, get_db
 from app.deps import templates
 from app.services.project_files import map_image_path, project_dir, read_map, read_tour
@@ -40,6 +41,9 @@ def public_view(request: Request, token: str, db: Session = Depends(get_db)) -> 
     # Skriv om absoluta /projects/{slug}/-paths (panorama, multiRes.basePath) till
     # den publika basen så pannellum hämtar via token-routen i stället.
     tour = json.loads(json.dumps(tour).replace(f"/projects/{slug}/", base))
+    has_map = map_image_path(slug).exists()
+    origin = config.BASE_URL or str(request.base_url).rstrip("/")
+    page_url = f"{origin}/s/{token}"
     return templates.TemplateResponse(
         request,
         "viewer.html",
@@ -47,8 +51,11 @@ def public_view(request: Request, token: str, db: Session = Depends(get_db)) -> 
             "project": project,
             "tour": tour,
             "map_data": read_map(slug),
-            "has_map_image": map_image_path(slug).exists(),
+            "has_map_image": has_map,
             "asset_base": base,
+            "page_url": page_url,
+            "og_image": f"{page_url}/map.png" if has_map else None,
+            "og_description": f"Utforska {project.name} i en virtuell 360-rundtur.",
         },
     )
 

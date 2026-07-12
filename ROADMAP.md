@@ -470,29 +470,26 @@ Faser (minst till störst):
 Oberoende granskning (Fable) av vad som SAKNAS i det befintliga (redan breda)
 funktionsomfånget. Prioriterat nedan. Rasmus beslut 2026-07-13 inflätade.
 
-### Delnings-paket (quick wins) - STARTAR HÄR 2026-07-13
+### Delnings-paket (quick wins) - KLART 2026-07-13
 
-Tre relaterade delningsförbättringar, tas ihop. Störst kännbar nytta för
-fotografen/kyrkan för minst arbete. Gäller publika `/s/{token}`-vyn och/eller
-bundlen; ingen datamodellsändring.
+Tre relaterade delningsförbättringar. Gäller publika `/s/{token}`-vyn och/eller
+bundlen; ingen datamodellsändring. Browser-verifierat (Playwright): OG-taggar på
+`/s/`, QR-data-URL renderas, embed-snutt fylls. 121 backend-tester gröna.
 
-- [ ] **Open Graph / Twitter Card-metataggar** på `/s/{token}` + bundlens
-      `index.html`. Idag har `viewer.html`/`bundle_index.html` bara `<title>`
-      -> delning i Messenger/Facebook/Slack ger tom förhandsvisning. Lägg
-      `og:title` (projektnamn + site_name), `og:description`, `og:image`
-      (kartbilden `map.png`, absolut URL via `SVK_BASE_URL`/request-host),
-      `og:type`, `twitter:card=summary_large_image`. Bundlen: relativ
-      `og:image` (map.png finns redan i zipen); absoluta URL:er kräver att
-      värden sätter en bas-URL, så dokumentera att bundlens OG blir relativ.
-- [ ] **QR-kod för delningslänken** på preview-steget. Kyrkor vill sätta
-      fysisk skylt ("skanna för virtuell rundtur"). Visas bara när turen delas
-      (bredvid befintlig länk i `share.js`). Vendora ett litet QR-lib i
-      `static/vendor/` (ingen CDN) eller rita canvas-QR klient-side; nedladdning
-      som PNG. Ingen backend behövs (länken finns redan i share-token).
-- [ ] **Embed-iframe-snutt** på preview-steget. `/s/`-vyn funkar redan i
-      `<iframe>`; saknar bara en "kopiera embed-kod"-knapp som ger en färdig
-      `<iframe src="...BASE.../s/{token}" ...>`-snutt. Kyrkor vill bädda in på
-      egen hemsida, inte bara länka. Rent UI ovanpå befintlig delning.
+- [x] **Open Graph / Twitter Card-metataggar KLART.** `viewer.html` (både
+      inloggade `/view` och publika `/s/{token}`) + bundlens `bundle_index.html`
+      har nu `og:type/title/description/image`, `og:url` och `twitter:card`.
+      `og:image` = kartbilden `map.png`; absolut URL byggs i public.py/viewer.py ur
+      `config.BASE_URL` eller `request.base_url`. Bundlen: relativ `og:image`
+      (vet inte sin host - dokumenterat). Ingen `og:image` om turen saknar karta.
+- [x] **QR-kod för delningslänken KLART.** Vendorat `static/vendor/qrcode/qrcode.js`
+      (Kazuhiko Arase, MIT, ingen CDN). `share.js` renderar QR (`qrcode(0,'M')
+      .createDataURL` -> gif data-URL) + nedladdningsknapp i `.share-active`, fylls
+      vid sidladdning och skapa/sluta dela. Bara editorn (preview-steget), inte i
+      viewer/bundle.
+- [x] **Embed-iframe-snutt KLART.** Readonly textarea med färdig
+      `<iframe src=".../s/{token}" width=100% height=480 allowfullscreen loading=lazy>`
+      + kopiera-knapp i `.share-active` (`share.js`).
 
 ### Fler quick wins (ej i första paketet)
 

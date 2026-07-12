@@ -184,7 +184,11 @@ def _build(slug: str, project_name: str, include_originals: bool = False) -> Non
         map_data = read_map(slug)
         has_map = map_image_path(slug).exists()
         index_html = templates.env.get_template("bundle_index.html").render(
-            project_name=project_name, tour=tour, map_data=map_data, has_map_image=has_map
+            project_name=project_name, tour=tour, map_data=map_data, has_map_image=has_map,
+            og_description=f"Utforska {project_name} i en virtuell 360-rundtur.",
+            # Relativ og:image - bundlen vet inte sin host, så vissa crawlers
+            # kräver att servern sätter absolut URL. Dokumenterat i README.
+            og_image="map.png" if has_map else None,
         )
         generated = [
             ("index.html", index_html.encode("utf-8")),

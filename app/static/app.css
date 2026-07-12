@@ -727,6 +727,12 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .batch-count { color: var(--pico-muted-color); font-size: 0.9rem; }
 .invite-details summary { cursor: pointer; font-size: 0.85rem; }
 .invite-link { width: 100%; margin-top: 0.3rem; font-family: ui-monospace, monospace; font-size: 0.78rem; }
+.share-qr, .share-embed { margin-top: 0.9rem; }
+.share-qr > label, .share-embed > label { display: block; font-size: 0.85rem; margin-bottom: 0.3rem; }
+.qr-row { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+.qr-row img { background: #fff; border-radius: 0.3rem; padding: 4px; }
+.qr-row a { margin: 0; width: auto; }
+#share-embed-copy { margin-top: 0.4rem; width: auto; }
 .profile-ok { background: var(--svk-ok); color: #fff; padding: 0.5rem 0.7rem; border-radius: 0.3rem; font-size: 0.9rem; }
 
 /* --- Nav höger: Admin-knapp + kontokort (M365-stil) --- */

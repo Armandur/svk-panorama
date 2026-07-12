@@ -256,7 +256,11 @@ fullskärms-omflyttning; preview = absolut i panorama-wrap.
 - `import-project.js` - importera projekt-zip på startsidan -> redirect till nya turen.
 - `share.js` - publik delningslänk på preview-steget: skapa/sluta dela async (fetch,
   JSON-svar) så länken dyker upp/försvinner i rutan utan omladdning. Progressiv
-  förbättring (forms funkar utan JS via redirect).
+  förbättring (forms funkar utan JS via redirect). Renderar även **QR-kod**
+  (vendorat `vendor/qrcode/qrcode.js`, MIT, `qrcode(0,'M').createDataURL` -> gif
+  data-URL, nedladdningsbar) och en **embed-`<iframe>`-snutt** (kopiera-knapp) när
+  turen delas - båda fylls både vid sidladdning (server-renderad länk finns) och
+  vid skapa/sluta dela.
 - `preview.js` (`ScenePreview`) + `settings.js` - delad hover-preview + dess
   inställningar (snurr/riktning/vagg i localStorage). Används av scen- och
   preview-vyn.
@@ -290,6 +294,11 @@ Turer kan delas oautentiserat via en oigissbar `Project.share_token`. `/s/{token
 renderar samma `viewer.html` som inloggade `/view` men med `asset_base` = `/s/{token}/`
 och tour-paths omskrivna dit; `/s/{token}/{path}` serverar råa filer (läs-only,
 traversal-guard). Skapa/sluta-dela på preview-steget. Nolla token -> länken dör.
+**Open Graph/Twitter Card-taggar:** `viewer.html` (och bundlens `bundle_index.html`)
+har `og:title/description/image` + `twitter:card` så delningslänken får rik
+förhandsvisning i Messenger/Slack m.fl. `og:image` = kartbilden (`map.png`); absolut
+URL byggs i public.py/viewer.py ur `config.BASE_URL` eller `request.base_url`. Bundlen
+använder relativ `og:image` (vet inte sin host).
 
 ## Inställningar & tjänstenamn (services/settings.py)
 

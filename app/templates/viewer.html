@@ -4,6 +4,13 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>{{ project.name }}</title>
+	{% if og_description %}<meta name="description" content="{{ og_description }}">{% endif %}
+	<meta property="og:type" content="website">
+	<meta property="og:title" content="{{ project.name }}">
+	{% if og_description %}<meta property="og:description" content="{{ og_description }}">{% endif %}
+	{% if page_url %}<meta property="og:url" content="{{ page_url }}">{% endif %}
+	{% if og_image %}<meta property="og:image" content="{{ og_image }}">
+	<meta name="twitter:card" content="summary_large_image">{% else %}<meta name="twitter:card" content="summary">{% endif %}
 	<link rel="stylesheet" href="/static/vendor/pannellum.css">
 	<link rel="stylesheet" href="/static/vendor/fonts/fonts.css">
 	<link rel="stylesheet" href="/static/viewer.css">
