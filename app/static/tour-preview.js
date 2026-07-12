@@ -388,19 +388,14 @@
 
 	if (discardBtn) discardBtn.addEventListener("click", function () { window.location.reload(); });
 
-	// --- Tema-/inställningsförinställningar (presets) -----------------------
-	// Preset = subset av tour.default (autoRotate/delay/fade/mapSize/theme), ej
-	// startscen. Läses ur/appliceras på samma kontroller som Spara-blocket.
+	// --- Mall-väljare (tema + branding) -------------------------------------
+	// Bläddra bland sparade mallar i den visuella väljar-modalen (preset-library.js)
+	// och tillämpa på turen; "Spara som mall" skapar/skriver över per namn. Hantera,
+	// redigera och sätt standard sker på /mallar-sidan.
 	(function () {
-		var sel = document.getElementById("preset-select");
-		var applyBtn = document.getElementById("preset-apply");
-		var saveBtn2 = document.getElementById("preset-save");
-		var delBtn = document.getElementById("preset-delete");
-		var defChk = document.getElementById("preset-default");
-		if (!sel) return;
-		var cache = [];
 		function csrf() { return window.getCsrfToken ? getCsrfToken() : ""; }
-		function readPreset() {
+
+		function readThemePreset() {
 			return {
 				autoRotate: arEnabled.checked ? signedSpeed() : false,
 				autoRotateInactivityDelay: Math.round((parseFloat(arDelay.value) || 0) * 1000),
@@ -409,7 +404,7 @@
 				theme: { font: themeFont.value, dotColor: themeDot.value, currentColor: themeCurrent.value },
 			};
 		}
-		function applyPreset(c) {
+		function applyThemePreset(c) {
 			var ar = c.autoRotate, arOn = typeof ar === "number" && ar !== 0;
 			arEnabled.checked = arOn;
 			setPair(arSpeed, arSpeedNum, arOn ? Math.abs(ar) : 2);
@@ -429,78 +424,7 @@
 			setDirty(true);
 			rebuildKeepView();
 		}
-		function selected() { return cache.filter(function (p) { return String(p.id) === sel.value; })[0]; }
-		function syncDef() { var p = selected(); if (defChk) { defChk.checked = !!(p && p.is_default); defChk.disabled = !p; } }
-		function renderOpts() {
-			var cur = sel.value;
-			sel.innerHTML = '<option value="">- välj förinställning -</option>';
-			cache.forEach(function (p) {
-				var o = document.createElement("option");
-				o.value = String(p.id);
-				o.textContent = p.name + (p.is_default ? " (standard)" : "");
-				sel.appendChild(o);
-			});
-			sel.value = cur;
-			syncDef();
-		}
-		function load(selectId) {
-			fetch("/presets").then(function (r) { return r.json(); }).then(function (d) {
-				cache = d.presets || [];
-				renderOpts();
-				if (selectId != null) { sel.value = String(selectId); syncDef(); }
-			}).catch(function () { /* tyst */ });
-		}
-		sel.addEventListener("change", syncDef);
-		applyBtn.addEventListener("click", function () {
-			var p = selected();
-			if (!p) { if (window.showToast) showToast("Välj en förinställning först", "error"); return; }
-			applyPreset(p.config);
-			if (window.showToast) showToast("Tillämpad - spara för att behålla", "ok");
-		});
-		saveBtn2.addEventListener("click", function () {
-			var p = selected();
-			var name = window.prompt("Namn på förinställningen:", (p && p.name) || "");
-			if (name == null || !name.trim()) return;
-			fetch("/presets", {
-				method: "POST", headers: { "X-CSRF-Token": csrf(), "Content-Type": "application/json" },
-				body: JSON.stringify({ name: name.trim(), config: readPreset() }),
-			}).then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
-				.then(function (d) { if (window.showToast) showToast("Förinställning sparad", "ok"); load(d.preset.id); })
-				.catch(function () { if (window.showToast) showToast("Kunde inte spara", "error"); });
-		});
-		delBtn.addEventListener("click", function () {
-			var p = selected();
-			if (!p) { if (window.showToast) showToast("Välj en förinställning först", "error"); return; }
-			var ask = window.confirmDialog ? confirmDialog('Ta bort förinställningen "' + p.name + '"?', { danger: true, confirmText: "Ta bort" }) : Promise.resolve(window.confirm("Ta bort?"));
-			ask.then(function (ok) {
-				if (!ok) return;
-				fetch("/presets/" + p.id + "/delete", { method: "POST", headers: { "X-CSRF-Token": csrf() } })
-					.then(function () { load(); if (window.showToast) showToast("Borttagen", "ok"); }).catch(function () { /* tyst */ });
-			});
-		});
-		if (defChk) defChk.addEventListener("change", function () {
-			var p = selected();
-			if (!p) return;
-			fetch("/presets/" + p.id + "/default", {
-				method: "POST", headers: { "X-CSRF-Token": csrf(), "Content-Type": "application/json" },
-				body: JSON.stringify({ isDefault: defChk.checked }),
-			}).then(function () { load(sel.value); }).catch(function () { /* tyst */ });
-		});
-		load();
-	})();
-
-	// --- Branding-mallar (egen mall, skild från tema-presets) --------------
-	// Spara/använd bara logga+storlek+position. En kan vara standard för nya turer.
-	(function () {
-		var sel = document.getElementById("brand-preset-select");
-		var applyBtn = document.getElementById("brand-preset-apply");
-		var saveBtn2 = document.getElementById("brand-preset-save");
-		var delBtn = document.getElementById("brand-preset-delete");
-		var defChk = document.getElementById("brand-preset-default");
-		if (!sel) return;
-		var cache = [];
-		function csrf() { return window.getCsrfToken ? getCsrfToken() : ""; }
-		function applyCfg(c) {
+		function applyBrandingPreset(c) {
 			c = c || {};
 			setBrandingVal(c.content || "");
 			if (brandingSize) brandingSize.value = SIZES.indexOf(c.size) !== -1 ? c.size : "medium";
@@ -508,66 +432,36 @@
 			applyBrandingLive();
 			setDirty(true);
 		}
-		function selected() { return cache.filter(function (p) { return String(p.id) === sel.value; })[0]; }
-		function syncDef() { var p = selected(); if (defChk) { defChk.checked = !!(p && p.is_default); defChk.disabled = !p; } }
-		function renderOpts() {
-			var cur = sel.value;
-			sel.innerHTML = '<option value="">- välj branding-mall -</option>';
-			cache.forEach(function (p) {
-				var o = document.createElement("option");
-				o.value = String(p.id);
-				o.textContent = p.name + (p.is_default ? " (standard)" : "");
-				sel.appendChild(o);
+
+		// Bläddra: öppna den visuella väljaren; Använd applicerar respektive typ + stänger.
+		function browse() {
+			if (!window.openPresetLibrary) return;
+			openPresetLibrary({
+				onPickTheme: function (c) { applyThemePreset(c); if (window.showToast) showToast("Tema tillämpat - spara turen för att behålla", "ok"); },
+				onPickBranding: function (c) { applyBrandingPreset(c); if (window.showToast) showToast("Branding tillämpad - spara turen för att behålla", "ok"); },
 			});
-			sel.value = cur;
-			syncDef();
 		}
-		function load(selectId) {
-			fetch("/branding-presets").then(function (r) { return r.json(); }).then(function (d) {
-				cache = d.presets || [];
-				renderOpts();
-				if (selectId != null) { sel.value = String(selectId); syncDef(); }
-			}).catch(function () { /* tyst */ });
-		}
-		sel.addEventListener("change", syncDef);
-		applyBtn.addEventListener("click", function () {
-			var p = selected();
-			if (!p) { if (window.showToast) showToast("Välj en branding-mall först", "error"); return; }
-			applyCfg(p.config);
-			if (window.showToast) showToast("Tillämpad - spara för att behålla", "ok");
+		["preset-browse", "brand-preset-browse"].forEach(function (id) {
+			var btn = document.getElementById(id);
+			if (btn) btn.addEventListener("click", browse);
 		});
-		saveBtn2.addEventListener("click", function () {
+
+		function saveMall(url, cfg, label) {
+			var name = window.prompt("Namn på mallen:", "");
+			if (name == null || !name.trim()) return;
+			fetch(url, { method: "POST", headers: { "X-CSRF-Token": csrf(), "Content-Type": "application/json" }, body: JSON.stringify({ name: name.trim(), config: cfg }) })
+				.then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+				.then(function () { if (window.showToast) showToast(label + " sparad", "ok"); })
+				.catch(function () { if (window.showToast) showToast("Kunde inte spara", "error"); });
+		}
+		var saveTheme = document.getElementById("preset-save");
+		if (saveTheme) saveTheme.addEventListener("click", function () { saveMall("/presets", readThemePreset(), "Tema-mall"); });
+		var saveBrand = document.getElementById("brand-preset-save");
+		if (saveBrand) saveBrand.addEventListener("click", function () {
 			var cfg = currentBranding();
 			if (!cfg) { if (window.showToast) showToast("Skriv branding först", "error"); return; }
-			var p = selected();
-			var name = window.prompt("Namn på branding-mallen:", (p && p.name) || "");
-			if (name == null || !name.trim()) return;
-			fetch("/branding-presets", {
-				method: "POST", headers: { "X-CSRF-Token": csrf(), "Content-Type": "application/json" },
-				body: JSON.stringify({ name: name.trim(), config: cfg }),
-			}).then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
-				.then(function (d) { if (window.showToast) showToast("Branding-mall sparad", "ok"); load(d.preset.id); })
-				.catch(function () { if (window.showToast) showToast("Kunde inte spara", "error"); });
+			saveMall("/branding-presets", cfg, "Branding-mall");
 		});
-		delBtn.addEventListener("click", function () {
-			var p = selected();
-			if (!p) { if (window.showToast) showToast("Välj en branding-mall först", "error"); return; }
-			var ask = window.confirmDialog ? confirmDialog('Ta bort branding-mallen "' + p.name + '"?', { danger: true, confirmText: "Ta bort" }) : Promise.resolve(window.confirm("Ta bort?"));
-			ask.then(function (ok) {
-				if (!ok) return;
-				fetch("/branding-presets/" + p.id + "/delete", { method: "POST", headers: { "X-CSRF-Token": csrf() } })
-					.then(function () { load(); if (window.showToast) showToast("Borttagen", "ok"); }).catch(function () { /* tyst */ });
-			});
-		});
-		if (defChk) defChk.addEventListener("change", function () {
-			var p = selected();
-			if (!p) return;
-			fetch("/branding-presets/" + p.id + "/default", {
-				method: "POST", headers: { "X-CSRF-Token": csrf(), "Content-Type": "application/json" },
-				body: JSON.stringify({ isDefault: defChk.checked }),
-			}).then(function () { load(sel.value); }).catch(function () { /* tyst */ });
-		});
-		load();
 	})();
 
 	// --- Startscen-väljare (modal med karta + hover-preview) ---------------

@@ -119,26 +119,20 @@
 			</label>
 		</div>
 		<hr class="branding-sep">
-		<p class="hint">Branding-mallar: spara loggan för att återanvända på andra turer, oberoende av temat. "Standard för nya turer" läggs automatiskt på nya projekt.</p>
+		<p class="hint">Spara loggan som mall för att återanvända på andra turer, eller bläddra bland sparade branding-mallar och tillämpa. Redigera och sätt standard på <a href="/mallar">Mallar</a>.</p>
 		<div class="preset-row">
-			<select id="brand-preset-select"><option value="">- välj branding-mall -</option></select>
-			<button id="brand-preset-apply" type="button" class="secondary">Använd</button>
-			<button id="brand-preset-save" type="button" class="secondary outline">Spara nuvarande...</button>
-			<button id="brand-preset-delete" type="button" class="secondary outline">Radera</button>
+			<button id="brand-preset-save" type="button" class="secondary outline">Spara som mall...</button>
+			<button id="brand-preset-browse" type="button" class="secondary">Bläddra mallar</button>
 		</div>
-		<label class="preset-default-label"><input type="checkbox" id="brand-preset-default" disabled> Standard för nya turer</label>
 	</article>
 
 	<article>
-		<h3>Förinställningar</h3>
-		<p class="hint">Spara tema + inställningar (ej startscen) för att återanvända på andra turer. "Standard för nya turer" ärvs automatiskt av nya projekt.</p>
+		<h3>Tema-mallar</h3>
+		<p class="hint">Spara tema + inställningar (ej startscen) som mall, eller bläddra bland sparade mallar och tillämpa. Redigera och sätt "standard för nya turer" på <a href="/mallar">Mallar</a>.</p>
 		<div class="preset-row">
-			<select id="preset-select"><option value="">- välj förinställning -</option></select>
-			<button id="preset-apply" type="button" class="secondary">Använd</button>
-			<button id="preset-save" type="button" class="secondary outline">Spara nuvarande...</button>
-			<button id="preset-delete" type="button" class="secondary outline">Radera</button>
+			<button id="preset-save" type="button" class="secondary outline">Spara som mall...</button>
+			<button id="preset-browse" type="button" class="secondary">Bläddra mallar</button>
 		</div>
-		<label class="preset-default-label"><input type="checkbox" id="preset-default" disabled> Standard för nya turer</label>
 	</article>
 
 	<article>
@@ -255,6 +249,7 @@
 <script src="/static/vendor/dompurify/purify.min.js"></script>
 <script src="/static/markdown.js"></script>
 <script src="/static/media-library.js"></script>
+<script src="/static/preset-library.js"></script>
 <script src="/static/vendor/easymde/easymde.min.js"></script>
 <script src="/static/tour-preview.js"></script>
 <script src="/static/export.js"></script>
