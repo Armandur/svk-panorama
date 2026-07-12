@@ -245,6 +245,19 @@
 		q(".pe-fade").value = (c.sceneFadeDuration != null ? c.sceneFadeDuration : 1500) / 1000;
 		q(".pe-delay").value = (c.autoRotateInactivityDelay != null ? c.autoRotateInactivityDelay : 2000) / 1000;
 		q(".pe-map").value = ["small", "medium", "large"].indexOf(c.mapSize) !== -1 ? c.mapSize : "medium";
+		// Rotationsinställningarna (hastighet/riktning/återuppta) gråas ut när
+		// autorotate är av - de har ingen effekt då.
+		function syncArState() {
+			var on = q(".pe-ar").checked;
+			q(".pe-speed").disabled = !on;
+			q(".pe-dir").disabled = !on;
+			q(".pe-delay").disabled = !on;
+			q(".pe-speed").closest("label").classList.toggle("pe-disabled", !on);
+			q(".pe-delay").closest("label").classList.toggle("pe-disabled", !on);
+			q(".pe-dir").closest(".pe-field").classList.toggle("pe-disabled", !on);
+		}
+		syncArState();
+		q(".pe-ar").addEventListener("change", syncArState);
 		q(".pe-cancel").addEventListener("click", closeEdit);
 		q(".pe-save").addEventListener("click", function () {
 			var name = q(".pe-name").value.trim();

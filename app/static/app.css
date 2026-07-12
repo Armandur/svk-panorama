@@ -625,6 +625,8 @@ tr[data-preview-scene] { cursor: help; }
 .pe-field .dir-toggle { margin: 0.2rem 0 0; }
 .pe-switch { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
 .pe-switch input { margin: 0; width: auto; }
+/* Rotationsfält utgråade när autorotate är av. */
+.preset-edit-body .pe-disabled { opacity: 0.5; pointer-events: none; }
 .preset-edit-tools button { margin: 0; padding: 0.2rem 0.7rem; }
 .pe-preview { margin: 0.2rem 0; }
 .preset-edit-actions { display: flex; gap: 0.5rem; margin-top: 0.4rem; }
