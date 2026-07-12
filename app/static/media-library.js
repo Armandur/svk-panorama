@@ -197,8 +197,11 @@
 
 	function pickerUpload(file) {
 		showErr("");
-		uploadFile(file).then(function () { pickerLoad(); })
-			.catch(function (e) { showErr(e.message || "Uppladdning misslyckades"); });
+		var upBtn = modal.querySelector(".media-upload");
+		if (upBtn) upBtn.setAttribute("aria-busy", "true");
+		function done() { if (upBtn) upBtn.removeAttribute("aria-busy"); }
+		uploadFile(file).then(function () { done(); pickerLoad(); })
+			.catch(function (e) { done(); showErr(e.message || "Uppladdning misslyckades"); });
 	}
 
 	function pickerDelete(it) {
@@ -238,10 +241,15 @@
 		var mgrErr = container.querySelector(".mgr-error");
 		function err(m) { mgrErr.textContent = m || ""; mgrErr.hidden = !m; }
 		container.querySelector(".mgr-upload").addEventListener("click", function () { mgrFile.click(); });
+		var mgrUpBtn = container.querySelector(".mgr-upload");
 		mgrFile.addEventListener("change", function () {
 			var f = mgrFile.files && mgrFile.files[0]; mgrFile.value = "";
 			if (!f) return;
-			err(""); uploadFile(f).then(load).catch(function (e) { err(e.message || "Uppladdning misslyckades"); });
+			err("");
+			if (mgrUpBtn) mgrUpBtn.setAttribute("aria-busy", "true");
+			function done() { if (mgrUpBtn) mgrUpBtn.removeAttribute("aria-busy"); }
+			uploadFile(f).then(function () { done(); load(); })
+				.catch(function (e) { done(); err(e.message || "Uppladdning misslyckades"); });
 		});
 
 		function load() {

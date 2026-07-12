@@ -48,7 +48,7 @@
 					var pct = Math.round((e.loaded / e.total) * 100);
 					setProgress(pct);
 					setDetail("Laddar upp... " + pct + "%");
-					if (pct >= 100) { setTitle("Bearbetar pa servern..."); setProgress(null); }
+					if (pct >= 100) { setTitle("Bearbetar på servern..."); setProgress(null); }
 				}
 			});
 			xhr.addEventListener("load", function () {
