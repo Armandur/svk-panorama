@@ -130,6 +130,11 @@ Applicerar `tour.default.theme` via CSS-variabler (`--tour-font/--dot-color/
   `<form data-confirm="..." [data-confirm-danger] [data-confirm-ok="..."]>` (fångar
   submit, frågar, skickar vid ja). Laddas globalt i base.html. Använd detta - inte
   `confirm()`.
+- `modal-a11y.js` - tillgänglighet för alla `.help-modal`-overlayer (hjälp, hotspot,
+  startscen, inställningar, mediebibliotek): sätter `role=dialog`/`aria-modal`, fokusfälla
+  (Tab cyklar inuti) och fokusåterställning vid stängning. Aktiveras via en
+  MutationObserver på modalens `hidden`-attribut - ingen ändring krävs i varje modals
+  öppna-logik; dynamiskt byggda modaler fångas också. Laddas globalt i base.html.
 - `media-library.js` - delad mediepool (`/media/*`): `window.openMediaLibrary(slug,
   onPick)` = modal-väljare (slug bara för filtret "denna tur"), `window.initMediaManager(el)`
   = inbäddad hanteringsvy på `/media`. Delad hämtning/filter/rendering, filter
