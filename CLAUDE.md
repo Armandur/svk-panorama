@@ -150,13 +150,10 @@ Namngivna tema-/inställnings-presets per ägare (`theme_presets`-tabell). `conf
 = JSON-subset av `tour.default` (autoRotate, delays, sceneFade, mapSize,
 theme{font,dotColor,currentColor}) - INTE firstScene. Saneras vid spar
 (`sanitize_config`, hex/enum/clamp). En kan vara `is_default` -> **nya turer ärver
-den** (create_project mergar `default_config()` in i tour.default). UI på
-preview-steget: dropdown + Använd/Spara/Radera + "standard för nya turer"
-(preset-wiring i tour-preview.js läser/applicerar SAMMA kontroller som Spara-
-blocket). ThemePreset är en ADDITIV ny tabell -> `create_all` skapar den utan att
-röra befintlig data (ingen svk.db-blåsning behövdes, till skillnad från
-kolumn-ändringar). Branding ingår INTE i tema-preseten (`sanitize_config` droppar
-den) - det är en egen mall:
+den** (create_project mergar `default_config()` in i tour.default). ThemePreset är
+en ADDITIV ny tabell -> `create_all` skapar den utan att röra befintlig data (ingen
+svk.db-blåsning behövdes, till skillnad från kolumn-ändringar). Branding ingår INTE
+i tema-preseten (`sanitize_config` droppar den) - det är en egen mall:
 
 **Branding-mallar (BrandingPreset, egen tabell).** Skild från ThemePreset så
 org-identitet (logga) återanvänds oberoende av temat. `config` = JSON
@@ -164,9 +161,22 @@ org-identitet (logga) återanvänds oberoende av temat. `config` = JSON
 delete/set_default, generiska `_list/_save/_delete/_set_default/_default_row` i
 presets.py delas av båda tabellerna). Endpoints `/branding-presets*` (routes/
 presets.py). En kan vara `is_default` -> nya turer ärver den (`create_project`
-lägger `default_branding()` på `tour.default.branding`, skilt från tema-arvet). UI
-i Branding-sektionen på preview-steget (dropdown + Använd/Spara/Radera + standard),
-wiring i egen IIFE i tour-preview.js. Additiv tabell -> `create_all` (ingen blåsning).
+lägger `default_branding()` på `tour.default.branding`, skilt från tema-arvet).
+Additiv tabell -> `create_all` (ingen blåsning). Update-by-id: `update_preset`/
+`update_branding_preset` + `POST /presets/{id}` och `/branding-presets/{id}`
+(stödjer namnbyte, till skillnad från upsert-by-name-`save`).
+
+**Mall-bibliotek (preset-library.js, /mallar).** Delad DRY-komponent (som
+media-library.js) `mountPresetLibrary(container, opts)` driver BÅDA ytorna:
+`window.initPresetManager` = `/mallar`-sidan (hantera: kort med förhandsvisning +
+Redigera/Radera/★-standard; schematiska tema-kort med färgrutor/typsnittsprov/badges,
+branding-kort med renderad overlay via `renderBrandingInto`), `window.openPresetLibrary
+({onPickTheme,onPickBranding})` = väljar-modal på preview-steget (Använd applicerar +
+stänger, ingen Redigera). Route `GET /mallar` (require_user, CSRF), nav-länk "Mallar".
+Redigera öppnar edit-modal (tema: font/färger/autorotate/fade/kartstorlek; branding:
+markdown + Infoga bild + storlek/position med live-preview) -> update-by-id. På
+preview-steget: "Spara som mall..." (skapar/skriver över per namn) + "Bläddra mallar"
+(öppnar väljaren); tour-preview.js delar apply-funktionerna mellan bläddra och spara.
 
 ## Runtime-viewern (viewer.js/css)
 
