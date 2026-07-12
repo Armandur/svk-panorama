@@ -175,6 +175,8 @@ def test_preset_sanitize():
     check("preset giltig autoRotate behålls", ok["autoRotate"] == -3)
     check("preset giltig mapSize behålls", ok["mapSize"] == "large")
     check("preset tom -> defaults", sanitize_config({})["theme"]["font"] == "sans")
+    check("nytt typsnitt dmsans behålls", sanitize_config({"theme": {"font": "dmsans"}})["theme"]["font"] == "dmsans")
+    check("nytt typsnitt spectral behålls", sanitize_config({"theme": {"font": "spectral"}})["theme"]["font"] == "spectral")
     # Branding hör INTE hemma i tema-preset (egen mall) -> droppas även om det skickas.
     with_brand = sanitize_config({"branding": {"content": "**x**", "size": "large", "position": "top-left"}})
     check("tema-preset droppar branding", "branding" not in with_brand)

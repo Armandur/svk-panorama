@@ -161,6 +161,11 @@ def _collect(
         files.append((name, _VENDOR / name))
     for name in ("viewer.js", "viewer.css"):
         files.append((name, _STATIC / name))
+    # Vendorade tematypsnitt (DM Sans/Spectral) - self-hostade i bundlen. fonts.css
+    # refererar woff2 relativt, så alla ligger i bundle-roten bredvid varandra.
+    files.append(("fonts.css", _VENDOR / "fonts" / "fonts.css"))
+    for name in ("dmsans-latin.woff2", "spectral-latin-400.woff2", "spectral-latin-700.woff2"):
+        files.append((name, _VENDOR / "fonts" / name))
     # Markdown-rendering av info-hotspots i den publicerade turen.
     files.append(("marked.min.js", _VENDOR / "marked" / "marked.min.js"))
     files.append(("purify.min.js", _VENDOR / "dompurify" / "purify.min.js"))

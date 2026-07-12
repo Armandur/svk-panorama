@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from app.database import BrandingPreset, ThemePreset
 
 _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
-_FONTS = {"sans", "serif", "mono", "humanist"}
+_FONTS = {"sans", "serif", "mono", "humanist", "dmsans", "spectral"}
 _MAP_SIZES = {"small", "medium", "large"}
 _BRANDING_SIZES = {"small", "medium", "large"}
 _BRANDING_POS = {"bottom-left", "bottom-right", "top-left", "top-right"}

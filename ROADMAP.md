@@ -451,13 +451,13 @@ Faser (minst till störst):
         saknas loggan i den exporterade bundlen. Publika /s + backup hanteras redan (absoluta
         media-URL:er). Gäller alla vyer (editor-preview/​/preview/​/view/​bundle).
 
-- [ ] **Fler typsnitt i temat (särskilt DM Sans).** Idag är tema-typsnitten
-      system-font-stackar (sans/serif/mono/humanist - inga font-filer, självbärande
-      bundle). Lägg till fler val, framförallt **DM Sans**. OBS avvägning: riktiga
-      webbtypsnitt kräver self-hostade `woff2`-filer (vendora, ingen CDN) som måste
-      inkluderas i bundle-exporten och den publika /s-vyn - dvs. bundlen växer. Väg
-      mot att behålla systemstackar som lätta default. Uppdatera `FONTS` i
-      `tour-preview.js` + `viewer.css` + font-validering på servern.
+- [x] **Fler typsnitt i temat KLAR (2026-07-13):** DM Sans + Spectral vendorade som
+      self-hostade woff2 (latin-subset, ~82 KB, SIL OFL) i `static/vendor/fonts/`
+      (`fonts.css` + 3 woff2; DM Sans variabel = en fil). Laddas i viewer/preview/bundle,
+      `bundle.py` kopierar med dem (self-containment verifierad offline). FONTS-mappen
+      (viewer.js/tour-preview.js/preset-library.js), font-validering (`_FONTS`) och alla
+      typsnitts-selects uppdaterade. Systemstackarna kvar som lätta defaults.
+      Kvar/senare: ev. kursiv-woff2 (nu faux-italic för *emfas*), latin-ext för fler accenter.
 
 - [x] **Uppdatera WORKFLOW.md KLAR (2026-07-12).** Omskriven till en fotograf-vänlig
       guide i appens faktiska flöde (skapa/ladda upp -> placera/länka -> kalibrera/

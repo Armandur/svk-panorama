@@ -197,6 +197,12 @@ Path-agnostisk: läser inbäddad `tour`/`map` (JSON-script-taggar), bygger
 pannellum, lägger till kartöverlägg (klickbara prickar, aktiv scen markerad).
 Applicerar `tour.default.theme` via CSS-variabler (`--tour-font/--dot-color/
 --current-dot-color`) + `mapSize` (`data-size` på `#map-container`).
+**Typsnitt:** systemstackar (sans/serif/mono/humanist) + två vendorade webbtypsnitt
+`dmsans`/`spectral` (self-hostad woff2 i `static/vendor/fonts/`, `fonts.css`, latin-
+subset, OFL). Font-family-stacken definieras i EN `FONTS`-map replikerad i viewer.js/
+tour-preview.js/preset-library.js; validering i `presets._FONTS`. `bundle.py` kopierar
+fonts.css+woff2 så exporten är självbärande (verifierat offline). Lägg nytt typsnitt =
+uppdatera alla tre FONTS-mappar + `_FONTS` + selects + ev. woff2 i vendor/fonts.
 **Länklinjer ritas INTE i turen** - det är en bygghjälp bara i plan-vyn.
 **Branding-overlay:** `tour.default.branding={content(markdown),size,position}`
 renderas som ett `.tour-branding`-överlägg via delad `renderBrandingInto` (markdown.js;

@@ -21,6 +21,8 @@
 		serif: 'Georgia,"Times New Roman",serif',
 		mono: 'ui-monospace,"Courier New",monospace',
 		humanist: '"Segoe UI","Trebuchet MS","Nimbus Sans L",sans-serif',
+		dmsans: '"DM Sans","Nimbus Sans L","Liberation Sans",Arial,sans-serif',
+		spectral: '"Spectral",Georgia,"Times New Roman",serif',
 	};
 	(function applyTheme() {
 		const t = tour.default.theme || {};

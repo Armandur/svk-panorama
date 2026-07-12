@@ -17,8 +17,10 @@
 		serif: 'Georgia,"Times New Roman",serif',
 		mono: 'ui-monospace,"Courier New",monospace',
 		humanist: '"Segoe UI","Trebuchet MS","Nimbus Sans L",sans-serif',
+		dmsans: '"DM Sans","Nimbus Sans L","Liberation Sans",Arial,sans-serif',
+		spectral: '"Spectral",Georgia,"Times New Roman",serif',
 	};
-	var FONT_LABEL = { sans: "Sans", serif: "Serif", mono: "Mono", humanist: "Humanist" };
+	var FONT_LABEL = { sans: "Sans", serif: "Serif", mono: "Mono", humanist: "Humanist", dmsans: "DM Sans", spectral: "Spectral" };
 	var SIZE_LABEL = { small: "Liten", medium: "Mellan", large: "Stor" };
 	var POS_LABEL = { "bottom-left": "Nere t.v.", "bottom-right": "Nere t.h.", "top-left": "Uppe t.v.", "top-right": "Uppe t.h." };
 
@@ -222,7 +224,7 @@
 		var ar = c.autoRotate, arOn = typeof ar === "number" && ar !== 0;
 		editBody.innerHTML =
 			'<label>Namn <input type="text" class="pe-name" maxlength="120"></label>' +
-			'<label>Typsnitt <select class="pe-font"><option value="sans">Sans</option><option value="serif">Serif</option><option value="humanist">Humanist</option><option value="mono">Monospace</option></select></label>' +
+			'<label>Typsnitt <select class="pe-font"><option value="sans">Sans</option><option value="serif">Serif</option><option value="humanist">Humanist</option><option value="mono">Monospace</option><option value="dmsans">DM Sans</option><option value="spectral">Spectral</option></select></label>' +
 			'<div class="pe-row"><label>Kartprickar <input type="text" class="pe-dot coloris-input" data-coloris></label><label>Aktiv kartprick <input type="text" class="pe-cur coloris-input" data-coloris></label></div>' +
 			'<label class="pe-switch"><input type="checkbox" class="pe-ar" role="switch"> Rotera automatiskt</label>' +
 			'<div class="pe-row"><label>Hastighet (°/s) <input type="number" class="pe-speed" min="0.5" max="10" step="0.5"></label>' +
@@ -232,7 +234,7 @@
 			'<div class="preset-edit-actions"><button type="button" class="pe-save">Spara</button><button type="button" class="pe-cancel secondary outline">Avbryt</button></div>';
 		var q = function (s) { return editBody.querySelector(s); };
 		q(".pe-name").value = (p && p.name) || "";
-		q(".pe-font").value = ["sans", "serif", "humanist", "mono"].indexOf(th.font) !== -1 ? th.font : "sans";
+		q(".pe-font").value = ["sans", "serif", "humanist", "mono", "dmsans", "spectral"].indexOf(th.font) !== -1 ? th.font : "sans";
 		q(".pe-dot").value = /^#[0-9a-fA-F]{6}$/.test(th.dotColor) ? th.dotColor : "#666666";
 		q(".pe-cur").value = /^#[0-9a-fA-F]{6}$/.test(th.currentColor) ? th.currentColor : "#8b0000";
 		// Coloris-inputs skapas dynamiskt här -> (om)initiera så swatch/picker binds.

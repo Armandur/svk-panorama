@@ -1,0 +1,24 @@
+/* Vendorade webbtypsnitt - self-hostade (aldrig CDN), latin-subset (täcker svenska).
+   DM Sans (variabel, en fil för alla vikter) + Spectral (400/700). Båda SIL Open Font
+   License 1.1. Källa: Google Fonts (fonts.gstatic.com), latin-woff2. */
+@font-face {
+	font-family: "DM Sans";
+	font-style: normal;
+	font-weight: 100 1000;
+	font-display: swap;
+	src: url("dmsans-latin.woff2") format("woff2");
+}
+@font-face {
+	font-family: "Spectral";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url("spectral-latin-400.woff2") format("woff2");
+}
+@font-face {
+	font-family: "Spectral";
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url("spectral-latin-700.woff2") format("woff2");
+}

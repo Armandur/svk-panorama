@@ -109,9 +109,11 @@
 		serif: 'Georgia,"Times New Roman",serif',
 		mono: 'ui-monospace,"Courier New",monospace',
 		humanist: '"Segoe UI","Trebuchet MS","Nimbus Sans L",sans-serif',
+		dmsans: '"DM Sans","Nimbus Sans L","Liberation Sans",Arial,sans-serif',
+		spectral: '"Spectral",Georgia,"Times New Roman",serif',
 	};
 	const th = d.theme || {};
-	themeFont.value = ["sans", "serif", "mono", "humanist"].indexOf(th.font) !== -1 ? th.font : "sans";
+	themeFont.value = ["sans", "serif", "mono", "humanist", "dmsans", "spectral"].indexOf(th.font) !== -1 ? th.font : "sans";
 	themeDot.value = th.dotColor || "#666666";
 	themeCurrent.value = th.currentColor || "#8b0000";
 	function applyThemeLive() {
@@ -426,7 +428,7 @@
 			if (msr) msr.checked = true;
 			if (previewMap) previewMap.dataset.size = ms;
 			var th = c.theme || {};
-			themeFont.value = ["sans", "serif", "mono", "humanist"].indexOf(th.font) !== -1 ? th.font : "sans";
+			themeFont.value = ["sans", "serif", "mono", "humanist", "dmsans", "spectral"].indexOf(th.font) !== -1 ? th.font : "sans";
 			themeDot.value = th.dotColor || "#666666";
 			themeCurrent.value = th.currentColor || "#8b0000";
 			updateArDirLabels();

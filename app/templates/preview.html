@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Förhandsvisa & turinställningar - {{ project.name }}{% endblock %}
-{% block head %}<link rel="stylesheet" href="/static/vendor/pannellum.css"><link rel="stylesheet" href="/static/vendor/coloris/coloris.min.css"><link rel="stylesheet" href="/static/vendor/fontawesome/css/font-awesome.min.css"><link rel="stylesheet" href="/static/vendor/easymde/easymde.min.css">{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/vendor/pannellum.css"><link rel="stylesheet" href="/static/vendor/fonts/fonts.css"><link rel="stylesheet" href="/static/vendor/coloris/coloris.min.css"><link rel="stylesheet" href="/static/vendor/fontawesome/css/font-awesome.min.css"><link rel="stylesheet" href="/static/vendor/easymde/easymde.min.css">{% endblock %}
 {% block body_attrs %} class="plan-fullscreen" data-slug="{{ project.slug }}"{% endblock %}
 {% block main_attrs %} class="plan-app"{% endblock %}
 {% block content %}
@@ -26,7 +26,9 @@
 				<label for="theme-font">Typsnitt</label>
 				<select id="theme-font">
 					<option value="sans">Sans (standard)</option>
+					<option value="dmsans">DM Sans</option>
 					<option value="serif">Serif</option>
+					<option value="spectral">Spectral</option>
 					<option value="humanist">Humanist</option>
 					<option value="mono">Monospace</option>
 				</select>
