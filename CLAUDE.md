@@ -29,11 +29,16 @@ Ingen `--reload` som standard -> starta om vid Python/mall-ändringar. CSS/JS
 serveras från disk med `Cache-Control: no-cache` (syns utan omstart). Verifiera i
 browser via hostnamn (`http://ubuntu-ai:PORT`), inte localhost.
 
-**Kör alltid en EGEN instans** (Claude-ägd) för verifiering - anta aldrig att
-en redan körande instans är din. Hämta ledig port (`svc port`), starta i
-bakgrunden med `SVK_SECRET_KEY=$(cat .secret_key_dev)` (login admin/admin
-överlever omstart mot delad svk.db), stäng av din egen PID när du är klar. Det
-är okej att starta om instansen mellan `/clear` - den är efemär.
+**Verifiera alltid mot en aktuell egen instans - håll dig till EN port (8005).**
+En redan körande instans kör ofta gammal kod (processen startades före dina
+ändringar; Python/route-kod laddas inte om utan omstart) -> verifiera aldrig mot
+den utan att först starta om den mot aktuell kod. Du har alltid rätt att döda
+tidigare svk-panorama-instanser (även från tidigare sessioner) och starta om på
+samma port. Mönster: `kill` gamla 8005-PID -> starta `SVK_PORT=8005
+SVK_SECRET_KEY=$(cat .secret_key_dev) .venv/bin/uvicorn app.main:app --port 8005`
+i bakgrunden (login admin/admin överlever mot delad svk.db) -> `svc update
+svk-panorama-skiva3 --pid <ny>`. Starta om efter Python/mall-ändringar (CSS/JS
+syns direkt). Okej att starta om mellan `/clear` - instansen är efemär.
 
 ## Två separata delar i repot
 
