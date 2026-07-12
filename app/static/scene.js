@@ -677,14 +677,6 @@
 		});
 		syncConfig(toScene);
 	}
-	function removeReciprocal(fromScene, toScene) {
-		if (!tour.scenes[toScene]) return;
-		tour.scenes[toScene].hotSpots = (tour.scenes[toScene].hotSpots || []).filter(function (h) {
-			return !(h.type === "scene" && h.sceneId === fromScene);
-		});
-		syncConfig(toScene);
-	}
-
 	function saveHsModal() {
 		if (!hsCtx) return;
 		const cur = hsCtx.cur;
@@ -713,7 +705,10 @@
 			delete hs.URL;
 			const two = document.querySelector('input[name="hs-dir"]:checked').value === "two";
 			hs.twoway = two;
-			if (two) ensureReciprocal(cur, target); else removeReciprocal(cur, target);
+			// Tvåväg: säkerställ en retur-hotspot. Enkelriktad: lämna ev. befintlig
+			// omvänd länk IFRED (den kan vara en egen enkelriktad hotspot) - radera
+			// aldrig automatiskt, det är destruktivt och oväntat.
+			if (two) ensureReciprocal(cur, target);
 		}
 		if (creating) tour.scenes[cur].hotSpots.push(hs);
 		closeHsModal();
