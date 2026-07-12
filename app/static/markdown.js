@@ -22,7 +22,7 @@
 		var content = branding && branding.content;
 		if (!content) { el.hidden = true; el.innerHTML = ""; return; }
 		var size = _BR_SIZES[branding.size] ? branding.size : "medium";
-		var pos = _BR_POS[branding.position] ? branding.position : "bottom-left";
+		var pos = _BR_POS[branding.position] ? branding.position : "bottom-right";
 		el.classList.add("branding-" + size, "branding-" + pos);
 		el.innerHTML = window.renderMarkdown(content);
 		var links = el.getElementsByTagName("a");

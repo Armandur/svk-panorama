@@ -31,7 +31,7 @@ def sanitize_branding(content: Any, size: Any, position: Any) -> dict[str, Any] 
     return {
         "content": content[:_BRANDING_MAX],
         "size": size if size in _BRANDING_SIZES else "medium",
-        "position": position if position in _BRANDING_POS else "bottom-left",
+        "position": position if position in _BRANDING_POS else "bottom-right",
     }
 
 

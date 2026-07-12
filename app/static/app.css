@@ -30,8 +30,8 @@
 	.hs-sheet-inner { max-width: none; max-height: 100vh; height: 100%; border-radius: 0; }
 }
 /* "Läs mer"-knapp i tooltipen för expanderbara hotspots (visas bara vid hover/tap). */
-.hs-more { display: block; margin: 0.5em auto 0; background: rgba(255, 255, 255, 0.92); color: #1c2128; border: none; border-radius: 4px; padding: 0.25em 0.7em; font: inherit; font-size: 0.85em; font-weight: 600; cursor: pointer; }
-.hs-more:hover { background: #fff; }
+.hs-more { display: block; margin: 0 auto; background: #fff; color: #000; border: 1px solid rgba(0, 0, 0, 0.4); border-radius: 3px; padding: 0.25em 0.7em; font: inherit; font-size: 0.85em; font-weight: 600; cursor: pointer; }
+.hs-more:hover { background: #f8f8f8; }
 /* Ta bort pannellums lösa pil - rutan sitter tätt intill hotspoten i stället. */
 .pnlm-tooltip:hover .hs-md::after { display: none; }
 /* Utökat, kontinuerligt hover-område: osynlig brygga runt hotspoten och upp i
@@ -63,7 +63,7 @@
 .hs-md h1, .hs-md h2, .hs-md h3, .hs-md h4 { margin: 0.4em 0 0.2em; font-size: 1.05em; }
 .hs-md ul, .hs-md ol { margin: 0.3em 0; padding-left: 1.2em; }
 .hs-md a { color: #7cc0ff; }
-.hs-md img { max-width: 100%; height: auto; border-radius: 3px; }
+.hs-md img { display: block; max-width: 100%; height: auto; border-radius: 3px; }
 .hs-md code { background: rgba(255, 255, 255, 0.18); padding: 0 0.3em; border-radius: 3px; }
 
 /* Renderad markdown (arbetsgångstext, kommande hotspot-innehåll). */
@@ -479,21 +479,44 @@ tr[data-preview-scene] { cursor: help; }
 	font-size: 0.9rem;
 }
 .scene-browse button { margin: 0; padding: 0.15rem 0.6rem; width: auto; }
+/* Karta i preview: samma pannellum-kontrollstil och fäll in/ut-beteende som
+   runtime-vieweren (WYSIWYG). Stäng-knappen i egen rad ovanför kartbilden så den
+   aldrig täcker en kartprick. */
 .preview-map {
 	position: absolute;
-	top: 0.8rem; right: 0.8rem;
+	top: 4px; right: 4px;
 	z-index: 15;
-	border: 2px solid rgba(255, 255, 255, 0.75);
-	border-radius: 0.3rem;
-	overflow: hidden;
+	border: 1px solid rgba(0, 0, 0, 0.4);
+	border-radius: 3px;
 	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-	background: #fff;
-	line-height: 0;
+	background: rgba(0, 0, 0, 0.55);
+	padding: 6px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
 }
+.preview-map[hidden] { display: none; }
+.panorama-wrap .map-toggle {
+	position: absolute; top: 4px; right: 4px; z-index: 16;
+	height: 26px; padding: 0 12px; font-size: 14px; line-height: 24px;
+	color: #000; background: #fff; border: 1px solid rgba(0, 0, 0, 0.4);
+	border-radius: 3px; cursor: pointer;
+}
+.panorama-wrap .map-toggle:hover { background: #f8f8f8; }
+.panorama-wrap .map-toggle[hidden] { display: none; }
+.preview-map .map-bar { display: flex; justify-content: flex-end; line-height: 0; }
+.preview-map .map-close {
+	display: flex; align-items: center; justify-content: center;
+	width: 26px; height: 26px; padding: 0; font-size: 18px; line-height: 1;
+	color: #000; background: #fff; border: 1px solid rgba(0, 0, 0, 0.4);
+	border-radius: 3px; cursor: pointer;
+}
+.preview-map .map-close:hover { background: #f8f8f8; }
 .preview-map[data-size="small"] { width: 160px; }
 .preview-map[data-size="medium"] { width: 260px; }
 .preview-map[data-size="large"] { width: 380px; }
-.preview-map img { display: block; width: 100%; height: auto; }
+.pv-map-inner { position: relative; line-height: 0; }
+.preview-map img { display: block; width: 100%; height: auto; border-radius: 3px; }
 #preview-map-dots { position: absolute; inset: 0; }
 /* Temavariabler sätts live på .panorama-wrap av tour-preview.js. */
 .panorama-wrap { --dot-color: #666666; --current-dot-color: #8b0000; }
@@ -520,7 +543,7 @@ tr[data-preview-scene] { cursor: help; }
 	z-index: 16;
 	color: #fff;
 	background: rgba(0, 0, 0, 0.4);
-	border-radius: 6px;
+	border-radius: 3px;
 	padding: 5px 9px;
 	line-height: 1.3;
 }
@@ -533,13 +556,18 @@ tr[data-preview-scene] { cursor: help; }
 .tour-branding.branding-small { max-width: 130px; font-size: 0.8em; }
 .tour-branding.branding-medium { max-width: 200px; font-size: 0.95em; }
 .tour-branding.branding-large { max-width: 300px; font-size: 1.15em; }
-.panorama-wrap .tour-branding.branding-bottom-left { bottom: 12px; left: 12px; }
-.panorama-wrap .tour-branding.branding-bottom-right { bottom: 12px; right: 12px; }
-.panorama-wrap .tour-branding.branding-top-left { top: 12px; left: 12px; }
-.panorama-wrap .tour-branding.branding-top-right { top: 12px; right: 12px; }
+.panorama-wrap .tour-branding.branding-bottom-left { bottom: 40px; left: 4px; }
+.panorama-wrap .tour-branding.branding-bottom-right { bottom: 4px; right: 4px; }
+.panorama-wrap .tour-branding.branding-top-left { top: 4px; left: 4px; }
+.panorama-wrap .tour-branding.branding-top-right { top: 4px; right: 4px; }
 .branding-opts { display: flex; gap: 0.8rem; margin-top: 0.4rem; }
 .branding-opts label { flex: 1; margin-bottom: 0; }
 .branding-sep { margin: 1rem 0 0.6rem; border: none; border-top: 1px solid var(--pico-muted-border-color, rgba(115, 130, 140, 0.3)); }
+/* EasyMDE i preview-sidopanelen: toolbar-ikonerna ärver annars vit text från
+   plan-chromet -> osynliga på den ljusa toolbaren. Tvinga läsbar färg. */
+.planner-side .editor-toolbar button, .planner-side .editor-toolbar button i { color: #2c3e50; }
+.planner-side .editor-toolbar button:hover { color: #000; }
+.planner-side .editor-toolbar button.active { color: #000; }
 
 /* Tema: färgväljare */
 .theme-colors { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.5rem; }

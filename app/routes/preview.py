@@ -40,7 +40,7 @@ class TourSettings(BaseModel):
     themeCurrentColor: str = "#8b0000"
     brandingContent: str = ""              # markdown (logotyp/text/länk); tom = ingen
     brandingSize: str = "medium"           # small | medium | large
-    brandingPosition: str = "bottom-left"  # bottom-left|bottom-right|top-left|top-right
+    brandingPosition: str = "bottom-right"  # bottom-left|bottom-right|top-left|top-right
 
 
 @router.get("/projects/{slug}/preview", response_class=HTMLResponse)

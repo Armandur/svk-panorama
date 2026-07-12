@@ -72,7 +72,6 @@
 	const brandingContent = document.getElementById("branding-content");
 	const brandingSize = document.getElementById("branding-size");
 	const brandingPos = document.getElementById("branding-position");
-	const brandingInsert = document.getElementById("branding-insert-img");
 	const panoramaWrap = document.querySelector(".panorama-wrap");
 
 	// --- Init formulär från tour.default ---
@@ -127,14 +126,64 @@
 	const SIZES = ["small", "medium", "large"];
 	const POSES = ["bottom-left", "bottom-right", "top-left", "top-right"];
 	const brand = d.branding || {};
-	if (brandingContent) brandingContent.value = brand.content || "";
 	if (brandingSize) brandingSize.value = SIZES.indexOf(brand.size) !== -1 ? brand.size : "medium";
-	if (brandingPos) brandingPos.value = POSES.indexOf(brand.position) !== -1 ? brand.position : "bottom-left";
+	if (brandingPos) brandingPos.value = POSES.indexOf(brand.position) !== -1 ? brand.position : "bottom-right";
+
+	// Markdown-editor (EasyMDE) för branding-innehållet - samma som hotspot-editorn,
+	// med en toolbar-knapp mot mediebiblioteket. Faller tillbaka på textarean om
+	// EasyMDE saknas. value() sätts/läses via helpers nedan.
+	function uploadBrandImage(file, onSuccess, onError) {
+		var fd = new FormData();
+		fd.append("file", file);
+		fetch("/media/upload", {
+			method: "POST",
+			headers: { "X-CSRF-Token": window.getCsrfToken ? getCsrfToken() : "" },
+			body: fd,
+		}).then(function (r) {
+			if (!r.ok) return r.json().then(function (dd) { throw new Error(dd.detail || "Uppladdning misslyckades"); });
+			return r.json();
+		}).then(function (dd) { onSuccess(dd.url); })
+			.catch(function (e) { onError(e.message || "Uppladdning misslyckades"); });
+	}
+	function brandMediaAction(editor) {
+		if (!window.openMediaLibrary) return;
+		window.openMediaLibrary(slug, function (url) {
+			var cm = editor.codemirror;
+			cm.replaceSelection("![](" + url + ")");
+			cm.focus();
+		});
+	}
+	var brandMediaBtn = { name: "media", action: brandMediaAction, className: "fa fa-th", title: "Mediebibliotek" };
+	var brandingEditor = null;
+	if (window.EasyMDE && brandingContent) {
+		brandingEditor = new EasyMDE({
+			element: brandingContent,
+			spellChecker: false,
+			status: false,
+			autoDownloadFontAwesome: false,
+			minHeight: "80px",
+			maxHeight: "26vh",
+			uploadImage: true,
+			imageUploadFunction: uploadBrandImage,
+			toolbar: ["bold", "italic", "heading", "link", "upload-image", brandMediaBtn, "|", "preview", "guide"],
+			previewRender: function (t) { return window.renderMarkdown(t); },
+			placeholder: "![Logotyp](...) eller **Församlingen**",
+		});
+		brandingEditor.value(brand.content || "");
+	} else if (brandingContent) {
+		brandingContent.value = brand.content || "";
+	}
+	function brandingVal() { return brandingEditor ? brandingEditor.value() : (brandingContent ? brandingContent.value : ""); }
+	function setBrandingVal(v) {
+		if (brandingEditor) brandingEditor.value(v || "");
+		else if (brandingContent) brandingContent.value = v || "";
+	}
+
 	let brandingEl = null;
 	function currentBranding() {
-		var c = brandingContent ? brandingContent.value.trim() : "";
+		var c = (brandingVal() || "").trim();
 		if (!c) return null;
-		return { content: c, size: brandingSize ? brandingSize.value : "medium", position: brandingPos ? brandingPos.value : "bottom-left" };
+		return { content: c, size: brandingSize ? brandingSize.value : "medium", position: brandingPos ? brandingPos.value : "bottom-right" };
 	}
 	function applyBrandingLive() {
 		if (!panoramaWrap || !window.renderBrandingInto) return;
@@ -292,22 +341,10 @@
 		inp.addEventListener("input", function () { applyThemeLive(); onSettingChange(false); });
 	});
 
-	if (brandingContent) brandingContent.addEventListener("input", function () { applyBrandingLive(); onSettingChange(false); });
+	if (brandingEditor) brandingEditor.codemirror.on("change", function () { applyBrandingLive(); onSettingChange(false); });
+	else if (brandingContent) brandingContent.addEventListener("input", function () { applyBrandingLive(); onSettingChange(false); });
 	[brandingSize, brandingPos].forEach(function (s) {
 		if (s) s.addEventListener("change", function () { applyBrandingLive(); onSettingChange(false); });
-	});
-	if (brandingInsert) brandingInsert.addEventListener("click", function () {
-		if (!window.openMediaLibrary || !brandingContent) return;
-		window.openMediaLibrary(slug, function (url) {
-			var t = brandingContent;
-			var ins = "![](" + url + ")";
-			var start = t.selectionStart != null ? t.selectionStart : t.value.length;
-			var end = t.selectionEnd != null ? t.selectionEnd : t.value.length;
-			t.value = t.value.slice(0, start) + ins + t.value.slice(end);
-			t.focus();
-			applyBrandingLive();
-			onSettingChange(false);
-		});
 	});
 
 	// Upplösningsbyte: applicera på alla scener + bygg om vieweren (behåll scen/vy).
@@ -337,9 +374,9 @@
 				themeFont: themeFont.value,
 				themeDotColor: themeDot.value,
 				themeCurrentColor: themeCurrent.value,
-				brandingContent: brandingContent ? brandingContent.value : "",
+				brandingContent: brandingVal(),
 				brandingSize: brandingSize ? brandingSize.value : "medium",
-				brandingPosition: brandingPos ? brandingPos.value : "bottom-left",
+				brandingPosition: brandingPos ? brandingPos.value : "bottom-right",
 			},
 		}).then(function () {
 			setDirty(false);
@@ -465,9 +502,9 @@
 		function csrf() { return window.getCsrfToken ? getCsrfToken() : ""; }
 		function applyCfg(c) {
 			c = c || {};
-			if (brandingContent) brandingContent.value = c.content || "";
+			setBrandingVal(c.content || "");
 			if (brandingSize) brandingSize.value = SIZES.indexOf(c.size) !== -1 ? c.size : "medium";
-			if (brandingPos) brandingPos.value = POSES.indexOf(c.position) !== -1 ? c.position : "bottom-left";
+			if (brandingPos) brandingPos.value = POSES.indexOf(c.position) !== -1 ? c.position : "bottom-right";
 			applyBrandingLive();
 			setDirty(true);
 		}
@@ -602,6 +639,16 @@
 	if (firstSceneBtn) firstSceneBtn.addEventListener("click", openStartModal);
 	if (startClose) startClose.addEventListener("click", closeStartModal);
 	if (startModal) startModal.addEventListener("click", function (e) { if (e.target === startModal) closeStartModal(); });
+
+	// --- Karta: fäll in/ut (samma beteende som runtime-vieweren) ------------
+	const previewMapToggle = document.getElementById("preview-map-toggle");
+	const previewMapClose = document.getElementById("preview-map-close");
+	if (previewMapToggle && previewMap) {
+		previewMapToggle.addEventListener("click", function () { previewMap.hidden = false; previewMapToggle.hidden = true; });
+	}
+	if (previewMapClose && previewMap) {
+		previewMapClose.addEventListener("click", function () { previewMap.hidden = true; if (previewMapToggle) previewMapToggle.hidden = false; });
+	}
 
 	// --- Start ---
 	// Markdown-tooltip på info-hotspots (funktionerna stannar på objekten över rebuilds).

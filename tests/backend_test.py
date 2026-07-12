@@ -187,7 +187,7 @@ def test_branding_sanitize():
     ok = sanitize_branding("**Församlingen**", "huge", "middle")
     check("branding giltig content behålls", ok["content"] == "**Församlingen**")
     check("branding ogiltig size -> medium", ok["size"] == "medium")
-    check("branding ogiltig position -> bottom-left", ok["position"] == "bottom-left")
+    check("branding ogiltig position -> bottom-right", ok["position"] == "bottom-right")
     val = sanitize_branding("logga", "small", "top-right")
     check("branding giltig size behålls", val["size"] == "small")
     check("branding giltig position behålls", val["position"] == "top-right")

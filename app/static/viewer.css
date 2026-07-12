@@ -19,6 +19,11 @@ html, body {
    verkligen slår igenom överallt, inte bara på titelboxen. */
 .pnlm-container { font-family: var(--tour-font) !important; }
 
+/* Scennamn-boxen (pannellums title-box) sitter default tryckt mot vänsterkanten
+   (left:0, rundad bara till höger). Ge den samma 4px-avstånd och fulla 3px-radie
+   som pannellums övriga kontroller så kanterna blir inbördes konsekventa. */
+.pnlm-panorama-info { left: 4px; border-radius: 3px; }
+
 /* Markdown i info-hotspot-tooltips: bredare + normal radbrytning (korta ord bryts inte). */
 .pnlm-tooltip span.hs-md {
 	/* Autopassad bredd: hela radens bredd (en rad ryms) upp till max, sedan wrap. */
@@ -41,7 +46,7 @@ html, body {
 .hs-md h1, .hs-md h2, .hs-md h3, .hs-md h4 { margin: 0.4em 0 0.2em; font-size: 1.05em; }
 .hs-md ul, .hs-md ol { margin: 0.3em 0; padding-left: 1.2em; }
 .hs-md a { color: #7cc0ff; }
-.hs-md img { max-width: 100%; height: auto; border-radius: 3px; }
+.hs-md img { display: block; max-width: 100%; height: auto; border-radius: 3px; }
 .hs-md code { background: rgba(255, 255, 255, 0.18); padding: 0 0.3em; border-radius: 3px; }
 
 /* Fullskärms-ark för expanderbara hotspots ("läs mer"). */
@@ -54,8 +59,9 @@ html, body {
 	.hs-sheet-inner { max-width: none; max-height: 100vh; height: 100%; border-radius: 0; }
 }
 /* "Läs mer"-knapp i tooltipen (visas bara vid hover/tap). */
-.hs-more { display: block; margin: 0.5em auto 0; background: rgba(255, 255, 255, 0.92); color: #1c2128; border: none; border-radius: 4px; padding: 0.25em 0.7em; font: inherit; font-size: 0.85em; font-weight: 600; cursor: pointer; }
-.hs-more:hover { background: #fff; }
+/* "Läs mer": samma pannellum-kontrollstil som Karta-/kartknapparna. */
+.hs-more { display: block; margin: 0 auto; background: #fff; color: #000; border: 1px solid rgba(0, 0, 0, 0.4); border-radius: 3px; padding: 0.25em 0.7em; font: inherit; font-size: 0.85em; font-weight: 600; cursor: pointer; }
+.hs-more:hover { background: #f8f8f8; }
 /* Ta bort pannellums lösa pil + utökat kontinuerligt hover-område (brygga upp
    till rutan) så man inte tappar hovern på väg mot "Läs mer". */
 .pnlm-tooltip:hover .hs-md::after { display: none; }
@@ -86,7 +92,7 @@ html, body {
 	z-index: 55;
 	color: #fff;
 	background: rgba(0, 0, 0, 0.4);
-	border-radius: 6px;
+	border-radius: 3px;
 	padding: 5px 9px;
 	line-height: 1.3;
 	backdrop-filter: blur(2px);
@@ -100,64 +106,74 @@ html, body {
 .tour-branding.branding-small { max-width: 130px; font-size: 0.8em; }
 .tour-branding.branding-medium { max-width: 200px; font-size: 0.95em; }
 .tour-branding.branding-large { max-width: 300px; font-size: 1.15em; }
-.tour-branding.branding-bottom-left { bottom: 12px; left: 12px; }
-.tour-branding.branding-bottom-right { bottom: 12px; right: 12px; }
-.tour-branding.branding-top-left { top: 12px; left: 12px; }
-.tour-branding.branding-top-right { top: 12px; right: 12px; }
+/* Nere-vänster hamnar ovanför ev. scennamn (info-boxen ~31px vid bottom:4px) så
+   de inte täcker varandra. */
+.tour-branding.branding-bottom-left { bottom: 40px; left: 4px; }
+.tour-branding.branding-bottom-right { bottom: 4px; right: 4px; }
+.tour-branding.branding-top-left { top: 4px; left: 4px; }
+.tour-branding.branding-top-right { top: 4px; right: 4px; }
 
-/* "Karta"-knappen som öppnar överlägget. */
+/* "Karta"-knappen som öppnar överlägget. Stylad som pannellums inbyggda kontroller
+   (vit, tunn kant, 3px radie) och placerad på samma kantavstånd (4px). */
 .map-toggle {
 	position: fixed;
-	top: 12px;
-	right: 12px;
+	top: 4px;
+	right: 4px;
 	z-index: 50;
-	padding: 8px 14px;
-	font-size: 15px;
-	color: #fff;
-	background: rgba(0, 0, 0, 0.65);
-	border: 1px solid rgba(255, 255, 255, 0.35);
-	border-radius: 6px;
+	height: 26px;
+	padding: 0 12px;
+	font-size: 14px;
+	line-height: 24px;
+	color: #000;
+	background: #fff;
+	border: 1px solid rgba(0, 0, 0, 0.4);
+	border-radius: 3px;
 	cursor: pointer;
-	backdrop-filter: blur(2px);
 }
-.map-toggle:hover { background: rgba(0, 0, 0, 0.85); }
+.map-toggle:hover { background: #f8f8f8; }
 
 #map-container {
 	position: fixed;
-	top: 12px;
-	right: 12px;
+	top: 4px;
+	right: 4px;
 	z-index: 60;
 	width: min(42vw, 460px);
-	max-width: calc(100vw - 24px);
+	max-width: calc(100vw - 8px);
 }
 #map-container[data-size="small"] { width: min(30vw, 300px); }
 #map-container[data-size="medium"] { width: min(42vw, 460px); }
 #map-container[data-size="large"] { width: min(60vw, 640px); }
 #map-container {
 	background: rgba(0, 0, 0, 0.55);
-	border: 1px solid rgba(255, 255, 255, 0.25);
-	border-radius: 8px;
-	padding: 8px;
+	border: 1px solid rgba(0, 0, 0, 0.4);
+	border-radius: 3px;
+	padding: 6px;
 	backdrop-filter: blur(2px);
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
 }
 #map-container[hidden] { display: none; }
 
+/* Stängknappen sitter i en egen rad OVANFÖR kartbilden så den aldrig täcker en
+   kartprick/fotoscen. Samma pannellum-kontrollstil som Karta-knappen. */
+.map-bar { display: flex; justify-content: flex-end; line-height: 0; }
 .map-close {
-	position: absolute;
-	top: 6px;
-	right: 6px;
-	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	width: 26px;
 	height: 26px;
+	padding: 0;
 	font-size: 18px;
 	line-height: 1;
-	color: #fff;
-	background: rgba(0, 0, 0, 0.7);
-	border: 1px solid rgba(255, 255, 255, 0.3);
-	border-radius: 4px;
+	color: #000;
+	background: #fff;
+	border: 1px solid rgba(0, 0, 0, 0.4);
+	border-radius: 3px;
 	cursor: pointer;
 }
-.map-close:hover { background: rgba(0, 0, 0, 0.9); }
+.map-close:hover { background: #f8f8f8; }
 
 /* Wrapper som prickarna positioneras relativt (matchar bildens box). */
 .map-inner {
@@ -193,8 +209,8 @@ html, body {
 /* Mobil: karta tar mer bredd och läggs nederst så den inte skymmer vyn. */
 @media (max-width: 640px) {
 	#map-container {
-		width: calc(100vw - 24px);
+		width: calc(100vw - 8px);
 		top: auto;
-		bottom: 12px;
+		bottom: 4px;
 	}
 }
