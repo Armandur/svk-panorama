@@ -2,6 +2,25 @@
 
 Nyast först. Varje fynd markerat åtgärdat/avfärdat med commit-ref.
 
+## 2026-07-12 - Granskning av branding + mall-bibliotek (diff caeaf41..a706a21)
+
+Oberoende Fable-subagent (eget kontext) granskade hela funktionsblocket: branding-
+overlay, branding-/tema-mallar, EasyMDE, mall-biblioteket (`/mallar` + väljar-modal +
+skapa/redigera) och overlay-CSS-konsistens. Fokus: XSS, auth/ägarskap (IDOR), route-
+ordning, validering, korrekthet. **Inga kritiska/höga/medel-fynd** - ägarskapsfiltrering
+(`owner_id` på alla `_list`/`_save`/`_delete`/`_set_default`/update), `require_user` +
+`verify_csrf_header` på muterande routes, DOMPurify vid varje `innerHTML`, och media-ref-
+skanning (`_media_refs`/`_relativize` täcker `branding.content`) bekräftades korrekta. Två
+låg-fynd åtgärdade:
+
+- **[ÅTGÄRDAT f26a431] LÅG (UX) `update_branding` slog ihop hittades-inte och tom content
+  till samma 400.** Fix: 404 för saknad mall, 400 (ValueError) för tom content - klienten
+  kan skilja fallen; `preset-library.js` surfacar serverns `detail` i toast.
+- **[ÅTGÄRDAT f26a431] LÅG (korrekthet) Namn-baserad upsert ("Spara som mall") + rename-
+  by-id utan kollisionskoll kunde vid självförvållat dubblettnamn skriva över fel rad.**
+  Fix: `_guard_name_clash` avvisar namnbyte som krockar med annan mall (ValueError -> 400),
+  så namn förblir unika per ägare och upserten blir entydig.
+
 ## 2026-07-12 - Sessionsgranskning (diff 1ecce63..HEAD, 39 commits)
 
 Tre parallella oberoende Fable-subagenter (eget kontext) granskade hela sessionens
