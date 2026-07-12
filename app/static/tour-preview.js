@@ -139,6 +139,7 @@
 		const startId = sceneId || firstScene || sceneIds()[0];
 		if (curLabel) curLabel.textContent = "Scen " + startId; // visa direkt, inte "Scen -"
 		viewer = pannellum.viewer("panorama", {
+			escapeHTML: true, // säkerhet: escapa titel/hotspot-text (top-level, se viewer.js)
 			default: {
 				firstScene: startId,
 				autoLoad: true,

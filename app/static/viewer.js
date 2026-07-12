@@ -10,6 +10,10 @@
 	// Publicerad tur körs alltid utan editor-läge, oavsett vad filen säger.
 	tour.default = tour.default || {};
 	tour.default.editorMode = false;
+	// Säkerhet: escapa scen-titel/hotspot-text i pannellums default-rendering
+	// (info-hotspots har egen DOMPurify-väg via attachHsTooltips och påverkas ej).
+	// escapeHTML är en top-level general-option i pannellum (syskon till default/scenes).
+	tour.escapeHTML = true;
 
 	// --- Tema (typsnitt + färger) ------------------------------------------
 	const FONTS = {

@@ -240,6 +240,7 @@
 		? tour.default.firstScene : sceneIds()[0];
 
 	const viewer = pannellum.viewer("panorama", {
+		escapeHTML: true, // säkerhet: escapa titel/hotspot-text (top-level, se viewer.js)
 		default: { firstScene: firstScene, autoLoad: true, sceneFadeDuration: 0 },
 		scenes: cfgScenes,
 	});
