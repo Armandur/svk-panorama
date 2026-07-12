@@ -153,6 +153,12 @@ pannellum, lägger till kartöverlägg (klickbara prickar, aktiv scen markerad).
 Applicerar `tour.default.theme` via CSS-variabler (`--tour-font/--dot-color/
 --current-dot-color`) + `mapSize` (`data-size` på `#map-container`).
 **Länklinjer ritas INTE i turen** - det är en bygghjälp bara i plan-vyn.
+**Branding-overlay:** `tour.default.branding={content(markdown),size,position}`
+renderas som ett `.tour-branding`-överlägg via delad `renderBrandingInto` (markdown.js;
+sanerad MD, externa länkar target=_blank, storleks-/positionsklass). Redigeras på
+preview-steget (textarea + "Infoga bild" ur mediebiblioteket), ärvs via standard-preset,
+följer med i bundle/backup (`_media_refs` skannar branding.content). Runtime = fixed +
+egen fullskärms-omflyttning; preview = absolut i panorama-wrap.
 
 ## static/-JS (editorn)
 
