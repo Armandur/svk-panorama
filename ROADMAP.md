@@ -408,6 +408,23 @@ Faser (minst till störst):
       skrotad** (Rasmus 2026-07-12): det enda återanvändbara mellan turer är temat/
       inställningarna, inte scenerna - presets är rätt abstraktion.
 
+- [ ] **Anpassningsbar logotyp/branding-overlay i vieweren.** Rasmus 2026-07-12.
+      Låt användaren lägga ett branding-block i den publicerade turen (default nere till
+      vänster): en logotyp (bild), en textrad och ev. länk till en webbsida.
+      - **Redigering:** markdown-editor (EasyMDE, samma som hotspots) på preview-steget,
+        med mediebiblioteks-knapp för logotypen (bilder ur poolen). Storleksinställning
+        (liten/mellan/stor) + ev. positionsval (hörn).
+      - **Lagring:** `tour.default.branding` = {content: markdown, size, position}. Ligg i
+        `default`-blocket -> **kan bakas in i ThemePreset** så ett stifts logga/branding
+        ärvs av alla deras turer (sanitize_config + preset-config utökas då).
+      - **Runtime:** viewer.js/tour-preview.js renderar en `.branding`-overlay (absolut,
+        default nere till vänster) via `renderMarkdown()` (DOMPurify-sanerad, samma väg som
+        hotspots). Externa länkar: target=_blank + rel=noopener. Storlek via CSS-klass.
+      - **Bundle:** `bundle.py` måste skanna `tour.default.branding.content` efter
+        `/media/<owner>/`-referenser (utöver hotSpots) och relativisera + kopiera dem, annars
+        saknas loggan i den exporterade bundlen. Publika /s + backup hanteras redan (absoluta
+        media-URL:er). Gäller alla vyer (editor-preview/​/preview/​/view/​bundle).
+
 - [ ] **Fler typsnitt i temat (särskilt DM Sans).** Idag är tema-typsnitten
       system-font-stackar (sans/serif/mono/humanist - inga font-filer, självbärande
       bundle). Lägg till fler val, framförallt **DM Sans**. OBS avvägning: riktiga
