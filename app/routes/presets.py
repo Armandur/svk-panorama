@@ -4,15 +4,24 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.orm import Session
 
 from app.auth import require_user
 from app.database import User, get_db
-from app.deps import verify_csrf_header
+from app.deps import new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
 from app.services import presets
 
 router = APIRouter()
+
+
+@router.get("/mallar", response_class=HTMLResponse)
+def presets_page(request: Request, user: User = Depends(require_user)):
+    """Administrationsvy: ägarens tema- och branding-mallar med förhandsvisning."""
+    token = new_csrf_token()
+    resp = templates.TemplateResponse(request, "presets_library.html", {"csrf_token": token})
+    set_csrf_cookie(resp, token)
+    return resp
 
 
 @router.get("/presets")

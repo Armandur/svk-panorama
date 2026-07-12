@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Mallar - {{ site_name() }}{% endblock %}
+{% block content %}
+
+<section class="login-section preset-manage">
+	<hgroup>
+		<h1>Mallar</h1>
+		<p>Dina tema- och branding-mallar - återanvänds mellan turer. Markera en som standard så ärver nya turer den. Skapa nya på förhandsvisningssteget i en tur ("Spara som mall").</p>
+	</hgroup>
+	<article>
+		<div id="preset-manager"></div>
+	</article>
+</section>
+
+{% endblock %}
+{% block scripts %}
+<script src="/static/vendor/marked/marked.min.js"></script>
+<script src="/static/vendor/dompurify/purify.min.js"></script>
+<script src="/static/markdown.js"></script>
+<script src="/static/preset-library.js"></script>
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		window.initPresetManager(document.getElementById("preset-manager"));
+	});
+</script>
+{% endblock %}

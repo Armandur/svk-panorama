@@ -578,6 +578,40 @@ tr[data-preview-scene] { cursor: help; }
 .planner-side .editor-toolbar button:hover { color: #000; }
 .planner-side .editor-toolbar button.active { color: #000; }
 
+/* --- Mall-bibliotek (preset-library.js): /mallar-sidan + väljar-modal --- */
+/* Bredare än login-formulär (ärver annars .login-section 26rem), som /media. */
+.login-section.preset-manage { max-width: 64rem; }
+.preset-section { margin-bottom: 1.5rem; }
+.preset-section > h3 { margin-bottom: 0.2rem; }
+.preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.8rem; margin-top: 0.6rem; }
+.preset-card { margin: 0; padding: 0.7rem; border: 1px solid var(--pico-muted-border-color, rgba(115, 130, 140, 0.3)); border-radius: 3px; display: flex; flex-direction: column; gap: 0.5rem; background: var(--pico-card-background-color, #fff); }
+.preset-card-head { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; }
+.preset-card-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.preset-star { flex: none; margin: 0; padding: 0.1rem 0.45rem; font-size: 0.72rem; line-height: 1.5; border: 1px solid var(--pico-muted-border-color, rgba(115, 130, 140, 0.4)); border-radius: 3px; background: none; color: var(--pico-muted-color); cursor: pointer; white-space: nowrap; }
+.preset-star.active { background: var(--svk-accent, #1e73d8); border-color: transparent; color: #fff; }
+.preset-theme-body { display: flex; flex-direction: column; gap: 0.4rem; }
+.preset-swatches { display: flex; gap: 0.8rem; }
+.preset-swatch { display: flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: var(--pico-muted-color); }
+.preset-swatch-dot { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, 0.25); }
+.preset-font-sample { font-size: 1.15rem; line-height: 1.2; }
+.preset-badges { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.preset-badge { font-size: 0.72rem; padding: 0.1rem 0.4rem; border-radius: 3px; background: var(--pico-muted-border-color, rgba(115, 130, 140, 0.18)); color: var(--pico-color); }
+/* Branding-kortets scen: neutral bakgrund där den renderade overlayn visas statiskt. */
+.preset-brand-stage { min-height: 62px; display: flex; align-items: center; justify-content: center; padding: 0.6rem; border-radius: 3px; background: #6b7280; overflow: hidden; }
+.preset-brand-stage .tour-branding { position: static; display: inline-block; max-width: 100%; color: #fff; background: rgba(0, 0, 0, 0.45); border-radius: 3px; padding: 4px 8px; line-height: 1.3; font-size: 0.9rem; }
+.preset-brand-stage .tour-branding[hidden] { display: none; }
+.preset-brand-stage .tour-branding p { margin: 0.15em 0; }
+.preset-brand-stage .tour-branding p:first-child { margin-top: 0; }
+.preset-brand-stage .tour-branding p:last-child { margin-bottom: 0; }
+.preset-brand-stage .tour-branding img { display: block; max-width: 100%; height: auto; }
+.preset-brand-stage .tour-branding a { color: #7cc0ff; }
+.preset-card-actions { display: flex; gap: 0.4rem; margin-top: auto; }
+.preset-use { margin: 0; padding: 0.25rem 0.7rem; }
+.preset-del { margin: 0; padding: 0.25rem 0.7rem; }
+/* Väljar-modal: samma help-modal-skal, bredare artikel för rutnätet. */
+.preset-modal .preset-article { max-width: min(1000px, 94vw); width: min(1000px, 94vw); }
+.preset-modal-body { max-height: 74vh; overflow-y: auto; }
+
 /* Tema: färgväljare */
 .theme-colors { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.5rem; }
 .theme-colors label { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; margin: 0; }
