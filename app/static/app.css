@@ -536,8 +536,9 @@ tr[data-preview-scene] { cursor: help; }
    .pnlm-container och ALL text (titel, info, hotspot-tooltips) ärver därifrån -
    så temats typsnitt måste override:a just containern, inte bara titelboxen. */
 .panorama-wrap .pnlm-container { font-family: var(--tour-font, inherit) !important; }
-/* Scennamn-box: 4px vänster + full 3px-radie + symmetrisk padding (som runtime). */
-.panorama-wrap .pnlm-panorama-info { left: 4px; border-radius: 3px; padding-right: 5px; }
+/* Scennamn-box: 4px vänster + full 3px-radie + standard-padding (som runtime). */
+.panorama-wrap .pnlm-panorama-info { left: 4px; border-radius: 3px; padding: 4px 8px; }
+.panorama-wrap .pnlm-panorama-info .pnlm-title-box, .panorama-wrap .pnlm-panorama-info .pnlm-author-box { padding-left: 0; margin-bottom: 0; }
 /* Branding-överlägg i förhandsvisningen (samma look som runtime men containad i
    wrap i stället för fixed). Storleks-/positionsklasserna delas med viewer.css. */
 .panorama-wrap .tour-branding {
@@ -546,7 +547,7 @@ tr[data-preview-scene] { cursor: help; }
 	color: #fff;
 	background: rgba(0, 0, 0, 0.4);
 	border-radius: 3px;
-	padding: 5px 9px;
+	padding: 4px 8px;
 	line-height: 1.3;
 }
 .panorama-wrap .tour-branding[hidden] { display: none; }
