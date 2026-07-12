@@ -465,6 +465,79 @@ Faser (minst till störst):
       map.json, tangenter). Täcker nya funktioner: auto-tiling, mediebibliotek, rich
       text, startriktning, tema-förinställningar, delningslänk, backup/import.
 
+## Funktionsluckor (Fable-granskning 2026-07-13)
+
+Oberoende granskning (Fable) av vad som SAKNAS i det befintliga (redan breda)
+funktionsomfånget. Prioriterat nedan. Rasmus beslut 2026-07-13 inflätade.
+
+### Delnings-paket (quick wins) - STARTAR HÄR 2026-07-13
+
+Tre relaterade delningsförbättringar, tas ihop. Störst kännbar nytta för
+fotografen/kyrkan för minst arbete. Gäller publika `/s/{token}`-vyn och/eller
+bundlen; ingen datamodellsändring.
+
+- [ ] **Open Graph / Twitter Card-metataggar** på `/s/{token}` + bundlens
+      `index.html`. Idag har `viewer.html`/`bundle_index.html` bara `<title>`
+      -> delning i Messenger/Facebook/Slack ger tom förhandsvisning. Lägg
+      `og:title` (projektnamn + site_name), `og:description`, `og:image`
+      (kartbilden `map.png`, absolut URL via `SVK_BASE_URL`/request-host),
+      `og:type`, `twitter:card=summary_large_image`. Bundlen: relativ
+      `og:image` (map.png finns redan i zipen); absoluta URL:er kräver att
+      värden sätter en bas-URL, så dokumentera att bundlens OG blir relativ.
+- [ ] **QR-kod för delningslänken** på preview-steget. Kyrkor vill sätta
+      fysisk skylt ("skanna för virtuell rundtur"). Visas bara när turen delas
+      (bredvid befintlig länk i `share.js`). Vendora ett litet QR-lib i
+      `static/vendor/` (ingen CDN) eller rita canvas-QR klient-side; nedladdning
+      som PNG. Ingen backend behövs (länken finns redan i share-token).
+- [ ] **Embed-iframe-snutt** på preview-steget. `/s/`-vyn funkar redan i
+      `<iframe>`; saknar bara en "kopiera embed-kod"-knapp som ger en färdig
+      `<iframe src="...BASE.../s/{token}" ...>`-snutt. Kyrkor vill bädda in på
+      egen hemsida, inte bara länka. Rent UI ovanpå befintlig delning.
+
+### Fler quick wins (ej i första paketet)
+
+- [ ] **Gyroskop-toggle på mobil.** Pannellum har `deviceorientation` inbyggt
+      (verifierat i `pannellum.js`, `orientationOnByDefault` m.fl.) men ingen vy
+      slår på flaggan eller ger en på/av-knapp. En UI-toggle i viewern, ingen ny
+      funktion att bygga. Stort upplevelsevärde för besökare på plats i kyrkan.
+- [ ] **Disk-/lagringsöversikt för admin.** Ingen `du`/quota per användare finns.
+      I self-host-modellen (särskilt inför Fas 4/Team) kan en användare fylla
+      disken oupptäckt. Enkel `du`-summering per användare/projekt på `/admin`
+      ger tidig varning. Passar ihop med Fas 4.
+
+### Strategiska luckor (större, planeras separat)
+
+- [ ] **Flerspråkighet (Rasmus 2026-07-13: vore bra).** Inget i schemat
+      (`tour.json`, hotspot-texter) eller UI:t stödjer flera språk. Kyrkor med
+      internationella besökare (domkyrkor, turistmål) vill visa hotspot-text +
+      UI på minst svenska + engelska. Riktig arkitekturfråga: språkval per
+      hotspot-fält (t.ex. `text` blir `{sv, en}` eller parallellt fält) ELLER
+      parallella tour.json per språk, + språkväljare i viewern och en fallback-
+      kedja. Bakåtkompatibelt via additiv-först (rå sträng = default-språket).
+      Berör editor (hotspot-editorn, ev. scennamn/titel), viewer (språkväljare),
+      bundle och backup. Utred datamodell innan bygge. Ej påbörjat.
+- [ ] **Versionshistorik / ångra för tur-redigering.** Autospar skriver direkt
+      över `tour.json`/`map.json` utan historik; en felaktig kart-/scenändring
+      kan bara återställas via en manuell backup-zip. Risken växer när Fas 4 gör
+      redigering multi-user (delat team-ägarskap, "alla kan redigera allt"). Enkel
+      lösning: spara N senaste snapshots vid varje spar + en "återställ tidigare
+      version"-vy. Värt att utreda innan Fas 4 gör redigering multi-user.
+
+### Avfärdat / åt sidan
+
+- **Tillgänglighet (WCAG) för panoramat - ÅT SIDAN (Rasmus 2026-07-13).**
+      Pannellum renderar canvas/WebGL, osynligt för skärmläsare; ingen alt-text
+      per scen, ingen icke-visuell navigering. Genuin lucka för ett offentligt
+      projekt, men medvetet nedprioriterad tills vidare. Kräver schemautökning
+      (textbeskrivning per scen) + alternativ navigeringsväg om/när den tas.
+- **EXIF-baserad autokalibrering av nordoffset - GÅR INTE (Rasmus 2026-07-13).**
+      Bilderna retuscheras oftast före uppladdning, vilket förstör/tappar
+      kompass-EXIF. Kalibreringen förblir manuell (sikta + klicka på granne).
+- **Sitemap/robots.txt/schema.org** för delade turer - lägre prio än OG-taggarna;
+      relevant bara om kyrkor vill synas i Google-sök.
+- **Ljud-/videohotspots (audioguide)** - större tillägg (mediahantering +
+      spelar-UI), bedömt för spekulativt nu.
+
 ## Fas 4 - Team & egna domäner (multi-tenancy nivå 2)
 
 Bakgrund (2026-07-11): för att erbjuda editorn till andra behöver turer kunna ägas
