@@ -370,7 +370,6 @@
 				sceneFadeDuration: Math.round((parseFloat(fade.value) || 0) * 1000),
 				mapSize: mapSizeVal(),
 				theme: { font: themeFont.value, dotColor: themeDot.value, currentColor: themeCurrent.value },
-				branding: currentBranding(),
 			};
 		}
 		function applyPreset(c) {
@@ -388,13 +387,8 @@
 			themeFont.value = ["sans", "serif", "mono", "humanist"].indexOf(th.font) !== -1 ? th.font : "sans";
 			themeDot.value = th.dotColor || "#666666";
 			themeCurrent.value = th.currentColor || "#8b0000";
-			var b = c.branding || {};
-			if (brandingContent) brandingContent.value = b.content || "";
-			if (brandingSize) brandingSize.value = SIZES.indexOf(b.size) !== -1 ? b.size : "medium";
-			if (brandingPos) brandingPos.value = POSES.indexOf(b.position) !== -1 ? b.position : "bottom-left";
 			updateArDirLabels();
 			applyThemeLive();
-			applyBrandingLive();
 			setDirty(true);
 			rebuildKeepView();
 		}
@@ -451,6 +445,87 @@
 			var p = selected();
 			if (!p) return;
 			fetch("/presets/" + p.id + "/default", {
+				method: "POST", headers: { "X-CSRF-Token": csrf(), "Content-Type": "application/json" },
+				body: JSON.stringify({ isDefault: defChk.checked }),
+			}).then(function () { load(sel.value); }).catch(function () { /* tyst */ });
+		});
+		load();
+	})();
+
+	// --- Branding-mallar (egen mall, skild från tema-presets) --------------
+	// Spara/använd bara logga+storlek+position. En kan vara standard för nya turer.
+	(function () {
+		var sel = document.getElementById("brand-preset-select");
+		var applyBtn = document.getElementById("brand-preset-apply");
+		var saveBtn2 = document.getElementById("brand-preset-save");
+		var delBtn = document.getElementById("brand-preset-delete");
+		var defChk = document.getElementById("brand-preset-default");
+		if (!sel) return;
+		var cache = [];
+		function csrf() { return window.getCsrfToken ? getCsrfToken() : ""; }
+		function applyCfg(c) {
+			c = c || {};
+			if (brandingContent) brandingContent.value = c.content || "";
+			if (brandingSize) brandingSize.value = SIZES.indexOf(c.size) !== -1 ? c.size : "medium";
+			if (brandingPos) brandingPos.value = POSES.indexOf(c.position) !== -1 ? c.position : "bottom-left";
+			applyBrandingLive();
+			setDirty(true);
+		}
+		function selected() { return cache.filter(function (p) { return String(p.id) === sel.value; })[0]; }
+		function syncDef() { var p = selected(); if (defChk) { defChk.checked = !!(p && p.is_default); defChk.disabled = !p; } }
+		function renderOpts() {
+			var cur = sel.value;
+			sel.innerHTML = '<option value="">- välj branding-mall -</option>';
+			cache.forEach(function (p) {
+				var o = document.createElement("option");
+				o.value = String(p.id);
+				o.textContent = p.name + (p.is_default ? " (standard)" : "");
+				sel.appendChild(o);
+			});
+			sel.value = cur;
+			syncDef();
+		}
+		function load(selectId) {
+			fetch("/branding-presets").then(function (r) { return r.json(); }).then(function (d) {
+				cache = d.presets || [];
+				renderOpts();
+				if (selectId != null) { sel.value = String(selectId); syncDef(); }
+			}).catch(function () { /* tyst */ });
+		}
+		sel.addEventListener("change", syncDef);
+		applyBtn.addEventListener("click", function () {
+			var p = selected();
+			if (!p) { if (window.showToast) showToast("Välj en branding-mall först", "error"); return; }
+			applyCfg(p.config);
+			if (window.showToast) showToast("Tillämpad - spara för att behålla", "ok");
+		});
+		saveBtn2.addEventListener("click", function () {
+			var cfg = currentBranding();
+			if (!cfg) { if (window.showToast) showToast("Skriv branding först", "error"); return; }
+			var p = selected();
+			var name = window.prompt("Namn på branding-mallen:", (p && p.name) || "");
+			if (name == null || !name.trim()) return;
+			fetch("/branding-presets", {
+				method: "POST", headers: { "X-CSRF-Token": csrf(), "Content-Type": "application/json" },
+				body: JSON.stringify({ name: name.trim(), config: cfg }),
+			}).then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+				.then(function (d) { if (window.showToast) showToast("Branding-mall sparad", "ok"); load(d.preset.id); })
+				.catch(function () { if (window.showToast) showToast("Kunde inte spara", "error"); });
+		});
+		delBtn.addEventListener("click", function () {
+			var p = selected();
+			if (!p) { if (window.showToast) showToast("Välj en branding-mall först", "error"); return; }
+			var ask = window.confirmDialog ? confirmDialog('Ta bort branding-mallen "' + p.name + '"?', { danger: true, confirmText: "Ta bort" }) : Promise.resolve(window.confirm("Ta bort?"));
+			ask.then(function (ok) {
+				if (!ok) return;
+				fetch("/branding-presets/" + p.id + "/delete", { method: "POST", headers: { "X-CSRF-Token": csrf() } })
+					.then(function () { load(); if (window.showToast) showToast("Borttagen", "ok"); }).catch(function () { /* tyst */ });
+			});
+		});
+		if (defChk) defChk.addEventListener("change", function () {
+			var p = selected();
+			if (!p) return;
+			fetch("/branding-presets/" + p.id + "/default", {
 				method: "POST", headers: { "X-CSRF-Token": csrf(), "Content-Type": "application/json" },
 				body: JSON.stringify({ isDefault: defChk.checked }),
 			}).then(function () { load(sel.value); }).catch(function () { /* tyst */ });

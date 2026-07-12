@@ -61,6 +61,21 @@ class ThemePreset(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
 
 
+class BrandingPreset(Base):
+    """Namngiven branding-mall per ägare (logotyp/text som markdown + storlek +
+    position). Skild från ThemePreset så org-identitet kan återanvändas oberoende
+    av temat. `config` = JSON {content, size, position}. En kan vara `is_default`
+    -> ärvs av nya turer (create_project)."""
+    __tablename__ = "branding_presets"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    config: Mapped[str] = mapped_column(Text)  # JSON
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+
+
 class Setting(Base):
     """Enkel nyckel/värde-store för super-admin-inställningar (t.ex. tjänstenamn).
     Env ger default; en rad här override:ar. Läses via app/services/settings.py."""

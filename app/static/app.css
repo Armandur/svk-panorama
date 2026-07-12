@@ -539,6 +539,7 @@ tr[data-preview-scene] { cursor: help; }
 .panorama-wrap .tour-branding.branding-top-right { top: 12px; right: 12px; }
 .branding-opts { display: flex; gap: 0.8rem; margin-top: 0.4rem; }
 .branding-opts label { flex: 1; margin-bottom: 0; }
+.branding-sep { margin: 1rem 0 0.6rem; border: none; border-top: 1px solid var(--pico-muted-border-color, rgba(115, 130, 140, 0.3)); }
 
 /* Tema: färgväljare */
 .theme-colors { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.5rem; }

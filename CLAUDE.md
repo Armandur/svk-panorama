@@ -29,6 +29,12 @@ Ingen `--reload` som standard -> starta om vid Python/mall-ändringar. CSS/JS
 serveras från disk med `Cache-Control: no-cache` (syns utan omstart). Verifiera i
 browser via hostnamn (`http://ubuntu-ai:PORT`), inte localhost.
 
+**Kör alltid en EGEN instans** (Claude-ägd) för verifiering - anta aldrig att
+en redan körande instans är din. Hämta ledig port (`svc port`), starta i
+bakgrunden med `SVK_SECRET_KEY=$(cat .secret_key_dev)` (login admin/admin
+överlever omstart mot delad svk.db), stäng av din egen PID när du är klar. Det
+är okej att starta om instansen mellan `/clear` - den är efemär.
+
 ## Två separata delar i repot
 
 - **`app/`** - den nya editorn (allt aktivt arbete sker här). Projektdata i
@@ -144,7 +150,18 @@ preview-steget: dropdown + Använd/Spara/Radera + "standard för nya turer"
 (preset-wiring i tour-preview.js läser/applicerar SAMMA kontroller som Spara-
 blocket). ThemePreset är en ADDITIV ny tabell -> `create_all` skapar den utan att
 röra befintlig data (ingen svk.db-blåsning behövdes, till skillnad från
-kolumn-ändringar).
+kolumn-ändringar). Branding ingår INTE i tema-preseten (`sanitize_config` droppar
+den) - det är en egen mall:
+
+**Branding-mallar (BrandingPreset, egen tabell).** Skild från ThemePreset så
+org-identitet (logga) återanvänds oberoende av temat. `config` = JSON
+{content,size,position} (`sanitize_branding`). Samma CRUD-mönster (list/save/
+delete/set_default, generiska `_list/_save/_delete/_set_default/_default_row` i
+presets.py delas av båda tabellerna). Endpoints `/branding-presets*` (routes/
+presets.py). En kan vara `is_default` -> nya turer ärver den (`create_project`
+lägger `default_branding()` på `tour.default.branding`, skilt från tema-arvet). UI
+i Branding-sektionen på preview-steget (dropdown + Använd/Spara/Radera + standard),
+wiring i egen IIFE i tour-preview.js. Additiv tabell -> `create_all` (ingen blåsning).
 
 ## Runtime-viewern (viewer.js/css)
 
@@ -156,9 +173,10 @@ Applicerar `tour.default.theme` via CSS-variabler (`--tour-font/--dot-color/
 **Branding-overlay:** `tour.default.branding={content(markdown),size,position}`
 renderas som ett `.tour-branding`-överlägg via delad `renderBrandingInto` (markdown.js;
 sanerad MD, externa länkar target=_blank, storleks-/positionsklass). Redigeras på
-preview-steget (textarea + "Infoga bild" ur mediebiblioteket), ärvs via standard-preset,
-följer med i bundle/backup (`_media_refs` skannar branding.content). Runtime = fixed +
-egen fullskärms-omflyttning; preview = absolut i panorama-wrap.
+preview-steget (textarea + "Infoga bild" ur mediebiblioteket), återanvänds via egen
+**branding-mall** (BrandingPreset, se nedan) - INTE tema-preseten. Följer med i
+bundle/backup (`_media_refs` skannar branding.content). Runtime = fixed + egen
+fullskärms-omflyttning; preview = absolut i panorama-wrap.
 
 ## static/-JS (editorn)
 

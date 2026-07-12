@@ -175,6 +175,23 @@ def test_preset_sanitize():
     check("preset giltig autoRotate behålls", ok["autoRotate"] == -3)
     check("preset giltig mapSize behålls", ok["mapSize"] == "large")
     check("preset tom -> defaults", sanitize_config({})["theme"]["font"] == "sans")
+    # Branding hör INTE hemma i tema-preset (egen mall) -> droppas även om det skickas.
+    with_brand = sanitize_config({"branding": {"content": "**x**", "size": "large", "position": "top-left"}})
+    check("tema-preset droppar branding", "branding" not in with_brand)
+
+
+def test_branding_sanitize():
+    from app.services.presets import sanitize_branding
+    check("branding tom -> None", sanitize_branding("", "medium", "bottom-left") is None)
+    check("branding whitespace -> None", sanitize_branding("   ", "medium", "bottom-left") is None)
+    ok = sanitize_branding("**Församlingen**", "huge", "middle")
+    check("branding giltig content behålls", ok["content"] == "**Församlingen**")
+    check("branding ogiltig size -> medium", ok["size"] == "medium")
+    check("branding ogiltig position -> bottom-left", ok["position"] == "bottom-left")
+    val = sanitize_branding("logga", "small", "top-right")
+    check("branding giltig size behålls", val["size"] == "small")
+    check("branding giltig position behålls", val["position"] == "top-right")
+    check("branding content kapas vid 2000", len(sanitize_branding("a" * 5000, "small", "top-right")["content"]) == 2000)
 
 
 def test_backup_security():
@@ -346,6 +363,7 @@ def main() -> int:
         test_relativize,
         test_export_readiness,
         test_preset_sanitize,
+        test_branding_sanitize,
         test_backup_security,
         test_media_pool,
         test_hex,

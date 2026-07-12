@@ -11,7 +11,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from app.database import ThemePreset
+from app.database import BrandingPreset, ThemePreset
 
 _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 _FONTS = {"sans", "serif", "mono", "humanist"}
@@ -60,15 +60,13 @@ def sanitize_config(c: dict[str, Any]) -> dict[str, Any]:
             "currentColor": _hex(th.get("currentColor"), "#8b0000"),
         },
     }
-    b = c.get("branding")
-    if isinstance(b, dict):
-        sb = sanitize_branding(b.get("content"), b.get("size"), b.get("position"))
-        if sb:
-            out["branding"] = sb
+    # OBS: branding ingår INTE i tema-presets - det är en egen mall (BrandingPreset)
+    # så org-identitet kan återanvändas oberoende av temat. Stale branding-nyckel i
+    # ett gammalt sparat config droppas här (create_project läser sanerat).
     return out
 
 
-def _dump(row: ThemePreset) -> dict[str, Any]:
+def _dump(row: Any) -> dict[str, Any]:
     return {
         "id": row.id,
         "name": row.name,
@@ -77,38 +75,26 @@ def _dump(row: ThemePreset) -> dict[str, Any]:
     }
 
 
-def list_presets(db: Session, owner_id: int) -> list[dict[str, Any]]:
-    rows = (
-        db.query(ThemePreset)
-        .filter(ThemePreset.owner_id == owner_id)
-        .order_by(ThemePreset.name)
-        .all()
-    )
+# --- Generisk CRUD delad av ThemePreset och BrandingPreset (identiska kolumner) ---
+def _list(db: Session, Model: Any, owner_id: int) -> list[dict[str, Any]]:
+    rows = db.query(Model).filter(Model.owner_id == owner_id).order_by(Model.name).all()
     return [_dump(r) for r in rows]
 
 
-def save_preset(db: Session, owner_id: int, name: str, config: dict[str, Any]) -> dict[str, Any]:
-    """Skapa eller skriv över (per namn) en förinställning."""
+def _save(db: Session, Model: Any, owner_id: int, name: str, config_json: str) -> dict[str, Any]:
+    """Skapa eller skriv över (per namn) en förinställning. config_json = redan sanerad JSON."""
     name = (name or "").strip()[:120] or "Förinställning"
-    row = (
-        db.query(ThemePreset)
-        .filter(ThemePreset.owner_id == owner_id, ThemePreset.name == name)
-        .first()
-    )
+    row = db.query(Model).filter(Model.owner_id == owner_id, Model.name == name).first()
     if row is None:
-        row = ThemePreset(owner_id=owner_id, name=name, is_default=False)
+        row = Model(owner_id=owner_id, name=name, is_default=False)
         db.add(row)
-    row.config = json.dumps(sanitize_config(config), ensure_ascii=False)
+    row.config = config_json
     db.commit()
     return _dump(row)
 
 
-def delete_preset(db: Session, owner_id: int, preset_id: int) -> bool:
-    row = (
-        db.query(ThemePreset)
-        .filter(ThemePreset.owner_id == owner_id, ThemePreset.id == preset_id)
-        .first()
-    )
+def _delete(db: Session, Model: Any, owner_id: int, preset_id: int) -> bool:
+    row = db.query(Model).filter(Model.owner_id == owner_id, Model.id == preset_id).first()
     if row is None:
         return False
     db.delete(row)
@@ -116,16 +102,12 @@ def delete_preset(db: Session, owner_id: int, preset_id: int) -> bool:
     return True
 
 
-def set_default(db: Session, owner_id: int, preset_id: int, is_default: bool) -> bool:
-    row = (
-        db.query(ThemePreset)
-        .filter(ThemePreset.owner_id == owner_id, ThemePreset.id == preset_id)
-        .first()
-    )
+def _set_default(db: Session, Model: Any, owner_id: int, preset_id: int, is_default: bool) -> bool:
+    row = db.query(Model).filter(Model.owner_id == owner_id, Model.id == preset_id).first()
     if row is None:
         return False
     if is_default:
-        db.query(ThemePreset).filter(ThemePreset.owner_id == owner_id).update({"is_default": False})
+        db.query(Model).filter(Model.owner_id == owner_id).update({"is_default": False})
         row.is_default = True
     else:
         row.is_default = False
@@ -133,11 +115,64 @@ def set_default(db: Session, owner_id: int, preset_id: int, is_default: bool) ->
     return True
 
 
-def default_config(db: Session, owner_id: int) -> dict[str, Any] | None:
-    """Config för ägarens standard-förinställning (för nya turer), eller None."""
-    row = (
-        db.query(ThemePreset)
-        .filter(ThemePreset.owner_id == owner_id, ThemePreset.is_default.is_(True))
+def _default_row(db: Session, Model: Any, owner_id: int) -> Any:
+    return (
+        db.query(Model)
+        .filter(Model.owner_id == owner_id, Model.is_default.is_(True))
         .first()
     )
-    return (json.loads(row.config) if row.config else {}) if row else None
+
+
+# --- Tema-presets ---
+def list_presets(db: Session, owner_id: int) -> list[dict[str, Any]]:
+    return _list(db, ThemePreset, owner_id)
+
+
+def save_preset(db: Session, owner_id: int, name: str, config: dict[str, Any]) -> dict[str, Any]:
+    return _save(db, ThemePreset, owner_id, name, json.dumps(sanitize_config(config), ensure_ascii=False))
+
+
+def delete_preset(db: Session, owner_id: int, preset_id: int) -> bool:
+    return _delete(db, ThemePreset, owner_id, preset_id)
+
+
+def set_default(db: Session, owner_id: int, preset_id: int, is_default: bool) -> bool:
+    return _set_default(db, ThemePreset, owner_id, preset_id, is_default)
+
+
+def default_config(db: Session, owner_id: int) -> dict[str, Any] | None:
+    """Config för ägarens standard-tema-förinställning (för nya turer), eller None.
+    Saneras vid läsning -> ev. stale branding-nyckel droppas (branding är egen mall)."""
+    row = _default_row(db, ThemePreset, owner_id)
+    return sanitize_config(json.loads(row.config) if row.config else {}) if row else None
+
+
+# --- Branding-presets (egen mall, se BrandingPreset) ---
+def list_branding_presets(db: Session, owner_id: int) -> list[dict[str, Any]]:
+    return _list(db, BrandingPreset, owner_id)
+
+
+def save_branding_preset(db: Session, owner_id: int, name: str, config: dict[str, Any]) -> dict[str, Any] | None:
+    """Spara en branding-mall. None (tom content) -> inget sparas (route -> 400)."""
+    c = config or {}
+    sb = sanitize_branding(c.get("content"), c.get("size"), c.get("position"))
+    if not sb:
+        return None
+    return _save(db, BrandingPreset, owner_id, name, json.dumps(sb, ensure_ascii=False))
+
+
+def delete_branding_preset(db: Session, owner_id: int, preset_id: int) -> bool:
+    return _delete(db, BrandingPreset, owner_id, preset_id)
+
+
+def set_branding_default(db: Session, owner_id: int, preset_id: int, is_default: bool) -> bool:
+    return _set_default(db, BrandingPreset, owner_id, preset_id, is_default)
+
+
+def default_branding(db: Session, owner_id: int) -> dict[str, Any] | None:
+    """Ägarens standard-branding (för nya turer), sanerad, eller None."""
+    row = _default_row(db, BrandingPreset, owner_id)
+    if not row:
+        return None
+    c = json.loads(row.config) if row.config else {}
+    return sanitize_branding(c.get("content"), c.get("size"), c.get("position"))
