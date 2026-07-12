@@ -17,7 +17,7 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-from app.config import SCHEMA_VERSION
+from app.config import MAX_IMAGE_MEGAPIXELS, MAX_PANORAMA_MB, SCHEMA_VERSION
 from app.database import Project
 from app.services import media
 from app.services.project_files import (
@@ -160,6 +160,10 @@ def _validate_members(zf: zipfile.ZipFile) -> None:
             raise ValueError(f"Otillåten filtyp i arkivet: {n}")
         if n.startswith("media/") and "/" in n[len("media/"):]:
             raise ValueError(f"Osäkert medienamn: {n}")
+        # Per-fil-tak (som direktuppladdningens panorama-gräns) utöver det aggregerade
+        # arkivtaket - en enskild fil ska inte kunna vara större än vad upload tillåter.
+        if info.file_size > MAX_PANORAMA_MB * 1024 * 1024:
+            raise ValueError(f"En fil i arkivet är för stor: {n} (max {MAX_PANORAMA_MB} MB per fil).")
         total += info.file_size
         if total > cap:
             raise ValueError(f"Arkivet är för stort (max {MAX_BACKUP_MB} MB uppackat).")
@@ -226,6 +230,19 @@ def import_project(src_zip: Path, user, db) -> Project:
     return project
 
 
+def _check_extracted_image(path: Path, name: str) -> None:
+    """Megapixel-tak på en importerad bild (header-läsning, ingen full avkodning).
+    Höjer ValueError -> import_project rullar tillbaka hela importen."""
+    from PIL import Image
+    try:
+        with Image.open(path) as im:
+            megapixels = (im.width * im.height) / 1_000_000
+    except Exception:
+        raise ValueError(f"{name} är inte en giltig bild.")
+    if megapixels > MAX_IMAGE_MEGAPIXELS:
+        raise ValueError(f"{name} har för stora mått ({megapixels:.0f} MP, max {MAX_IMAGE_MEGAPIXELS} MP).")
+
+
 def _extract(z: zipfile.ZipFile, slug: str, owner_id: int) -> None:
     """Extrahera arkivet (efter _validate_members). Magic-kollar bilder så en
     riggad `.jpg`/`.png` som egentligen är HTML avvisas."""
@@ -252,6 +269,11 @@ def _extract(z: zipfile.ZipFile, slug: str, owner_id: int) -> None:
             with open(dest, "wb") as out:
                 out.write(head)
                 shutil.copyfileobj(srcf, out)
+        # Megapixel-tak även på importerade bilder (samma som direktuppladdning) -
+        # annars kunde en liten-fil/enorma-mått-bomb i arkivet passera magic-kollen
+        # och sedan avkodas fullt vid preview/tiling. Läser bara headern.
+        if ext in _IMAGE_EXT:
+            _check_extracted_image(dest, n)
 
 
 def _rewrite_refs(new_slug: str, old_slug: str, owner_id: int) -> None:

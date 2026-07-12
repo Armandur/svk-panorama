@@ -44,13 +44,16 @@ def reset(key: str) -> None:
 
 
 def client_ip(request: Any) -> str:
-    """Klientens IP för rate-limit-nyckeln. Bakom betrodd proxy (config.TRUST_PROXY)
-    tas första IP:n i X-Forwarded-For; annars request.client.host. TRUST_PROXY måste
-    vara AV utan proxy - annars kan en klient spoofa headern och kringgå gränsen."""
+    """Klientens IP för rate-limit-nyckeln. Bakom EN betrodd proxy (config.TRUST_PROXY,
+    modellen är single-host bakom en reverse proxy) tas SISTA posten i X-Forwarded-For -
+    det är den IP proxyn själv appendar. FÖRSTA posten är klient-satt och kan spoofas
+    (angriparen skickar egen XFF -> proxyn producerar "spoofat, riktig-ip"), så att läsa
+    första skulle sprida ut brute force över oändligt många nycklar. TRUST_PROXY måste
+    vara AV utan proxy (annars är hela headern klientkontrollerad)."""
     if config.TRUST_PROXY:
         xff = request.headers.get("x-forwarded-for", "")
         if xff:
-            first = xff.split(",")[0].strip()
-            if first:
-                return first
+            last = xff.split(",")[-1].strip()
+            if last:
+                return last
     return request.client.host if request.client else "unknown"
