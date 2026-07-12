@@ -356,6 +356,26 @@ def test_auth():
     check("invite manipulerad -> None", read_invite_token(tok[:-3] + "aaa") is None)
 
 
+def test_schema_version():
+    from app import config
+    from app.services.backup import _check_archive_version
+    from app.services.project_files import default_tour
+    check("default_tour har schemaVersion", default_tour().get("schemaVersion") == config.SCHEMA_VERSION)
+    # Version-gate (additiv-först): samma/äldre/saknad/ogiltig godtas, nyare avvisas.
+    _check_archive_version({"version": config.SCHEMA_VERSION})
+    _check_archive_version({})
+    _check_archive_version({"version": "skräp"})
+    _check_archive_version({"version": 0})
+
+    def raises(m):
+        try:
+            _check_archive_version(m); return False
+        except ValueError:
+            return True
+    check("nyare arkiv-version avvisas", raises({"version": config.SCHEMA_VERSION + 1}))
+    check("samma version godtas (raises=False)", not raises({"version": config.SCHEMA_VERSION}))
+
+
 def main() -> int:
     for fn in (
         test_expected_tile_count,
@@ -364,6 +384,7 @@ def main() -> int:
         test_export_readiness,
         test_preset_sanitize,
         test_branding_sanitize,
+        test_schema_version,
         test_backup_security,
         test_media_pool,
         test_hex,

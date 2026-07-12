@@ -26,6 +26,13 @@ DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 WORKFLOW_MD_PATH = REPO_ROOT / "WORKFLOW.md"
 
+# Schemaversion för tour.json/map.json + projektarkiv (project.json). Policy:
+# ADDITIV-FÖRST - nya fält är valfria med defaultar och okända fält ignoreras vid
+# läsning, så bumpa BARA vid en brytande ändring. Skrivs i tour.json (write_tour)
+# och backup-manifestet; import avvisar arkiv med högre version än denna
+# (se services/backup.py). Stäm av kompat-policyn i CLAUDE.md vid ändring.
+SCHEMA_VERSION = 1
+
 # Hemlighet för CSRF-signering. Genereras per processtart om inget env-värde
 # finns - gör att CSRF-cookies satta innan en omstart av dev-servern blir
 # ogiltiga, vilket är helt okej för detta lokala verktyg.

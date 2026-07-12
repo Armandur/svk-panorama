@@ -108,6 +108,7 @@ def ensure_project_structure(slug: str) -> None:
 
 def default_tour() -> dict[str, Any]:
     return {
+        "schemaVersion": config.SCHEMA_VERSION,
         "default": {
             "autoLoad": True,
             "autoRotate": -2,
@@ -128,6 +129,9 @@ def read_tour(slug: str) -> dict[str, Any]:
 
 
 def write_tour(slug: str, tour: dict[str, Any]) -> None:
+    # Stämpla aktuell schemaversion vid varje spar (även äldre turer versioneras
+    # när de sparas om) - additiv-först, se config.SCHEMA_VERSION.
+    tour["schemaVersion"] = config.SCHEMA_VERSION
     _atomic_write_text(tour_json_path(slug), json.dumps(tour, indent="\t", ensure_ascii=False))
 
 

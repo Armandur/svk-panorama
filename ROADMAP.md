@@ -401,7 +401,14 @@ Faser (minst till störst):
       "flytta/säkerhetskopiera en redigerbar tur" (granskningens produkt-"bör") och att
       bundlen saknade källbilder för tilade scener.
 
-- [ ] **Reda ut version/schema-kompatibilitet för turer & arkiv (Rasmus 2026-07-12).**
+- [x] **Version/schema-kompatibilitet för turer & arkiv KLAR (2026-07-12).** Beslut:
+      **additiv-först + version-gate vid import.** `config.SCHEMA_VERSION` (=1); `tour.json`
+      stämplas med `schemaVersion` vid varje `write_tour`, backup-manifestet skriver samma
+      `version`, och `backup._check_archive_version` avvisar arkiv med högre version än
+      verktyget stödjer (äldre/samma/saknad godtas, defaultar fyller nya fält). Policyn
+      dokumenterad i CLAUDE.md. Migrationskedja (v1->v2) läggs FÖRST när en brytande
+      ändring faktiskt behövs. Ursprunglig utredning nedan (behållen för kontext):
+- [~] **~~Reda ut version/schema-kompatibilitet för turer & arkiv (Rasmus 2026-07-12).~~**
       Risk: en tur exporterad/skriven med en version av verktyget kan bli inkompatibel
       när schemat (tour.json) ändras - gäller BÅDE projekt-import (arkiv från annan/äldre
       instans) OCH tour.json på disk när verktyget uppdateras. Idag: `project.json` bär

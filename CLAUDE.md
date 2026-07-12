@@ -144,6 +144,19 @@ om referenser: `/projects/<gammal-slug>/` -> nya slugen och `/media/<gammal-owne
 startsidan (`import-project.js`) -> redirect till nya turen. `_backup/`-zip i
 projektmappen (gitignorad).
 
+## Schemaversion & kompatibilitet (config.SCHEMA_VERSION)
+
+Policy: **additiv-först.** Nya fält i `tour.json`/`map.json`/`project.json` är
+valfria med defaultar och okända fält ignoreras vid läsning (`.get(..., default)`),
+så `SCHEMA_VERSION` bumpas BARA vid en BRYTANDE ändring. `tour.json` stämplas med
+`schemaVersion` vid varje `write_tour` (även äldre turer versioneras när de sparas
+om); backup-manifestet (`project.json`) skriver samma `version`. **Import gate:ar**
+(`backup._check_archive_version`): ett arkiv med högre version än verktyget stödjer
+AVVISAS med tydligt meddelande ("skapad med en nyare version"); äldre/samma/saknad
+godtas (defaultar fyller nya fält). Vid en framtida brytande ändring: bumpa
+`SCHEMA_VERSION`, lägg ev. en migrate-funktion som körs vid import/läsning, och
+uppdatera denna sektion.
+
 ## Tema-förinställningar (ThemePreset, services/presets.py, routes/presets.py)
 
 Namngivna tema-/inställnings-presets per ägare (`theme_presets`-tabell). `config`

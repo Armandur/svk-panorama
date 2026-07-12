@@ -17,6 +17,7 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
+from app.config import SCHEMA_VERSION
 from app.database import Project
 from app.services import media
 from app.services.project_files import (
@@ -28,7 +29,9 @@ from app.services.project_files import (
 from app.services.tiling import manifest_path as tiles_manifest_path
 
 FORMAT = "svk-project"
-VERSION = 1
+# Arkivets schemaversion = verktygets aktuella (config.SCHEMA_VERSION). Import
+# gate:ar på denna (avvisar nyare arkiv); se _check_archive_version.
+VERSION = SCHEMA_VERSION
 _MEDIA_REF_RE = re.compile(r"/media/(\d+)/([A-Za-z0-9._-]+)")
 # Tillåtna arcnames i arkivet (ingen absolut väg / ".." / konstiga tecken).
 _SAFE_ARC_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*$")
@@ -171,6 +174,21 @@ def _unique_slug(db, base: str) -> str:
     return slug
 
 
+def _check_archive_version(manifest: dict[str, Any]) -> None:
+    """Version-gate (additiv-först): avvisa arkiv skapade med en NYARE schemaversion
+    än verktyget stödjer. Äldre/samma godtas (defaultar fyller nya fält vid läsning).
+    Saknad/ogiltig version tolkas som 1 (äldsta)."""
+    try:
+        arc = int(manifest.get("version", 1))
+    except (TypeError, ValueError):
+        arc = 1
+    if arc > SCHEMA_VERSION:
+        raise ValueError(
+            f"Arkivet skapades med en nyare version av verktyget (schema v{arc}, "
+            f"detta verktyg stödjer upp till v{SCHEMA_VERSION}). Uppdatera verktyget för att importera."
+        )
+
+
 def import_project(src_zip: Path, user, db) -> Project:
     """Importera ett projektarkiv som ett nytt projekt ägt av `user`.
     Returnerar det skapade Project. Höjer ValueError vid ogiltigt/osäkert arkiv."""
@@ -183,6 +201,7 @@ def import_project(src_zip: Path, user, db) -> Project:
             raise ValueError("Skadat projektarkiv (project.json går inte att läsa).")
         if manifest.get("format") != FORMAT:
             raise ValueError("Okänt arkivformat - inte ett svk-projektarkiv.")
+        _check_archive_version(manifest)
         _validate_members(z)
 
         old_slug = str(manifest.get("slug") or "")
