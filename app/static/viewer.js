@@ -37,7 +37,53 @@
 		});
 	}
 
+	// --- Djuplänkning (#scene=..&yaw=..&pitch=..&hfov=..) ------------------
+	// Läs ev. vy ur URL-hashen så en delad länk landar på rätt scen och riktning.
+	// Skrivs tillbaka vid scenbyte och användarstyrd vy-ändring (INTE under
+	// autorotate - då skulle URL:en flimra). Gäller /view, publik /s och bundlen.
+	function parseHash() {
+		const h = (location.hash || "").replace(/^#/, "");
+		if (!h) return null;
+		const p = new URLSearchParams(h);
+		return {
+			scene: p.get("scene"),
+			yaw: parseFloat(p.get("yaw")),
+			pitch: parseFloat(p.get("pitch")),
+			hfov: parseFloat(p.get("hfov")),
+		};
+	}
+	const deep = parseHash();
+	if (deep && deep.scene && tour.scenes && tour.scenes[deep.scene]) {
+		tour.default.firstScene = deep.scene;
+	}
+	let pendingView = deep && [deep.yaw, deep.pitch, deep.hfov].some(isFinite) ? deep : null;
+
 	const viewer = pannellum.viewer("panorama", tour);
+
+	function writeHash() {
+		try {
+			const h = "#scene=" + encodeURIComponent(viewer.getScene()) +
+				"&yaw=" + Math.round(viewer.getYaw() * 10) / 10 +
+				"&pitch=" + Math.round(viewer.getPitch() * 10) / 10 +
+				"&hfov=" + Math.round(viewer.getHfov());
+			history.replaceState(null, "", h);
+		} catch (e) { /* getters ej redo ännu */ }
+	}
+	viewer.on("load", function () {
+		if (pendingView) {
+			try {
+				if (isFinite(pendingView.yaw)) viewer.setYaw(pendingView.yaw, false);
+				if (isFinite(pendingView.pitch)) viewer.setPitch(pendingView.pitch, false);
+				if (isFinite(pendingView.hfov)) viewer.setHfov(pendingView.hfov, false);
+			} catch (e) { /* ignore */ }
+			pendingView = null;
+		}
+		writeHash();
+	});
+	// Användarstyrda vy-ändringar (drag/zoom/scenbyte) - inte autorotate.
+	["scenechange", "mouseup", "touchend", "zoomchange"].forEach(function (ev) {
+		viewer.on(ev, writeHash);
+	});
 
 	// --- Kartöverlägg ------------------------------------------------------
 	const container = document.getElementById("map-container");
