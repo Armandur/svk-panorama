@@ -95,7 +95,8 @@
 			delete cfg.multiRes;
 		}
 		applyingRes = true;
-		viewer.loadScene(id);
+		// Bevara vyn vid upplösningsbyte (annars nollas riktningen).
+		viewer.loadScene(id, viewer.getPitch(), viewer.getYaw(), viewer.getHfov());
 	}
 	// Uppdatera väljarens tillgänglighet + hint för aktuell scen.
 	function updateResUi(id) {
@@ -140,7 +141,7 @@
 			d.title = "Scen " + s.id + " - klicka för att gå hit";
 			// Klick på prick = navigera till scenen (som i den riktiga turen).
 			d.addEventListener("click", function () {
-				if (viewer.getScene() !== s.id) viewer.loadScene(s.id);
+				if (viewer.getScene() !== s.id) viewer.loadScene(s.id, scenePitch(s.id), sceneYaw(s.id));
 			});
 			mapDots.appendChild(d);
 			dotEls[s.id] = d;
@@ -188,6 +189,10 @@
 	}
 
 	function round2(n) { return Math.round(n * 100) / 100; }
+	// Scenens startriktning (default yaw/pitch) - så navigering i editorn öppnar
+	// scenen där den publicerade turen gör (undefined = pannellum default).
+	function sceneYaw(id) { return (tour.scenes[id] && typeof tour.scenes[id].yaw === "number") ? tour.scenes[id].yaw : undefined; }
+	function scenePitch(id) { return (tour.scenes[id] && typeof tour.scenes[id].pitch === "number") ? tour.scenes[id].pitch : undefined; }
 
 	function sceneIds() {
 		return Object.keys(tour.scenes).sort(function (a, b) {
@@ -237,6 +242,9 @@
 			hotSpots: cloneHs(tour.scenes[id].hotSpots),
 		};
 		if (tour.scenes[id].horizonRoll) cfgScenes[id].horizonRoll = tour.scenes[id].horizonRoll;
+		// Startriktning: låt editorn öppna scenen där den publicerade turen gör.
+		if (typeof tour.scenes[id].yaw === "number") cfgScenes[id].yaw = tour.scenes[id].yaw;
+		if (typeof tour.scenes[id].pitch === "number") cfgScenes[id].pitch = tour.scenes[id].pitch;
 	});
 	const firstScene = (tour.default && tour.default.firstScene && cfgScenes[tour.default.firstScene])
 		? tour.default.firstScene : sceneIds()[0];
@@ -989,7 +997,7 @@
 		const ids = sceneIds();
 		const i = ids.indexOf(viewer.getScene());
 		const next = ids[(i + delta + ids.length) % ids.length];
-		if (next) viewer.loadScene(next);
+		if (next) viewer.loadScene(next, scenePitch(next), sceneYaw(next));
 	}
 	const prevBtn = document.getElementById("prev-scene");
 	const nextBtn = document.getElementById("next-scene");
