@@ -381,7 +381,11 @@ Faser (minst till störst):
       viewer.js/tour-preview.js/scene.js. Fiddligt pannellum-tooltip-arbete över 4 filer
       -> browser-verifiera (shot/Playwright) i editor, /preview, /view och bundle.
 
-- [ ] **BUGG: grå text i expanderad hotspot i scenvyn.** I `/projects/X/scenes` är
+- [x] **BUGG: grå text i expanderad hotspot i scenvyn FIXAT (2026-07-12).** Pico
+      (editor/preview) satte `color` direkt på `p`/`h`/`li` -> slog arvet från
+      `.hs-sheet-inner` (#1c2128) så texten blev grå (#373c44). Fix i app.css:
+      `.hs-sheet-body p,li,h1-4,blockquote { color: inherit }`. Publicerade vieweren
+      laddar inte Pico -> var redan mörk. Verifierat: p-färg #1c2128. I `/projects/X/scenes` är
       texten i det expanderade hotspot-arket (`.hs-sheet` / `.hs-sheet-body.markdown-body`,
       byggs i `app/static/markdown.js` `openHsSheet`) grå i stället for svart. Färgerna
       i `viewer.css` (`.hs-md`/`.hs-sheet*`) är satta för viewerns MÖRKA kontext; i
