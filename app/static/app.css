@@ -606,11 +606,25 @@ tr[data-preview-scene] { cursor: help; }
 .preset-brand-stage .tour-branding img { display: block; max-width: 100%; height: auto; }
 .preset-brand-stage .tour-branding a { color: #7cc0ff; }
 .preset-card-actions { display: flex; gap: 0.4rem; margin-top: auto; }
-.preset-use { margin: 0; padding: 0.25rem 0.7rem; }
-.preset-del { margin: 0; padding: 0.25rem 0.7rem; }
+/* Alla kort-knappar lika höga (samma padding/line-height) och delar bredden lika. */
+.preset-card-actions button { flex: 1; margin: 0; padding: 0.3rem 0.5rem; font-size: 0.85rem; line-height: 1.4; }
 /* Väljar-modal: samma help-modal-skal, bredare artikel för rutnätet. */
 .preset-modal .preset-article { max-width: min(1000px, 94vw); width: min(1000px, 94vw); }
 .preset-modal-body { max-height: 74vh; overflow-y: auto; }
+/* Redigera-modal: kompakt formulär. */
+.preset-edit-modal .preset-edit-article { max-width: min(560px, 94vw); width: min(560px, 94vw); max-height: 90vh; overflow-y: auto; }
+.preset-edit-body { display: flex; flex-direction: column; gap: 0.6rem; }
+.preset-edit-body label { display: block; font-size: 0.9rem; margin: 0; }
+.preset-edit-body input[type="text"], .preset-edit-body input[type="number"], .preset-edit-body select, .preset-edit-body textarea { width: 100%; margin: 0.2rem 0 0; }
+.preset-edit-body input[type="color"] { width: 100%; height: 2.2rem; margin-top: 0.2rem; padding: 2px; }
+.pe-row { display: flex; gap: 0.8rem; }
+.pe-row > label { flex: 1; }
+.pe-check { display: flex; align-items: center; gap: 0.4rem; }
+.pe-check input { margin: 0; width: auto; }
+.preset-edit-tools button { margin: 0; padding: 0.2rem 0.7rem; }
+.pe-preview { margin: 0.2rem 0; }
+.preset-edit-actions { display: flex; gap: 0.5rem; margin-top: 0.4rem; }
+.preset-edit-actions button { margin: 0; flex: 1; }
 
 /* Tema: färgväljare */
 .theme-colors { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.5rem; }

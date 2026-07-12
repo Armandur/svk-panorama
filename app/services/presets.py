@@ -132,6 +132,17 @@ def save_preset(db: Session, owner_id: int, name: str, config: dict[str, Any]) -
     return _save(db, ThemePreset, owner_id, name, json.dumps(sanitize_config(config), ensure_ascii=False))
 
 
+def update_preset(db: Session, owner_id: int, preset_id: int, name: str, config: dict[str, Any]) -> dict[str, Any] | None:
+    """Redigera en befintlig tema-mall (id) - namn + config. None om den saknas."""
+    row = db.query(ThemePreset).filter(ThemePreset.owner_id == owner_id, ThemePreset.id == preset_id).first()
+    if row is None:
+        return None
+    row.name = (name or "").strip()[:120] or row.name
+    row.config = json.dumps(sanitize_config(config), ensure_ascii=False)
+    db.commit()
+    return _dump(row)
+
+
 def delete_preset(db: Session, owner_id: int, preset_id: int) -> bool:
     return _delete(db, ThemePreset, owner_id, preset_id)
 
@@ -159,6 +170,21 @@ def save_branding_preset(db: Session, owner_id: int, name: str, config: dict[str
     if not sb:
         return None
     return _save(db, BrandingPreset, owner_id, name, json.dumps(sb, ensure_ascii=False))
+
+
+def update_branding_preset(db: Session, owner_id: int, preset_id: int, name: str, config: dict[str, Any]) -> dict[str, Any] | None:
+    """Redigera en befintlig branding-mall (id). None om saknas eller tom content."""
+    row = db.query(BrandingPreset).filter(BrandingPreset.owner_id == owner_id, BrandingPreset.id == preset_id).first()
+    if row is None:
+        return None
+    c = config or {}
+    sb = sanitize_branding(c.get("content"), c.get("size"), c.get("position"))
+    if not sb:
+        return None
+    row.name = (name or "").strip()[:120] or row.name
+    row.config = json.dumps(sb, ensure_ascii=False)
+    db.commit()
+    return _dump(row)
 
 
 def delete_branding_preset(db: Session, owner_id: int, preset_id: int) -> bool:

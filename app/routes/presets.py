@@ -44,6 +44,24 @@ async def save_preset(
     return JSONResponse({"preset": preset})
 
 
+@router.post("/presets/{preset_id}")
+async def update_preset(
+    preset_id: int,
+    request: Request,
+    user: User = Depends(require_user),
+    db: Session = Depends(get_db),
+    _csrf: None = Depends(verify_csrf_header),
+) -> JSONResponse:
+    data = await request.json()
+    name = (data.get("name") or "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Namn krävs")
+    preset = presets.update_preset(db, user.id, preset_id, name, data.get("config") or {})
+    if preset is None:
+        raise HTTPException(status_code=404, detail="Förinställningen hittades inte")
+    return JSONResponse({"preset": preset})
+
+
 @router.post("/presets/{preset_id}/delete")
 def delete_preset(
     preset_id: int,
@@ -90,6 +108,24 @@ async def save_branding(
     preset = presets.save_branding_preset(db, user.id, name, data.get("config") or {})
     if preset is None:
         raise HTTPException(status_code=400, detail="Branding får inte vara tom")
+    return JSONResponse({"preset": preset})
+
+
+@router.post("/branding-presets/{preset_id}")
+async def update_branding(
+    preset_id: int,
+    request: Request,
+    user: User = Depends(require_user),
+    db: Session = Depends(get_db),
+    _csrf: None = Depends(verify_csrf_header),
+) -> JSONResponse:
+    data = await request.json()
+    name = (data.get("name") or "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Namn krävs")
+    preset = presets.update_branding_preset(db, user.id, preset_id, name, data.get("config") or {})
+    if preset is None:
+        raise HTTPException(status_code=400, detail="Branding-mallen hittades inte eller är tom")
     return JSONResponse({"preset": preset})
 
 
