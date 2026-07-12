@@ -71,6 +71,40 @@ def _dimensions(path: Path) -> tuple[int | None, int | None]:
         return None, None
 
 
+# Nedskalade tumnaglar (cachas på disk) så biblioteket inte laddar fullstora
+# panorama i rutnätet. Ligger i en dold undermapp så list_pool inte listar dem.
+THUMB_MAX = 480
+
+
+def _thumb_dir(owner_id: int) -> Path:
+    return owner_dir(owner_id) / ".thumbs"
+
+
+def thumb_url(owner_id: int, name: str) -> str:
+    return f"/media/{owner_id}/thumb/{name}"
+
+
+def ensure_thumb(owner_id: int, name: str) -> Path | None:
+    """Returnera (och generera vid behov) en JPEG-tumnagel för poolbilden.
+    Poolnamn är unika/oföränderliga -> tumnageln blir aldrig stale. Faller
+    tillbaka på originalet om PIL inte kan läsa bilden."""
+    src = resolve(owner_id, name)
+    if src is None:
+        return None
+    dst = _thumb_dir(owner_id) / (name + ".jpg")
+    if dst.exists():
+        return dst
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with Image.open(src) as im:
+            im = im.convert("RGB")
+            im.thumbnail((THUMB_MAX, THUMB_MAX))
+            im.save(dst, "JPEG", quality=80)
+    except Exception:
+        return src
+    return dst
+
+
 def list_pool(owner_id: int) -> list[dict[str, Any]]:
     """Ägarens poolbilder, nyast först, med metadata (pixlar/storlek/mtime)."""
     d = owner_dir(owner_id)
@@ -83,6 +117,7 @@ def list_pool(owner_id: int) -> list[dict[str, Any]]:
                 items.append({
                     "name": f.name,
                     "url": media_url(owner_id, f.name),
+                    "thumb": thumb_url(owner_id, f.name),
                     "size": st.st_size,
                     "width": w,
                     "height": h,
@@ -96,6 +131,12 @@ def delete(owner_id: int, name: str) -> bool:
     if target is None:
         return False
     target.unlink()
+    thumb = _thumb_dir(owner_id) / (name + ".jpg")
+    if thumb.exists():
+        try:
+            thumb.unlink()
+        except OSError:
+            pass
     return True
 
 

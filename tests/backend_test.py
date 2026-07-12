@@ -171,6 +171,12 @@ def test_media_pool():
         check("list_pool en post", len(items) == 1)
         check("list_pool mått", items[0]["width"] == 40 and items[0]["height"] == 30)
         check("list_pool url", items[0]["url"] == f"/media/1/{name}")
+        check("list_pool thumb-url", items[0]["thumb"] == f"/media/1/thumb/{name}")
+        # Tumnagel genereras + cachas, och ligger i dold .thumbs (ej listad).
+        th = media.ensure_thumb(1, name)
+        check("ensure_thumb skapar fil", th is not None and th.is_file())
+        check("thumb ligger i .thumbs", th.parent.name == ".thumbs")
+        check("list_pool listar ej thumben", len(media.list_pool(1)) == 1)
 
         # Usage-scan mot en turs tour.json.
         pdir = config.PROJECTS_DIR / "kyrka"

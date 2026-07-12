@@ -190,7 +190,7 @@
 		var cell = document.createElement("div");
 		cell.className = "media-cell";
 		var img = document.createElement("img");
-		img.src = it.url; img.alt = it.name; img.loading = "lazy"; img.title = it.name;
+		img.src = it.thumb || it.url; img.alt = it.name; img.loading = "lazy"; img.title = it.name;
 		if (opts.onPick) {
 			img.style.cursor = "pointer";
 			img.addEventListener("click", function () { opts.onPick(it); });

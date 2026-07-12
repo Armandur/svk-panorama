@@ -80,6 +80,16 @@ def delete_media(
     return JSONResponse({"ok": True})
 
 
+@router.get("/media/{owner_id}/thumb/{name}")
+def serve_thumb(owner_id: int, name: str) -> FileResponse:
+    """Nedskalad tumnagel (genereras + cachas vid första anrop). Capability-URL
+    som originalet - ingen auth-grind, bara traversal-guard via media.resolve."""
+    thumb = media.ensure_thumb(owner_id, name)
+    if thumb is None:
+        raise HTTPException(status_code=404, detail="Filen hittades inte")
+    return FileResponse(thumb)
+
+
 @router.get("/media/{owner_id}/{name}")
 def serve_media(owner_id: int, name: str) -> FileResponse:
     """Capability-URL: ingen auth-grind (oigissbart namn), bara traversal-guard.
