@@ -890,6 +890,10 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .btn-wrap { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .btn-wrap button { margin: 0; width: auto; }
 
+/* Live yaw/pitch-indikator: centrerad ruta högst upp över panoramat. */
+.view-readout { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 7; padding: 0.25rem 0.7rem; border-radius: 1rem; background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 0.85rem; font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
+.view-readout:empty { display: none; }
+
 /* Överläggs-sliders för att sätta startriktning granulärt (yaw horisontellt,
    pitch vertikalt). Container släpper igenom klick; bara sliderna fångar. */
 .view-sliders { position: absolute; inset: 0; pointer-events: none; z-index: 6; }

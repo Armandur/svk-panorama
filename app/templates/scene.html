@@ -44,7 +44,6 @@
 		</div>
 		<label>Startriktning</label>
 		<p class="hint">Riktningen som visas när man kommer till scenen utan hotspot/länk (t.ex. via kartan). Vrid vyn - eller använd sliderna i panoramat - och sätt den.</p>
-		<p id="current-view-state" class="hint"></p>
 		<div class="btn-wrap">
 			<button type="button" id="set-default-yaw" class="secondary">Sätt till nuvarande vy</button>
 			<button type="button" id="reset-view-default" class="secondary outline">Till standard</button>
@@ -86,6 +85,7 @@
 <div class="panorama-wrap">
 	<div id="panorama"></div>
 	<div class="crosshair" aria-hidden="true"></div>
+	<div id="current-view-state" class="view-readout" aria-live="polite"></div>
 	<div id="view-sliders" class="view-sliders">
 		<input type="range" id="yaw-slider" class="view-slider view-slider-h" min="-180" max="180" step="1" value="0" aria-label="Horisontell riktning (yaw)">
 		<input type="range" id="pitch-slider" class="view-slider view-slider-v" min="-90" max="90" step="1" value="0" aria-label="Vertikal riktning (pitch)">

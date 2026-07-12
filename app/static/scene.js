@@ -300,7 +300,7 @@
 		if (!viewer) return;
 		let y, p;
 		try { y = viewer.getYaw(); p = viewer.getPitch(); } catch (e) { return; }
-		if (curViewEl) curViewEl.textContent = "Nuvarande vy: yaw " + Math.round(y) + "°, pitch " + Math.round(p) + "°.";
+		if (curViewEl) curViewEl.textContent = "yaw " + Math.round(y) + "°  ·  pitch " + Math.round(p) + "°";
 		if (!draggingSlider) {
 			if (yawSlider) yawSlider.value = Math.round(y);
 			if (pitchSlider) pitchSlider.value = Math.round(p);
