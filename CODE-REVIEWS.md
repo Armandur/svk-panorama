@@ -2,6 +2,25 @@
 
 Nyast först. Varje fynd markerat åtgärdat/avfärdat med commit-ref.
 
+## 2026-07-12 - Granskning av produktionshärdning (commit 3e6f9e2)
+
+Oberoende Fable-subagent granskade härdnings-blocket (S3-S5: map.json-lås, proxy-IP +
+rate limiting, lösenordspolicy + bild-megapixelguard). S4 bekräftades korrekt/komplett
+(alla write_map/write_tour delar `tour_lock`); accept-invite räknar bara angreppssignal;
+policyn täcker alla lösenordssättande vägar. Två reella fynd åtgärdade (commit e180514):
+
+- **[ÅTGÄRDAT e180514] HÖG - X-Forwarded-For-spoofing.** `client_ip` tog FÖRSTA XFF-posten;
+  bakom en append:ande proxy är den klient-satt -> angripare kan variera XFF per request och
+  sprida brute force över oändligt många nycklar, kringgå login-gränsen. Fix: ta SISTA posten
+  (proxyns appendade klient-IP; modellen är EN betrodd reverse proxy).
+- **[ÅTGÄRDAT e180514] MEDEL-HÖG - import hoppade megapixel-guarden.** `_extract` magic-kollade
+  men körde inte dimensionskoll; en liten-fil/enorma-mått-bomb (repro: 20000x20000 PNG, 1,2 MB
+  -> 400 MP) i ett arkiv kunde avkodas fullt vid preview/tiling (PIL:s globala backstop kastar
+  bara över 2x taket). Fix: `_check_extracted_image` (header-läst megapixel-tak) per importerad
+  bild + per-fil-storlekstak i `_validate_members`.
+- **[LÅG, ej åtgärdat separat]** avatar-uppladdning kör inte dimensionskollen explicit men
+  fångar PIL-fel brett (egen kontobild, begränsad påverkan) - noteras.
+
 ## 2026-07-12 - Granskning av branding + mall-bibliotek (diff caeaf41..a706a21)
 
 Oberoende Fable-subagent (eget kontext) granskade hela funktionsblocket: branding-
@@ -89,13 +108,17 @@ Två verifierade säkerhetsfynd åtgärdade; övrigt loggat nedan/på ROADMAP.
   `accept-invite` krävde inte `password_hash is None` -> läckt men giltig invite
   (7 dygn) kunde sätta nytt lösenord på aktivt konto. Fix: guard i GET+POST.
   Verifierat live: aktivt kontos token avvisas, lösenord oförändrat.
-- **[SENARELAGT -> produktionshärdning] S3 (MEDEL)** rate limiting bara på login;
-  `request.client.host` blir fel bakom proxy (ingen XFF-parsing).
-- **[SENARELAGT] S4 (MEDEL)** race på map.json (plan.py:s `write_map` utanför
-  `tour_lock`) - "last write wins", ingen korruption (atomisk skrivning). Låg risk
-  i enanvändarläge.
-- **[SENARELAGT -> produktion] S5 (LÅG)** lösenordspolicy (bara >=8), ingen
-  pixelgräns på bilder utöver MB-tak, default admin/admin.
+- **[ÅTGÄRDAT 3e6f9e2 + e180514] S3 (MEDEL)** rate limiting bara på login + fel IP bakom
+  proxy. Fix: `ratelimit.client_ip` (config.TRUST_PROXY, tar SISTA XFF-posten efter
+  granskningsfynd - första är spoofbar), login + accept-invite rate-limitas per riktig IP.
+- **[ÅTGÄRDAT 3e6f9e2] S4 (MEDEL)** race på map.json. Fix: plan.py `save_map` validering +
+  `write_map` under delade `tour_lock` (granskning bekräftade att alla write_map/write_tour-
+  punkter delar samma lås).
+- **[ÅTGÄRDAT 3e6f9e2 + e180514] S5 (LÅG)** lösenordspolicy + bild-guard. Fix: delad
+  `auth.password_error` (>=8, ej bara siffror, blocklist) i accept-invite/profil/admin;
+  `validate_image_dimensions` (megapixel-tak) på ALLA uppladdningar OCH projekt-import
+  (`_check_extracted_image`) + per-fil-tak + global `Image.MAX_IMAGE_PIXELS`. Default
+  admin/admin-bytet MEDVETET kvar till produktionssättning (Rasmus).
 - **[VERIFIERAT RENT] Ingen fynd:** traversal-guards (media/public/assets),
   CSRF-täckning (alla muterande POST/DELETE utom medvetet /logout), auth-gates +
   self-guards, `_safe_suffix` i mediepoolen, markdown-XSS (info-hotspots via
