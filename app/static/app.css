@@ -1015,10 +1015,11 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .hotspot-btns { display: flex; gap: 0.3rem; }
 
 /* Mediebibliotek-modal. */
-.media-article { max-width: 40rem; width: 100%; }
+.media-article { max-width: 56rem; width: 100%; }
 .media-actions { margin: 0.4rem 0 0.8rem; }
 .media-actions button { margin: 0; width: auto; }
-.media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr)); gap: 0.5rem; max-height: 60vh; overflow-y: auto; }
+/* Modalens grid ärver .media-manage-grid-layouten men får en egen skrollhöjd. */
+.media-grid-scroll { max-height: 62vh; overflow-y: auto; padding-right: 0.2rem; }
 .media-cell { position: relative; aspect-ratio: 1; border: 1px solid var(--pico-muted-border-color); border-radius: 0.3rem; overflow: hidden; }
 .media-cell img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: block; }
 .media-cell img:hover { opacity: 0.85; }
@@ -1040,6 +1041,8 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .media-manage-cell .media-meta { color: var(--pico-muted-color); }
 .media-usage { margin-top: 0.15rem; word-break: break-word; }
 .media-usage.media-unused { color: var(--pico-muted-color); font-style: italic; }
+.media-crumb { display: block; }
+.media-crumb-sep { color: var(--pico-muted-color); }
 
 /* Hotspot-modal: flikar (Teaser / Läs mer) + EasyMDE-editor. */
 .hs-tabs { display: flex; justify-content: flex-start; gap: 0.3rem; margin-bottom: 0.6rem; border-bottom: 1px solid var(--pico-muted-border-color); }

@@ -100,9 +100,10 @@ def delete(owner_id: int, name: str) -> bool:
 
 
 def scan_usage(owner_id: int, projects: list[tuple[str, str]]) -> dict[str, list[dict[str, Any]]]:
-    """Härled var varje poolbild används. `projects` = [(slug, project_name)].
-    Räknar förekomster av `/media/<owner_id>/<fil>` i varje turs hotspot-text/body.
-    Returnerar {filnamn: [{slug, name, count}]}."""
+    """Härled var varje poolbild används, PER SCEN. `projects` = [(slug, project_name)].
+    Räknar förekomster av `/media/<owner_id>/<fil>` i varje scens hotspot-text/body.
+    Returnerar {filnamn: [{slug, project, scene_id, scene_title, count}]} - en post
+    per (tur, scen) som refererar bilden, för breadcrumbs i biblioteket."""
     pattern = re.compile(re.escape(f"/media/{owner_id}/") + f"({_NAME_CHARS})")
     usage: dict[str, list[dict[str, Any]]] = {}
     for slug, pname in projects:
@@ -110,14 +111,20 @@ def scan_usage(owner_id: int, projects: list[tuple[str, str]]) -> dict[str, list
             tour = read_tour(slug)
         except Exception:
             continue
-        counts: dict[str, int] = {}
-        for scene in tour.get("scenes", {}).values():
+        for scene_id, scene in tour.get("scenes", {}).items():
+            counts: dict[str, int] = {}
             for hs in scene.get("hotSpots", []):
                 for key in ("text", "body"):
                     val = hs.get(key)
                     if isinstance(val, str):
                         for m in pattern.finditer(val):
                             counts[m.group(1)] = counts.get(m.group(1), 0) + 1
-        for name, count in counts.items():
-            usage.setdefault(name, []).append({"slug": slug, "name": pname, "count": count})
+            for name, count in counts.items():
+                usage.setdefault(name, []).append({
+                    "slug": slug,
+                    "project": pname,
+                    "scene_id": scene_id,
+                    "scene_title": scene.get("title") or "",
+                    "count": count,
+                })
     return usage

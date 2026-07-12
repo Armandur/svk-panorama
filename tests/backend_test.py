@@ -128,14 +128,24 @@ def test_media_pool():
         # Usage-scan mot en turs tour.json.
         pdir = config.PROJECTS_DIR / "kyrka"
         pdir.mkdir(parents=True)
-        tour = {"scenes": {"1": {"hotSpots": [
-            {"type": "info", "text": f"![](/media/1/{name})", "body": f"igen /media/1/{name}"},
-        ]}}}
+        tour = {"scenes": {
+            "1": {"title": "Koret", "hotSpots": [
+                {"type": "info", "text": f"![](/media/1/{name})", "body": f"igen /media/1/{name}"},
+            ]},
+            "2": {"hotSpots": [{"type": "info", "text": f"![](/media/1/{name})"}]},
+        }}
         project_files.write_tour("kyrka", tour)
         usage = media.scan_usage(1, [("kyrka", "Kyrkan")])
         check("usage hittad", name in usage)
-        check("usage räknar 2", usage[name][0]["count"] == 2)
-        check("usage projektnamn", usage[name][0]["name"] == "Kyrkan")
+        # Per scen: en post per (tur, scen) som refererar bilden.
+        check("usage två scener", len(usage[name]) == 2)
+        u1 = next(u for u in usage[name] if u["scene_id"] == "1")
+        u2 = next(u for u in usage[name] if u["scene_id"] == "2")
+        check("usage scen1 räknar 2", u1["count"] == 2)
+        check("usage scen1 titel", u1["scene_title"] == "Koret")
+        check("usage scen2 räknar 1", u2["count"] == 1)
+        check("usage scen2 titel tom", u2["scene_title"] == "")
+        check("usage projektnamn", u1["project"] == "Kyrkan")
         check("usage annan ägare tom", media.scan_usage(2, [("kyrka", "Kyrkan")]) == {})
 
         check("delete fel ägare -> False", media.delete(2, name) is False)

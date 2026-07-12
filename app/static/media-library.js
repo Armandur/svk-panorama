@@ -69,9 +69,73 @@
 		return sel;
 	}
 
+	function crumbLabel(u) {
+		var scene = u.scene_title || ("Scen " + u.scene_id);
+		var s = u.project + " › " + scene;
+		return u.count > 1 ? s + " (" + u.count + ")" : s;
+	}
 	function usageText(usage) {
 		if (!usage || !usage.length) return "Oanvänd";
-		return usage.map(function (u) { return u.name + " (" + u.count + ")"; }).join(", ");
+		return usage.map(crumbLabel).join("; ");
+	}
+
+	// Delad rendering: samma bildkort med metadata + användnings-breadcrumbs i
+	// både modal-väljaren och /media-hanteringsvyn. opts.onPick (valfri) gör bilden
+	// klickbar för val, opts.onDelete kopplar radera-knappen.
+	function buildCrumb(u) {
+		var crumb = document.createElement("div");
+		crumb.className = "media-crumb";
+		var a = document.createElement("a");
+		a.href = "/projects/" + encodeURIComponent(u.slug);
+		a.textContent = u.project;
+		crumb.appendChild(a);
+		var sep = document.createElement("span");
+		sep.className = "media-crumb-sep"; sep.textContent = " › ";
+		crumb.appendChild(sep);
+		var scene = document.createElement("span");
+		scene.textContent = (u.scene_title || ("Scen " + u.scene_id)) + (u.count > 1 ? " (" + u.count + ")" : "");
+		crumb.appendChild(scene);
+		return crumb;
+	}
+
+	function buildUsage(usage) {
+		var el = document.createElement("div");
+		el.className = "media-usage";
+		if (usage && usage.length) {
+			usage.forEach(function (u) { el.appendChild(buildCrumb(u)); });
+		} else {
+			el.className += " media-unused";
+			el.textContent = "Oanvänd";
+		}
+		return el;
+	}
+
+	function buildCell(it, opts) {
+		opts = opts || {};
+		var fig = document.createElement("figure");
+		fig.className = "media-manage-cell";
+		var cell = document.createElement("div");
+		cell.className = "media-cell";
+		var img = document.createElement("img");
+		img.src = it.url; img.alt = it.name; img.loading = "lazy"; img.title = it.name;
+		if (opts.onPick) {
+			img.style.cursor = "pointer";
+			img.addEventListener("click", function () { opts.onPick(it); });
+		} else {
+			img.style.cursor = "default";
+		}
+		var del = document.createElement("button");
+		del.type = "button"; del.className = "media-del"; del.title = "Ta bort"; del.innerHTML = "&times;";
+		del.addEventListener("click", function (e) { e.stopPropagation(); opts.onDelete(it); });
+		cell.appendChild(img); cell.appendChild(del);
+
+		var cap = document.createElement("figcaption");
+		var dims = (it.width && it.height) ? it.width + "×" + it.height + " px" : "";
+		var meta = [dims, fmtSize(it.size), fmtDate(it.mtime)].filter(Boolean).join(" · ");
+		cap.innerHTML = '<div class="media-meta">' + meta + "</div>";
+		cap.appendChild(buildUsage(it.usage));
+		fig.appendChild(cell); fig.appendChild(cap);
+		return fig;
 	}
 
 	// --- Modal-väljare -----------------------------------------------------
@@ -89,9 +153,9 @@
 			'<span class="media-filter-wrap"></span>' +
 			'<input type="file" class="media-file" accept="image/png,image/jpeg" hidden></div>' +
 			'<p class="media-error login-error" hidden></p>' +
-			'<div class="media-grid"></div></article>';
+			'<div class="media-manage-grid media-grid-scroll"></div></article>';
 		document.body.appendChild(modal);
-		grid = modal.querySelector(".media-grid");
+		grid = modal.querySelector(".media-manage-grid");
 		fileInput = modal.querySelector(".media-file");
 		modal.querySelector(".media-close").addEventListener("click", close);
 		modal.addEventListener("click", function (e) { if (e.target === modal) close(); });
@@ -124,16 +188,10 @@
 		grid.innerHTML = "";
 		if (!items.length) { grid.innerHTML = '<p class="hint">Inga bilder. Ladda upp en.</p>'; return; }
 		items.forEach(function (it) {
-			var cell = document.createElement("div");
-			cell.className = "media-cell";
-			var img = document.createElement("img");
-			img.src = it.url; img.alt = it.name; img.loading = "lazy"; img.title = it.name;
-			img.addEventListener("click", function () { if (curOnPick) curOnPick(it.url); close(); });
-			var del = document.createElement("button");
-			del.type = "button"; del.className = "media-del"; del.title = "Ta bort"; del.innerHTML = "&times;";
-			del.addEventListener("click", function (e) { e.stopPropagation(); pickerDelete(it); });
-			cell.appendChild(img); cell.appendChild(del);
-			grid.appendChild(cell);
+			grid.appendChild(buildCell(it, {
+				onPick: function (picked) { if (curOnPick) curOnPick(picked.url); close(); },
+				onDelete: pickerDelete,
+			}));
 		});
 	}
 
@@ -203,40 +261,7 @@
 			mgrGrid.innerHTML = "";
 			if (!items.length) { mgrGrid.innerHTML = '<p class="hint">Inga bilder i det här urvalet.</p>'; return; }
 			items.forEach(function (it) {
-				var fig = document.createElement("figure");
-				fig.className = "media-manage-cell";
-				var cell = document.createElement("div");
-				cell.className = "media-cell";
-				var img = document.createElement("img");
-				img.src = it.url; img.alt = it.name; img.loading = "lazy"; img.title = it.name;
-				img.style.cursor = "default";
-				var del = document.createElement("button");
-				del.type = "button"; del.className = "media-del"; del.title = "Ta bort"; del.innerHTML = "&times;";
-				del.addEventListener("click", function () { remove(it); });
-				cell.appendChild(img); cell.appendChild(del);
-
-				var cap = document.createElement("figcaption");
-				var dims = (it.width && it.height) ? it.width + "×" + it.height + " px" : "";
-				var meta = [dims, fmtSize(it.size), fmtDate(it.mtime)].filter(Boolean).join(" · ");
-				var usageEl = document.createElement("div");
-				usageEl.className = "media-usage";
-				if (it.usage && it.usage.length) {
-					usageEl.appendChild(document.createTextNode("Används i: "));
-					it.usage.forEach(function (u, i) {
-						if (i) usageEl.appendChild(document.createTextNode(", "));
-						var a = document.createElement("a");
-						a.href = "/projects/" + encodeURIComponent(u.slug);
-						a.textContent = u.name + " (" + u.count + ")";
-						usageEl.appendChild(a);
-					});
-				} else {
-					usageEl.className += " media-unused";
-					usageEl.textContent = "Oanvänd";
-				}
-				cap.innerHTML = '<div class="media-meta">' + meta + "</div>";
-				cap.appendChild(usageEl);
-				fig.appendChild(cell); fig.appendChild(cap);
-				mgrGrid.appendChild(fig);
+				mgrGrid.appendChild(buildCell(it, { onDelete: remove }));
 			});
 		}
 
