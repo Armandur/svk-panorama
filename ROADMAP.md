@@ -359,6 +359,14 @@ Faser (minst till störst):
       scener utan tiles faller till preview. Fixade även att aktuell scen inte
       markerades på kartan förrän man bytte scen (`buildDots` kallar nu `markCurrent`).
 
+- [ ] **BUGG: grå text i expanderad hotspot i scenvyn.** I `/projects/X/scenes` är
+      texten i det expanderade hotspot-arket (`.hs-sheet` / `.hs-sheet-body.markdown-body`,
+      byggs i `app/static/markdown.js` `openHsSheet`) grå i stället for svart. Färgerna
+      i `viewer.css` (`.hs-md`/`.hs-sheet*`) är satta för viewerns MÖRKA kontext; i
+      editorns ljusa ark blir texten grå/otillräcklig kontrast. Sätt en explicit mörk
+      textfärg på arket i editor-kontexten (app.css) - kolla att viewern/bundlen/publika
+      /s inte påverkas.
+
 - [ ] **Fler typsnitt i temat (särskilt DM Sans).** Idag är tema-typsnitten
       system-font-stackar (sans/serif/mono/humanist - inga font-filer, självbärande
       bundle). Lägg till fler val, framförallt **DM Sans**. OBS avvägning: riktiga
