@@ -460,7 +460,7 @@
 			cm.focus();
 		});
 	}
-	const mediaBtn = { name: "media", action: mediaAction, className: "fa fa-photo", title: "Mediebibliotek" };
+	const mediaBtn = { name: "media", action: mediaAction, className: "fa fa-th", title: "Mediebibliotek" };
 
 	// Samma markdown-editor som i admin: EasyMDE med vår sanerade preview. Teasern
 	// får en kompakt toolbar, läs mer-innehållet en fylligare. Initieras en gång;
