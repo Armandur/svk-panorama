@@ -98,6 +98,32 @@
 	</article>
 
 	<article>
+		<h3>Branding / logotyp</h3>
+		<p class="hint">Ett litet överlägg i den publicerade turen - t.ex. en logotyp eller församlingens namn med länk. Markdown stöds: infoga en bild ur mediebiblioteket eller skriv <code>[text](https://...)</code>. Lämna tomt för ingen branding.</p>
+		<textarea id="branding-content" rows="3" placeholder="![Logotyp](...) eller **Församlingen**"></textarea>
+		<div class="save-row">
+			<button id="branding-insert-img" type="button" class="secondary outline">Infoga bild</button>
+		</div>
+		<div class="branding-opts">
+			<label>Storlek
+				<select id="branding-size">
+					<option value="small">Liten</option>
+					<option value="medium" selected>Mellan</option>
+					<option value="large">Stor</option>
+				</select>
+			</label>
+			<label>Position
+				<select id="branding-position">
+					<option value="bottom-left" selected>Nere vänster</option>
+					<option value="bottom-right">Nere höger</option>
+					<option value="top-left">Uppe vänster</option>
+					<option value="top-right">Uppe höger</option>
+				</select>
+			</label>
+		</div>
+	</article>
+
+	<article>
 		<h3>Förinställningar</h3>
 		<p class="hint">Spara tema + inställningar (ej startscen) för att återanvända på andra turer. "Standard för nya turer" ärvs automatiskt av nya projekt.</p>
 		<div class="preset-row">
@@ -216,6 +242,7 @@
 <script src="/static/vendor/marked/marked.min.js"></script>
 <script src="/static/vendor/dompurify/purify.min.js"></script>
 <script src="/static/markdown.js"></script>
+<script src="/static/media-library.js"></script>
 <script src="/static/tour-preview.js"></script>
 <script src="/static/export.js"></script>
 <script src="/static/backup.js"></script>

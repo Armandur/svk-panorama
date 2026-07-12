@@ -9,6 +9,27 @@
 		return window.DOMPurify ? window.DOMPurify.sanitize(html) : html;
 	};
 
+	// Branding-overlay (logotyp/text/länk som markdown) i vieweren. Renderar in i
+	// ett .tour-branding-element och sätter storleks-/positionsklass; externa
+	// länkar öppnas i ny flik. branding = {content, size, position} | null
+	// (null/tom content -> elementet döljs). Delad av runtime-vieweren och
+	// preview-stegets live-förhandsvisning.
+	var _BR_SIZES = { small: 1, medium: 1, large: 1 };
+	var _BR_POS = { "bottom-left": 1, "bottom-right": 1, "top-left": 1, "top-right": 1 };
+	window.renderBrandingInto = function (el, branding) {
+		if (!el) return;
+		el.className = "tour-branding";
+		var content = branding && branding.content;
+		if (!content) { el.hidden = true; el.innerHTML = ""; return; }
+		var size = _BR_SIZES[branding.size] ? branding.size : "medium";
+		var pos = _BR_POS[branding.position] ? branding.position : "bottom-left";
+		el.classList.add("branding-" + size, "branding-" + pos);
+		el.innerHTML = window.renderMarkdown(content);
+		var links = el.getElementsByTagName("a");
+		for (var i = 0; i < links.length; i++) { links[i].target = "_blank"; links[i].rel = "noopener noreferrer"; }
+		el.hidden = false;
+	};
+
 	// Pannellum-createTooltipFunc: rendera hotspot-text som (sanerad) markdown i
 	// tooltipen. Replikerar pannellums default-positionering (centrerad ovanför
 	// hotspoten). Klassen .pnlm-tooltip styr hover-visning; .hs-md stylar innehållet.

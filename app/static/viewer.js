@@ -39,6 +39,25 @@
 		});
 	}
 
+	// --- Branding-overlay (logotyp/text) ----------------------------------
+	// Litet överlägg (logga eller församlingsnamn med länk) konfigurerat på
+	// preview-steget. Ligger som fixed-element över panoramat; flyttas in i det
+	// fullskärmade elementet vid helskärm (pannellum renderar bara det + barn).
+	var brandingEl = null;
+	(function () {
+		var b = tour.default.branding;
+		if (!b || !b.content || !window.renderBrandingInto) return;
+		brandingEl = document.createElement("div");
+		document.body.appendChild(brandingEl);
+		window.renderBrandingInto(brandingEl, b);
+		function relocate() {
+			var fs = document.fullscreenElement || document.webkitFullscreenElement;
+			(fs || document.body).appendChild(brandingEl);
+		}
+		document.addEventListener("fullscreenchange", relocate);
+		document.addEventListener("webkitfullscreenchange", relocate);
+	})();
+
 	// --- Djuplänkning (#scene=..&yaw=..&pitch=..&hfov=..) ------------------
 	// Läs ev. vy ur URL-hashen så en delad länk landar på rätt scen och riktning.
 	// Skrivs tillbaka vid scenbyte och användarstyrd vy-ändring (INTE under

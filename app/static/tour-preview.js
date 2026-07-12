@@ -69,6 +69,10 @@
 	const themeFont = document.getElementById("theme-font");
 	const themeDot = document.getElementById("theme-dot");
 	const themeCurrent = document.getElementById("theme-current");
+	const brandingContent = document.getElementById("branding-content");
+	const brandingSize = document.getElementById("branding-size");
+	const brandingPos = document.getElementById("branding-position");
+	const brandingInsert = document.getElementById("branding-insert-img");
 	const panoramaWrap = document.querySelector(".panorama-wrap");
 
 	// --- Init formulär från tour.default ---
@@ -118,6 +122,26 @@
 		panoramaWrap.style.setProperty("--current-dot-color", themeCurrent.value);
 	}
 	applyThemeLive();
+
+	// Branding: init från tour.default.branding + live-överlägg i panorama-wrap.
+	const SIZES = ["small", "medium", "large"];
+	const POSES = ["bottom-left", "bottom-right", "top-left", "top-right"];
+	const brand = d.branding || {};
+	if (brandingContent) brandingContent.value = brand.content || "";
+	if (brandingSize) brandingSize.value = SIZES.indexOf(brand.size) !== -1 ? brand.size : "medium";
+	if (brandingPos) brandingPos.value = POSES.indexOf(brand.position) !== -1 ? brand.position : "bottom-left";
+	let brandingEl = null;
+	function currentBranding() {
+		var c = brandingContent ? brandingContent.value.trim() : "";
+		if (!c) return null;
+		return { content: c, size: brandingSize ? brandingSize.value : "medium", position: brandingPos ? brandingPos.value : "bottom-left" };
+	}
+	function applyBrandingLive() {
+		if (!panoramaWrap || !window.renderBrandingInto) return;
+		if (!brandingEl) { brandingEl = document.createElement("div"); panoramaWrap.appendChild(brandingEl); }
+		window.renderBrandingInto(brandingEl, currentBranding());
+	}
+	applyBrandingLive();
 
 	function setPair(range, num, val) { range.value = val; num.value = val; }
 	function updateArDirLabels() {
@@ -268,6 +292,24 @@
 		inp.addEventListener("input", function () { applyThemeLive(); onSettingChange(false); });
 	});
 
+	if (brandingContent) brandingContent.addEventListener("input", function () { applyBrandingLive(); onSettingChange(false); });
+	[brandingSize, brandingPos].forEach(function (s) {
+		if (s) s.addEventListener("change", function () { applyBrandingLive(); onSettingChange(false); });
+	});
+	if (brandingInsert) brandingInsert.addEventListener("click", function () {
+		if (!window.openMediaLibrary || !brandingContent) return;
+		window.openMediaLibrary(slug, function (url) {
+			var t = brandingContent;
+			var ins = "![](" + url + ")";
+			var start = t.selectionStart != null ? t.selectionStart : t.value.length;
+			var end = t.selectionEnd != null ? t.selectionEnd : t.value.length;
+			t.value = t.value.slice(0, start) + ins + t.value.slice(end);
+			t.focus();
+			applyBrandingLive();
+			onSettingChange(false);
+		});
+	});
+
 	// Upplösningsbyte: applicera på alla scener + bygg om vieweren (behåll scen/vy).
 	// Påverkar bara förhandsvisningen, inte det som sparas (default-blocket).
 	if (resSelect) resSelect.addEventListener("change", function () {
@@ -295,6 +337,9 @@
 				themeFont: themeFont.value,
 				themeDotColor: themeDot.value,
 				themeCurrentColor: themeCurrent.value,
+				brandingContent: brandingContent ? brandingContent.value : "",
+				brandingSize: brandingSize ? brandingSize.value : "medium",
+				brandingPosition: brandingPos ? brandingPos.value : "bottom-left",
 			},
 		}).then(function () {
 			setDirty(false);
@@ -325,6 +370,7 @@
 				sceneFadeDuration: Math.round((parseFloat(fade.value) || 0) * 1000),
 				mapSize: mapSizeVal(),
 				theme: { font: themeFont.value, dotColor: themeDot.value, currentColor: themeCurrent.value },
+				branding: currentBranding(),
 			};
 		}
 		function applyPreset(c) {
@@ -342,8 +388,13 @@
 			themeFont.value = ["sans", "serif", "mono", "humanist"].indexOf(th.font) !== -1 ? th.font : "sans";
 			themeDot.value = th.dotColor || "#666666";
 			themeCurrent.value = th.currentColor || "#8b0000";
+			var b = c.branding || {};
+			if (brandingContent) brandingContent.value = b.content || "";
+			if (brandingSize) brandingSize.value = SIZES.indexOf(b.size) !== -1 ? b.size : "medium";
+			if (brandingPos) brandingPos.value = POSES.indexOf(b.position) !== -1 ? b.position : "bottom-left";
 			updateArDirLabels();
 			applyThemeLive();
+			applyBrandingLive();
 			setDirty(true);
 			rebuildKeepView();
 		}

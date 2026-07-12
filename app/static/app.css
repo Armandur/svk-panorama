@@ -513,6 +513,33 @@ tr[data-preview-scene] { cursor: help; }
    .pnlm-container och ALL text (titel, info, hotspot-tooltips) ärver därifrån -
    så temats typsnitt måste override:a just containern, inte bara titelboxen. */
 .panorama-wrap .pnlm-container { font-family: var(--tour-font, inherit) !important; }
+/* Branding-överlägg i förhandsvisningen (samma look som runtime men containad i
+   wrap i stället för fixed). Storleks-/positionsklasserna delas med viewer.css. */
+.panorama-wrap .tour-branding {
+	position: absolute;
+	z-index: 16;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.4);
+	border-radius: 6px;
+	padding: 5px 9px;
+	line-height: 1.3;
+}
+.panorama-wrap .tour-branding[hidden] { display: none; }
+.panorama-wrap .tour-branding p { margin: 0.2em 0; }
+.panorama-wrap .tour-branding p:first-child { margin-top: 0; }
+.panorama-wrap .tour-branding p:last-child { margin-bottom: 0; }
+.panorama-wrap .tour-branding img { display: block; max-width: 100%; height: auto; }
+.panorama-wrap .tour-branding a { color: #7cc0ff; }
+.tour-branding.branding-small { max-width: 130px; font-size: 0.8em; }
+.tour-branding.branding-medium { max-width: 200px; font-size: 0.95em; }
+.tour-branding.branding-large { max-width: 300px; font-size: 1.15em; }
+.panorama-wrap .tour-branding.branding-bottom-left { bottom: 12px; left: 12px; }
+.panorama-wrap .tour-branding.branding-bottom-right { bottom: 12px; right: 12px; }
+.panorama-wrap .tour-branding.branding-top-left { top: 12px; left: 12px; }
+.panorama-wrap .tour-branding.branding-top-right { top: 12px; right: 12px; }
+.branding-opts { display: flex; gap: 0.8rem; margin-top: 0.4rem; }
+.branding-opts label { flex: 1; margin-bottom: 0; }
+
 /* Tema: färgväljare */
 .theme-colors { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.5rem; }
 .theme-colors label { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; margin: 0; }

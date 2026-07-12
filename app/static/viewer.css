@@ -80,6 +80,31 @@ html, body {
 	height: 100%;
 }
 
+/* Branding-overlay (logotyp/text) - konfigureras på preview-steget. */
+.tour-branding {
+	position: fixed;
+	z-index: 55;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.4);
+	border-radius: 6px;
+	padding: 5px 9px;
+	line-height: 1.3;
+	backdrop-filter: blur(2px);
+}
+.tour-branding[hidden] { display: none; }
+.tour-branding p { margin: 0.2em 0; }
+.tour-branding p:first-child { margin-top: 0; }
+.tour-branding p:last-child { margin-bottom: 0; }
+.tour-branding img { display: block; max-width: 100%; height: auto; }
+.tour-branding a { color: #7cc0ff; }
+.tour-branding.branding-small { max-width: 130px; font-size: 0.8em; }
+.tour-branding.branding-medium { max-width: 200px; font-size: 0.95em; }
+.tour-branding.branding-large { max-width: 300px; font-size: 1.15em; }
+.tour-branding.branding-bottom-left { bottom: 12px; left: 12px; }
+.tour-branding.branding-bottom-right { bottom: 12px; right: 12px; }
+.tour-branding.branding-top-left { top: 12px; left: 12px; }
+.tour-branding.branding-top-right { top: 12px; right: 12px; }
+
 /* "Karta"-knappen som öppnar överlägget. */
 .map-toggle {
 	position: fixed;
