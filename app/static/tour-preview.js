@@ -306,6 +306,107 @@
 
 	if (discardBtn) discardBtn.addEventListener("click", function () { window.location.reload(); });
 
+	// --- Tema-/inställningsförinställningar (presets) -----------------------
+	// Preset = subset av tour.default (autoRotate/delay/fade/mapSize/theme), ej
+	// startscen. Läses ur/appliceras på samma kontroller som Spara-blocket.
+	(function () {
+		var sel = document.getElementById("preset-select");
+		var applyBtn = document.getElementById("preset-apply");
+		var saveBtn2 = document.getElementById("preset-save");
+		var delBtn = document.getElementById("preset-delete");
+		var defChk = document.getElementById("preset-default");
+		if (!sel) return;
+		var cache = [];
+		function csrf() { return window.getCsrfToken ? getCsrfToken() : ""; }
+		function readPreset() {
+			return {
+				autoRotate: arEnabled.checked ? signedSpeed() : false,
+				autoRotateInactivityDelay: Math.round((parseFloat(arDelay.value) || 0) * 1000),
+				sceneFadeDuration: Math.round((parseFloat(fade.value) || 0) * 1000),
+				mapSize: mapSizeVal(),
+				theme: { font: themeFont.value, dotColor: themeDot.value, currentColor: themeCurrent.value },
+			};
+		}
+		function applyPreset(c) {
+			var ar = c.autoRotate, arOn = typeof ar === "number" && ar !== 0;
+			arEnabled.checked = arOn;
+			setPair(arSpeed, arSpeedNum, arOn ? Math.abs(ar) : 2);
+			arDirToggle.checked = !(arOn && ar > 0);
+			setPair(arDelay, arDelayNum, (c.autoRotateInactivityDelay != null ? c.autoRotateInactivityDelay : 2000) / 1000);
+			setPair(fade, fadeNum, (c.sceneFadeDuration != null ? c.sceneFadeDuration : 1500) / 1000);
+			var ms = ["small", "medium", "large"].indexOf(c.mapSize) !== -1 ? c.mapSize : "medium";
+			var msr = document.querySelector('input[name="map-size"][value="' + ms + '"]');
+			if (msr) msr.checked = true;
+			if (previewMap) previewMap.dataset.size = ms;
+			var th = c.theme || {};
+			themeFont.value = ["sans", "serif", "mono", "humanist"].indexOf(th.font) !== -1 ? th.font : "sans";
+			themeDot.value = th.dotColor || "#666666";
+			themeCurrent.value = th.currentColor || "#8b0000";
+			updateArDirLabels();
+			applyThemeLive();
+			setDirty(true);
+			rebuildKeepView();
+		}
+		function selected() { return cache.filter(function (p) { return String(p.id) === sel.value; })[0]; }
+		function syncDef() { var p = selected(); if (defChk) { defChk.checked = !!(p && p.is_default); defChk.disabled = !p; } }
+		function renderOpts() {
+			var cur = sel.value;
+			sel.innerHTML = '<option value="">- välj förinställning -</option>';
+			cache.forEach(function (p) {
+				var o = document.createElement("option");
+				o.value = String(p.id);
+				o.textContent = p.name + (p.is_default ? " (standard)" : "");
+				sel.appendChild(o);
+			});
+			sel.value = cur;
+			syncDef();
+		}
+		function load(selectId) {
+			fetch("/presets").then(function (r) { return r.json(); }).then(function (d) {
+				cache = d.presets || [];
+				renderOpts();
+				if (selectId != null) { sel.value = String(selectId); syncDef(); }
+			}).catch(function () { /* tyst */ });
+		}
+		sel.addEventListener("change", syncDef);
+		applyBtn.addEventListener("click", function () {
+			var p = selected();
+			if (!p) { if (window.showToast) showToast("Välj en förinställning först", "error"); return; }
+			applyPreset(p.config);
+			if (window.showToast) showToast("Tillämpad - spara för att behålla", "ok");
+		});
+		saveBtn2.addEventListener("click", function () {
+			var p = selected();
+			var name = window.prompt("Namn på förinställningen:", (p && p.name) || "");
+			if (name == null || !name.trim()) return;
+			fetch("/presets", {
+				method: "POST", headers: { "X-CSRF-Token": csrf(), "Content-Type": "application/json" },
+				body: JSON.stringify({ name: name.trim(), config: readPreset() }),
+			}).then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+				.then(function (d) { if (window.showToast) showToast("Förinställning sparad", "ok"); load(d.preset.id); })
+				.catch(function () { if (window.showToast) showToast("Kunde inte spara", "error"); });
+		});
+		delBtn.addEventListener("click", function () {
+			var p = selected();
+			if (!p) { if (window.showToast) showToast("Välj en förinställning först", "error"); return; }
+			var ask = window.confirmDialog ? confirmDialog('Ta bort förinställningen "' + p.name + '"?', { danger: true, confirmText: "Ta bort" }) : Promise.resolve(window.confirm("Ta bort?"));
+			ask.then(function (ok) {
+				if (!ok) return;
+				fetch("/presets/" + p.id + "/delete", { method: "POST", headers: { "X-CSRF-Token": csrf() } })
+					.then(function () { load(); if (window.showToast) showToast("Borttagen", "ok"); }).catch(function () { /* tyst */ });
+			});
+		});
+		if (defChk) defChk.addEventListener("change", function () {
+			var p = selected();
+			if (!p) return;
+			fetch("/presets/" + p.id + "/default", {
+				method: "POST", headers: { "X-CSRF-Token": csrf(), "Content-Type": "application/json" },
+				body: JSON.stringify({ isDefault: defChk.checked }),
+			}).then(function () { load(sel.value); }).catch(function () { /* tyst */ });
+		});
+		load();
+	})();
+
 	// --- Startscen-väljare (modal med karta + hover-preview) ---------------
 	const startModal = document.getElementById("start-modal");
 	const startMapImg = document.getElementById("start-map-img");

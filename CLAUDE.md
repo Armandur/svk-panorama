@@ -57,6 +57,7 @@ app/
     preview.py       # /preview (förhandsvisa + turinställningar) + /tour-settings
     export.py        # /export (bygg bundle), status, download
     backup.py        # /backup (redigerbar projekt-zip) + /projects/import
+    presets.py       # /presets tema-/inställningsförinställningar per ägare
     viewer.py        # /view (inloggad runtime-viewer, multires-merge)
     public.py        # /s/{token} publik delad viewer + /s/{token}/{path} assets (ingen auth)
     media.py         # /media delad mediepool per ägare (upload/list/delete + capability-serve)
@@ -65,6 +66,7 @@ app/
     tiling.py        # trådat tiling-jobb + manifest + apply_multires()
     bundle.py        # trådat export-jobb: bygger självbärande zip
     backup.py        # projekt-backup: exportera/importera REDIGERBAR projekt-zip
+    presets.py       # tema-/inställningsförinställningar (list/save/delete/default + sanering)
     media.py         # delad mediepool: lagring, metadata (PIL), usage-scan
   templates/         # Jinja2. base.html + steg-mallar + _partials
   static/            # CSS/JS (se nedan) + vendor/ (pannellum, pico)
@@ -131,6 +133,19 @@ om referenser: `/projects/<gammal-slug>/` -> nya slugen och `/media/<gammal-owne
 startsidan (`import-project.js`) -> redirect till nya turen. `_backup/`-zip i
 projektmappen (gitignorad).
 
+## Tema-förinställningar (ThemePreset, services/presets.py, routes/presets.py)
+
+Namngivna tema-/inställnings-presets per ägare (`theme_presets`-tabell). `config`
+= JSON-subset av `tour.default` (autoRotate, delays, sceneFade, mapSize,
+theme{font,dotColor,currentColor}) - INTE firstScene. Saneras vid spar
+(`sanitize_config`, hex/enum/clamp). En kan vara `is_default` -> **nya turer ärver
+den** (create_project mergar `default_config()` in i tour.default). UI på
+preview-steget: dropdown + Använd/Spara/Radera + "standard för nya turer"
+(preset-wiring i tour-preview.js läser/applicerar SAMMA kontroller som Spara-
+blocket). ThemePreset är en ADDITIV ny tabell -> `create_all` skapar den utan att
+röra befintlig data (ingen svk.db-blåsning behövdes, till skillnad från
+kolumn-ändringar).
+
 ## Runtime-viewern (viewer.js/css)
 
 Path-agnostisk: läser inbäddad `tour`/`map` (JSON-script-taggar), bygger
@@ -178,6 +193,8 @@ Applicerar `tour.default.theme` via CSS-variabler (`--tour-font/--dot-color/
 - `tile-status.js` / `index.js` - tiling-status på hemsida / huvudmeny.
 - `export.js` - bundle-export-progress + readiness-varningar + opt-in originalbilder.
 - `backup.js` - projekt-backup-progress (redigerbar zip) på preview-steget.
+- (tema-presets) - preset-UI:t på preview-steget bor i `tour-preview.js` (läser/
+  applicerar samma tema/inställnings-kontroller); API `/presets` (routes/presets.py).
 - `import-project.js` - importera projekt-zip på startsidan -> redirect till nya turen.
 - `share.js` - publik delningslänk på preview-steget: skapa/sluta dela async (fetch,
   JSON-svar) så länken dyker upp/försvinner i rutan utan omladdning. Progressiv

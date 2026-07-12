@@ -47,6 +47,20 @@ class Project(Base):
     )
 
 
+class ThemePreset(Base):
+    """Namngiven tema-/inställningsförinställning per ägare (font, färger, kartstorlek,
+    autorotate, fade). Återanvänds mellan turer. `config` = JSON-subset av
+    tour.default (utan firstScene). En kan vara `is_default` -> ärvs av nya turer."""
+    __tablename__ = "theme_presets"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    config: Mapped[str] = mapped_column(Text)  # JSON
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+
+
 class Setting(Base):
     """Enkel nyckel/värde-store för super-admin-inställningar (t.ex. tjänstenamn).
     Env ger default; en rad här override:ar. Läses via app/services/settings.py."""

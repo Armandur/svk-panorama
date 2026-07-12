@@ -19,6 +19,7 @@ from app.routes import (
     export,
     media,
     plan,
+    presets,
     preview,
     previews,
     profile,
@@ -86,6 +87,7 @@ app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(profile.router)
 app.include_router(projects.router)
+app.include_router(presets.router)
 app.include_router(uploads.router)
 app.include_router(plan.router)
 app.include_router(previews.router)

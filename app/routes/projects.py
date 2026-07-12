@@ -19,6 +19,7 @@ from app.deps import (
     verify_csrf_form,
 )
 from app.services.backup import forget_job as forget_backup_job
+from app.services.presets import default_config as default_preset_config
 from app.services.bundle import forget_job as forget_export_job
 from app.services.bundle import job_status as export_job_status
 from app.services.project_files import (
@@ -96,7 +97,12 @@ async def create_project(
     db.commit()
 
     ensure_project_structure(slug)
-    write_tour(slug, default_tour())
+    tour = default_tour()
+    # Ny tur ärver ägarens standard-förinställning (tema + inställningar) om satt.
+    preset = default_preset_config(db, user.id)
+    if preset:
+        tour.setdefault("default", {}).update(preset)
+    write_tour(slug, tour)
     write_map(slug, default_map())
 
     return RedirectResponse(url=f"/projects/{slug}", status_code=302)

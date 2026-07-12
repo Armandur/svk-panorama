@@ -399,7 +399,14 @@ Faser (minst till störst):
       `POST /projects/import` (zip-slip-guard, media in i importörens pool, `/projects/
       <slug>/` + `/media/<owner>/` skrivs om), import-knapp på startsidan. Löser
       "flytta/säkerhetskopiera en redigerbar tur" (granskningens produkt-"bör") och att
-      bundlen saknade källbilder för tilade scener. Grund för "duplicera tur som mall".
+      bundlen saknade källbilder för tilade scener.
+
+- [x] **Tema-förinställningar KLAR (2026-07-12).** Namngivna tema-/inställnings-presets
+      per ägare (`ThemePreset`, services/presets.py, routes/presets.py). Spara/använd/
+      radera på preview-steget + "standard för nya turer" (nya turer ärver via
+      create_project). Config = tour.default-subset, saneras vid spar. **Tur-duplicering
+      skrotad** (Rasmus 2026-07-12): det enda återanvändbara mellan turer är temat/
+      inställningarna, inte scenerna - presets är rätt abstraktion.
 
 - [ ] **Fler typsnitt i temat (särskilt DM Sans).** Idag är tema-typsnitten
       system-font-stackar (sans/serif/mono/humanist - inga font-filer, självbärande

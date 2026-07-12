@@ -147,6 +147,22 @@ def test_export_readiness():
         config.PROJECTS_DIR = old
 
 
+def test_preset_sanitize():
+    from app.services.presets import sanitize_config
+    c = sanitize_config({"autoRotate": 999, "mapSize": "huge", "sceneFadeDuration": -5,
+                         "theme": {"font": "comic", "dotColor": "red;}x", "currentColor": "#Aabb00"}})
+    check("preset autoRotate ogiltig -> False", c["autoRotate"] is False)
+    check("preset mapSize ogiltig -> medium", c["mapSize"] == "medium")
+    check("preset fade ogiltig -> default", c["sceneFadeDuration"] == 1500)
+    check("preset font ogiltig -> sans", c["theme"]["font"] == "sans")
+    check("preset färg-injektion -> fallback", c["theme"]["dotColor"] == "#666666")
+    check("preset giltig hex behålls", c["theme"]["currentColor"] == "#Aabb00")
+    ok = sanitize_config({"autoRotate": -3, "mapSize": "large", "theme": {"font": "serif"}})
+    check("preset giltig autoRotate behålls", ok["autoRotate"] == -3)
+    check("preset giltig mapSize behålls", ok["mapSize"] == "large")
+    check("preset tom -> defaults", sanitize_config({})["theme"]["font"] == "sans")
+
+
 def test_backup_security():
     import io
     import zipfile as _zip
@@ -311,6 +327,7 @@ def main() -> int:
         test_apply_multires,
         test_relativize,
         test_export_readiness,
+        test_preset_sanitize,
         test_backup_security,
         test_media_pool,
         test_hex,

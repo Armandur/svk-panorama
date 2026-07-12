@@ -98,6 +98,18 @@
 	</article>
 
 	<article>
+		<h3>Förinställningar</h3>
+		<p class="hint">Spara tema + inställningar (ej startscen) för att återanvända på andra turer. "Standard för nya turer" ärvs automatiskt av nya projekt.</p>
+		<div class="preset-row">
+			<select id="preset-select"><option value="">- välj förinställning -</option></select>
+			<button id="preset-apply" type="button" class="secondary">Använd</button>
+			<button id="preset-save" type="button" class="secondary outline">Spara nuvarande...</button>
+			<button id="preset-delete" type="button" class="secondary outline">Radera</button>
+		</div>
+		<label class="preset-default-label"><input type="checkbox" id="preset-default" disabled> Standard för nya turer</label>
+	</article>
+
+	<article>
 		<p id="dirty-badge" class="dirty-badge" hidden>Osparade ändringar</p>
 		<div class="save-row">
 			<button id="save-btn" type="button">Spara inställningar</button>
