@@ -1070,6 +1070,12 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .media-usage { margin-top: 0.15rem; word-break: break-word; }
 .media-usage.media-unused { color: var(--pico-muted-color); font-style: italic; }
 .media-crumb { display: block; }
+
+/* Listvy: en rad per bild (liten thumb + metadata/användning bredvid). */
+.media-manage-grid.media-list { display: block; }
+.media-list .media-manage-cell { display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0.2rem; border-bottom: 1px solid var(--pico-muted-border-color); }
+.media-list .media-cell { flex: 0 0 auto; width: 6rem; height: 4.2rem; aspect-ratio: auto; }
+.media-list .media-manage-cell figcaption { margin-top: 0; flex: 1; display: flex; flex-direction: column; gap: 0.15rem; }
 .media-crumb-sep { color: var(--pico-muted-color); }
 
 /* Hotspot-modal: flikar (Teaser / Läs mer) + EasyMDE-editor. */

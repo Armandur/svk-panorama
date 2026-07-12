@@ -231,6 +231,7 @@
 			'<div class="media-actions">' +
 			'<button type="button" class="secondary lib-upload">Ladda upp bilder</button>' +
 			'<span class="lib-filter-wrap"></span>' +
+			'<button type="button" class="secondary outline lib-view"></button>' +
 			'</div>' +
 			'<input type="file" class="lib-file" accept="image/png,image/jpeg" multiple hidden>' +
 			'<p class="lib-hint hint"></p>' +
@@ -244,6 +245,21 @@
 		container.querySelector(".lib-hint").textContent = "JPG eller PNG, max " + maxMb() + " MB per bild.";
 		function err(m) { errEl.textContent = m || ""; errEl.hidden = !m; }
 		container.querySelector(".lib-upload").addEventListener("click", function () { fileInput.click(); });
+
+		// Kort-/list-vy (sparas i localStorage, delas mellan /media och modalen).
+		var view = "card";
+		try { view = localStorage.getItem("media_view") === "list" ? "list" : "card"; } catch (e) { /* privatläge */ }
+		var viewBtn = container.querySelector(".lib-view");
+		function applyView() {
+			grid.classList.toggle("media-list", view === "list");
+			viewBtn.textContent = view === "list" ? "Kortvy" : "Listvy";
+		}
+		viewBtn.addEventListener("click", function () {
+			view = view === "list" ? "card" : "list";
+			try { localStorage.setItem("media_view", view); } catch (e) { /* ignore */ }
+			applyView();
+		});
+		applyView();
 		fileInput.addEventListener("change", function () {
 			if (fileInput.files && fileInput.files.length) { err(""); uploadFiles(fileInput.files, progress, load); }
 			fileInput.value = "";
