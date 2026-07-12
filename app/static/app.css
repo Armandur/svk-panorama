@@ -1029,6 +1029,9 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .media-filter, .mgr-filter-wrap select { width: auto; margin: 0; display: inline-block; }
 .media-actions { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
 
+/* /media-sidan: bredare än login-formulär (ärver .login-section 26rem annars). */
+.login-section.media-manage { max-width: 64rem; }
+
 /* Inbäddad hanteringsvy (/media): grid med metadata + användning per bild. */
 .media-manage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.9rem; }
 .media-manage-cell { margin: 0; }
