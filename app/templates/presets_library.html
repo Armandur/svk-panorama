@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Mallar - {{ site_name() }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/vendor/coloris/coloris.min.css">{% endblock %}
 {% block content %}
 
 <section class="login-section preset-manage">
@@ -18,9 +19,11 @@
 <script src="/static/vendor/dompurify/purify.min.js"></script>
 <script src="/static/markdown.js"></script>
 <script src="/static/media-library.js"></script>
+<script src="/static/vendor/coloris/coloris.min.js"></script>
 <script src="/static/preset-library.js"></script>
 <script>
 	document.addEventListener("DOMContentLoaded", function () {
+		if (window.Coloris) Coloris({ el: "[data-coloris]", format: "hex", alpha: false });
 		window.initPresetManager(document.getElementById("preset-manager"));
 	});
 </script>
