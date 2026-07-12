@@ -901,7 +901,10 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 /* Högre specificitet (0,2,0) än Pico:s input:not([...]) (0,1,1) som annars tvingar
    width:100% -> horisontella slidern spiller ut, vertikala blir en fullbredds-box. */
 .view-sliders .view-slider-h { left: 12%; width: 76%; height: auto; bottom: 14px; margin: 0; }
-.view-sliders .view-slider-v { left: 14px; top: 15%; width: 1.6rem; height: 70%; margin: 0; writing-mode: vertical-lr; direction: rtl; }
+/* Vertikal slider = vanlig horisontell slider roterad -90° (renderar identiskt i
+   alla webbläsare, till skillnad från writing-mode som ger jättethumb/olika utfall). */
+.view-slider-v-wrap { position: absolute; left: 8px; top: 50%; width: 2rem; height: 220px; transform: translateY(-50%); pointer-events: none; }
+.view-sliders .view-slider-v { position: absolute; top: 50%; left: 50%; width: 220px; height: 1.4rem; margin: 0; transform: translate(-50%, -50%) rotate(-90deg); }
 .scene-nav { display: flex; gap: 0.4rem; margin-bottom: 0.5rem; }
 .scene-nav button { flex: 1; margin: 0; }
 .neighbor-list { display: flex; flex-direction: column; gap: 0.4rem; }

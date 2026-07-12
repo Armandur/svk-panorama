@@ -300,10 +300,12 @@
 		if (!viewer) return;
 		let y, p;
 		try { y = viewer.getYaw(); p = viewer.getPitch(); } catch (e) { return; }
-		if (curViewEl) curViewEl.textContent = "yaw " + Math.round(y) + "°  ·  pitch " + Math.round(p) + "°";
+		const d1 = function (n) { return Math.round(n * 10) / 10; };
+		if (curViewEl) curViewEl.textContent = "yaw " + d1(y) + "°  ·  pitch " + d1(p) + "°";
 		if (!draggingSlider) {
-			if (yawSlider) yawSlider.value = Math.round(y);
-			if (pitchSlider) pitchSlider.value = Math.round(p);
+			// Slidern snappar till 0.5-steg; visa närmaste giltiga värde.
+			if (yawSlider) yawSlider.value = Math.round(y * 2) / 2;
+			if (pitchSlider) pitchSlider.value = Math.round(p * 2) / 2;
 		}
 	}
 	setInterval(updateViewIndicator, 150);
