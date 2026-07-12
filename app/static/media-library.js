@@ -130,14 +130,14 @@
 		return items; // "all"
 	}
 
-	function buildFilterSelect(projects, current, onChange) {
+	function buildFilterSelect(current, onChange) {
+		// Per-tur-filtrering flyttad till sökfältets tur:-token; här bara status.
 		var sel = document.createElement("select");
 		sel.className = "media-filter";
 		function opt(val, label) { var o = document.createElement("option"); o.value = val; o.textContent = label; sel.appendChild(o); }
 		opt("all", "Alla bilder");
 		opt("unused", "Oanvända");
-		(projects || []).forEach(function (p) { opt("slug:" + p.slug, "Används i: " + p.name); });
-		sel.value = current || "all";
+		sel.value = current === "unused" ? "unused" : "all";
 		sel.addEventListener("change", function () { onChange(sel.value); });
 		return sel;
 	}
@@ -252,7 +252,10 @@
 		container.innerHTML =
 			'<div class="media-actions">' +
 			'<button type="button" class="secondary lib-upload">Ladda upp bilder</button>' +
-			'<input type="search" class="lib-search" placeholder="Sök filnamn..." aria-label="Sök filnamn">' +
+			'<span class="lib-search-wrap">' +
+			'<input type="search" class="lib-search" placeholder="Sök filnamn, eller tur: ..." aria-label="Sök">' +
+			'<div class="lib-suggest" hidden></div>' +
+			'</span>' +
 			'<span class="lib-filter-wrap"></span>' +
 			'<button type="button" class="secondary outline lib-view"></button>' +
 			'</div>' +
@@ -274,12 +277,73 @@
 		function err(m) { errEl.textContent = m || ""; errEl.hidden = !m; }
 		container.querySelector(".lib-upload").addEventListener("click", function () { fileInput.click(); });
 
-		// Fritextsök på filnamn (kombineras med kategori-filtret).
-		var query = "";
-		container.querySelector(".lib-search").addEventListener("input", function (e) {
-			query = e.target.value.trim().toLowerCase();
+		// Sök: fritext på filnamn + Discord-lik `tur:<slug>`-token (AND-filtrering).
+		// När man skriver tur: dyker en autocomplete-lista med turer upp.
+		var searchInput = container.querySelector(".lib-search");
+		var suggest = container.querySelector(".lib-suggest");
+
+		function parseQuery() {
+			var tours = [], terms = [];
+			searchInput.value.trim().split(/\s+/).forEach(function (tok) {
+				if (!tok) return;
+				if (tok.toLowerCase().indexOf("tur:") === 0) {
+					var v = tok.slice(4).toLowerCase();
+					if (v) tours.push(v);
+				} else {
+					terms.push(tok.toLowerCase());
+				}
+			});
+			return { tours: tours, terms: terms };
+		}
+		function matchesSearch(it, q) {
+			if (q.tours.length) {
+				var usage = it.usage || [];
+				var ok = q.tours.some(function (tok) {
+					return usage.some(function (u) {
+						return u.slug.toLowerCase().indexOf(tok) !== -1 || (u.project || "").toLowerCase().indexOf(tok) !== -1;
+					});
+				});
+				if (!ok) return false;
+			}
+			var fn = (it.orig || it.name).toLowerCase();
+			return q.terms.every(function (t) { return fn.indexOf(t) !== -1; });
+		}
+		function tourPartial() {
+			// Aktiv token vid markören - visar autocomplete bara om den börjar med tur:.
+			var upto = searchInput.value.slice(0, searchInput.selectionStart);
+			var last = upto.split(/\s+/).pop();
+			return last.toLowerCase().indexOf("tur:") === 0 ? last.slice(4).toLowerCase() : null;
+		}
+		function renderSuggest() {
+			var partial = tourPartial();
+			if (partial === null) { suggest.hidden = true; return; }
+			var hits = (data.projects || []).filter(function (p) {
+				return !partial || p.name.toLowerCase().indexOf(partial) !== -1 || p.slug.toLowerCase().indexOf(partial) !== -1;
+			}).slice(0, 8);
+			suggest.innerHTML = "";
+			if (!hits.length) { suggest.hidden = true; return; }
+			hits.forEach(function (p) {
+				var b = document.createElement("button");
+				b.type = "button"; b.className = "lib-suggest-item";
+				var nm = document.createElement("strong"); nm.textContent = p.name;
+				var sg = document.createElement("span"); sg.textContent = p.slug;
+				b.appendChild(nm); b.appendChild(sg);
+				b.addEventListener("mousedown", function (e) { e.preventDefault(); pickTour(p); });
+				suggest.appendChild(b);
+			});
+			suggest.hidden = false;
+		}
+		function pickTour(p) {
+			var parts = searchInput.value.replace(/\s+$/, "").split(/\s+/);
+			parts[parts.length - 1] = "tur:" + p.slug;
+			searchInput.value = parts.join(" ") + " ";
+			suggest.hidden = true;
+			searchInput.focus();
 			render();
-		});
+		}
+		searchInput.addEventListener("input", function () { renderSuggest(); render(); });
+		searchInput.addEventListener("keydown", function (e) { if (e.key === "Escape") suggest.hidden = true; });
+		searchInput.addEventListener("blur", function () { setTimeout(function () { suggest.hidden = true; }, 150); });
 
 		// Kort-/list-vy (sparas i localStorage, delas mellan /media och modalen).
 		var view = "card";
@@ -307,7 +371,7 @@
 				data = d;
 				var wrap = container.querySelector(".lib-filter-wrap");
 				wrap.innerHTML = "";
-				wrap.appendChild(buildFilterSelect(d.projects, filter, function (v) { filter = v; render(); }));
+				wrap.appendChild(buildFilterSelect(filter, function (v) { filter = v; render(); }));
 				render();
 			}).catch(function (e) { grid.innerHTML = ""; err(e.message || "Kunde inte hämta biblioteket."); });
 		}
@@ -344,10 +408,8 @@
 		});
 
 		function render() {
-			var items = applyFilter(data.items || [], filter);
-			if (query) {
-				items = items.filter(function (it) { return (it.orig || it.name).toLowerCase().indexOf(query) !== -1; });
-			}
+			var q = parseQuery();
+			var items = applyFilter(data.items || [], filter).filter(function (it) { return matchesSearch(it, q); });
 			grid.innerHTML = "";
 			if (!items.length) { grid.innerHTML = '<p class="hint">Inga bilder i det här urvalet.</p>'; updateBatch(); return; }
 			items.forEach(function (it) {

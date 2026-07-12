@@ -1055,7 +1055,14 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 
 /* Mediebibliotekets filter-väljare (både modal och hanteringsvy). */
 .media-filter, .mgr-filter-wrap select { width: auto; margin: 0; display: inline-block; }
-.lib-search { width: auto; margin: 0; min-width: 12rem; flex: 1 1 12rem; max-width: 22rem; }
+.lib-search-wrap { position: relative; flex: 1 1 14rem; min-width: 10rem; max-width: 24rem; }
+/* Pico ger inputs margin-bottom via input:not([type=..]) (0,1,1) - slå den (0,2,0). */
+.lib-search-wrap .lib-search { width: 100%; margin: 0; }
+.lib-suggest { position: absolute; top: 100%; left: 0; right: 0; z-index: 10; margin-top: 3px; background: var(--pico-background-color); border: 1px solid var(--pico-muted-border-color); border-radius: 0.4rem; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); max-height: 16rem; overflow-y: auto; }
+.lib-suggest[hidden] { display: none; }
+.lib-suggest-item { display: flex; gap: 0.5rem; align-items: baseline; width: 100%; text-align: left; margin: 0; padding: 0.4rem 0.7rem; background: none; border: none; border-radius: 0; color: inherit; cursor: pointer; }
+.lib-suggest-item:hover { background: var(--pico-muted-border-color); }
+.lib-suggest-item span { color: var(--pico-muted-color); font-size: 0.8rem; }
 .media-actions { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
 .media-hint, .mgr-hint { font-size: 0.8rem; margin: 0 0 0.5rem; }
 

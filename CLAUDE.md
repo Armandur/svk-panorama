@@ -139,8 +139,9 @@ Applicerar `tour.default.theme` via CSS-variabler (`--tour-font/--dot-color/
   opts)` driver BÅDA ytorna (DRY): `window.initMediaManager(el)` = `/media`-sidan (utan
   onPick), `window.openMediaLibrary(slug, onPick)` = samma komponent i ett modal-skal
   (väljare i scenhanteringen; onPick plockar url + stänger). Funktioner: flerfils-upp med
-  progresslista + klient-storleksgräns (`window.MEDIA_MAX_MB`), filter (alla/oanvända/
-  per-projekt), tumnaglar i rutnätet (thumb-URL), kort-/listvy (localStorage `media_view`),
+  progresslista + klient-storleksgräns (`window.MEDIA_MAX_MB`), filnamn + sök (fritext på
+  filnamn + Discord-lik `tur:<slug>`-token med autocomplete, AND-filtrering), status-filter
+  (alla/oanvända), tumnaglar i rutnätet (thumb-URL), kort-/listvy (localStorage `media_view`),
   batch-markering + `POST /media/batch-delete`, användnings-breadcrumbs. Bredd:
   `.media-modal .media-article` (0,2,0) slår `.help-modal article` -> `min(1400px,94vw)`.
 - `media-lightbox.js` - `window.openLightbox(url, alt)`, fullstor bildförhandsvisning i
