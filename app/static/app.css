@@ -1046,8 +1046,9 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .media-batch-count { font-weight: 600; font-size: 0.85rem; }
 .media-batch button { margin: 0; width: auto; }
 
-/* Lightbox: fullstor förhandsvisning. */
-.media-lightbox { z-index: 6000; background: rgba(0, 0, 0, 0.85); }
+/* Lightbox: fullstor förhandsvisning. Genomskinlig overlay (se dämpat innehåll
+   bakom) + lätt blur, i stället för nästan helsvart. */
+.media-lightbox { z-index: 6000; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
 .media-lb-img { max-width: 94vw; max-height: 90vh; object-fit: contain; border-radius: 4px; box-shadow: 0 6px 40px rgba(0, 0, 0, 0.6); }
 .media-lb-close { position: fixed; top: 1rem; right: 1rem; width: 2.6rem; height: 2.6rem; display: flex; align-items: center; justify-content: center; padding: 0; margin: 0; border: none; border-radius: 50%; background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 1.6rem; cursor: pointer; }
 .media-lb-close:hover { background: rgba(0, 0, 0, 0.9); }
