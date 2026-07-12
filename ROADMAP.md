@@ -482,6 +482,10 @@ bundlen; ingen datamodellsändring. Browser-verifierat (Playwright): OG-taggar p
       `og:image` = kartbilden `map.png`; absolut URL byggs i public.py/viewer.py ur
       `config.BASE_URL` eller `request.base_url`. Bundlen: relativ `og:image`
       (vet inte sin host - dokumenterat). Ingen `og:image` om turen saknar karta.
+      **OBS multi-tenant:** absolut-URL-modellen har konsekvenser när team kör
+      på egna domäner - se "OG + absoluta URL:er i multi-tenant" under Fas 4
+      nedan. Måste hanteras INNAN egna domäner går live, annars pekar sociala
+      förhandsvisningar fel.
 - [x] **QR-kod för delningslänken KLART.** Vendorat `static/vendor/qrcode/qrcode.js`
       (Kazuhiko Arase, MIT, ingen CDN). `share.js` renderar QR (`qrcode(0,'M')
       .createDataURL` -> gif data-URL) + nedladdningsknapp i `.share-active`, fylls
@@ -587,6 +591,56 @@ domän själv. Fortsatt single-host Docker (inget S3/kö/multi-instans, jfr Fas 
       en domän aktiveras - annars kan team A claima team B:s domän eller trigga
       cert-utfärdande för godtycklig host. Överväg wildcard-subdomän
       (`<team>.svk-panorama.se`) som nollkonfig-default före egna domäner.
+
+- [ ] **OG + absoluta URL:er i multi-tenant (MÅSTE lösas innan egna domäner går
+      live).** Delnings-paketet (2026-07-13) byggde OG-taggar med `og:image`/`og:url`
+      som absoluta URL:er. När flera team kör på egna domäner/subdomäner mot samma
+      instans måste dessa absoluta URL:er peka på **rätt tenant-domän** per request,
+      annars får sociala förhandsvisningar fel bild/länk (eller läcker mellan kunder).
+      Bakgrund och att-göra:
+
+      **Nuläge (5 call sites, samma mönster):** `origin = config.BASE_URL or
+      str(request.base_url).rstrip("/")` finns i `public.py` (OG + /s-länk),
+      `viewer.py` (OG), `preview.py` (share_url-visning), `projects.py` (share/unshare-
+      svar), `admin.py` (invite-länk). Alla bygger absoluta URL:er ur SAMMA globala
+      `SVK_BASE_URL`-env eller request-hosten.
+
+      **Två fällor:**
+      1. **Global `SVK_BASE_URL` är en foot-gun i multi-tenant.** Är den satt vinner
+         den över request-hosten -> ALLA tenants får samma origin (t.ex. plattformens
+         default-domän) i OG + delningslänkar. Med egna domäner får team B en
+         förhandsvisning som pekar på team A:s/plattformens domän. Slutsats: när
+         Fas 4 landar ska absolut-URL bytas från global env till **`Team.base_url`
+         (per tenant)** ELLER ren request-härledning (host-baserad resolution ger
+         redan rätt Host). Fas 4-punkten ovan säger redan "Team.base_url ersätter
+         SVK_BASE_URL" - detta gäller alltså även OG-taggarna, inte bara invite/export.
+      2. **Proxy-headers saknas idag** (verifierat: ingen `--proxy-headers`/
+         `ProxyHeadersMiddleware` i `main.py`, uvicorn startas utan det). Bakom Caddy
+         (TLS termineras där) ser uvicorn en ren HTTP-connection -> `request.base_url`
+         ger scheme **http** även om besökaren kom via https, och X-Forwarded-Host
+         ignoreras. Resultat: `og:image = http://...` -> Facebook/Twitter kan neka
+         eller nedgradera bild-hämtningen (de vill ha https). Fix vid produktion:
+         starta uvicorn med `--proxy-headers --forwarded-allow-ips=<caddy-ip>` (eller
+         `ProxyHeadersMiddleware`) OCH se till att Caddy skickar `X-Forwarded-Proto`
+         + `X-Forwarded-Host` (reverse_proxy gör Proto default; verifiera Host).
+         Då blir `request.base_url` = `https://<tenant-host>/` korrekt.
+
+      **Rekommenderat (single seam):** konsolidera de 5 call sites till EN helper
+      (t.ex. `deps.request_origin(request)` nu, som senare blir
+      `team_origin(team, request)` när Team finns) så per-team-domänbytet sker på ETT
+      ställe och inget glöms. Billigt att göra i förväg (ren refaktor, oförändrat
+      beteende) - reducerar Fas 4-ytan. Kan tas när som helst före Fas 4.
+
+      **og:url-policy att besluta:** ska en tur som nås på BÅDE plattform-subdomän och
+      kundens egna domän ha per-domän `og:url` (varje domän egen förhandsvisning,
+      request-härlett) eller en kanonisk domän (Facebook dedupar shares per `og:url`)?
+      För white-label per kund är per-domän (request/Team.base_url) rätt - varje kund
+      äger sin egen förhandsvisning. Dokumentera valet när Team.base_url införs.
+
+      **Krav som redan är uppfyllda:** `og:image` (map.png via `/s/{token}/map.png`)
+      är en publik capability-URL utan auth-grind -> crawlers kan hämta den så länge
+      host-resolutionen serverar `/s/` på tenant-domänen (vilket Fas 4-planen gör).
+      Bundlens OG är host-agnostisk (relativ `og:image`) och berörs inte av detta.
 
 - [ ] **Vid produktionssättning:** återinför Alembic (baslinje ur då-aktuella
       modeller), byt admin/admin mot riktiga creds, ev. Postgres via docker-compose.
