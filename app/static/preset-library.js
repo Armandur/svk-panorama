@@ -224,8 +224,9 @@
 			'<label>Namn <input type="text" class="pe-name" maxlength="120"></label>' +
 			'<label>Typsnitt <select class="pe-font"><option value="sans">Sans</option><option value="serif">Serif</option><option value="humanist">Humanist</option><option value="mono">Monospace</option></select></label>' +
 			'<div class="pe-row"><label>Kartprickar <input type="color" class="pe-dot"></label><label>Aktiv scen <input type="color" class="pe-cur"></label></div>' +
-			'<label class="pe-check"><input type="checkbox" class="pe-ar"> Rotera automatiskt</label>' +
-			'<div class="pe-row"><label>Hastighet (°/s) <input type="number" class="pe-speed" min="0.5" max="10" step="0.5"></label><label>Riktning <select class="pe-dir"><option value="-1">Höger</option><option value="1">Vänster</option></select></label></div>' +
+			'<label class="pe-switch"><input type="checkbox" class="pe-ar" role="switch"> Rotera automatiskt</label>' +
+			'<div class="pe-row"><label>Hastighet (°/s) <input type="number" class="pe-speed" min="0.5" max="10" step="0.5"></label>' +
+			'<div class="pe-field"><span class="pe-field-label">Riktning</span><div class="dir-toggle"><span class="pe-dir-left">Vänster</span><input type="checkbox" class="pe-dir" role="switch" aria-label="Rotationsriktning (vänster/höger)"><span class="pe-dir-right">Höger</span></div></div></div>' +
 			'<div class="pe-row"><label>Scen-övergång (s) <input type="number" class="pe-fade" min="0" max="3" step="0.1"></label><label>Återuppta (s) <input type="number" class="pe-delay" min="0" max="15" step="0.5"></label></div>' +
 			'<label>Kartstorlek <select class="pe-map"><option value="small">Liten</option><option value="medium">Mellan</option><option value="large">Stor</option></select></label>' +
 			'<div class="preset-edit-actions"><button type="button" class="pe-save">Spara</button><button type="button" class="pe-cancel secondary outline">Avbryt</button></div>';
@@ -236,7 +237,11 @@
 		q(".pe-cur").value = /^#[0-9a-fA-F]{6}$/.test(th.currentColor) ? th.currentColor : "#8b0000";
 		q(".pe-ar").checked = arOn;
 		q(".pe-speed").value = arOn ? Math.abs(ar) : 2;
-		q(".pe-dir").value = (arOn && ar > 0) ? "1" : "-1";
+		// Switch: checkad = Höger (-1), som i scen-editorn/preview.
+		q(".pe-dir").checked = !(arOn && ar > 0);
+		function syncDir() { q(".pe-dir-left").classList.toggle("active", !q(".pe-dir").checked); q(".pe-dir-right").classList.toggle("active", q(".pe-dir").checked); }
+		syncDir();
+		q(".pe-dir").addEventListener("change", syncDir);
 		q(".pe-fade").value = (c.sceneFadeDuration != null ? c.sceneFadeDuration : 1500) / 1000;
 		q(".pe-delay").value = (c.autoRotateInactivityDelay != null ? c.autoRotateInactivityDelay : 2000) / 1000;
 		q(".pe-map").value = ["small", "medium", "large"].indexOf(c.mapSize) !== -1 ? c.mapSize : "medium";
@@ -246,7 +251,7 @@
 			if (!name) { toast("Namn krävs", "error"); return; }
 			var arEnabled = q(".pe-ar").checked;
 			var speed = parseFloat(q(".pe-speed").value) || 2;
-			var dir = parseInt(q(".pe-dir").value, 10) || -1;
+			var dir = q(".pe-dir").checked ? -1 : 1;
 			var config = {
 				autoRotate: arEnabled ? dir * speed : false,
 				autoRotateInactivityDelay: Math.round((parseFloat(q(".pe-delay").value) || 0) * 1000),
