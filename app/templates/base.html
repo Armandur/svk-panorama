@@ -57,6 +57,7 @@
 		{% block content %}{% endblock %}
 	</main>
 	{% if request.session.get('uid') %}{% include "_avatar_modal.html" %}{% endif %}
+	<script>window.MEDIA_MAX_MB = {{ media_max_mb }};</script>
 	<script src="/static/utils.js"></script>
 	<script src="/static/confirm-modal.js"></script>
 	<script src="/static/modal-a11y.js"></script>

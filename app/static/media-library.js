@@ -30,15 +30,87 @@
 			return r.json();
 		});
 	}
-	function uploadFile(file) {
-		var fd = new FormData();
-		fd.append("file", file);
-		return fetch("/media/upload", {
-			method: "POST", headers: { "X-CSRF-Token": csrf() }, body: fd,
-		}).then(function (r) {
-			if (!r.ok) return r.json().then(function (d) { throw new Error(d.detail || "Uppladdning misslyckades"); });
-			return r.json();
+	function maxMb() { return window.MEDIA_MAX_MB || 20; }
+	function tooBig(file) { return file.size > maxMb() * 1024 * 1024; }
+
+	// XHR (inte fetch) för att få upload-progress per fil, likt scenbild-uppladdningen.
+	function uploadOne(file, onProgress) {
+		return new Promise(function (resolve, reject) {
+			var xhr = new XMLHttpRequest();
+			xhr.open("POST", "/media/upload");
+			xhr.setRequestHeader("X-CSRF-Token", csrf());
+			xhr.upload.addEventListener("progress", function (e) {
+				if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100));
+			});
+			xhr.addEventListener("load", function () {
+				if (xhr.status >= 200 && xhr.status < 300) {
+					try { resolve(JSON.parse(xhr.responseText)); } catch (err) { resolve({}); }
+				} else {
+					var msg = "Uppladdning misslyckades";
+					try { msg = JSON.parse(xhr.responseText).detail || msg; } catch (err) { /* behåll */ }
+					reject(new Error(msg));
+				}
+			});
+			xhr.addEventListener("error", function () { reject(new Error("Nätverksfel")); });
+			var fd = new FormData();
+			fd.append("file", file);
+			xhr.send(fd);
 		});
+	}
+
+	// Ladda upp flera filer med progresslista (max 3 parallellt). Filer över
+	// gränsen avvisas klient-side med tydligt meddelande innan de skickas.
+	function uploadFiles(fileList, host, onDone) {
+		var files = Array.prototype.slice.call(fileList);
+		if (!files.length) return;
+		host.innerHTML = "";
+		host.hidden = false;
+		var rows = files.map(function (f) {
+			var row = document.createElement("div");
+			row.className = "media-up-row";
+			row.innerHTML = '<span class="media-up-name"></span>' +
+				'<progress class="media-up-bar" max="100" value="0"></progress>' +
+				'<span class="media-up-status"></span>';
+			row.querySelector(".media-up-name").textContent = f.name;
+			host.appendChild(row);
+			return row;
+		});
+		var queue = [];
+		files.forEach(function (f, i) {
+			var st = rows[i].querySelector(".media-up-status");
+			if (tooBig(f)) {
+				rows[i].querySelector(".media-up-bar").hidden = true;
+				st.textContent = "för stor (max " + maxMb() + " MB)";
+				st.className = "media-up-status err";
+			} else {
+				queue.push({ file: f, row: rows[i] });
+			}
+		});
+		var idx = 0, running = 0, uploaded = 0;
+		function finish() {
+			if (uploaded) onDone();
+			setTimeout(function () {
+				if (!host.querySelector(".media-up-status.err")) { host.hidden = true; host.innerHTML = ""; }
+			}, 1600);
+		}
+		function pump() {
+			if (idx >= queue.length && running === 0) { finish(); return; }
+			while (running < 3 && idx < queue.length) {
+				(function (item) {
+					running++;
+					var bar = item.row.querySelector(".media-up-bar");
+					var st = item.row.querySelector(".media-up-status");
+					st.textContent = "laddar upp...";
+					uploadOne(item.file, function (p) { bar.value = p; }).then(function () {
+						bar.value = 100; st.textContent = "klar"; st.className = "media-up-status ok"; uploaded++;
+					}).catch(function (e) {
+						bar.hidden = true; st.textContent = e.message || "fel"; st.className = "media-up-status err";
+					}).then(function () { running--; pump(); });
+				})(queue[idx++]);
+			}
+		}
+		if (!queue.length) return; // alla för stora -> visa bara felen
+		pump();
 	}
 	function deleteFile(name) {
 		return fetch("/media/" + encodeURIComponent(name) + "/delete", {
@@ -149,21 +221,27 @@
 			'<article class="media-article">' +
 			'<div class="section-head"><h3>Mediebibliotek</h3>' +
 			'<button type="button" class="secondary outline media-close" aria-label="Stäng">&times;</button></div>' +
-			'<div class="media-actions"><button type="button" class="secondary media-upload">Ladda upp bild</button>' +
+			'<div class="media-actions"><button type="button" class="secondary media-upload">Ladda upp bilder</button>' +
 			'<span class="media-filter-wrap"></span>' +
-			'<input type="file" class="media-file" accept="image/png,image/jpeg" hidden></div>' +
+			'<input type="file" class="media-file" accept="image/png,image/jpeg" multiple hidden></div>' +
+			'<p class="media-hint hint"></p>' +
+			'<div class="media-upload-progress" hidden></div>' +
 			'<p class="media-error login-error" hidden></p>' +
 			'<div class="media-manage-grid media-grid-scroll"></div></article>';
 		document.body.appendChild(modal);
 		grid = modal.querySelector(".media-manage-grid");
 		fileInput = modal.querySelector(".media-file");
+		modal.querySelector(".media-hint").textContent = "JPG eller PNG, max " + maxMb() + " MB per bild.";
 		modal.querySelector(".media-close").addEventListener("click", close);
 		modal.addEventListener("click", function (e) { if (e.target === modal) close(); });
 		modal.querySelector(".media-upload").addEventListener("click", function () { fileInput.click(); });
 		fileInput.addEventListener("change", function () {
-			var f = fileInput.files && fileInput.files[0];
+			var files = fileInput.files;
+			if (files && files.length) {
+				showErr("");
+				uploadFiles(files, modal.querySelector(".media-upload-progress"), pickerLoad);
+			}
 			fileInput.value = "";
-			if (f) pickerUpload(f);
 		});
 		document.addEventListener("keydown", function (e) { if (e.key === "Escape" && modal && !modal.hidden) close(); });
 	}
@@ -195,15 +273,6 @@
 		});
 	}
 
-	function pickerUpload(file) {
-		showErr("");
-		var upBtn = modal.querySelector(".media-upload");
-		if (upBtn) upBtn.setAttribute("aria-busy", "true");
-		function done() { if (upBtn) upBtn.removeAttribute("aria-busy"); }
-		uploadFile(file).then(function () { done(); pickerLoad(); })
-			.catch(function (e) { done(); showErr(e.message || "Uppladdning misslyckades"); });
-	}
-
 	function pickerDelete(it) {
 		var used = it.usage && it.usage.length;
 		var msg = used
@@ -231,25 +300,24 @@
 	window.initMediaManager = function (container) {
 		var mgrData, mgrFilter = "all";
 		container.innerHTML =
-			'<div class="media-actions"><button type="button" class="secondary mgr-upload">Ladda upp bild</button>' +
+			'<div class="media-actions"><button type="button" class="secondary mgr-upload">Ladda upp bilder</button>' +
 			'<span class="mgr-filter-wrap"></span>' +
-			'<input type="file" class="mgr-file" accept="image/png,image/jpeg" hidden></div>' +
+			'<input type="file" class="mgr-file" accept="image/png,image/jpeg" multiple hidden></div>' +
+			'<p class="mgr-hint hint"></p>' +
+			'<div class="media-upload-progress" hidden></div>' +
 			'<p class="mgr-error login-error" hidden></p>' +
 			'<div class="media-manage-grid"></div>';
 		var mgrGrid = container.querySelector(".media-manage-grid");
 		var mgrFile = container.querySelector(".mgr-file");
 		var mgrErr = container.querySelector(".mgr-error");
+		var mgrProgress = container.querySelector(".media-upload-progress");
+		container.querySelector(".mgr-hint").textContent = "JPG eller PNG, max " + maxMb() + " MB per bild.";
 		function err(m) { mgrErr.textContent = m || ""; mgrErr.hidden = !m; }
 		container.querySelector(".mgr-upload").addEventListener("click", function () { mgrFile.click(); });
-		var mgrUpBtn = container.querySelector(".mgr-upload");
 		mgrFile.addEventListener("change", function () {
-			var f = mgrFile.files && mgrFile.files[0]; mgrFile.value = "";
-			if (!f) return;
-			err("");
-			if (mgrUpBtn) mgrUpBtn.setAttribute("aria-busy", "true");
-			function done() { if (mgrUpBtn) mgrUpBtn.removeAttribute("aria-busy"); }
-			uploadFile(f).then(function () { done(); load(); })
-				.catch(function (e) { done(); err(e.message || "Uppladdning misslyckades"); });
+			var files = mgrFile.files;
+			if (files && files.length) { err(""); uploadFiles(files, mgrProgress, load); }
+			mgrFile.value = "";
 		});
 
 		function load() {

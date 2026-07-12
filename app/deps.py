@@ -20,6 +20,8 @@ templates = Jinja2Templates(directory=str(config.REPO_ROOT / "app" / "templates"
 from app.services import settings as _settings  # noqa: E402 (undvik cirkel vid import-tid)
 
 templates.env.globals["site_name"] = _settings.get_site_name
+# Mediepoolens storleksgräns (MB) exponeras så UI:t kan visa den + förvalidera.
+templates.env.globals["media_max_mb"] = config.MAX_MAP_MB
 
 CSRF_COOKIE_NAME = "csrf_token"
 

@@ -1037,6 +1037,16 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 /* Mediebibliotekets filter-väljare (både modal och hanteringsvy). */
 .media-filter, .mgr-filter-wrap select { width: auto; margin: 0; display: inline-block; }
 .media-actions { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.media-hint, .mgr-hint { font-size: 0.8rem; margin: 0 0 0.5rem; }
+
+/* Uppladdnings-progresslista (flera filer, en rad per fil med bar + status). */
+.media-upload-progress { margin: 0 0 0.6rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.media-up-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 0.5rem; font-size: 0.82rem; }
+.media-up-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.media-up-bar { width: 8rem; margin: 0; height: 0.5rem; }
+.media-up-status { min-width: 5rem; text-align: right; color: var(--pico-muted-color); }
+.media-up-status.ok { color: var(--svk-ok); }
+.media-up-status.err { color: var(--svk-danger); }
 
 /* /media-sidan: bredare än login-formulär (ärver .login-section 26rem annars). */
 .login-section.media-manage { max-width: 64rem; }
