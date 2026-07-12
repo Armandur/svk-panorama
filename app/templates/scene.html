@@ -42,6 +42,15 @@
 			<input type="range" id="horizon-roll" min="-20" max="20" step="0.25" value="0">
 			<input type="number" id="horizon-roll-num" class="roll-num" min="-20" max="20" step="0.25" value="0">
 		</div>
+		<label>Startriktning</label>
+		<p class="hint">Riktningen som visas när man kommer till scenen utan hotspot/länk (t.ex. via kartan). Vrid vyn - eller använd sliderna i panoramat - och sätt den.</p>
+		<p id="current-view-state" class="hint"></p>
+		<div class="btn-wrap">
+			<button type="button" id="set-default-yaw" class="secondary">Sätt till nuvarande vy</button>
+			<button type="button" id="reset-view-default" class="secondary outline">Till standard</button>
+			<button type="button" id="reset-view-zero" class="secondary outline">Till 0°/0°</button>
+		</div>
+		<p id="default-yaw-state" class="hint" aria-live="polite"></p>
 	</article>
 
 	<article>
@@ -77,6 +86,10 @@
 <div class="panorama-wrap">
 	<div id="panorama"></div>
 	<div class="crosshair" aria-hidden="true"></div>
+	<div id="view-sliders" class="view-sliders">
+		<input type="range" id="yaw-slider" class="view-slider view-slider-h" min="-180" max="180" step="1" value="0" aria-label="Horisontell riktning (yaw)">
+		<input type="range" id="pitch-slider" class="view-slider view-slider-v" min="-90" max="90" step="1" value="0" aria-label="Vertikal riktning (pitch)">
+	</div>
 	<div id="hs-pending" class="hs-pending" hidden aria-hidden="true"></div>
 	<div id="scene-title-label" class="scene-title-label"></div>
 	<div id="scene-map" class="scene-map">

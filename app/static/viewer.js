@@ -109,7 +109,12 @@
 			d.style.top = (s.position.y / mapImg.naturalHeight * 100) + "%";
 			d.title = "Scen " + s.id;
 			d.addEventListener("click", function () {
-				if (viewer.getScene() !== s.id) viewer.loadScene(s.id);
+				if (viewer.getScene() === s.id) return;
+				// Ankomst via kartan (inte hotspot) -> visa scenens startriktning.
+				var sc = tour.scenes[s.id];
+				var y = sc && typeof sc.yaw === "number" ? sc.yaw : undefined;
+				var pi = sc && typeof sc.pitch === "number" ? sc.pitch : undefined;
+				viewer.loadScene(s.id, pi, y);
 			});
 			dotsLayer.appendChild(d);
 			dotEls[s.id] = d;

@@ -195,7 +195,7 @@
 			dot.style.top = (s.position.y / mapImg.naturalHeight * 100) + "%";
 			dot.title = "Scen " + s.id;
 			dot.addEventListener("click", function () {
-				if (viewer && viewer.getScene() !== s.id) viewer.loadScene(s.id);
+				if (viewer && viewer.getScene() !== s.id) viewer.loadScene(s.id, scenePitch(s.id), sceneYaw(s.id));
 			});
 			mapDotsEl.appendChild(dot);
 			dotEls[s.id] = dot;
@@ -215,11 +215,21 @@
 		markCurrent(cur);
 	}
 
+	// Scenens startriktning (default yaw/pitch) - vid ankomst utan hotspot/länk.
+	function sceneYaw(id) {
+		var sc = tour.scenes[id];
+		return sc && typeof sc.yaw === "number" ? sc.yaw : undefined;
+	}
+	function scenePitch(id) {
+		var sc = tour.scenes[id];
+		return sc && typeof sc.pitch === "number" ? sc.pitch : undefined;
+	}
+
 	function step(delta) {
 		const ids = sceneIds();
 		const i = ids.indexOf(viewer.getScene());
 		const next = ids[(i + delta + ids.length) % ids.length];
-		if (next) viewer.loadScene(next);
+		if (next) viewer.loadScene(next, scenePitch(next), sceneYaw(next));
 	}
 
 	// --- Dirty & spara ---

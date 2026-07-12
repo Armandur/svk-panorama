@@ -149,6 +149,12 @@ Applicerar `tour.default.theme` via CSS-variabler (`--tour-font/--dot-color/
 - `plan.js` - kartplacering/länkning (zoom/pan, dra länkar, pilar).
 - `scene.js` - scenvyn: kalibrering, hotspots, upplösningsväljare (preview/
   multires/full), klickbar+resizebar minikarta. EasyMDE-bilder -> `/media/upload`.
+  **Startriktning (default yaw+pitch):** live yaw/pitch-indikator, överläggs-sliders
+  i panoramat (horisontell yaw + vertikal pitch, driver vyn live), "Sätt till
+  nuvarande vy" + "Till standard"/"Till 0/0". Lagras på `scene.yaw`/`scene.pitch`
+  i tour.json (persisteras via SceneUpdate i scenes.py). Vieweren/`/preview` använder
+  den vid kartklick/föreg-nästa/initial load (loadScene(id, pitch, yaw)); hotspot-
+  navigering och deep-link-hash överstyr.
 - `tour-preview.js` - `/preview`: pannellum + turinställningar (live autorotate),
   startscen-väljare (kartmodal + hover-preview), tema.
 - `upload.js` - parallell per-fil-uppladdning + previews, startar tiling.

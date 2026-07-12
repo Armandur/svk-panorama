@@ -20,6 +20,8 @@ class SceneUpdate(BaseModel):
     title: str | None = None
     calibRef: str | None = None  # grannscen kalibreringen gjordes mot (UI-state)
     horizonRoll: float | None = None  # räta upp sned horisont (grader)
+    yaw: float | None = None    # startriktning (default yaw) vid ankomst utan hotspot/länk
+    pitch: float | None = None  # startriktning (default pitch)
     hotSpots: list[dict[str, Any]] = Field(default_factory=list)
 
 
@@ -85,6 +87,15 @@ def save_tour(
                 scene["horizonRoll"] = round(upd.horizonRoll, 2)
             else:
                 scene.pop("horizonRoll", None)
+            # yaw/pitch: 0 är en giltig riktning -> is None (inte truthiness).
+            if upd.yaw is None:
+                scene.pop("yaw", None)
+            else:
+                scene["yaw"] = round(upd.yaw, 2)
+            if upd.pitch is None:
+                scene.pop("pitch", None)
+            else:
+                scene["pitch"] = round(upd.pitch, 2)
             scene["hotSpots"] = upd.hotSpots
             updated += 1
         write_tour(slug, tour)

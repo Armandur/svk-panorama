@@ -885,6 +885,17 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 /* --- Scenvy (kalibrering) --- */
 .panorama-wrap { flex: 1; min-height: 0; position: relative; }
 .panorama-wrap #panorama { position: absolute; inset: 0; }
+
+/* Startriktnings-knappar (sätt/återställ). */
+.btn-wrap { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.btn-wrap button { margin: 0; width: auto; }
+
+/* Överläggs-sliders för att sätta startriktning granulärt (yaw horisontellt,
+   pitch vertikalt). Container släpper igenom klick; bara sliderna fångar. */
+.view-sliders { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+.view-slider { position: absolute; pointer-events: auto; accent-color: var(--svk-accent); cursor: pointer; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7)); }
+.view-slider-h { left: 12%; width: 76%; bottom: 14px; }
+.view-slider-v { left: 14px; top: 15%; height: 70%; writing-mode: vertical-lr; direction: rtl; }
 .scene-nav { display: flex; gap: 0.4rem; margin-bottom: 0.5rem; }
 .scene-nav button { flex: 1; margin: 0; }
 .neighbor-list { display: flex; flex-direction: column; gap: 0.4rem; }

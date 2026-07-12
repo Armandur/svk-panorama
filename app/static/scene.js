@@ -212,6 +212,8 @@
 				cr: calibRef[id] || null,
 				ti: tour.scenes[id].title || null,
 				ro: tour.scenes[id].horizonRoll || null,
+				ya: (typeof tour.scenes[id].yaw === "number" ? tour.scenes[id].yaw : null),
+				pi: (typeof tour.scenes[id].pitch === "number" ? tour.scenes[id].pitch : null),
 				hs: tour.scenes[id].hotSpots || [],
 			};
 		});
@@ -271,6 +273,68 @@
 	if (rollInput) rollInput.addEventListener("input", function () { onRollChange(parseFloat(rollInput.value)); });
 	if (rollNum) rollNum.addEventListener("input", function () { onRollChange(parseFloat(rollNum.value)); });
 
+	// Startriktning (default yaw + pitch): riktningen som visas vid ankomst utan
+	// hotspot/länk. Lagras på scenen (tour.json); Pannellum använder den vid
+	// kartklick/initial load. Live-indikator + överläggs-sliders + återställ-knappar.
+	const setYawBtn = document.getElementById("set-default-yaw");
+	const resetDefBtn = document.getElementById("reset-view-default");
+	const resetZeroBtn = document.getElementById("reset-view-zero");
+	const yawStateEl = document.getElementById("default-yaw-state");
+	const curViewEl = document.getElementById("current-view-state");
+	const yawSlider = document.getElementById("yaw-slider");
+	const pitchSlider = document.getElementById("pitch-slider");
+	let draggingSlider = false;
+
+	function sceneDefault(cur) {
+		const s = tour.scenes[cur] || {};
+		return { yaw: typeof s.yaw === "number" ? s.yaw : null, pitch: typeof s.pitch === "number" ? s.pitch : null };
+	}
+	function refreshYawState(cur) {
+		const d = sceneDefault(cur);
+		if (!yawStateEl) return;
+		yawStateEl.textContent = (d.yaw != null || d.pitch != null)
+			? ("Standard: yaw " + Math.round(d.yaw || 0) + "°, pitch " + Math.round(d.pitch || 0) + "°.")
+			: "Standard: ej satt - öppnar rakt fram (0°/0°).";
+	}
+	function updateViewIndicator() {
+		if (!viewer) return;
+		let y, p;
+		try { y = viewer.getYaw(); p = viewer.getPitch(); } catch (e) { return; }
+		if (curViewEl) curViewEl.textContent = "Nuvarande vy: yaw " + Math.round(y) + "°, pitch " + Math.round(p) + "°.";
+		if (!draggingSlider) {
+			if (yawSlider) yawSlider.value = Math.round(y);
+			if (pitchSlider) pitchSlider.value = Math.round(p);
+		}
+	}
+	setInterval(updateViewIndicator, 150);
+
+	function wireSlider(el, setter) {
+		if (!el) return;
+		el.addEventListener("pointerdown", function () { draggingSlider = true; });
+		el.addEventListener("input", function () { draggingSlider = true; try { setter(parseFloat(el.value)); } catch (e) { /* ignore */ } });
+		el.addEventListener("change", function () { draggingSlider = false; });
+		el.addEventListener("pointerup", function () { draggingSlider = false; });
+	}
+	wireSlider(yawSlider, function (v) { viewer.setYaw(v, false); });
+	wireSlider(pitchSlider, function (v) { viewer.setPitch(v, false); });
+
+	if (setYawBtn) setYawBtn.addEventListener("click", function () {
+		const cur = viewer.getScene();
+		if (!tour.scenes[cur]) return;
+		tour.scenes[cur].yaw = round2(viewer.getYaw());
+		tour.scenes[cur].pitch = round2(viewer.getPitch());
+		setDirty(true);
+		refreshYawState(cur);
+		showToast("Startriktning satt (yaw " + Math.round(tour.scenes[cur].yaw) + "°, pitch " + Math.round(tour.scenes[cur].pitch) + "°)", "ok");
+	});
+	if (resetDefBtn) resetDefBtn.addEventListener("click", function () {
+		const d = sceneDefault(viewer.getScene());
+		try { viewer.setYaw(d.yaw || 0, true); viewer.setPitch(d.pitch || 0, true); } catch (e) { /* ignore */ }
+	});
+	if (resetZeroBtn) resetZeroBtn.addEventListener("click", function () {
+		try { viewer.setYaw(0, true); viewer.setPitch(0, true); } catch (e) { /* ignore */ }
+	});
+
 	if (mapImg) {
 		if (mapImg.complete && mapImg.naturalWidth) buildMapDots();
 		else mapImg.addEventListener("load", function () { buildMapDots(); updateMapDots(viewer.getScene(), null); });
@@ -287,6 +351,7 @@
 			if (rollNum) rollNum.value = r;
 		}
 		updateTitleLabel(cur);
+		refreshYawState(cur);
 		renderCalibState(cur);
 		renderNeighbors(cur);
 		renderHotspotList(cur);
@@ -880,6 +945,8 @@
 					calibRef: calibRef[id] || null,
 					title: tour.scenes[id].title || null,
 					horizonRoll: tour.scenes[id].horizonRoll || null,
+					yaw: (typeof tour.scenes[id].yaw === "number" ? tour.scenes[id].yaw : null),
+					pitch: (typeof tour.scenes[id].pitch === "number" ? tour.scenes[id].pitch : null),
 					hotSpots: tour.scenes[id].hotSpots || [],
 				};
 			});
