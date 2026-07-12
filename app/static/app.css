@@ -1037,6 +1037,14 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .media-del:hover { background: var(--svk-danger); }
 .media-zoom { position: absolute; top: 2px; left: 2px; width: 1.5rem; height: 1.5rem; padding: 0; margin: 0; display: flex; align-items: center; justify-content: center; border: none; border-radius: 50%; background: rgba(0, 0, 0, 0.6); color: #fff; cursor: pointer; }
 .media-zoom:hover { background: rgba(0, 0, 0, 0.85); }
+.media-check { position: absolute; bottom: 4px; left: 4px; width: 1.15rem; height: 1.15rem; margin: 0; cursor: pointer; accent-color: var(--svk-accent, #4338ca); }
+.media-manage-cell.selected .media-cell { outline: 3px solid var(--svk-accent, #4338ca); outline-offset: -3px; }
+
+/* Batch-åtgärdsrad (syns när minst en bild är markerad). */
+.media-batch { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 0.6rem; padding: 0.4rem 0.6rem; background: color-mix(in srgb, var(--svk-accent, #4338ca) 10%, transparent); border-radius: 0.4rem; }
+.media-batch[hidden] { display: none; }
+.media-batch-count { font-weight: 600; font-size: 0.85rem; }
+.media-batch button { margin: 0; width: auto; }
 
 /* Lightbox: fullstor förhandsvisning. */
 .media-lightbox { z-index: 6000; background: rgba(0, 0, 0, 0.85); }

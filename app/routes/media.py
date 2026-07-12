@@ -9,7 +9,12 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
+
+
+class MediaBatch(BaseModel):
+    names: list[str]
 
 from app import config
 from app.auth import require_user
@@ -78,6 +83,17 @@ def delete_media(
     if not media.delete(user.id, name):
         raise HTTPException(status_code=404, detail="Filen hittades inte")
     return JSONResponse({"ok": True})
+
+
+@router.post("/media/batch-delete")
+def batch_delete_media(
+    payload: MediaBatch,
+    user: User = Depends(require_user),
+    _csrf: None = Depends(verify_csrf_header),
+) -> JSONResponse:
+    """Radera flera poolbilder på en gång (owner-scopat via media.delete)."""
+    deleted = sum(1 for name in payload.names if media.delete(user.id, name))
+    return JSONResponse({"deleted": deleted})
 
 
 @router.get("/media/{owner_id}/thumb/{name}")

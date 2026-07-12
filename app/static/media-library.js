@@ -210,6 +210,21 @@
 		zoom.addEventListener("click", function (e) { e.stopPropagation(); lightbox(); });
 		cell.appendChild(img); cell.appendChild(del); cell.appendChild(zoom);
 
+		// Batch-markering (kryssruta) om anroparen förser en selection-Set.
+		if (opts.selection) {
+			var chk = document.createElement("input");
+			chk.type = "checkbox"; chk.className = "media-check"; chk.title = "Markera";
+			chk.checked = opts.selection.has(it.name);
+			if (chk.checked) fig.classList.add("selected");
+			chk.addEventListener("click", function (e) { e.stopPropagation(); });
+			chk.addEventListener("change", function () {
+				if (chk.checked) opts.selection.add(it.name); else opts.selection.delete(it.name);
+				fig.classList.toggle("selected", chk.checked);
+				if (opts.onSelectChange) opts.onSelectChange();
+			});
+			cell.appendChild(chk);
+		}
+
 		var cap = document.createElement("figcaption");
 		var dims = (it.width && it.height) ? it.width + "×" + it.height + " px" : "";
 		var meta = [dims, fmtSize(it.size), fmtDate(it.mtime)].filter(Boolean).join(" · ");
@@ -235,6 +250,11 @@
 			'</div>' +
 			'<input type="file" class="lib-file" accept="image/png,image/jpeg" multiple hidden>' +
 			'<p class="lib-hint hint"></p>' +
+			'<div class="media-batch" hidden>' +
+			'<span class="media-batch-count"></span>' +
+			'<button type="button" class="secondary lib-batch-del">Ta bort markerade</button>' +
+			'<button type="button" class="secondary outline lib-batch-clear">Avmarkera</button>' +
+			'</div>' +
 			'<div class="media-upload-progress" hidden></div>' +
 			'<p class="lib-error login-error" hidden></p>' +
 			'<div class="media-manage-grid"></div>';
@@ -277,16 +297,50 @@
 			}).catch(function (e) { grid.innerHTML = ""; err(e.message || "Kunde inte hämta biblioteket."); });
 		}
 
+		// Batch-markering: en Set av markerade filnamn + åtgärdsrad.
+		var selection = new Set();
+		var batchBar = container.querySelector(".media-batch");
+		var batchCount = container.querySelector(".media-batch-count");
+		function updateBatch() {
+			batchBar.hidden = selection.size === 0;
+			batchCount.textContent = selection.size + " markerade";
+		}
+		container.querySelector(".lib-batch-clear").addEventListener("click", function () {
+			selection.clear(); render(); updateBatch();
+		});
+		container.querySelector(".lib-batch-del").addEventListener("click", function () {
+			var names = Array.from(selection);
+			if (!names.length) return;
+			var used = (data.items || []).filter(function (it) { return selection.has(it.name) && it.usage && it.usage.length; }).length;
+			var msg = "Ta bort " + names.length + " markerade bilder?" + (used ? " " + used + " av dem används i turer (hotspots får bruten bild)." : "");
+			var ask = window.confirmDialog
+				? confirmDialog(msg, { danger: true, confirmText: "Ta bort" })
+				: Promise.resolve(window.confirm(msg));
+			ask.then(function (ok) {
+				if (!ok) return;
+				fetch("/media/batch-delete", {
+					method: "POST",
+					headers: { "X-CSRF-Token": csrf(), "Content-Type": "application/json" },
+					body: JSON.stringify({ names: names }),
+				}).then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+					.then(function () { selection.clear(); load(); })
+					.catch(function () { err("Kunde inte ta bort markerade."); });
+			});
+		});
+
 		function render() {
 			var items = applyFilter(data.items || [], filter);
 			grid.innerHTML = "";
-			if (!items.length) { grid.innerHTML = '<p class="hint">Inga bilder i det här urvalet.</p>'; return; }
+			if (!items.length) { grid.innerHTML = '<p class="hint">Inga bilder i det här urvalet.</p>'; updateBatch(); return; }
 			items.forEach(function (it) {
 				grid.appendChild(buildCell(it, {
 					onPick: opts.onPick ? function (picked) { opts.onPick(picked.url); } : null,
 					onDelete: remove,
+					selection: selection,
+					onSelectChange: updateBatch,
 				}));
 			});
+			updateBatch();
 		}
 
 		function remove(it) {
