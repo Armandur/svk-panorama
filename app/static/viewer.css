@@ -56,8 +56,9 @@ html, body {
 /* Fullskärms-ark för expanderbara hotspots ("läs mer"). */
 .hs-sheet { position: fixed; inset: 0; z-index: 5000; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
 .hs-sheet[hidden] { display: none; }
-.hs-sheet-inner { position: relative; background: #fff; color: #1c2128; max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 0.5rem; padding: 2.2rem 2rem 1.6rem; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4); }
-.hs-sheet-close { position: absolute; top: 0.5rem; right: 0.7rem; background: none; border: none; font-size: 1.9rem; line-height: 1; cursor: pointer; color: inherit; padding: 0.1rem 0.4rem; }
+.hs-sheet-inner { position: relative; background: #fff; color: #1c2128; max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 3px; padding: 2.2rem 2rem 1.6rem; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4); }
+.hs-sheet-close { position: absolute; top: 0.5rem; right: 0.5rem; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; background: none; border: none; border-radius: 3px; font-size: 1.6rem; line-height: 1; cursor: pointer; color: inherit; }
+.hs-sheet-close:hover { background: rgba(0, 0, 0, 0.08); }
 @media (max-width: 640px) {
 	.hs-sheet { padding: 0; }
 	.hs-sheet-inner { max-width: none; max-height: 100vh; height: 100%; border-radius: 0; }
