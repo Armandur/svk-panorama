@@ -106,7 +106,9 @@ def test_export_readiness():
 
     tmp = Path(tempfile.mkdtemp())
     old = config.PROJECTS_DIR
+    old_media = config.MEDIA_DIR
     config.PROJECTS_DIR = tmp / "projects"
+    config.MEDIA_DIR = tmp / "media"  # tom -> refererade poolbilder "saknas"
     try:
         (config.PROJECTS_DIR / "t").mkdir(parents=True)
         # Tom tur -> "inga scener".
@@ -143,8 +145,20 @@ def test_export_readiness():
             "edges": [{"from": "1", "to": "2", "twoway": True}],
         })
         check("readiness allt ok -> inga issues", bundle.readiness("t") == [])
+
+        # Refererad poolbild som saknas -> varning.
+        project_files.write_tour("t", {
+            "default": {"firstScene": "1"},
+            "scenes": {"1": {"northOffset": 10.0, "hotSpots": [
+                {"type": "info", "text": "![](/media/9/saknas.jpg)"},
+            ]}},
+        })
+        project_files.write_map("t", {"scenes": [{"id": "1", "x": 1, "y": 1}], "edges": []})
+        msgs = " | ".join(i["msg"] for i in bundle.readiness("t"))
+        check("readiness varnar saknad poolbild", "saknas i mediebiblioteket" in msgs)
     finally:
         config.PROJECTS_DIR = old
+        config.MEDIA_DIR = old_media
 
 
 def test_preset_sanitize():

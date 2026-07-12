@@ -254,6 +254,11 @@ def readiness(slug: str) -> list[dict[str, str]]:
     if first and first not in scenes:
         issues.append({"level": "warn", "msg": "Startscenen finns inte längre - välj en ny i turinställningarna."})
 
+    # Refererade poolbilder som raderats -> blir trasiga i publicerad tur/bundle.
+    broken = sum(1 for owner_id, name in _media_refs(tour) if media.resolve(owner_id, name) is None)
+    if broken:
+        issues.append({"level": "warn", "msg": f"{broken} bild(er) i hotspot-text saknas i mediebiblioteket (raderad?) - blir trasiga i publicerad tur."})
+
     return issues
 
 

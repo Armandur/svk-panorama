@@ -8,6 +8,7 @@ Ingen DB-tabell: metadata härleds ur filsystemet (stat + PIL) och användning
 skannas ur ägarens tur-JSON vid behov."""
 from __future__ import annotations
 
+import os
 import re
 import secrets
 from pathlib import Path
@@ -102,12 +103,20 @@ def ensure_thumb(owner_id: int, name: str) -> Path | None:
     if dst.exists():
         return dst
     dst.parent.mkdir(parents=True, exist_ok=True)
+    # Atomisk skrivning (temp + os.replace) så en samtidig läsare aldrig ser en
+    # halvskriven tumnagel som sedan cachas permanent (dst.exists() kortsluter).
+    tmp = dst.parent / (dst.name + "." + secrets.token_hex(4) + ".tmp")
     try:
         with Image.open(src) as im:
             im = im.convert("RGB")
             im.thumbnail((THUMB_MAX, THUMB_MAX))
-            im.save(dst, "JPEG", quality=80)
+            im.save(tmp, "JPEG", quality=80)
+        os.replace(tmp, dst)
     except Exception:
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
         return src
     return dst
 
