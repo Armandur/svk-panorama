@@ -79,6 +79,48 @@
 		const scene = tour.scenes[id];
 		return (scene && sourceText(scene.title)) || ("Scen " + id);
 	}
+
+	// --- Accordion-gruppering + N/M-räknare per scen/språk. Räknas UTAN koppling
+	// till `gaps` (som bara innehåller SAKNADE översättningar) - vi läser rakt ur
+	// tour-datan så en scen som blir klar fortsätter visas (med bock) i stället
+	// för att försvinna. SAMMA fält-urval som addGaps ovan (title + hotspot text/
+	// body, respekterar hotspotInLang per språk). ---
+	function groupKeyFor(g) { return g.kind === "branding" ? "__branding__" : g.sceneId; }
+	function sceneLangStats(sceneId, lang) {
+		const scene = tour.scenes[sceneId];
+		let total = 0, done = 0;
+		function check(value) {
+			if (!sourceText(value).trim()) return;
+			total++;
+			if (langText(value, lang).trim()) done++;
+		}
+		if (scene) {
+			check(scene.title);
+			(scene.hotSpots || []).forEach(function (hs) {
+				if (window.hotspotInLang && !window.hotspotInLang(hs, lang)) return;
+				check(hs.text);
+				if (hs.expandable) check(hs.body);
+			});
+		}
+		return { total: total, done: done };
+	}
+	function brandingLangStats(lang) {
+		const content = tour.default && tour.default.branding && tour.default.branding.content;
+		const src = sourceText(content).trim();
+		if (!src) return { total: 0, done: 0 };
+		return { total: 1, done: langText(content, lang).trim() ? 1 : 0 };
+	}
+	function statsForAllTargets(fn) {
+		const out = {};
+		TARGETS.forEach(function (lang) { out[lang] = fn(lang); });
+		return out;
+	}
+	function sceneHasAnyTarget(sceneId) {
+		return TARGETS.some(function (lang) { return sceneLangStats(sceneId, lang).total > 0; });
+	}
+	function brandingHasAnyTarget() {
+		return TARGETS.some(function (lang) { return brandingLangStats(lang).total > 0; });
+	}
 	function sceneYaw(id) { const sc = tour.scenes[id]; return sc && typeof sc.yaw === "number" ? sc.yaw : undefined; }
 	function scenePitch(id) { const sc = tour.scenes[id]; return sc && typeof sc.pitch === "number" ? sc.pitch : undefined; }
 
@@ -106,17 +148,26 @@
 	// --- Pannellum ---
 	// Pannellums inbyggda titel-ruta läser scene.title rakt av och förstår inte
 	// {kod:text} - ge den en STATISK klon per scen med källspråkets titel (ren
-	// sträng) i stället. hotSpots delas (samma referens) - vi muterar dem aldrig
-	// från denna sida, bara läser pitch/yaw/text/body ur den ORIGINALA tour.scenes
-	// (rawValue/hotspotFor), så gap-scan och spar berörs inte av detta.
+	// sträng). Hotspots KLONAS och får tooltips renderade på KÄLLSPRÅKET via
+	// attachHsTooltips (annars visar pannellum "[object Object]" för {kod:text}-
+	// text). Originalen i tour.scenes lämnas orörda - gap-scan/spar läser dem
+	// (rawValue/hotspotFor) och berörs inte.
 	function resolvedTitle(id) {
 		const scene = tour.scenes[id];
 		return (scene && sourceText(scene.title)) || ("Scen " + id);
 	}
+	function sceneNamesResolved() {
+		const m = {};
+		Object.keys(tour.scenes).forEach(function (id) { m[id] = resolvedTitle(id); });
+		return m;
+	}
 	function pannellumScenes() {
 		const out = {};
+		const names = sceneNamesResolved();
 		Object.keys(tour.scenes).forEach(function (id) {
-			out[id] = Object.assign({}, tour.scenes[id], { title: resolvedTitle(id) });
+			const cloned = (tour.scenes[id].hotSpots || []).map(function (h) { return Object.assign({}, h); });
+			if (window.attachHsTooltips) window.attachHsTooltips(cloned, names, SOURCE, languages);
+			out[id] = Object.assign({}, tour.scenes[id], { title: resolvedTitle(id), hotSpots: cloned });
 		});
 		return out;
 	}
@@ -199,10 +250,30 @@
 	const targetMd = document.getElementById("translate-target-md");
 	const targetPlainWrap = document.getElementById("translate-target-plain-wrap");
 	const targetMdWrap = document.getElementById("translate-target-md-wrap");
+	const filterRow = document.getElementById("translate-filter-row");
+	const filterSelect = document.getElementById("translate-lang-filter");
 
 	let gaps = buildGaps();
 	let totalGaps = gaps.length;
 	let activeIndex = -1;
+	let langFilter = ""; // "" = alla målspråk
+	let activeGroupKey = null; // scenId, eller "__branding__" - gruppen som hålls utfälld
+	const openKeys = new Set(); // manuellt/aktivt utfällda grupper, överlever om-render
+
+	// Språkfilter är bara meningsfullt med >=2 målspråk.
+	if (TARGETS.length > 1) {
+		filterRow.hidden = false;
+		TARGETS.forEach(function (lang) {
+			const opt = document.createElement("option");
+			opt.value = lang;
+			opt.textContent = (window.LANG_NAMES && window.LANG_NAMES[lang]) || lang;
+			filterSelect.appendChild(opt);
+		});
+		filterSelect.addEventListener("change", function () {
+			langFilter = filterSelect.value;
+			renderGapList();
+		});
+	}
 
 	function updateProgress() {
 		const remaining = gaps.length;
@@ -216,6 +287,11 @@
 		}
 	}
 
+	// Accordion: en <details> per scen (numerisk ordning) + en för Branding sist.
+	// Bara scener/branding med FAKTISKT översättningsbart innehåll för minst ett
+	// målspråk listas - en scen utan hotspottexter tar ingen plats. `openKeys`
+	// styr vilka som är utfällda (synkas mot faktisk DOM via "toggle"-lyssnaren,
+	// så manuella klick överlever nästa om-render).
 	function renderGapList() {
 		listEl.textContent = "";
 		if (!gaps.length) {
@@ -226,50 +302,99 @@
 		}
 		doneMsgEl.hidden = true;
 
-		const groups = {}; const order = [];
-		gaps.forEach(function (g, i) {
-			const key = g.sceneId || "__branding__";
-			if (!groups[key]) { groups[key] = []; order.push(key); }
-			groups[key].push(i);
-		});
-		order.sort(function (a, b) {
-			if (a === "__branding__") return 1;
-			if (b === "__branding__") return -1;
-			return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
-		});
+		const keys = sceneIds().filter(sceneHasAnyTarget);
+		if (brandingHasAnyTarget()) keys.push("__branding__");
 
-		order.forEach(function (key) {
-			const wrap = document.createElement("div");
-			wrap.className = "translate-group";
-			const h = document.createElement("h4");
-			h.textContent = key === "__branding__" ? "Branding" : sceneTitleFor(key);
-			wrap.appendChild(h);
-			const ul = document.createElement("ul");
-			ul.className = "translate-gap-group";
-			groups[key].forEach(function (i) {
-				const g = gaps[i];
-				const li = document.createElement("li");
-				li.className = "translate-gap-row" + (i === activeIndex ? " active" : "");
-				li.dataset.idx = String(i);
+		keys.forEach(function (key) {
+			const idxs = [];
+			gaps.forEach(function (g, i) { if (groupKeyFor(g) === key) idxs.push(i); });
+			const visibleIdxs = idxs.filter(function (i) { return !langFilter || gaps[i].lang === langFilter; });
+
+			const stats = key === "__branding__" ? statsForAllTargets(brandingLangStats) : statsForAllTargets(function (lang) { return sceneLangStats(key, lang); });
+			const allDone = TARGETS.every(function (lang) { return stats[lang].total === 0 || stats[lang].done === stats[lang].total; });
+
+			const details = document.createElement("details");
+			details.className = "translate-scene-group" + (allDone ? " done" : "");
+			details.open = openKeys.has(key);
+			details.addEventListener("toggle", function () {
+				if (details.open) openKeys.add(key); else openKeys.delete(key);
+			});
+
+			const summary = document.createElement("summary");
+			const nameWrap = document.createElement("span");
+			nameWrap.className = "translate-scene-name";
+			if (key === "__branding__") {
+				nameWrap.append("Branding");
+			} else {
+				nameWrap.append(sceneTitleFor(key));
+				const idTag = document.createElement("span");
+				idTag.className = "scene-id-tag";
+				idTag.textContent = "#" + key;
+				nameWrap.appendChild(idTag);
+			}
+			summary.appendChild(nameWrap);
+
+			const counters = document.createElement("span");
+			counters.className = "translate-scene-counters";
+			TARGETS.forEach(function (lang) {
+				const s = stats[lang];
+				if (!s.total) return;
+				const badge = document.createElement("span");
+				badge.className = "lang-counter" + (s.done === s.total ? " complete" : "");
 				const flag = document.createElement("img");
 				flag.className = "lang-order-flag";
-				flag.src = window.langFlag ? window.langFlag(g.lang) : "";
-				flag.alt = "";
-				li.appendChild(flag);
-				const kindEl = document.createElement("span");
-				kindEl.className = "translate-gap-kind";
-				kindEl.textContent = KIND_LABELS[g.kind] || g.kind;
-				li.appendChild(kindEl);
-				const snippet = document.createElement("span");
-				snippet.className = "translate-gap-snippet";
-				snippet.textContent = g.sourceText.length > 60 ? g.sourceText.slice(0, 60) + "…" : g.sourceText;
-				li.appendChild(snippet);
-				li.addEventListener("click", function () { selectGap(i); });
-				ul.appendChild(li);
+				flag.src = window.langFlag ? window.langFlag(lang) : "";
+				flag.alt = lang;
+				badge.appendChild(flag);
+				badge.append(" " + s.done + "/" + s.total);
+				counters.appendChild(badge);
 			});
-			wrap.appendChild(ul);
-			listEl.appendChild(wrap);
+			if (allDone) {
+				const check = document.createElement("span");
+				check.className = "translate-scene-check";
+				check.textContent = "✓";
+				counters.appendChild(check);
+			}
+			summary.appendChild(counters);
+			details.appendChild(summary);
+
+			if (!visibleIdxs.length) {
+				const hint = document.createElement("p");
+				hint.className = "translate-group-hint";
+				hint.textContent = idxs.length ? "Inget kvar på valt språk." : "Allt översatt.";
+				details.appendChild(hint);
+			} else {
+				const ul = document.createElement("ul");
+				ul.className = "translate-gap-group";
+				visibleIdxs.forEach(function (i) {
+					const g = gaps[i];
+					const li = document.createElement("li");
+					li.className = "translate-gap-row" + (i === activeIndex ? " active" : "");
+					li.dataset.idx = String(i);
+					const flag = document.createElement("img");
+					flag.className = "lang-order-flag";
+					flag.src = window.langFlag ? window.langFlag(g.lang) : "";
+					flag.alt = "";
+					li.appendChild(flag);
+					const kindEl = document.createElement("span");
+					kindEl.className = "translate-gap-kind";
+					kindEl.textContent = KIND_LABELS[g.kind] || g.kind;
+					li.appendChild(kindEl);
+					const snippet = document.createElement("span");
+					snippet.className = "translate-gap-snippet";
+					snippet.textContent = g.sourceText.length > 60 ? g.sourceText.slice(0, 60) + "…" : g.sourceText;
+					li.appendChild(snippet);
+					li.addEventListener("click", function () { selectGap(i); });
+					ul.appendChild(li);
+				});
+				details.appendChild(ul);
+			}
+
+			listEl.appendChild(details);
 		});
+
+		const activeRow = listEl.querySelector(".translate-gap-row.active");
+		if (activeRow) activeRow.scrollIntoView({ block: "nearest" });
 		updateProgress();
 	}
 
@@ -279,14 +404,32 @@
 	// hinner inte ladda innan panelen med luckor redan är klickbar).
 	let userInteracted = false;
 	function selectGap(i) {
+		if (i < 0 || !gaps[i]) return;
 		userInteracted = true;
-		const prev = listEl.querySelector(".translate-gap-row.active");
-		if (prev) prev.classList.remove("active");
 		activeIndex = i;
-		const row = listEl.querySelector('.translate-gap-row[data-idx="' + i + '"]');
-		if (row) row.classList.add("active");
+		const key = groupKeyFor(gaps[i]);
+		if (key !== activeGroupKey) {
+			openKeys.delete(activeGroupKey);
+			activeGroupKey = key;
+		}
+		openKeys.add(activeGroupKey);
+		renderGapList(); // fäller ihop föregående scens grupp + fäller ut den nya, uppdaterar aktiv rad
 		showEditor(gaps[i]);
 		directCamera(gaps[i]);
+	}
+
+	// Navigering (Hoppa till nästa / auto-avancera efter spar) respekterar ett
+	// ev. aktivt språkfilter - hoppar bara mellan luckor för det valda språket.
+	function filteredIndices() {
+		const arr = [];
+		gaps.forEach(function (g, i) { if (!langFilter || g.lang === langFilter) arr.push(i); });
+		return arr;
+	}
+	function nextFilteredIndex(from) {
+		const arr = filteredIndices();
+		if (!arr.length) return -1;
+		const pos = arr.indexOf(from);
+		return arr[(pos + 1) % arr.length];
 	}
 
 	function showEditor(g) {
@@ -337,9 +480,28 @@
 		}
 	}
 
+	// Efter spar: hoppa till nästa lucka som matchar ev. aktivt språkfilter (första
+	// med index >= den nyss sparade, annars wrap till första). Ger filtret inget
+	// träffbart alls kvar (allt på det språket är klart) - nollställ filtret i
+	// stället för att stranda användaren i ett tomt läge.
 	function advanceAfterSave() {
-		if (!gaps.length) { editorEl.hidden = true; activeIndex = -1; return; }
-		selectGap(Math.min(activeIndex, gaps.length - 1));
+		if (!gaps.length) {
+			editorEl.hidden = true;
+			activeIndex = -1;
+			activeGroupKey = null;
+			renderGapList();
+			return;
+		}
+		const arr = filteredIndices();
+		if (arr.length) {
+			let ni = arr[0];
+			for (let k = 0; k < arr.length; k++) { if (arr[k] >= activeIndex) { ni = arr[k]; break; } }
+			selectGap(ni);
+		} else {
+			langFilter = "";
+			filterSelect.value = "";
+			selectGap(Math.min(activeIndex, gaps.length - 1));
+		}
 	}
 
 	document.getElementById("translate-save-btn").addEventListener("click", function () {
@@ -354,7 +516,6 @@
 		}).then(function () {
 			applyLocal(g, (value || "").trim());
 			gaps.splice(activeIndex, 1);
-			renderGapList();
 			if (window.showToast) showToast("Sparat", "ok");
 			advanceAfterSave();
 		}).catch(function (e) {
@@ -362,12 +523,25 @@
 		}).then(function () { btn.removeAttribute("aria-busy"); });
 	});
 
+	// Enter i det vanliga textfältet (scentitlar m.fl. icke-markdown-luckor) =
+	// spara + gå vidare. EasyMDE-fältet rör vi inte - där ska Enter ge radbrytning.
+	targetInput.addEventListener("keydown", function (e) {
+		if (e.key !== "Enter") return;
+		e.preventDefault();
+		document.getElementById("translate-save-btn").click();
+	});
+
 	document.getElementById("translate-skip-btn").addEventListener("click", function () {
 		if (!gaps.length) return;
-		selectGap((activeIndex + 1 + gaps.length) % gaps.length);
+		const ni = nextFilteredIndex(activeIndex);
+		if (ni !== -1) selectGap(ni);
 	});
 
 	// --- Start ---
+	if (gaps.length) {
+		activeGroupKey = groupKeyFor(gaps[0]);
+		openKeys.add(activeGroupKey);
+	}
 	renderGapList();
 	const startId = (gaps[0] && gaps[0].sceneId) || (tour.default && tour.default.firstScene && tour.scenes[tour.default.firstScene] && tour.default.firstScene) || sceneIds()[0];
 	buildViewer(startId);

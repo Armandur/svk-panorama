@@ -1344,15 +1344,31 @@ details.storage-user table { margin-bottom: 0.6rem; }
 /* --- Översätt-steget (routes/translate.py, static/translate.js) --- */
 .translate-progress { margin: 0 0 0.75rem; }
 .translate-progress p { font-size: 0.85rem; margin: 0 0 0.25rem; }
-.translate-gap-list { max-height: 46vh; overflow-y: auto; margin-bottom: 0.75rem; }
-.translate-group h4 {
-	font-size: 0.75rem;
-	text-transform: uppercase;
-	letter-spacing: 0.03em;
-	color: var(--pico-muted-color);
-	margin: 0.7rem 0 0.2rem;
+.translate-filter-row { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.6rem; font-size: 0.82rem; }
+.translate-filter-row label { margin: 0; font-weight: 600; color: var(--pico-muted-color); white-space: nowrap; }
+.translate-filter-row select { width: auto; flex: 1; margin: 0; padding: 0.25rem 0.5rem; font-size: 0.82rem; }
+.translate-gap-list { max-height: 52vh; overflow-y: auto; margin-bottom: 0.75rem; }
+
+/* Scengrupper: <details>/<summary> - Pico ger redan pil/toggle-animation,
+   vi lägger bara på egen rubrik-layout (namn + per-språk-räknare). */
+.translate-scene-group {
+	margin: 0 0 0.4rem;
+	border: 1px solid var(--pico-muted-border-color);
+	border-radius: 0.35rem;
+	padding: 0.4rem 0.6rem;
 }
-.translate-group:first-child h4 { margin-top: 0; }
+.translate-scene-group summary { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.85rem; font-weight: 600; margin-bottom: 0; }
+.translate-scene-group[open] summary { margin-bottom: 0.5rem; }
+.translate-scene-group.done summary { opacity: 0.6; }
+.translate-scene-name { display: flex; align-items: baseline; gap: 0.35rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.scene-id-tag { font-size: 0.7rem; font-weight: 400; color: var(--pico-muted-color); }
+.translate-scene-counters { display: flex; align-items: center; gap: 0.35rem; flex: none; font-size: 0.75rem; font-weight: 400; }
+.lang-counter { display: inline-flex; align-items: center; gap: 0.2rem; padding: 0.05rem 0.35rem; border-radius: 0.6rem; background: var(--pico-muted-border-color, rgba(115, 130, 140, 0.12)); }
+.lang-counter img { width: 14px; height: 10px; }
+.lang-counter.complete { background: color-mix(in srgb, var(--svk-accent) 18%, transparent); color: var(--svk-accent); }
+.translate-scene-check { color: var(--svk-accent); font-weight: 700; }
+.translate-group-hint { font-size: 0.78rem; color: var(--pico-muted-color); font-style: italic; margin: 0.2rem 0 0; }
+
 .translate-gap-group { list-style: none; margin: 0; padding: 0; }
 .translate-gap-row {
 	display: flex;
