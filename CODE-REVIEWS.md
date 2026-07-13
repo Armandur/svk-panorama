@@ -2,6 +2,44 @@
 
 Nyast först. Varje fynd markerat åtgärdat/avfärdat med commit-ref.
 
+## 2026-07-13 - Granskning av flerspråkighets-epiken (i18n)
+
+Subagent-granskning (kördes som Sonnet pga env-pinning) av hela i18n-blocket
+(datamodell, resolver, viewer, editor, Översätt-steg, språk-specifika hotspots).
+Helheten bedömd solid (JS/Python-paritet, XSS/CSRF, rebuild-korrekthet, media-
+relativisering, bakåtkompat). Fynden åtgärdade i **commit bc80884** (advisor:
+Opus, konsulterad om angreppssätt - särskilt fynd 1 och 3):
+
+- **[ÅTGÄRDAT bc80884] KRITISK - orphan-källspråk.** I "Alla texter"-läget (och
+  scen-/hotspot-editorns språkflikar) kunde man tömma källspråket på ett fält som
+  hade målöversättningar -> källnyckeln droppades tyst, `resolveText` föll tillbaka
+  på fel språk, `missing_translations` varnade inte, och fältet försvann ur
+  Översätt-UI:t (både gap-scannen och "Alla texter" kräver källtext). Fix
+  (självläkande, en catch-all som täcker translate.js/scene.js/import): gap-scannen
+  (`translate.js`) och `missing_translations` (`bundle.py`) ytar ett sådant fält som
+  EN källspråks-lucka, med den befintliga översättningen som referens - fältet dyker
+  upp igen och kan lagas. Guard: hotspot som exkluderar källspråket (`hs.langs`)
+  flaggas inte (source_applies). Valde detta framför confirm-dialoger (advisor:
+  "warna men lämna osynligt" duger inte - sluttillståndet måste vara lagbart).
+- **[ÅTGÄRDAT bc80884] BÖR - scentitel gick inte att tömma.** `scenes.py` hoppade
+  över `title=None`. `/tour` är en full per-scen-överskrivning + scene.js skickar
+  alltid title -> null betyder nu rensa. Guarden borttagen.
+- **[ÅTGÄRDAT bc80884] BÖR - `hs.langs` validerades inte vid spar.** Ny
+  `sanitize_hotspot_langs` (presets.py) körs i `save_tour`: droppar ogiltiga koder,
+  dedupe, tom/täcker-alla -> inget fält.
+- **[ÅTGÄRDAT bc80884] BÖR - `tour_lang` i localStorage läckte mellan turer.**
+  `viewer.js` nycklar nu på content-hash av scen-id (avslöjar ingen slug på /s,
+  funkar i bundle).
+- **[ÅTGÄRDAT bc80884] BÖR - språk-badge visades även vid 1 språk.** `scene.js`
+  grindar badgen på `langs.length > 1`.
+- **[SENARELAGT] BÖR - `/languages` städar inte spöktext för borttagna språk.**
+  Advisor flaggade den föreslagna prunen som möjlig regression: att pruna
+  on-removal är destruktivt (lätt att råka ta bort ett språk och tappa alla
+  översättningar) och harmen är liten (ghost-text ignoreras vid rendering; enda
+  reella läckan är att en bild som bara refereras i borttaget språks ghost-text
+  räknas som använd). Lämnat latent (re-add återställer). Lyft till Rasmus:
+  pruna inte alls / pruna vid export / pruna med varning.
+
 ## 2026-07-12 - Granskning av produktionshärdning (commit 3e6f9e2)
 
 Oberoende Fable-subagent granskade härdnings-blocket (S3-S5: map.json-lås, proxy-IP +
