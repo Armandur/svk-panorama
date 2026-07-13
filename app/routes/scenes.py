@@ -49,6 +49,7 @@ def scene_view(
             "manifest": read_manifest(slug),
             "has_map_image": map_image_path(slug).exists(),
             "csrf_token": token,
+            "is_multilingual": len(tour.get("default", {}).get("languages") or []) > 1,
         },
     )
     set_csrf_cookie(response, token)

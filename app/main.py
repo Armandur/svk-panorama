@@ -27,6 +27,7 @@ from app.routes import (
     public,
     scenes,
     tiling,
+    translate,
     uploads,
     viewer,
 )
@@ -98,6 +99,7 @@ app.include_router(previews.router)
 app.include_router(scenes.router)
 app.include_router(tiling.router)
 app.include_router(preview.router)
+app.include_router(translate.router)
 app.include_router(export.router)
 app.include_router(backup.router)
 app.include_router(viewer.router)

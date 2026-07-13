@@ -1,5 +1,6 @@
 {#- Stegnavigering: hamburgermeny (Huvudmeny + steg) + fram/bak-pilar.
     Kräver i context: project, has_map_image, current_step, has_scenes.
+    is_multilingual (valfri, default falsy) lägger till Översätt-steget.
     Steg gate:as på förutsättningar. Renderar hela topnav-raden. -#}
 {% set _slug = project.slug %}
 {% set _steps = [
@@ -8,6 +9,9 @@
     {'key': 'scenes', 'title': 'Scenhantering', 'url': '/projects/' ~ _slug ~ '/scenes', 'enabled': has_scenes},
     {'key': 'preview', 'title': 'Förhandsvisning', 'url': '/projects/' ~ _slug ~ '/preview', 'enabled': has_scenes},
 ] %}
+{% if is_multilingual %}
+{% set _steps = _steps + [{'key': 'translate', 'title': 'Översätt', 'url': '/projects/' ~ _slug ~ '/translate', 'enabled': has_scenes}] %}
+{% endif %}
 {% set ns = namespace(idx=0) %}
 {% for s in _steps %}{% if s.key == current_step %}{% set ns.idx = loop.index0 %}{% endif %}{% endfor %}
 {% set _prev = _steps[ns.idx - 1] if ns.idx > 0 else none %}

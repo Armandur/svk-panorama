@@ -30,6 +30,7 @@ def plan_view(
             "map_data": map_data,
             "has_map_image": map_image_path(slug).exists(),
             "csrf_token": token,
+            "is_multilingual": len(tour.get("default", {}).get("languages") or []) > 1,
         },
     )
     set_csrf_cookie(response, token)

@@ -51,6 +51,28 @@ def sanitize_i18n_text(value: Any, max_len: int) -> Any:
     return None
 
 
+def set_i18n_lang(current: Any, lang: str, new_text: str, default_lang: str) -> Any:
+    """Sätt ETT språks text i ett i18n-textfält (str | {kod:text} | None), för
+    Översätt-stegets granulära spar (routes/translate.py). Bygger en {kod:text}-
+    dict av `current` (ren sträng -> {default_lang: current}), sätter/tar bort
+    `lang`-nyckeln, och kollapsar sedan tillbaka: om bara default_lang (eller
+    inget) blir kvar -> ren sträng (eller None), annars dicten."""
+    if isinstance(current, str):
+        d: dict[str, str] = {default_lang: current} if current else {}
+    elif isinstance(current, dict):
+        d = dict(current)
+    else:
+        d = {}
+    text = (new_text or "").strip()
+    if text:
+        d[lang] = text
+    else:
+        d.pop(lang, None)
+    if not d or set(d.keys()) <= {default_lang}:
+        return d.get(default_lang)
+    return d
+
+
 def i18n_text_values(value: Any) -> list[str]:
     """Alla textvarianter av ett fält som kan vara ren sträng (default-språk),
     {kod: text} (flerspråkigt) eller saknas/annat. Delas av regex-skanningar

@@ -72,6 +72,7 @@ app/
     viewer.py        # /view (inloggad runtime-viewer, multires-merge)
     public.py        # /s/{token} publik delad viewer + /s/{token}/{path} assets (ingen auth)
     media.py         # /media delad mediepool per ägare (upload/list/delete + capability-serve)
+    translate.py     # Översätt-steget: gap-scan + guidad granulär översättningsspar (flerspråkigt)
   services/
     project_files.py # filsystemslager: slug, mappar, tour.json/map.json, previews
     tiling.py        # trådat tiling-jobb + manifest + apply_multires()
@@ -240,11 +241,26 @@ antingen en **ren sträng** (monospråkigt / default-språk / äldre turer) elle
   branding BARA vid >1 språk (annars oförändrat). Scenvyn läser `tour.default.languages`
   vid sidladdning -> sätt språk på preview FÖRST, sedan syns per-språk-fälten i scenvyn.
 - **Backend:** `presets.sanitize_i18n_text`/`sanitize_languages`/`sanitize_branding`
-  (str|dict); `SceneUpdate.title` + `TourSettings.brandingContent` är `str|dict`.
-  `presets.i18n_text_values(value)` ger alla språksträngar -> `bundle.py`/`backup.py`
-  `_media_refs`/`_relativize` + `media.py` usage-scan itererar ALLA varianter (annars
-  trasiga poolbilder i icke-defaultspråk). `services/i18n.py`: `og_description(name,
+  (str|dict) + `set_i18n_lang(value, lang, text, default_lang)` (granulär spar) +
+  `i18n_text_values(value)` (alla språksträngar); `SceneUpdate.title` +
+  `TourSettings.brandingContent` är `str|dict`. `i18n_text_values` -> `bundle.py`/
+  `backup.py` `_media_refs`/`_relativize` + `media.py` usage-scan itererar ALLA varianter
+  (annars trasiga poolbilder i icke-defaultspråk). `services/i18n.py`: `og_description(name,
   lang)` (6 språk) + `tour_default_lang(tour)`, används av viewer.py/public.py/bundle.py.
+- **Flaggor + editor-dropdown:** `markdown.js` har `FLAG_SVGS`/`LANG_FLAG`/`langFlag`
+  (vendorade flag-icons-SVG:er som data-URI:er - renderar likadant på alla enheter,
+  Windows saknar flagg-emoji). Viewern har flagg-språkväljare (infälld=flagga, utfälld=
+  flagga+namn) längs vänsterkanten under pannellums kontroller. `static/lang-dropdown.js`
+  (`mountLangDropdown(container, {langs,current,onPick,showName})`) = återanvändbar editor-
+  dropdown (branding-editorn, scentitel, hotspot-modal, /mallar). Turens språk väljs på
+  preview-steget med bockrutor + **drag-and-drop-ordning** (först = default).
+- **Översätt-steg (routes/translate.py, translate.html/js):** eget flödessteg efter
+  Preview, syns bara vid >1 språk (annars redirect). Listar LUCKOR (fält med källspråk
+  `languages[0]` men saknad målspråk), guidat: klick laddar scen + riktar kamera mot
+  hotspoten, källtext (skrivskyddad) bredvid EasyMDE-målfält, spar via granulär endpoint
+  `POST /projects/{slug}/translate` (`set_i18n_lang`). `bundle.missing_translations(tour)`
+  matar readiness-varning inför export/delning. Steget gate:as på `is_multilingual`
+  (skickas i context av routes som renderar `_step_nav.html`).
 
 ## static/-JS (editorn)
 

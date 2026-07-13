@@ -19,9 +19,14 @@ from PIL import Image  # noqa: E402
 from app.auth import hash_password, make_invite_token, read_invite_token, verify_password  # noqa: E402
 from app.routes.preview import FONT_KEYS, _hex  # noqa: E402
 from app.routes.auth import _safe_next  # noqa: E402
-from app.services.bundle import _media_refs, _relativize  # noqa: E402
+from app.services.bundle import _media_refs, _relativize, missing_translations  # noqa: E402
 from app.services.i18n import og_description, tour_default_lang  # noqa: E402
-from app.services.presets import i18n_text_values, sanitize_i18n_text, sanitize_languages  # noqa: E402
+from app.services.presets import (  # noqa: E402
+    i18n_text_values,
+    sanitize_i18n_text,
+    sanitize_languages,
+    set_i18n_lang,
+)
 from app.services.project_files import (  # noqa: E402
     _atomic_write_text,
     _natural_key,
@@ -501,6 +506,59 @@ def test_image_dimension_guard():
     check("icke-bild avvisas", raises(b"inte en bild"))
 
 
+def test_translate_helpers():
+    # set_i18n_lang: sträng -> {default_lang: sträng}, sätt nytt målspråk -> dict.
+    check("set_i18n_lang sträng+nytt mål -> dict", set_i18n_lang("Hej", "en", "Hi", "sv") == {"sv": "Hej", "en": "Hi"})
+    # None-nuvarande + nytt mål -> dict utan default_lang-nyckel (källan var tom).
+    check("set_i18n_lang None+nytt mål -> dict utan källa", set_i18n_lang(None, "en", "Hi", "sv") == {"en": "Hi"})
+    # dict, sätt/överskriv ett målspråk - övriga nycklar orörda.
+    d = set_i18n_lang({"sv": "Hej", "en": "Old"}, "en", " Hi ", "sv")
+    check("set_i18n_lang dict trimmar + skriver över", d == {"sv": "Hej", "en": "Hi"})
+    # Tom sträng -> tar bort språknyckeln i stället för att spara "". Bara
+    # default_lang-nyckeln kvar efteråt -> kollapsas direkt till ren sträng.
+    check("set_i18n_lang tom -> tar bort nyckel + kollapsar", set_i18n_lang({"sv": "Hej", "en": "Hi"}, "en", "   ", "sv") == "Hej")
+    # Tom sträng men EN TREDJE språknyckel kvar -> dicten kollapsar inte.
+    check("set_i18n_lang tom men fler språk kvar -> dict", set_i18n_lang({"sv": "Hej", "en": "Hi", "de": "Hallo"}, "en", "", "sv") == {"sv": "Hej", "de": "Hallo"})
+    # Bara default_lang-nyckeln kvar -> kollapsa till ren sträng.
+    check("set_i18n_lang kollaps till sträng", set_i18n_lang({"sv": "Hej", "en": "Hi"}, "en", "", "sv") == "Hej")
+    # Allt borttaget -> None.
+    check("set_i18n_lang tomt -> None", set_i18n_lang({"en": "Hi"}, "en", "", "sv") is None)
+    check("set_i18n_lang None+tom -> None", set_i18n_lang(None, "en", "", "sv") is None)
+    # Okänt/annat värde (t.ex. int) -> behandlas som tomt, bygger ändå upp dict.
+    check("set_i18n_lang annat värde -> ignoreras som bas", set_i18n_lang(42, "en", "Hi", "sv") == {"en": "Hi"})
+
+    # missing_translations: samma definition som static/translate.js gap-scan.
+    check("missing_translations enspråkig -> 0", missing_translations({"default": {"languages": ["sv"]}, "scenes": {}}) == 0)
+    check("missing_translations ingen languages -> 0", missing_translations({"scenes": {}}) == 0)
+
+    tour = {
+        "default": {"languages": ["sv", "en", "de"]},
+        "scenes": {
+            "1": {
+                "title": "Kyrkan",  # ren sträng -> lucka för BÅDA målspråken
+                "hotSpots": [
+                    {"type": "info", "text": {"sv": "Info", "en": "Info EN"}},  # sv+en ifyllt -> lucka bara de
+                    {"type": "info", "text": {"sv": "Klocka"}, "expandable": True, "body": {"sv": "Lång text"}},  # text: lucka en+de, body (expandable): lucka en+de
+                    {"type": "info", "text": {"sv": "Ej expanderbar"}, "body": {"sv": "Ignoreras"}},  # body ska INTE räknas (ej expandable)
+                    {"type": "info", "text": {"sv": ""}},  # tom källtext -> ingen lucka alls
+                ],
+            },
+        },
+    }
+    n = missing_translations(tour)
+    # title (2: en,de) + hotspot0.text (1: de) + hotspot1.text (2: en,de) +
+    # hotspot1.body (2: en,de) + hotspot2.text (2: en,de; body ignoreras, ej
+    # expandable) + hotspot3 (0: tom källtext) = 9
+    check("missing_translations räknar rätt antal", n == 9)
+
+    # branding.content räknas också, och kollapsar korrekt vid full täckning.
+    tour2 = {
+        "default": {"languages": ["sv", "en"], "branding": {"content": {"sv": "Logga", "en": "Logo"}}},
+        "scenes": {"1": {"title": {"sv": "Kyrkan", "en": "Church"}}},
+    }
+    check("missing_translations allt översatt -> 0", missing_translations(tour2) == 0)
+
+
 def main() -> int:
     for fn in (
         test_expected_tile_count,
@@ -508,6 +566,7 @@ def main() -> int:
         test_relativize,
         test_relativize_i18n,
         test_i18n_helpers,
+        test_translate_helpers,
         test_export_readiness,
         test_preset_sanitize,
         test_branding_sanitize,

@@ -71,6 +71,7 @@ def preview_view(
             "manifest": manifest,
             "csrf_token": token,
             "share_url": share_url,
+            "is_multilingual": len(tour.get("default", {}).get("languages") or []) > 1,
         },
     )
     set_csrf_cookie(response, token)

@@ -30,6 +30,7 @@ from app.services.project_files import (
     ensure_project_structure,
     list_scenes,
     map_image_path,
+    read_tour,
     rename_project_files,
     slugify,
     write_map,
@@ -251,6 +252,7 @@ def project_home(
 ) -> HTMLResponse:
     """Steg 1: ladda upp bilder + karta och hantera scenlistan."""
     scenes = list_scenes(slug)
+    tour = read_tour(slug)
     token = new_csrf_token()
     response = templates.TemplateResponse(
         request,
@@ -261,6 +263,7 @@ def project_home(
             "has_map_image": map_image_path(slug).exists(),
             "csrf_token": token,
             "slug_error": request.query_params.get("slug_error"),
+            "is_multilingual": len(tour.get("default", {}).get("languages") or []) > 1,
         },
     )
     set_csrf_cookie(response, token)

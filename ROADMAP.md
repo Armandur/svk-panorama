@@ -560,24 +560,28 @@ bundlen; ingen datamodellsändring. Browser-verifierat (Playwright): OG-taggar p
       inte än; ev. fler språk = utöka `config.LANGUAGES` + `LANG_NAMES` (+ woff2 för accenter).
 
 - **Flerspråkighet - uppföljning (Rasmus 2026-07-13, pågår/planerat):**
-  - [~] **Flagg-baserad språkväljare** KLAR i viewern (commit 171abc7). PÅGÅR (subagent):
+  - [x] **Flagg-baserad språkväljare KLAR (commit 171abc7 + d57a598).** Viewern +
         branding-editorns flikar -> flagg-dropdown, /mallar flerspråkig branding +
         flaggindikatorer på kort, **språkordning via drag-and-drop** (utöver bockrutor;
         ordning = prioritet, först = default), flagg-switcher-overlay även på /preview.
-        Delad widget `static/lang-dropdown.js` + flagg-infra i markdown.js (`FLAG_SVGS`/
-        `LANG_FLAG`/`langFlag`).
-  - [ ] **Scentitel: dropdown + EN inputruta** (som branding) i stället för tre rutor
-        (`#scene-title-langs` i scene.js). Använd samma `lang-dropdown.js`. Ev. även
-        hotspot-modalens språk-`<select>` -> samma flagg-dropdown för konsekvens.
+        Delad widget `static/lang-dropdown.js` (`mountLangDropdown`) + flagg-infra i
+        markdown.js (`FLAG_SVGS`/`LANG_FLAG`/`langFlag`, vendorade flag-icons-SVG:er).
+  - [x] **Scentitel: dropdown + EN inputruta KLAR (commit 7c0ecb8).** `#scene-title-langs`
+        -> flagg-dropdown väljer språk för EN input (scene.js). Hotspot-modalens språk-
+        `<select>` bytt till samma flagg-dropdown för konsekvens.
+  - [x] **Översätt-steg (F5) KLAR (2026-07-13).** Eget steg `/projects/{slug}/translate`
+        (`routes/translate.py` + `translate.html` + `translate.js`), i steg-navet EFTER
+        Preview, syns bara vid >1 språk (annars redirect till preview). Hittar luckor
+        (fält med källspråk men saknad målspråk: hotspot text/body, scentitel, branding),
+        guidad genomgång: klick laddar scen + riktar kamera mot hotspoten (`loadScene`
+        med hotspotens pitch/yaw), källtext (skrivskyddad) bredvid EasyMDE-målfält, spar
+        via granulär endpoint (`set_i18n_lang`). Readiness: `bundle.missing_translations`
+        -> varning i `readiness()` (export/delning). Browser-verifierat (Playwright: luckor,
+        klick-riktning, spar-round-trip till tour.json, progress, redirect enspråkigt),
+        179 backend-tester (från 166).
   - [ ] **Språkinställningarnas placering:** ligger på preview-steget (efter scenhantering)
         men behövs innan per-språk-scenredigering -> utred att flytta språkvalet tidigare
-        i flödet. Senare.
-  - [ ] **Översätt-steg (F5) - eget steg, aktivt vid >1 språk, placerat SENARE i flödet**
-        (efter Preview, före Export - inte före Preview). Hittar alla översättningsbara
-        fält (hotspot text/body, scentitlar, branding.content) som har defaultspråk men
-        saknar målspråk; guidad genomgång (ladda scen + rikta kamera mot hotspot + inline-
-        editor med källtext bredvid). Readiness-varning inför export/delning om
-        översättningar saknas. Bygg efter att flagg-dropdown-widgeten landat.
+        i flödet. Senare (Rasmus: "kan ordnas senare").
   - [ ] **Språk-specifika hotspots (Rasmus 2026-07-13):** en hotspot ska kunna finnas
         BARA på vissa språk (inte alla). Kräver datamodell (t.ex. `hotSpot.langs`-
         begränsning), viewer-filtrering per aktuellt språk, editor-UI för att markera,

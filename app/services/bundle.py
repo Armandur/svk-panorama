@@ -239,6 +239,39 @@ def start_job(slug: str, project_name: str, include_originals: bool = False) -> 
     return job
 
 
+def missing_translations(tour: dict) -> int:
+    """Antal saknade översättningar: fält med innehåll på källspråket
+    (languages[0]) men tomt/saknas på ett målspråk (languages[1:]). En ren
+    sträng (ej dict) räknas som "bara källspråket ifyllt" -> lucka för ALLA
+    målspråk. SAMMA definition som gap-scannen i static/translate.js - håll dem
+    i synk. Fält: scen-title, hotspot-text, hotspot-body (bara om expandable),
+    default.branding.content."""
+    languages = (tour.get("default") or {}).get("languages") or []
+    if len(languages) <= 1:
+        return 0
+    source, targets = languages[0], languages[1:]
+
+    def _gaps(value: Any) -> int:
+        if isinstance(value, str):
+            return len(targets) if value.strip() else 0
+        if isinstance(value, dict):
+            if not (value.get(source) or "").strip():
+                return 0
+            return sum(1 for lang in targets if not (value.get(lang) or "").strip())
+        return 0
+
+    count = 0
+    for scene in tour.get("scenes", {}).values():
+        count += _gaps(scene.get("title"))
+        for hs in scene.get("hotSpots", []):
+            count += _gaps(hs.get("text"))
+            if hs.get("expandable"):
+                count += _gaps(hs.get("body"))
+    branding = (tour.get("default") or {}).get("branding") or {}
+    count += _gaps(branding.get("content"))
+    return count
+
+
 def readiness(slug: str) -> list[dict[str, str]]:
     """Icke-blockerande förvarningar inför export: samma kriterier som editorns
     per-steg-readiness (plan.js/scene.js) fast samlat. Varnar men stoppar inte -
@@ -289,6 +322,10 @@ def readiness(slug: str) -> list[dict[str, str]]:
     broken = sum(1 for owner_id, name in _media_refs(tour) if media.resolve(owner_id, name) is None)
     if broken:
         issues.append({"level": "warn", "msg": f"{broken} bild(er) i hotspot-text saknas i mediebiblioteket (raderad?) - blir trasiga i publicerad tur."})
+
+    missing = missing_translations(tour)
+    if missing:
+        issues.append({"level": "warn", "msg": f"{missing} saknade översättningar - komplettera i Översätt-steget."})
 
     return issues
 
