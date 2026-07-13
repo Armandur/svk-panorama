@@ -497,14 +497,35 @@ bundlen; ingen datamodellsändring. Browser-verifierat (Playwright): OG-taggar p
 
 ### Fler quick wins (ej i första paketet)
 
-- [ ] **Gyroskop-toggle på mobil.** Pannellum har `deviceorientation` inbyggt
-      (verifierat i `pannellum.js`, `orientationOnByDefault` m.fl.) men ingen vy
-      slår på flaggan eller ger en på/av-knapp. En UI-toggle i viewern, ingen ny
-      funktion att bygga. Stort upplevelsevärde för besökare på plats i kyrkan.
+- [x] **Gyroskop-toggle på mobil - INGET ATT BYGGA (2026-07-13).** Pannellum har
+      redan en INBYGGD orienterings-knapp (`.pnlm-orientation-button`) som visas
+      automatiskt när `DeviceOrientationEvent` finns **&& https && mobil-UA** (kollat
+      i vendorade `pannellum.js`). Den hanterar även iOS-tillstånd (`requestPermission`).
+      En egen knapp prövades men skrotades: den skulle ha SAMMA https+mobil-grind och
+      därmed dubblera pannellums native-knapp i produktion (och löste inte "syns inte
+      på test", vilket berodde på att dev-instansen är http - deviceorientation kräver
+      secure context/https). Slutsats: lita på native-knappen. Verifiera på en
+      https-deploy (som legacy-turerna i prod, där den redan syns).
 - [ ] **Disk-/lagringsöversikt för admin.** Ingen `du`/quota per användare finns.
       I self-host-modellen (särskilt inför Fas 4/Team) kan en användare fylla
       disken oupptäckt. Enkel `du`-summering per användare/projekt på `/admin`
       ger tidig varning. Passar ihop med Fas 4.
+
+### Mobil-buggfixar (2026-07-13, upptäckta av Rasmus)
+
+- [x] **Kartöverlägget hamnade som liten ruta nere till höger på mobil FIXAT.**
+      `#map-container[data-size="..."]` (specificitet 1,1,0) slog media-queryns nakna
+      `#map-container` (1,0,0) -> mobilbredden `calc(100vw-8px)` applicerades aldrig,
+      så kartan stannade på data-size-bredden (~42vw) nere till höger. Media-queryn
+      överstyr nu alla data-size-varianter explicit -> full bredd upptill vid
+      Karta-knappen. `viewer.css`. Browser-verifierat (Playwright, 390px: width=382,
+      top=4, left=4).
+- [x] **Branding gömdes alltid när kartan öppnades FIXAT.** `setBrandingForMap`
+      gömde branding villkorslöst; men kart-överlägget ligger uppe till höger, så
+      bara en branding i det hörnet krockar. Gömmer nu branding bara när positionen
+      är `top-right` - top-left/bottom-left/bottom-right lämnas synliga.
+      `viewer.js` + `tour-preview.js` (samma regel i runtime och editor-preview).
+      Browser-verifierat (bottom-right branding förblir `display:block` när kartan öppnas).
 
 ### Strategiska luckor (större, planeras separat)
 

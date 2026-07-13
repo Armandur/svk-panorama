@@ -220,11 +220,16 @@ html, body {
 .map-dot:hover { transform: scale(1.2); }
 .map-dot.current { background: var(--current-dot-color); }
 
-/* Mobil: karta tar mer bredd och läggs nederst så den inte skymmer vyn. */
+/* Mobil: kartan tar full bredd men behåller toppositionen vid Karta-knappen.
+   data-size-reglerna ([data-size="..."], specificitet 1,1,0) är mer specifika än
+   ett naket #map-container (1,0,0) i media-queryn -> måste överstyras explicit,
+   annars stannar bredden på data-size-värdet och kartan blir en liten ruta nere
+   till höger i stället för full bredd upptill. */
 @media (max-width: 640px) {
-	#map-container {
+	#map-container,
+	#map-container[data-size="small"],
+	#map-container[data-size="medium"],
+	#map-container[data-size="large"] {
 		width: calc(100vw - 8px);
-		top: auto;
-		bottom: 4px;
 	}
 }

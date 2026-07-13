@@ -46,9 +46,14 @@
 	// preview-steget. Ligger som fixed-element över panoramat; flyttas in i det
 	// fullskärmade elementet vid helskärm (pannellum renderar bara det + barn).
 	var brandingEl = null;
+	// Kart-överlägget hamnar uppe till höger (mobil: full bredd upptill). Bara en
+	// branding som ligger uppe till höger krockar med det -> bara den ska gömmas
+	// när kartan fälls ut. top-left/bottom-left/bottom-right lämnas synliga.
+	var brandingHidesForMap = false;
 	(function () {
 		var b = tour.default.branding;
 		if (!b || !b.content || !window.renderBrandingInto) return;
+		brandingHidesForMap = b.position === "top-right";
 		brandingEl = document.createElement("div");
 		document.body.appendChild(brandingEl);
 		window.renderBrandingInto(brandingEl, b);
@@ -108,6 +113,9 @@
 		viewer.on(ev, writeHash);
 	});
 
+	// Gyro/enhetsorientering hanteras av pannellums INBYGGDA knapp (visas
+	// automatiskt på https + mobil). Ingen egen knapp behövs.
+
 	// --- Kartöverlägg ------------------------------------------------------
 	const container = document.getElementById("map-container");
 	if (!container) return; // Turen saknar kartbild.
@@ -158,7 +166,7 @@
 
 	// När kartan är utfälld döljs branding-överlägget helt (annars ligger det
 	// transparent ovanpå den transparenta kartpopupen -> rörigt).
-	function setBrandingForMap(mapOpen) { if (brandingEl) brandingEl.style.display = mapOpen ? "none" : ""; }
+	function setBrandingForMap(mapOpen) { if (brandingEl) brandingEl.style.display = (mapOpen && brandingHidesForMap) ? "none" : ""; }
 	showBtn.addEventListener("click", function () {
 		container.hidden = false;
 		showBtn.hidden = true;

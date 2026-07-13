@@ -550,8 +550,14 @@
 	// --- Karta: fäll in/ut (samma beteende som runtime-vieweren) ------------
 	const previewMapToggle = document.getElementById("preview-map-toggle");
 	const previewMapClose = document.getElementById("preview-map-close");
-	// Dölj branding-överlägget helt när kartan är utfälld (samma som runtime).
-	function setBrandingForMap(mapOpen) { if (brandingEl) brandingEl.style.display = mapOpen ? "none" : ""; }
+	// Dölj branding-överlägget när kartan är utfälld - men bara om det ligger uppe
+	// till höger (där kart-överlägget hamnar). Andra hörn krockar inte (samma regel
+	// som runtime-vieweren).
+	function setBrandingForMap(mapOpen) {
+		if (!brandingEl) return;
+		var pos = brandingPos ? brandingPos.value : "bottom-right";
+		brandingEl.style.display = (mapOpen && pos === "top-right") ? "none" : "";
+	}
 	if (previewMapToggle && previewMap) {
 		previewMapToggle.addEventListener("click", function () { previewMap.hidden = false; previewMapToggle.hidden = true; setBrandingForMap(true); });
 	}
