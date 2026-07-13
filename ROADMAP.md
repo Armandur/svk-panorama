@@ -538,15 +538,21 @@ bundlen; ingen datamodellsändring. Browser-verifierat (Playwright): OG-taggar p
 
 ### Strategiska luckor (större, planeras separat)
 
-- [ ] **Flerspråkighet (Rasmus 2026-07-13: vore bra).** Inget i schemat
-      (`tour.json`, hotspot-texter) eller UI:t stödjer flera språk. Kyrkor med
-      internationella besökare (domkyrkor, turistmål) vill visa hotspot-text +
-      UI på minst svenska + engelska. Riktig arkitekturfråga: språkval per
-      hotspot-fält (t.ex. `text` blir `{sv, en}` eller parallellt fält) ELLER
-      parallella tour.json per språk, + språkväljare i viewern och en fallback-
-      kedja. Bakåtkompatibelt via additiv-först (rå sträng = default-språket).
-      Berör editor (hotspot-editorn, ev. scennamn/titel), viewer (språkväljare),
-      bundle och backup. Utred datamodell innan bygge. Ej påbörjat.
+- [x] **Flerspråkighet KLAR (2026-07-13).** Datamodell: **inline locale-map,
+      additiv union** - textfält (hotspot text/body, scen title, branding.content)
+      = ren sträng (default/monospråkigt) ELLER `{kod:text}`. `tour.default.languages`
+      (först=default; saknas->["sv"]). Språk sv/en/de/fi/no/da. **Ingen SCHEMA_VERSION-
+      bump** (additivt). Resolver + UI-strängar i markdown.js (`resolveText`/`uiStr`);
+      runtime-viewern har språkväljare som bygger om pannellum + återställer vy, och
+      skriver resolverad titel i scene.title (pannellums titel-ruta). Editorn: språkval
+      på preview-steget (kryssrutor) -> per-språk-fält (flikar) i scen/preview/branding
+      vid >1 språk, oförändrat vid 1. Backend: sanering (str|dict), `i18n_text_values`
+      -> bundle/backup/media itererar alla varianter, `services/i18n.py` (`og_description`
+      per default-språk). Byggd i ett svep med 3 parallella subagenter mot en låst
+      grund (resolver/kontrakt). Browser-verifierat (Playwright: sv/en-byte, titel-ruta,
+      branding, "Map"-knapp; monospråkigt oförändrat), 166 backend-tester gröna.
+      Kvar/senare: pannellums egna laddnings-/felsträngar (`tour.strings`) lokaliseras
+      inte än; ev. fler språk = utöka `config.LANGUAGES` + `LANG_NAMES` (+ woff2 för accenter).
 - [ ] **Versionshistorik / ångra för tur-redigering.** Autospar skriver direkt
       över `tour.json`/`map.json` utan historik; en felaktig kart-/scenändring
       kan bara återställas via en manuell backup-zip. Risken växer när Fas 4 gör

@@ -9,6 +9,45 @@
 		return window.DOMPurify ? window.DOMPurify.sanitize(html) : html;
 	};
 
+	// --- Flerspråkighet -----------------------------------------------------
+	// Kanoniska språk editorn kan välja bland (kod -> visningsnamn på eget språk).
+	// SAMMA uppsättning som config.LANGUAGES (Python) - håll dem i synk. Turen
+	// väljer en delmängd i tour.default.languages; först i den listan = default.
+	window.LANG_NAMES = {
+		sv: "Svenska", en: "English", de: "Deutsch",
+		fi: "Suomi", no: "Norsk", da: "Dansk",
+	};
+
+	// resolveText: plockar rätt språk ur ett textfält. Ren sträng = default-språk
+	// (bakåtkompat/monospråkigt). Objekt {sv,en,...} -> valt språk, annars fallback:
+	// default (langs[0]), sedan första icke-tomma. Tom sträng om inget finns.
+	window.resolveText = function (value, lang, langs) {
+		if (value == null) return "";
+		if (typeof value === "string") return value;
+		if (typeof value === "object") {
+			if (lang && value[lang]) return value[lang];
+			var order = langs || [];
+			for (var i = 0; i < order.length; i++) { if (value[order[i]]) return value[order[i]]; }
+			for (var k in value) { if (value[k]) return value[k]; }
+		}
+		return "";
+	};
+
+	// Lokaliserade UI-chrome-strängar (knappar/etiketter som besökaren ser).
+	var _UI = {
+		readMore: { sv: "Läs mer", en: "Read more", de: "Mehr lesen", fi: "Lue lisää", no: "Les mer", da: "Læs mere" },
+		map: { sv: "Karta", en: "Map", de: "Karte", fi: "Kartta", no: "Kart", da: "Kort" },
+		closeMap: { sv: "Stäng karta", en: "Close map", de: "Karte schließen", fi: "Sulje kartta", no: "Lukk kart", da: "Luk kort" },
+		mapAlt: { sv: "Översiktskarta", en: "Overview map", de: "Übersichtskarte", fi: "Yleiskartta", no: "Oversiktskart", da: "Oversigtskort" },
+		scene: { sv: "Scen", en: "Scene", de: "Szene", fi: "Kohtaus", no: "Scene", da: "Scene" },
+		close: { sv: "Stäng", en: "Close", de: "Schließen", fi: "Sulje", no: "Lukk", da: "Luk" },
+		language: { sv: "Språk", en: "Language", de: "Sprache", fi: "Kieli", no: "Språk", da: "Sprog" },
+	};
+	window.uiStr = function (key, lang) {
+		var m = _UI[key] || {};
+		return m[lang] || m.sv || "";
+	};
+
 	// Branding-overlay (logotyp/text/länk som markdown) i vieweren. Renderar in i
 	// ett .tour-branding-element och sätter storleks-/positionsklass; externa
 	// länkar öppnas i ny flik. branding = {content, size, position} | null
@@ -16,10 +55,10 @@
 	// preview-stegets live-förhandsvisning.
 	var _BR_SIZES = { small: 1, medium: 1, large: 1 };
 	var _BR_POS = { "bottom-left": 1, "bottom-right": 1, "top-left": 1, "top-right": 1 };
-	window.renderBrandingInto = function (el, branding) {
+	window.renderBrandingInto = function (el, branding, lang, langs) {
 		if (!el) return;
 		el.className = "tour-branding";
-		var content = branding && branding.content;
+		var content = branding && window.resolveText(branding.content, lang, langs);
 		if (!content) { el.hidden = true; el.innerHTML = ""; return; }
 		var size = _BR_SIZES[branding.size] ? branding.size : "medium";
 		var pos = _BR_POS[branding.position] ? branding.position : "bottom-right";
@@ -52,7 +91,7 @@
 				var more = document.createElement("button");
 				more.type = "button";
 				more.className = "hs-more";
-				more.textContent = "Läs mer";
+				more.textContent = (args && args.readMore) || "Läs mer";
 				more.addEventListener("click", function (e) { e.stopPropagation(); window.openHsSheet(body); });
 				span.appendChild(more);
 			}
@@ -119,16 +158,22 @@
 	// tap ska visa teaser-tooltipen med "Läs mer"-knappen i stället.
 	var _touchPrimary = !!(window.matchMedia && window.matchMedia("(hover: none)").matches);
 
-	// sceneNames: {sceneId: titel} för scen-hotspotarnas "leder till"-etikett.
-	window.attachHsTooltips = function (hotSpots, sceneNames) {
+	// sceneNames: {sceneId: RESOLVERAD titel} för scen-hotspotarnas "leder till"-
+	// etikett (kallaren resolverar titeln för aktuellt språk). lang/langs styr
+	// vilket språk hotspot-text/body/body-knapp visas på. Text-fält kan vara ren
+	// sträng (monospråkigt) eller {sv,en,...} (resolveText väljer).
+	window.attachHsTooltips = function (hotSpots, sceneNames, lang, langs) {
 		sceneNames = sceneNames || {};
+		var readMore = window.uiStr("readMore", lang);
 		(hotSpots || []).forEach(function (h) {
 			if (!h) return;
+			var text = window.resolveText(h.text, lang, langs);
 			if (h.type === "info" && !h.URL) {
-				var body = (h.expandable && h.body) ? h.body : null;
-				if (h.text || body) {
+				var bodyText = (h.expandable && h.body) ? window.resolveText(h.body, lang, langs) : "";
+				var body = bodyText || null;
+				if (text || body) {
 					h.createTooltipFunc = window.mdHotspotTooltip;
-					h.createTooltipArgs = { text: h.text || "", body: body, width: h.tooltipWidth || null };
+					h.createTooltipArgs = { text: text, body: body, width: h.tooltipWidth || null, readMore: readMore };
 				}
 				// Dator: klick på hotspoten öppnar arket. Mobil: tap visar tooltip + "Läs mer".
 				if (body && !_touchPrimary) {
@@ -137,13 +182,13 @@
 				}
 			} else if (h.type === "scene") {
 				// Scen-hotspot: ev. teaser (MD) ovanför + "-> leder till"-etikett nedanför.
-				var target = sceneNames[h.sceneId] || ("Scen " + h.sceneId);
+				var target = sceneNames[h.sceneId] || (window.uiStr("scene", lang) + " " + h.sceneId);
 				h.createTooltipFunc = window.mdHotspotTooltip;
-				h.createTooltipArgs = { text: h.text || "", width: h.tooltipWidth || null, belowLabel: "→ " + target };
-			} else if (h.URL && h.text) {
+				h.createTooltipArgs = { text: text, width: h.tooltipWidth || null, belowLabel: "→ " + target };
+			} else if (h.URL && text) {
 				// URL-hotspot: rendera texten som MD-teaser (samma väg, inget ark).
 				h.createTooltipFunc = window.mdHotspotTooltip;
-				h.createTooltipArgs = { text: h.text, width: h.tooltipWidth || null };
+				h.createTooltipArgs = { text: text, width: h.tooltipWidth || null };
 			}
 		});
 		return hotSpots;

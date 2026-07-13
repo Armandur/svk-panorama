@@ -13,7 +13,8 @@ from typing import Any
 
 from app import config
 from app.deps import templates
-from app.services import media
+from app.services import i18n, media
+from app.services.presets import i18n_text_values
 from app.services.project_files import (
     _natural_key,
     images_dir,
@@ -58,20 +59,32 @@ def forget_job(slug: str) -> None:
 
 def _media_refs(tour: dict) -> set[tuple[int, str]]:
     """(owner_id, filnamn) för alla poolbilder som refereras i hotspot-markdown
-    OCH i branding-blocket (logotyp)."""
+    OCH i branding-blocket (logotyp) - i ALLA språkvarianter av fälten."""
     refs: set[tuple[int, str]] = set()
     for scene in tour.get("scenes", {}).values():
         for hs in scene.get("hotSpots", []):
             for key in ("text", "body"):
-                val = hs.get(key)
-                if isinstance(val, str):
+                for val in i18n_text_values(hs.get(key)):
                     for m in _MEDIA_REF_RE.finditer(val):
                         refs.add((int(m.group(1)), m.group(2)))
     branding = (tour.get("default") or {}).get("branding") or {}
-    if isinstance(branding.get("content"), str):
-        for m in _MEDIA_REF_RE.finditer(branding["content"]):
+    for val in i18n_text_values(branding.get("content")):
+        for m in _MEDIA_REF_RE.finditer(val):
             refs.add((int(m.group(1)), m.group(2)))
     return refs
+
+
+def _relativize_field(value: Any) -> Any:
+    """Skriv om /media/<owner>/<fil> -> media/<fil> i ett textfält, oavsett om
+    det är en ren sträng eller {kod: text} (flerspråkigt) - strukturen bevaras."""
+    if isinstance(value, str):
+        return _MEDIA_REF_RE.sub(r"media/\2", value)
+    if isinstance(value, dict):
+        return {
+            code: (_MEDIA_REF_RE.sub(r"media/\2", text) if isinstance(text, str) else text)
+            for code, text in value.items()
+        }
+    return value
 
 
 def _relativize(slug: str, tour: dict) -> dict:
@@ -85,12 +98,12 @@ def _relativize(slug: str, tour: dict) -> dict:
         # Poolbilds-URL:er i info-hotspots markdown (teaser/body) -> relativa.
         for hs in scene.get("hotSpots", []):
             for key in ("text", "body"):
-                if isinstance(hs.get(key), str):
-                    hs[key] = _MEDIA_REF_RE.sub(r"media/\2", hs[key])
+                if key in hs:
+                    hs[key] = _relativize_field(hs[key])
     default = tour.setdefault("default", {})
     branding = default.get("branding") or {}
-    if isinstance(branding.get("content"), str):
-        branding["content"] = _MEDIA_REF_RE.sub(r"media/\2", branding["content"])
+    if "content" in branding:
+        branding["content"] = _relativize_field(branding["content"])
     default["editorMode"] = False
     return tour
 
@@ -185,7 +198,7 @@ def _build(slug: str, project_name: str, include_originals: bool = False) -> Non
         has_map = map_image_path(slug).exists()
         index_html = templates.env.get_template("bundle_index.html").render(
             project_name=project_name, tour=tour, map_data=map_data, has_map_image=has_map,
-            og_description=f"Utforska {project_name} i en virtuell 360-rundtur.",
+            og_description=i18n.og_description(project_name, i18n.tour_default_lang(tour)),
             # Relativ og:image - bundlen vet inte sin host, så vissa crawlers
             # kräver att servern sätter absolut URL. Dokumenterat i README.
             og_image="map.png" if has_map else None,

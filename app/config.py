@@ -71,6 +71,21 @@ TILE_CONCURRENCY = max(1, int(os.environ.get("SVK_TILE_CONCURRENCY", "2")))
 # mappstorlek. 0 = av (räkna om varje gång). Se app/services/storage.py.
 STORAGE_CACHE_TTL = int(os.environ.get("SVK_STORAGE_CACHE_TTL", "60"))
 
+# Flerspråkighet: språk editorn kan välja bland (kod -> visningsnamn på eget
+# språk). SPEGLAS av window.LANG_NAMES i static/markdown.js - håll i synk. En tur
+# väljer en delmängd i tour.default.languages; först i listan = default-språk.
+# Textfält (hotspot text/body, scentitel, branding.content) blir {kod: text}
+# vid flerspråkighet; ren sträng = default-språket (bakåtkompatibelt).
+LANGUAGES = {
+    "sv": "Svenska",
+    "en": "English",
+    "de": "Deutsch",
+    "fi": "Suomi",
+    "no": "Norsk",
+    "da": "Dansk",
+}
+DEFAULT_LANGUAGE = "sv"
+
 # Publik bas-URL för turer/export (t.ex. https://turer.exempel.se). Tom sträng
 # = använd relativa vägar / request-host. Env-default; tänkt att kunna överridas
 # i ett kommande admin-gränssnitt där admin-värdet vinner över env. Konsumeras

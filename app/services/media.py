@@ -17,6 +17,7 @@ from typing import Any
 from PIL import Image
 
 from app import config
+from app.services.presets import i18n_text_values
 from app.services.project_files import read_tour
 
 # Filnamnstecken vi tillåter i en poolreferens (matchar hex-prefix + saniterat
@@ -173,8 +174,7 @@ def scan_usage(owner_id: int, projects: list[tuple[str, str]]) -> dict[str, list
             counts: dict[str, int] = {}
             for hs in scene.get("hotSpots", []):
                 for key in ("text", "body"):
-                    val = hs.get(key)
-                    if isinstance(val, str):
+                    for val in i18n_text_values(hs.get(key)):
                         for m in pattern.finditer(val):
                             counts[m.group(1)] = counts.get(m.group(1), 0) + 1
             for name, count in counts.items():

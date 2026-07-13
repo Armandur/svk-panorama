@@ -213,6 +213,39 @@ preview-steget (textarea + "Infoga bild" ur mediebiblioteket), återanvänds via
 bundle/backup (`_media_refs` skannar branding.content). Runtime = fixed + egen
 fullskärms-omflyttning; preview = absolut i panorama-wrap.
 
+## Flerspråkighet (i18n)
+
+Turer kan visas på flera språk. **Datamodell: inline locale-map, additiv union.**
+Ett textfält (hotspot `text`/`body`, scen `title`, `default.branding.content`) är
+antingen en **ren sträng** (monospråkigt / default-språk / äldre turer) eller
+`{kod: text}` (t.ex. `{sv:"...", en:"..."}`). Turens språk: `tour.default.languages`
+(ordnad lista, **först = default**; saknas -> `["sv"]`). Språk: sv/en/de/fi/no/da
+(`config.LANGUAGES` <-> `window.LANG_NAMES` i markdown.js - håll i synk).
+**Additivt -> ingen SCHEMA_VERSION-bump** (monospråkiga turer förblir rena strängar).
+
+- **Resolver (markdown.js):** `window.resolveText(value, lang, langs)` - sträng =
+  default; objekt -> valt språk, fallback default -> första icke-tomma -> "".
+  `window.uiStr(key, lang)` lokaliserar UI-chrome (map/closeMap/scene/readMore/...).
+  `attachHsTooltips(hotSpots, sceneNames, lang, langs)` och `renderBrandingInto(el,
+  branding, lang, langs)` tar nu språk; `sceneNames`-värden ska vara REDAN resolverade.
+- **Runtime-viewern (viewer.js):** väljer språk (`?lang=` -> localStorage `tour_lang`
+  -> `navigator.language` -> `langs[0]`), resolverar hotspots/branding/scentitlar,
+  språkväljare (`.lang-toggle`, bara vid >=2 språk) som **bygger om pannellum**
+  (djupkopierar config -> re-attach räcker inte) och återställer scen/vy. **Pannellums
+  inbyggda titel-ruta** läser `scene.title` rakt av -> viewer.js/tour-preview.js
+  skriver in den RESOLVERADE strängen i `tour.scenes[id].title` inför bygget (läser
+  ur en orörd `origTitle`-kopia) så det inte blir `[object Object]`.
+- **Editorn:** turens språk väljs på preview-steget (kryssrutor -> `languages`);
+  scen-/preview-vyn visar per-språk-fält (flikar) för hotspot-text, scentitel och
+  branding BARA vid >1 språk (annars oförändrat). Scenvyn läser `tour.default.languages`
+  vid sidladdning -> sätt språk på preview FÖRST, sedan syns per-språk-fälten i scenvyn.
+- **Backend:** `presets.sanitize_i18n_text`/`sanitize_languages`/`sanitize_branding`
+  (str|dict); `SceneUpdate.title` + `TourSettings.brandingContent` är `str|dict`.
+  `presets.i18n_text_values(value)` ger alla språksträngar -> `bundle.py`/`backup.py`
+  `_media_refs`/`_relativize` + `media.py` usage-scan itererar ALLA varianter (annars
+  trasiga poolbilder i icke-defaultspråk). `services/i18n.py`: `og_description(name,
+  lang)` (6 språk) + `tour_default_lang(tour)`, används av viewer.py/public.py/bundle.py.
+
 ## static/-JS (editorn)
 
 - `utils.js` - `apiFetch` (CSRF-header), `showToast`, `escapeHtml`.

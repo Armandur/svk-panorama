@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 from app.database import Project
 from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
+from app.services.presets import sanitize_i18n_text
 from app.services.project_files import map_image_path, read_map, read_tour, tour_lock, write_tour
 from app.services.tiling import read_manifest
 
@@ -17,7 +18,7 @@ router = APIRouter()
 
 class SceneUpdate(BaseModel):
     northOffset: float | None = None
-    title: str | None = None
+    title: str | dict[str, str] | None = None  # str el. {kod: text} (flerspråkigt)
     calibRef: str | None = None  # grannscen kalibreringen gjordes mot (UI-state)
     horizonRoll: float | None = None  # räta upp sned horisont (grader)
     yaw: float | None = None    # startriktning (default yaw) vid ankomst utan hotspot/länk
@@ -74,7 +75,7 @@ def save_tour(
             else:
                 scene["northOffset"] = round(upd.northOffset, 2)
             if upd.title is not None:
-                title = upd.title.strip()
+                title = sanitize_i18n_text(upd.title, 200)  # str | {kod: text} | None
                 if title:
                     scene["title"] = title
                 else:

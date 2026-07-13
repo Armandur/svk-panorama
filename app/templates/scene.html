@@ -30,6 +30,7 @@
 		<p id="calib-state" aria-live="polite"></p>
 		<label for="scene-title">Scenens namn</label>
 		<input type="text" id="scene-title" maxlength="120" placeholder="t.ex. Koret">
+		<div id="scene-title-langs" class="scene-title-langs" hidden></div>
 		<label for="res-select">Upplösning i vyn</label>
 		<select id="res-select">
 			<option value="preview">Preview (snabb)</option>
@@ -119,6 +120,10 @@
 		<div class="section-head">
 			<h3 id="hs-modal-title">Hotspot</h3>
 			<button id="hs-modal-close" type="button" class="secondary outline" aria-label="Stäng">&times;</button>
+		</div>
+		<div id="hs-lang-wrap" class="hs-lang-wrap" hidden>
+			<label for="hs-lang-select">Språk</label>
+			<select id="hs-lang-select"></select>
 		</div>
 		<div id="hs-field-scene-top">
 			<div id="hs-scene-preview" class="hs-scene-preview"></div>

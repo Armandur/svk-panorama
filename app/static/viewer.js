@@ -1,7 +1,9 @@
 /* Runtime-viewer: ren visning av en publicerad tur. Ingen editor-logik.
    Pannellum sköter all hotspot-rendering och scen-navigering; det enda vi
-   lägger till är kartöverlägget (klickbara prickar + markering av aktiv scen).
-   Turdata och kartdata bäddas in som JSON-script-taggar av mallen. */
+   lägger till är kartöverlägget (klickbara prickar + markering av aktiv scen),
+   branding-overlägget och flerspråkighet (språkväljare + resolvering av
+   text-fält som kan vara {sv,en,...}). Turdata och kartdata bäddas in som
+   JSON-script-taggar av mallen. */
 (function () {
 	const tour = JSON.parse(document.getElementById("tour-data").textContent);
 	const mapEl = document.getElementById("map-data");
@@ -14,6 +16,61 @@
 	// (info-hotspots har egen DOMPurify-väg via attachHsTooltips och påverkas ej).
 	// escapeHTML är en top-level general-option i pannellum (syskon till default/scenes).
 	tour.escapeHTML = true;
+
+	// --- Flerspråkighet: språklista + val av aktuellt språk ----------------
+	// tour.default.languages = koder, FÖRST = default. Saknas på äldre turer ->
+	// monospråkigt (bara "sv"). resolveText/attachHsTooltips/renderBrandingInto
+	// kommer från markdown.js (delad kontrakt, ändras inte här).
+	var langs = (tour.default && Array.isArray(tour.default.languages) && tour.default.languages.length)
+		? tour.default.languages : ["sv"];
+
+	// Pannellum har en egen inbyggd titel-ruta som läser scene.title RAKT AV och
+	// skulle visa "[object Object]" för en flerspråkig {kod:text}-titel. Vi
+	// resolverar därför titeln till en ren sträng och skriver in den i
+	// tour.scenes[id].title inför varje (om)byggnad - men läser alltid ur denna
+	// orörda kopia (annars vore originalet borta vid nästa språkbyte). Säkert:
+	// runtime-vieweren sparar aldrig tillbaka tour.
+	var origTitle = {};
+	Object.keys(tour.scenes || {}).forEach(function (id) { origTitle[id] = tour.scenes[id].title; });
+
+	// --- Djuplänkning (#scene=..&yaw=..&pitch=..&hfov=..&lang=..) ----------
+	// Läs ev. vy + språk ur URL-hashen så en delad länk landar på rätt scen,
+	// riktning och språk. Skrivs tillbaka vid scenbyte, vy-ändring och språkbyte
+	// (INTE under autorotate - då skulle URL:en flimra). Gäller /view, publik /s
+	// och bundlen.
+	function parseHash() {
+		const h = (location.hash || "").replace(/^#/, "");
+		if (!h) return null;
+		const p = new URLSearchParams(h);
+		return {
+			scene: p.get("scene"),
+			yaw: parseFloat(p.get("yaw")),
+			pitch: parseFloat(p.get("pitch")),
+			hfov: parseFloat(p.get("hfov")),
+			lang: p.get("lang"),
+		};
+	}
+	const initialHash = parseHash();
+
+	// Precedens: ?lang= i hashen -> tidigare val (localStorage) -> 2-bokstavs-
+	// match av webbläsarspråket -> första språket i turen. Måste vara ett av
+	// turens språk, annars langs[0].
+	function pickInitialLang() {
+		if (initialHash && initialHash.lang && langs.indexOf(initialHash.lang) !== -1) return initialHash.lang;
+		try {
+			var stored = localStorage.getItem("tour_lang");
+			if (stored && langs.indexOf(stored) !== -1) return stored;
+		} catch (e) { /* privat läge/blockerad storage - ignorera */ }
+		var nav = ((navigator.language || "") + "").slice(0, 2).toLowerCase();
+		if (nav && langs.indexOf(nav) !== -1) return nav;
+		return langs[0];
+	}
+	var currentLang = pickInitialLang();
+
+	if (initialHash && initialHash.scene && tour.scenes && tour.scenes[initialHash.scene]) {
+		tour.default.firstScene = initialHash.scene;
+	}
+	let pendingView = initialHash && [initialHash.yaw, initialHash.pitch, initialHash.hfov].some(isFinite) ? initialHash : null;
 
 	// --- Tema (typsnitt + färger) ------------------------------------------
 	const FONTS = {
@@ -32,103 +89,147 @@
 		root.setProperty("--current-dot-color", t.currentColor || "#8b0000");
 	})();
 
-	// Rendera info-hotspots text som markdown i tooltipen.
-	if (window.attachHsTooltips) {
+	// Rendera info-/scen-/URL-hotspotarnas text som markdown i tooltipen, på
+	// aktuellt språk. sceneNames = REDAN RESOLVERADE scentitlar (kontraktet
+	// kräver det). Körs vid varje buildViewer() (init + språkbyte) - muterar
+	// tour.scenes[id].hotSpots, pannellum får kloner via sitt eget init.
+	function updateHotspotTooltips() {
 		var sceneNames = {};
-		Object.keys(tour.scenes || {}).forEach(function (id) { sceneNames[id] = tour.scenes[id].title || ("Scen " + id); });
 		Object.keys(tour.scenes || {}).forEach(function (id) {
-			attachHsTooltips(tour.scenes[id].hotSpots, sceneNames);
+			var resolved = window.resolveText(origTitle[id], currentLang, langs);
+			sceneNames[id] = resolved;
+			// Skriv in ren sträng så pannellums titel-ruta inte visar [object Object].
+			if (resolved) tour.scenes[id].title = resolved;
+			else delete tour.scenes[id].title;
+		});
+		if (!window.attachHsTooltips) return;
+		Object.keys(tour.scenes || {}).forEach(function (id) {
+			attachHsTooltips(tour.scenes[id].hotSpots, sceneNames, currentLang, langs);
 		});
 	}
 
 	// --- Branding-overlay (logotyp/text) ----------------------------------
 	// Litet överlägg (logga eller församlingsnamn med länk) konfigurerat på
 	// preview-steget. Ligger som fixed-element över panoramat; flyttas in i det
-	// fullskärmade elementet vid helskärm (pannellum renderar bara det + barn).
+	// fullskärmade elementet vid helskärm (se relocateOverlay längre ner, delad
+	// med kart-/språk-kontrollerna).
 	var brandingEl = null;
 	// Kart-överlägget hamnar uppe till höger (mobil: full bredd upptill). Bara en
 	// branding som ligger uppe till höger krockar med det -> bara den ska gömmas
 	// när kartan fälls ut. top-left/bottom-left/bottom-right lämnas synliga.
 	var brandingHidesForMap = false;
-	(function () {
+	(function setupBranding() {
 		var b = tour.default.branding;
 		if (!b || !b.content || !window.renderBrandingInto) return;
 		brandingHidesForMap = b.position === "top-right";
 		brandingEl = document.createElement("div");
 		document.body.appendChild(brandingEl);
-		window.renderBrandingInto(brandingEl, b);
-		function relocate() {
-			var fs = document.fullscreenElement || document.webkitFullscreenElement;
-			(fs || document.body).appendChild(brandingEl);
-		}
-		document.addEventListener("fullscreenchange", relocate);
-		document.addEventListener("webkitfullscreenchange", relocate);
 	})();
-
-	// --- Djuplänkning (#scene=..&yaw=..&pitch=..&hfov=..) ------------------
-	// Läs ev. vy ur URL-hashen så en delad länk landar på rätt scen och riktning.
-	// Skrivs tillbaka vid scenbyte och användarstyrd vy-ändring (INTE under
-	// autorotate - då skulle URL:en flimra). Gäller /view, publik /s och bundlen.
-	function parseHash() {
-		const h = (location.hash || "").replace(/^#/, "");
-		if (!h) return null;
-		const p = new URLSearchParams(h);
-		return {
-			scene: p.get("scene"),
-			yaw: parseFloat(p.get("yaw")),
-			pitch: parseFloat(p.get("pitch")),
-			hfov: parseFloat(p.get("hfov")),
-		};
+	function updateBranding() {
+		if (brandingEl) window.renderBrandingInto(brandingEl, tour.default.branding, currentLang, langs);
 	}
-	const deep = parseHash();
-	if (deep && deep.scene && tour.scenes && tour.scenes[deep.scene]) {
-		tour.default.firstScene = deep.scene;
-	}
-	let pendingView = deep && [deep.yaw, deep.pitch, deep.hfov].some(isFinite) ? deep : null;
 
-	const viewer = pannellum.viewer("panorama", tour);
+	// --- Pannellum-instans (byggs om vid språkbyte) -------------------------
+	// Pannellum djupkopierar hotspot-config vid init - ett språkbyte kräver
+	// därför en fullständig ombyggnad (destroy + nytt pannellum.viewer(...)),
+	// inte bara en omkoppling av tooltip-argumenten.
+	var viewer = null;
 
 	function writeHash() {
 		try {
 			const h = "#scene=" + encodeURIComponent(viewer.getScene()) +
 				"&yaw=" + Math.round(viewer.getYaw() * 10) / 10 +
 				"&pitch=" + Math.round(viewer.getPitch() * 10) / 10 +
-				"&hfov=" + Math.round(viewer.getHfov());
+				"&hfov=" + Math.round(viewer.getHfov()) +
+				"&lang=" + encodeURIComponent(currentLang);
 			history.replaceState(null, "", h);
 		} catch (e) { /* getters ej redo ännu */ }
 	}
-	viewer.on("load", function () {
-		if (pendingView) {
+
+	function attachViewerEvents() {
+		viewer.on("load", function () {
+			if (pendingView) {
+				try {
+					if (isFinite(pendingView.yaw)) viewer.setYaw(pendingView.yaw, false);
+					if (isFinite(pendingView.pitch)) viewer.setPitch(pendingView.pitch, false);
+					if (isFinite(pendingView.hfov)) viewer.setHfov(pendingView.hfov, false);
+				} catch (e) { /* ignore */ }
+				pendingView = null;
+			}
+			writeHash();
+		});
+		// Användarstyrda vy-ändringar (drag/zoom/scenbyte) - inte autorotate.
+		["scenechange", "mouseup", "touchend", "zoomchange"].forEach(function (ev) {
+			viewer.on(ev, writeHash);
+		});
+		viewer.on("scenechange", markCurrent);
+	}
+
+	// Bygger (eller bygger om) pannellum-instansen för currentLang. Kör alltid
+	// hotspot-tooltips/branding/UI-chrome-strängarna på nytt så de matchar
+	// currentLang, oavsett om det är första bygget eller en ombyggnad.
+	function buildViewer() {
+		document.documentElement.lang = currentLang;
+		updateHotspotTooltips();
+		updateBranding();
+		updateUiChrome();
+		viewer = pannellum.viewer("panorama", tour);
+		attachViewerEvents();
+	}
+
+	// Flyttar kart-/branding-/språk-kontrollerna tillbaka till <body> innan en
+	// ombyggnad. De kan ligga inflyttade i panorama-diven (helskärm, se
+	// relocateOverlay) - viewer.destroy() tömmer den diven (innerHTML = "") och
+	// skulle annars radera kontrollerna med.
+	function parkOverlayInBody() {
+		if (brandingEl) document.body.appendChild(brandingEl);
+		if (showBtn) document.body.appendChild(showBtn);
+		if (container) document.body.appendChild(container);
+		if (langToggle) document.body.appendChild(langToggle);
+	}
+
+	// Bygger om vieweren för ett nytt currentLang: fångar aktuell vy, förstör
+	// den gamla instansen och skapar en ny med samma scen/vy återställd.
+	function rebuildViewer() {
+		var scene = null, yaw, pitch, hfov;
+		if (viewer) {
 			try {
-				if (isFinite(pendingView.yaw)) viewer.setYaw(pendingView.yaw, false);
-				if (isFinite(pendingView.pitch)) viewer.setPitch(pendingView.pitch, false);
-				if (isFinite(pendingView.hfov)) viewer.setHfov(pendingView.hfov, false);
-			} catch (e) { /* ignore */ }
-			pendingView = null;
+				scene = viewer.getScene();
+				yaw = viewer.getYaw();
+				pitch = viewer.getPitch();
+				hfov = viewer.getHfov();
+			} catch (e) { scene = null; }
+			parkOverlayInBody();
+			viewer.destroy();
 		}
-		writeHash();
-	});
-	// Användarstyrda vy-ändringar (drag/zoom/scenbyte) - inte autorotate.
-	["scenechange", "mouseup", "touchend", "zoomchange"].forEach(function (ev) {
-		viewer.on(ev, writeHash);
-	});
+		if (scene && tour.scenes && tour.scenes[scene]) {
+			tour.default.firstScene = scene;
+			pendingView = { yaw: yaw, pitch: pitch, hfov: hfov };
+		}
+		buildViewer();
+		if (Object.keys(dotEls).length) markCurrent(viewer.getScene());
+		// Flytta tillbaka in i helskärmselementet om vi fortfarande är i
+		// helskärm (no-op annars, host blir då bara body igen).
+		relocateOverlay();
+	}
 
 	// Gyro/enhetsorientering hanteras av pannellums INBYGGDA knapp (visas
-	// automatiskt på https + mobil). Ingen egen knapp behövs.
+	// automatiskt på https + mobil). Ingen egen knapp behövs. Ev. aktiv
+	// gyro-läsning nollställs vid ett språkbyte (ny pannellum-instans) - samma
+	// sak som vid vanlig scenladdning, inget vi behöver återställa manuellt.
 
-	// --- Kartöverlägg ------------------------------------------------------
+	// --- Kartöverlägg (element + hjälpare) ----------------------------------
 	const container = document.getElementById("map-container");
-	if (!container) return; // Turen saknar kartbild.
-	container.dataset.size = (tour.default && tour.default.mapSize) || "medium";
-
-	const mapImg = document.getElementById("map-img");
-	const dotsLayer = document.getElementById("map-dots");
-	const showBtn = document.getElementById("show-map-btn");
-	const closeBtn = document.getElementById("close-map-btn");
+	const mapImg = container ? document.getElementById("map-img") : null;
+	const dotsLayer = container ? document.getElementById("map-dots") : null;
+	const showBtn = container ? document.getElementById("show-map-btn") : null;
+	const closeBtn = container ? document.getElementById("close-map-btn") : null;
 	const dotEls = {};
 
+	if (container) container.dataset.size = (tour.default && tour.default.mapSize) || "medium";
+
 	function buildDots() {
-		if (!mapImg.naturalWidth) return;
+		if (!container || !mapImg.naturalWidth) return;
 		dotsLayer.textContent = "";
 		Object.keys(dotEls).forEach(function (k) { delete dotEls[k]; });
 		(mapData.scenes || []).forEach(function (s) {
@@ -138,7 +239,7 @@
 			// Procent av naturlig bildstorlek -> upplösningsoberoende.
 			d.style.left = (s.position.x / mapImg.naturalWidth * 100) + "%";
 			d.style.top = (s.position.y / mapImg.naturalHeight * 100) + "%";
-			d.title = "Scen " + s.id;
+			d.title = window.uiStr("scene", currentLang) + " " + s.id;
 			d.addEventListener("click", function () {
 				if (viewer.getScene() === s.id) return;
 				// Ankomst via kartan (inte hotspot) -> visa scenens startriktning.
@@ -159,34 +260,85 @@
 		});
 	}
 
-	if (mapImg.complete && mapImg.naturalWidth) buildDots();
-	else mapImg.addEventListener("load", buildDots);
-
-	viewer.on("scenechange", markCurrent);
-
 	// När kartan är utfälld döljs branding-överlägget helt (annars ligger det
 	// transparent ovanpå den transparenta kartpopupen -> rörigt).
-	function setBrandingForMap(mapOpen) { if (brandingEl) brandingEl.style.display = (mapOpen && brandingHidesForMap) ? "none" : ""; }
-	showBtn.addEventListener("click", function () {
-		container.hidden = false;
-		showBtn.hidden = true;
-		setBrandingForMap(true);
-	});
-	closeBtn.addEventListener("click", function () {
-		container.hidden = true;
-		showBtn.hidden = false;
-		setBrandingForMap(false);
-	});
+	function setBrandingForMap(mapOpen) {
+		if (brandingEl) brandingEl.style.display = (mapOpen && brandingHidesForMap) ? "none" : "";
+	}
+
+	// Uppdaterar allt hårdkodat UI-chrome (kartknapp/etiketter/språkväljare) till
+	// currentLang. Körs vid varje buildViewer() (init + ombyggnad).
+	function updateUiChrome() {
+		if (container) {
+			showBtn.textContent = window.uiStr("map", currentLang);
+			closeBtn.setAttribute("aria-label", window.uiStr("closeMap", currentLang));
+			mapImg.alt = window.uiStr("mapAlt", currentLang);
+			Object.keys(dotEls).forEach(function (id) {
+				dotEls[id].title = window.uiStr("scene", currentLang) + " " + id;
+			});
+		}
+		if (langToggle) {
+			langToggle.setAttribute("aria-label", window.uiStr("language", currentLang));
+			langToggle.value = currentLang;
+		}
+	}
+
+	// --- Språkväljare (bara vid fler än ett språk) --------------------------
+	var langToggle = null;
+	if (langs.length >= 2) {
+		langToggle = document.createElement("select");
+		langToggle.className = "lang-toggle";
+		langs.forEach(function (code) {
+			var opt = document.createElement("option");
+			opt.value = code;
+			opt.textContent = window.LANG_NAMES[code] || code;
+			langToggle.appendChild(opt);
+		});
+		langToggle.value = currentLang;
+		langToggle.setAttribute("aria-label", window.uiStr("language", currentLang));
+		document.body.appendChild(langToggle);
+		langToggle.addEventListener("change", function () { setLang(langToggle.value); });
+	}
+
+	function setLang(lang) {
+		if (langs.indexOf(lang) === -1 || lang === currentLang) return;
+		currentLang = lang;
+		try { localStorage.setItem("tour_lang", currentLang); } catch (e) { /* privat läge/blockerad storage */ }
+		writeHash(); // uppdaterar #lang= direkt (viewer finns fortfarande kvar här)
+		rebuildViewer();
+	}
+
+	// --- Bygg den första pannellum-instansen --------------------------------
+	buildViewer();
+
+	if (container) {
+		if (mapImg.complete && mapImg.naturalWidth) buildDots();
+		else mapImg.addEventListener("load", buildDots);
+
+		showBtn.addEventListener("click", function () {
+			container.hidden = false;
+			showBtn.hidden = true;
+			setBrandingForMap(true);
+		});
+		closeBtn.addEventListener("click", function () {
+			container.hidden = true;
+			showBtn.hidden = false;
+			setBrandingForMap(false);
+		});
+	}
 
 	// Pannellums helskärm renderar bara det fullskärmade elementet + dess barn.
-	// Kart-knappen/överlägget ligger utanför pannellums container och försvinner
-	// annars i helskärm - flytta in dem i det fullskärmade elementet (och tillbaka
-	// till body när man går ur). Robust oavsett vilket element som fullskärmas.
+	// Kart-/branding-/språk-kontrollerna ligger utanför pannellums container och
+	// försvinner annars i helskärm - flytta in dem i det fullskärmade elementet
+	// (och tillbaka till body när man går ur). Robust oavsett vilket element som
+	// fullskärmas.
 	function relocateOverlay() {
 		var fs = document.fullscreenElement || document.webkitFullscreenElement;
 		var host = fs || document.body;
-		host.appendChild(showBtn);
-		host.appendChild(container);
+		if (brandingEl) host.appendChild(brandingEl);
+		if (showBtn) host.appendChild(showBtn);
+		if (container) host.appendChild(container);
+		if (langToggle) host.appendChild(langToggle);
 	}
 	document.addEventListener("fullscreenchange", relocateOverlay);
 	document.addEventListener("webkitfullscreenchange", relocateOverlay);

@@ -146,6 +146,29 @@ html, body {
 }
 .map-toggle:hover { background: #f8f8f8; }
 
+/* Språkväljaren - samma pannellum-kontrollstil, uppe till vänster. Bara synlig
+   när turen har fler än ett språk (se viewer.js). left:36px (inte 4px) för att
+   inte krocka med pannellums inbyggda zoom-/helskärms-knappar, som ligger
+   top:0/left:4px, 26px breda (samma avstånd som .tour-branding.branding-top-left
+   redan tar hänsyn till). */
+.lang-toggle {
+	position: fixed;
+	top: 4px;
+	left: 36px;
+	z-index: 50;
+	height: 26px;
+	padding: 0 6px;
+	font: inherit;
+	font-size: 14px;
+	line-height: 24px;
+	color: #000;
+	background: #fff;
+	border: 1px solid rgba(0, 0, 0, 0.4);
+	border-radius: 3px;
+	cursor: pointer;
+}
+.lang-toggle:hover { background: #f8f8f8; }
+
 #map-container {
 	position: fixed;
 	top: 4px;

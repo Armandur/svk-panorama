@@ -11,6 +11,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from app import config
 from app.database import BrandingPreset, ThemePreset
 
 _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
@@ -21,15 +22,56 @@ _BRANDING_POS = {"bottom-left", "bottom-right", "top-left", "top-right"}
 _BRANDING_MAX = 2000
 
 
+def sanitize_languages(value: Any) -> list[str]:
+    """Ordnad lista giltiga språkkoder (första = default-språk). Okända koder
+    droppas, dubbletter tas bort med bevarad ordning. Tom/ogiltig -> default."""
+    seen: list[str] = []
+    if isinstance(value, list):
+        for code in value:
+            if isinstance(code, str) and code in config.LANGUAGES and code not in seen:
+                seen.append(code)
+    return seen or [config.DEFAULT_LANGUAGE]
+
+
+def sanitize_i18n_text(value: Any, max_len: int) -> Any:
+    """Textfält som kan vara ren sträng (default-språk) eller {kod: text}
+    (flerspråkigt). Trimmar, klipper längd, droppar okända koder/tomma värden.
+    Returnerar str, {kod: str} eller None (inget kvar)."""
+    if isinstance(value, str):
+        v = value.strip()
+        return v[:max_len] if v else None
+    if isinstance(value, dict):
+        out: dict[str, str] = {}
+        for code, text in value.items():
+            if code in config.LANGUAGES and isinstance(text, str):
+                t = text.strip()
+                if t:
+                    out[code] = t[:max_len]
+        return out or None
+    return None
+
+
+def i18n_text_values(value: Any) -> list[str]:
+    """Alla textvarianter av ett fält som kan vara ren sträng (default-språk),
+    {kod: text} (flerspråkigt) eller saknas/annat. Delas av regex-skanningar
+    (media-referenser i bundle/backup, usage-scan i media.py) som ska hitta
+    träffar i ALLA språkvarianter, inte bara default-språket."""
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        return [v for v in value.values() if isinstance(v, str)]
+    return []
+
+
 def sanitize_branding(content: Any, size: Any, position: Any) -> dict[str, Any] | None:
     """Branding-block (logotyp/text/länk som markdown) för vieweren. Rå markdown
-    lagras (renderas + DOMPurify-saneras vid visning som hotspots). None = ingen."""
-    content = (content or "")
-    content = content.strip() if isinstance(content, str) else ""
+    lagras (renderas + DOMPurify-saneras vid visning som hotspots). `content` kan
+    vara ren sträng eller {kod: text} (flerspråkigt). None = ingen branding."""
+    content = sanitize_i18n_text(content, _BRANDING_MAX)
     if not content:
         return None
     return {
-        "content": content[:_BRANDING_MAX],
+        "content": content,
         "size": size if size in _BRANDING_SIZES else "medium",
         "position": position if position in _BRANDING_POS else "bottom-right",
     }

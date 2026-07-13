@@ -14,6 +14,23 @@
 
 	const d = tour.default || {};
 
+	// --- Flerspråkighet: turens valda språk (första = standard) + vilket språk
+	// förhandsvisningen just nu renderas på. Styr hotspot-tooltips, scentitlar
+	// och branding (se markdown.js: resolveText/attachHsTooltips/renderBrandingInto).
+	// selectedLangs styrs av kryssrutorna nedan (ordning = kryssordning); sparas
+	// som tour.default.languages vid "Spara inställningar". ---
+	const LANG_ORDER = Object.keys(window.LANG_NAMES || { sv: 1 });
+	let selectedLangs = (Array.isArray(d.languages) && d.languages.length) ? d.languages.slice() : ["sv"];
+	let previewLang = selectedLangs[0];
+	// Ospärrad kopia av original-titlarna (ren sträng | {kod:text}). Pannellum
+	// får scenerna direkt (scenes: tour.scenes) och har en egen inbyggd
+	// titel-ruta som läser scene.title rakt av - den förstår inte {kod:text}.
+	// Vi resolverar därför OCH skriver in en ren sträng i tour.scenes[id].title
+	// inför varje (om)byggnad (applyHotspotLanguage), men läser alltid ur denna
+	// orörda kopia så vi kan resolvera om vid nästa språkbyte.
+	const origTitle = {};
+	Object.keys(tour.scenes).forEach(function (id) { origTitle[id] = tour.scenes[id].title; });
+
 	// --- Upplösning (preview/multires/full) - global för hela förhandsvisningen.
 	// Multires appliceras klient-side (defaultar multires) så man kan byta. Speglar
 	// scenvyns logik men för alla scener på en gång. ---
@@ -72,11 +89,16 @@
 	const brandingContent = document.getElementById("branding-content");
 	const brandingSize = document.getElementById("branding-size");
 	const brandingPos = document.getElementById("branding-position");
+	const brandingLangTabs = document.getElementById("branding-lang-tabs");
 	const panoramaWrap = document.querySelector(".panorama-wrap");
+	const langChecks = document.getElementById("lang-checks");
+	const previewLangWrap = document.getElementById("preview-lang-wrap");
+	const previewLangSelect = document.getElementById("preview-lang-select");
 
 	// --- Init formulär från tour.default ---
 	let firstScene = d.firstScene && tour.scenes[d.firstScene] ? d.firstScene : sceneIds()[0];
-	function sceneLabel(id) { return "Scen " + id + (tour.scenes[id] && tour.scenes[id].title ? " - " + tour.scenes[id].title : ""); }
+	function resolvedTitle(id) { return tour.scenes[id] ? (window.resolveText ? window.resolveText(origTitle[id], previewLang, selectedLangs) : (origTitle[id] || "")) : ""; }
+	function sceneLabel(id) { const t = resolvedTitle(id); return "Scen " + id + (t ? " - " + t : ""); }
 
 	if (firstSceneSel) {
 		firstSceneSel.innerHTML = "";
@@ -90,6 +112,20 @@
 	}
 	function updateFirstSceneBtn() { if (firstSceneBtn) firstSceneBtn.textContent = sceneLabel(firstScene); }
 	updateFirstSceneBtn();
+	// Bygg om startscen-select/knapp-etiketterna (t.ex. vid preview-språkbyte).
+	function refreshSceneLabels() {
+		if (firstSceneSel) {
+			firstSceneSel.innerHTML = "";
+			sceneIds().forEach(function (id) {
+				const o = document.createElement("option");
+				o.value = id;
+				o.textContent = sceneLabel(id);
+				firstSceneSel.appendChild(o);
+			});
+			firstSceneSel.value = firstScene;
+		}
+		updateFirstSceneBtn();
+	}
 
 	const ar = d.autoRotate;
 	const arOn = typeof ar === "number" && ar !== 0;
@@ -157,6 +193,18 @@
 	}
 	var brandMediaBtn = { name: "media", action: brandMediaAction, className: "fa fa-th", title: "Mediebibliotek" };
 	var brandingEditor = null;
+
+	// Branding per språk: state {kod: text} + EN delad EasyMDE-instans som byter
+	// innehåll när man byter flik (samma mönster som hotspot-modalens teaser/läs
+	// mer i scene.js). Kollapsas till ren sträng vid ett enda valt språk.
+	let brandingState = {};
+	(function initBrandingState() {
+		var c = brand.content;
+		if (c && typeof c === "object") brandingState = Object.assign({}, c);
+		else if (c) brandingState[selectedLangs[0]] = c;
+	})();
+	let brandingTab = selectedLangs[0];
+
 	if (window.EasyMDE && brandingContent) {
 		brandingEditor = new EasyMDE({
 			element: brandingContent,
@@ -171,9 +219,9 @@
 			previewRender: function (t) { return window.renderMarkdown(t); },
 			placeholder: "![Logotyp](...) eller **Församlingen**",
 		});
-		brandingEditor.value(brand.content || "");
+		brandingEditor.value(brandingState[brandingTab] || "");
 	} else if (brandingContent) {
-		brandingContent.value = brand.content || "";
+		brandingContent.value = brandingState[brandingTab] || "";
 	}
 	function brandingVal() { return brandingEditor ? brandingEditor.value() : (brandingContent ? brandingContent.value : ""); }
 	function setBrandingVal(v) {
@@ -181,17 +229,65 @@
 		else if (brandingContent) brandingContent.value = v || "";
 	}
 
+	// Flikar (ett per valt språk) - visas bara vid >1 språk. Byte sparar
+	// nuvarande fälts text i state innan nästa språks text laddas in.
+	function ensureBrandingTab() {
+		if (selectedLangs.indexOf(brandingTab) === -1) {
+			brandingTab = selectedLangs[0];
+			setBrandingVal(brandingState[brandingTab] || "");
+		}
+	}
+	function renderBrandingTabs() {
+		if (!brandingLangTabs) return;
+		if (selectedLangs.length <= 1) { brandingLangTabs.hidden = true; brandingLangTabs.innerHTML = ""; return; }
+		ensureBrandingTab();
+		brandingLangTabs.innerHTML = "";
+		brandingLangTabs.hidden = false;
+		selectedLangs.forEach(function (code) {
+			var b = document.createElement("button");
+			b.type = "button";
+			b.className = "hs-tab" + (code === brandingTab ? " active" : "");
+			b.textContent = window.LANG_NAMES[code] || code;
+			b.addEventListener("click", function () { switchBrandingTab(code); });
+			brandingLangTabs.appendChild(b);
+		});
+	}
+	function switchBrandingTab(code) {
+		if (code === brandingTab) return;
+		brandingState[brandingTab] = brandingVal();
+		brandingTab = code;
+		setBrandingVal(brandingState[code] || "");
+		renderBrandingTabs();
+		if (brandingEditor) brandingEditor.codemirror.refresh();
+	}
+
 	let brandingEl = null;
+	// Slår ihop state (inkl. aktiva flikens ej ännu synkade värde) till
+	// content = ren sträng (1 språk) eller {kod: text} (>1 språk, tomma bort).
 	function currentBranding() {
-		var c = (brandingVal() || "").trim();
-		if (!c) return null;
-		return { content: c, size: brandingSize ? brandingSize.value : "medium", position: brandingPos ? brandingPos.value : "bottom-right" };
+		brandingState[brandingTab] = brandingVal();
+		var content;
+		if (selectedLangs.length > 1) {
+			var dict = {};
+			selectedLangs.forEach(function (code) {
+				var t = (brandingState[code] || "").trim();
+				if (t) dict[code] = t;
+			});
+			if (!Object.keys(dict).length) return null;
+			content = dict;
+		} else {
+			var single = (brandingState[selectedLangs[0]] || "").trim();
+			if (!single) return null;
+			content = single;
+		}
+		return { content: content, size: brandingSize ? brandingSize.value : "medium", position: brandingPos ? brandingPos.value : "bottom-right" };
 	}
 	function applyBrandingLive() {
 		if (!panoramaWrap || !window.renderBrandingInto) return;
 		if (!brandingEl) { brandingEl = document.createElement("div"); panoramaWrap.appendChild(brandingEl); }
-		window.renderBrandingInto(brandingEl, currentBranding());
+		window.renderBrandingInto(brandingEl, currentBranding(), previewLang, selectedLangs);
 	}
+	renderBrandingTabs();
 	applyBrandingLive();
 
 	function setPair(range, num, val) { range.value = val; num.value = val; }
@@ -372,6 +468,7 @@
 
 	saveBtn.addEventListener("click", function () {
 		saveBtn.setAttribute("aria-busy", "true");
+		var brandingNow = currentBranding();
 		apiFetch("/projects/" + encodeURIComponent(slug) + "/tour-settings", {
 			method: "POST",
 			body: {
@@ -386,9 +483,10 @@
 				themeFont: themeFont.value,
 				themeDotColor: themeDot.value,
 				themeCurrentColor: themeCurrent.value,
-				brandingContent: brandingVal(),
+				brandingContent: brandingNow ? brandingNow.content : "",
 				brandingSize: brandingSize ? brandingSize.value : "medium",
 				brandingPosition: brandingPos ? brandingPos.value : "bottom-right",
+				languages: selectedLangs,
 			},
 		}).then(function () {
 			setDirty(false);
@@ -439,7 +537,13 @@
 		}
 		function applyBrandingPreset(c) {
 			c = c || {};
-			setBrandingVal(c.content || "");
+			var content = c.content;
+			brandingState = {};
+			if (content && typeof content === "object") brandingState = Object.assign({}, content);
+			else if (content) brandingState[selectedLangs[0]] = content;
+			brandingTab = selectedLangs[0];
+			setBrandingVal(brandingState[brandingTab] || "");
+			renderBrandingTabs();
 			if (brandingSize) brandingSize.value = SIZES.indexOf(c.size) !== -1 ? c.size : "medium";
 			if (brandingPos) brandingPos.value = POSES.indexOf(c.position) !== -1 ? c.position : "bottom-right";
 			applyBrandingLive();
@@ -565,13 +669,93 @@
 		previewMapClose.addEventListener("click", function () { previewMap.hidden = true; if (previewMapToggle) previewMapToggle.hidden = false; setBrandingForMap(false); });
 	}
 
-	// --- Start ---
-	// Markdown-tooltip på info-hotspots (funktionerna stannar på objekten över rebuilds).
-	if (window.attachHsTooltips) {
-		var sceneNames = {};
-		sceneIds().forEach(function (id) { sceneNames[id] = tour.scenes[id].title || ("Scen " + id); });
-		sceneIds().forEach(function (id) { attachHsTooltips(tour.scenes[id].hotSpots, sceneNames); });
+	// --- Språk-UI: kryssrutor (turens språk) + förhandsvisningsspråk-väljare ---
+	function renderLangChecks() {
+		if (!langChecks) return;
+		langChecks.innerHTML = "";
+		LANG_ORDER.forEach(function (code) {
+			const idx = selectedLangs.indexOf(code);
+			const wrap = document.createElement("label");
+			wrap.className = "lang-check";
+			const cb = document.createElement("input");
+			cb.type = "checkbox";
+			cb.checked = idx !== -1;
+			cb.addEventListener("change", function () { onLangToggle(code, cb.checked); });
+			wrap.appendChild(cb);
+			wrap.appendChild(document.createTextNode(" " + (window.LANG_NAMES[code] || code)));
+			if (idx !== -1) {
+				const badge = document.createElement("span");
+				badge.className = "lang-badge" + (idx === 0 ? " lang-badge-default" : "");
+				badge.textContent = idx === 0 ? "standard" : String(idx + 1);
+				wrap.appendChild(badge);
+			}
+			langChecks.appendChild(wrap);
+		});
 	}
+	function onLangToggle(code, checked) {
+		if (checked) {
+			if (selectedLangs.indexOf(code) === -1) selectedLangs.push(code);
+		} else if (selectedLangs.length <= 1) {
+			renderLangChecks(); // återställ kryssrutan - minst ett språk krävs
+			if (window.showToast) showToast("Minst ett språk måste vara valt.", "error");
+			return;
+		} else {
+			selectedLangs = selectedLangs.filter(function (c) { return c !== code; });
+		}
+		renderLangChecks();
+		onLanguagesChanged();
+		onSettingChange(false);
+	}
+	function renderPreviewLangSelect() {
+		if (!previewLangSelect || !previewLangWrap) return;
+		previewLangWrap.hidden = selectedLangs.length <= 1;
+		previewLangSelect.innerHTML = "";
+		selectedLangs.forEach(function (code) {
+			const o = document.createElement("option");
+			o.value = code;
+			o.textContent = window.LANG_NAMES[code] || code;
+			if (code === previewLang) o.selected = true;
+			previewLangSelect.appendChild(o);
+		});
+	}
+	if (previewLangSelect) previewLangSelect.addEventListener("change", function () {
+		previewLang = previewLangSelect.value;
+		applyHotspotLanguage();
+		refreshSceneLabels();
+		applyBrandingLive();
+		rebuildKeepView();
+	});
+	function onLanguagesChanged() {
+		if (selectedLangs.indexOf(previewLang) === -1) previewLang = selectedLangs[0];
+		renderPreviewLangSelect();
+		renderBrandingTabs();
+		refreshSceneLabels();
+		applyHotspotLanguage();
+		applyBrandingLive();
+		rebuildKeepView();
+	}
+
+	// Markdown-tooltip på info-hotspots + scen-hotspotarnas "leder till"-etikett,
+	// på valt förhandsvisningsspråk (funktionerna stannar på objekten över rebuilds).
+	// Skriver även in den resolverade titeln i tour.scenes[id].title (läses ur
+	// origTitle, INTE tour.scenes) så Pannellums inbyggda titel-ruta visar rätt
+	// språk i stället för "[object Object]". Denna sida sparar aldrig scentitlar
+	// (bara tour.default) så mutationen är ofarlig - bara en visnings-detalj.
+	function applyHotspotLanguage() {
+		if (!window.attachHsTooltips) return;
+		var sceneNames = {};
+		sceneIds().forEach(function (id) {
+			var t = resolvedTitle(id) || ("Scen " + id);
+			sceneNames[id] = t;
+			tour.scenes[id].title = t;
+		});
+		sceneIds().forEach(function (id) { attachHsTooltips(tour.scenes[id].hotSpots, sceneNames, previewLang, selectedLangs); });
+	}
+
+	// --- Start ---
+	renderLangChecks();
+	renderPreviewLangSelect();
+	applyHotspotLanguage();
 
 	buildViewer(firstScene, null);
 	if (mapImg) {

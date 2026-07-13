@@ -18,7 +18,7 @@ def _hex(value: str, fallback: str) -> str:
 
 from app.database import Project
 from app.deps import get_project_or_404, new_csrf_token, request_origin, set_csrf_cookie, templates, verify_csrf_header
-from app.services.presets import sanitize_branding
+from app.services.presets import sanitize_branding, sanitize_languages
 from app.services.project_files import _natural_key, map_image_path, read_map, read_tour, tour_lock, write_tour
 from app.services.tiling import read_manifest
 
@@ -37,9 +37,10 @@ class TourSettings(BaseModel):
     themeFont: str = "sans"                # sans | serif | mono | humanist
     themeDotColor: str = "#666666"
     themeCurrentColor: str = "#8b0000"
-    brandingContent: str = ""              # markdown (logotyp/text/länk); tom = ingen
+    brandingContent: str | dict[str, str] = ""  # markdown; str el. {kod: text} (flerspråkigt)
     brandingSize: str = "medium"           # small | medium | large
     brandingPosition: str = "bottom-right"  # bottom-left|bottom-right|top-left|top-right
+    languages: list[str] = []              # turens språk (först = default); [] -> [sv]
 
 
 @router.get("/projects/{slug}/preview", response_class=HTMLResponse)
@@ -105,6 +106,7 @@ def save_tour_settings(
             default["branding"] = branding
         else:
             default.pop("branding", None)
+        default["languages"] = sanitize_languages(payload.languages)
         default["editorMode"] = False
         write_tour(slug, tour)
     return {"ok": True}

@@ -20,6 +20,7 @@ from typing import Any
 from app.config import MAX_IMAGE_MEGAPIXELS, MAX_PANORAMA_MB, SCHEMA_VERSION
 from app.database import Project
 from app.services import media
+from app.services.presets import i18n_text_values
 from app.services.project_files import (
     ensure_project_structure,
     project_dir,
@@ -67,17 +68,17 @@ def _read_tour(slug: str) -> dict:
 
 
 def _media_refs(tour: dict) -> set[tuple[int, str]]:
+    """(owner_id, filnamn) - speglar bundle._media_refs, i ALLA språkvarianter."""
     refs: set[tuple[int, str]] = set()
     for scene in tour.get("scenes", {}).values():
         for hs in scene.get("hotSpots", []):
             for key in ("text", "body"):
-                v = hs.get(key)
-                if isinstance(v, str):
+                for v in i18n_text_values(hs.get(key)):
                     for m in _MEDIA_REF_RE.finditer(v):
                         refs.add((int(m.group(1)), m.group(2)))
     branding = (tour.get("default") or {}).get("branding") or {}
-    if isinstance(branding.get("content"), str):
-        for m in _MEDIA_REF_RE.finditer(branding["content"]):
+    for v in i18n_text_values(branding.get("content")):
+        for m in _MEDIA_REF_RE.finditer(v):
             refs.add((int(m.group(1)), m.group(2)))
     return refs
 

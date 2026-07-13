@@ -19,6 +19,33 @@
 	const manifest = tilesEl ? JSON.parse(tilesEl.textContent) : {};
 	if (!tour.scenes) tour.scenes = {};
 
+	// --- Flerspråkighet: turens valda språk (läses, väljs INTE här - det görs på
+	// förhandsvisningssteget). 1 språk -> allt oförändrat (ren sträng, inga extra
+	// fält). >1 språk -> scentitel + hotspot-text/body blir {kod:text}. ---
+	const langs = (tour.default && Array.isArray(tour.default.languages) && tour.default.languages.length)
+		? tour.default.languages : ["sv"];
+	function resolveDefault(value) { return window.resolveText ? window.resolveText(value, langs[0], langs) : (typeof value === "string" ? value : ""); }
+	// Ren sträng -> default-språkets ruta (bakåtkompat). Objekt -> icke-tomma koder.
+	function textToState(value) {
+		const out = {};
+		if (value == null) return out;
+		if (typeof value === "string") { if (value) out[langs[0]] = value; }
+		else if (typeof value === "object") { Object.keys(value).forEach(function (k) { if (value[k]) out[k] = value[k]; }); }
+		return out;
+	}
+	// state {kod:text} -> ren sträng (1 språk) eller {kod:text} med bara
+	// icke-tomma koder (>1 språk); undefined om inget kvar.
+	function collapseI18n(dict) {
+		const out = {};
+		Object.keys(dict || {}).forEach(function (k) {
+			const t = ((dict[k] != null ? dict[k] : "") + "").trim();
+			if (t) out[k] = t;
+		});
+		if (langs.length <= 1) return out[langs[0]] || undefined;
+		return Object.keys(out).length ? out : undefined;
+	}
+	function hasI18nContent(v) { return typeof v === "string" ? !!v.trim() : !!(v && Object.keys(v).length); }
+
 	const positions = {};
 	(mapData.scenes || []).forEach(function (s) { positions[s.id] = { x: s.position.x, y: s.position.y }; });
 
@@ -50,6 +77,7 @@
 	const generateBtn = document.getElementById("generate-btn");
 	const sceneTitleInput = document.getElementById("scene-title");
 	const sceneTitleLabel = document.getElementById("scene-title-label");
+	const sceneTitleLangs = document.getElementById("scene-title-langs");
 	const resSelect = document.getElementById("res-select");
 	const resHint = document.getElementById("res-hint");
 	const rollInput = document.getElementById("horizon-roll");
@@ -122,7 +150,44 @@
 		viewer.loadScene(cur, viewer.getPitch(), viewer.getYaw(), viewer.getHfov());
 	}
 	function updateTitleLabel(id) {
-		if (sceneTitleLabel) sceneTitleLabel.textContent = (tour.scenes[id] && tour.scenes[id].title) || "";
+		if (sceneTitleLabel) sceneTitleLabel.textContent = resolveDefault(tour.scenes[id] && tour.scenes[id].title);
+	}
+
+	// Scentitel: en input (monospråkigt, oförändrat) eller en input per språk
+	// (>1 språk) - skriver till tour.scenes[id].title som ren sträng resp.
+	// {kod:text} (bakåtkompat: ren sträng -> default-språkets ruta).
+	function renderTitleInputs(cur) {
+		if (langs.length <= 1) {
+			if (sceneTitleInput) { sceneTitleInput.hidden = false; sceneTitleInput.value = resolveDefault(tour.scenes[cur] && tour.scenes[cur].title); }
+			if (sceneTitleLangs) { sceneTitleLangs.hidden = true; sceneTitleLangs.innerHTML = ""; }
+			return;
+		}
+		if (sceneTitleInput) sceneTitleInput.hidden = true;
+		if (!sceneTitleLangs) return;
+		sceneTitleLangs.hidden = false;
+		sceneTitleLangs.innerHTML = "";
+		const state = textToState(tour.scenes[cur] && tour.scenes[cur].title);
+		langs.forEach(function (code) {
+			const wrap = document.createElement("label");
+			wrap.className = "scene-title-lang";
+			wrap.textContent = (window.LANG_NAMES && window.LANG_NAMES[code]) || code;
+			const inp = document.createElement("input");
+			inp.type = "text";
+			inp.maxLength = 120;
+			inp.value = state[code] || "";
+			inp.addEventListener("input", function () {
+				const c = viewer.getScene();
+				if (!tour.scenes[c]) return;
+				const st = textToState(tour.scenes[c].title);
+				st[code] = inp.value;
+				const collapsed = collapseI18n(st);
+				if (collapsed) tour.scenes[c].title = collapsed; else delete tour.scenes[c].title;
+				updateTitleLabel(c);
+				setDirty(true);
+			});
+			wrap.appendChild(inp);
+			sceneTitleLangs.appendChild(wrap);
+		});
 	}
 
 	// Minikarta uppe till höger: prickar för scener, markerar aktuell + hovrad.
@@ -266,6 +331,7 @@
 	});
 
 	if (sceneTitleInput) sceneTitleInput.addEventListener("input", function () {
+		if (langs.length > 1) return; // per-språk-fälten (renderTitleInputs) styr då
 		const cur = viewer.getScene();
 		if (!tour.scenes[cur]) return;
 		tour.scenes[cur].title = sceneTitleInput.value;
@@ -355,7 +421,7 @@
 	function refreshSidebar() {
 		const cur = viewer.getScene();
 		if (curSceneEl) curSceneEl.textContent = cur;
-		if (sceneTitleInput) sceneTitleInput.value = (tour.scenes[cur] && tour.scenes[cur].title) || "";
+		renderTitleInputs(cur);
 		{
 			const r = (tour.scenes[cur] && tour.scenes[cur].horizonRoll) || 0;
 			if (rollInput) rollInput.value = r;
@@ -456,15 +522,16 @@
 	// id -> titel för scen-hotspotarnas "leder till"-etikett (attachHsTooltips).
 	function sceneNamesMap() {
 		const m = {};
-		Object.keys(tour.scenes).forEach(function (id) { m[id] = tour.scenes[id].title || ("Scen " + id); });
+		Object.keys(tour.scenes).forEach(function (id) { m[id] = resolveDefault(tour.scenes[id].title) || ("Scen " + id); });
 		return m;
 	}
 	function cloneHs(list) {
 		// KLONER till pannellum (tour-datan lämnas orörd). Scen-hotspotens text
 		// bevaras nu som teaser; attachHsTooltips lägger MD-teaser ovanför + scen-
-		// etikett nedanför (samma som i preview/publicerad tur).
+		// etikett nedanför (samma som i preview/publicerad tur). Editorns egen
+		// inline-rendering visar alltid turens DEFAULT-språk (langs[0]).
 		const cloned = (list || []).map(function (h) { return Object.assign({}, h); });
-		if (window.attachHsTooltips) window.attachHsTooltips(cloned, sceneNamesMap());
+		if (window.attachHsTooltips) window.attachHsTooltips(cloned, sceneNamesMap(), langs[0], langs);
 		return cloned;
 	}
 
@@ -493,7 +560,7 @@
 		return (ids.length ? Math.max.apply(null, ids) : -1) + 1;
 	}
 
-	function sceneName(id) { return (tour.scenes[id] && tour.scenes[id].title) || ("scen " + id); }
+	function sceneName(id) { return (tour.scenes[id] && resolveDefault(tour.scenes[id].title)) || ("scen " + id); }
 	function computeTargetYaw(from, to) {
 		if (positions[from] && positions[to] && offsets[to] != null) return round2(Geo.targetYaw(positions[from], positions[to], offsets[to]));
 		return null;
@@ -508,6 +575,8 @@
 	const hsFieldSceneDir = document.getElementById("hs-field-scene-dir");
 	const hsText = document.getElementById("hs-text");
 	const hsBody = document.getElementById("hs-body");
+	const hsLangWrap = document.getElementById("hs-lang-wrap");
+	const hsLangSelect = document.getElementById("hs-lang-select");
 
 	// Bilduppladdning för EasyMDE: postar till den delade mediepoolen och infogar
 	// markdown-bildlänken. Funkar i både teaser och läs mer (oavsett expanderbar).
@@ -561,6 +630,38 @@
 	function hsTextVal() { return hsTextEditor ? hsTextEditor.value() : (hsText ? hsText.value : ""); }
 	function hsBodyVal() { return hsBodyEditor ? hsBodyEditor.value() : (hsBody ? hsBody.value : ""); }
 
+	// --- Flerspråkig teaser/läs mer i hotspot-modalen (>1 språk) -----------
+	// EN delad EasyMDE-instans per fält; state {kod:text} håller alla språks
+	// text medan modalen är öppen. Språkbyte sparar aktivt fälts text i state
+	// för föregående språk innan nästa språks text laddas in.
+	let hsState = null;
+	let hsLangTab = langs[0];
+	function saveCurrentLangFields() {
+		if (!hsState) return;
+		hsState.text[hsLangTab] = hsTextVal();
+		hsState.body[hsLangTab] = hsBodyVal();
+	}
+	function loadLangFields(code) {
+		if (!hsState) return;
+		if (hsTextEditor) hsTextEditor.value(hsState.text[code] || ""); else if (hsText) hsText.value = hsState.text[code] || "";
+		if (hsBodyEditor) hsBodyEditor.value(hsState.body[code] || ""); else if (hsBody) hsBody.value = hsState.body[code] || "";
+		if (hsLangSelect) hsLangSelect.value = code;
+	}
+	if (hsLangWrap) hsLangWrap.hidden = langs.length <= 1;
+	if (hsLangSelect && langs.length > 1) {
+		langs.forEach(function (code) {
+			const o = document.createElement("option");
+			o.value = code;
+			o.textContent = (window.LANG_NAMES && window.LANG_NAMES[code]) || code;
+			hsLangSelect.appendChild(o);
+		});
+		hsLangSelect.addEventListener("change", function () {
+			saveCurrentLangFields();
+			hsLangTab = hsLangSelect.value;
+			loadLangFields(hsLangTab);
+		});
+	}
+
 	// --- Flikar: Teaser / Läs mer (den senare bara när expanderbar) ---
 	const hsTabs = document.getElementById("hs-tabs");
 	const hsTabBtns = hsTabs ? Array.prototype.slice.call(hsTabs.querySelectorAll(".hs-tab")) : [];
@@ -602,13 +703,14 @@
 		hsFieldUrl.hidden = ctx.type !== "url";
 		hsFieldSceneTop.hidden = ctx.type !== "scene";
 		hsFieldSceneDir.hidden = ctx.type !== "scene";
-		const teaser = (ctx.hs && ctx.hs.text != null) ? ctx.hs.text : "";
-		if (hsTextEditor) hsTextEditor.value(teaser); else hsText.value = teaser;
+		// Per-språk-state (dict {kod:text}) ur befintlig text/body (ren sträng ->
+		// default-språket, bakåtkompat). Språkbyte sker via hs-lang-select.
+		hsState = { text: textToState(ctx.hs && ctx.hs.text), body: textToState(ctx.hs && ctx.hs.body) };
+		hsLangTab = langs[0];
+		loadLangFields(hsLangTab);
 		// Rutbredd (teaser-tooltip) för info OCH scen-hotspots; ej URL.
 		if (hsWidthWrap) hsWidthWrap.hidden = ctx.type === "url";
 		if (hsTooltipWidth) hsTooltipWidth.value = (ctx.hs && ctx.hs.tooltipWidth) || "";
-		const bodyVal = (ctx.hs && ctx.hs.body) || "";
-		if (hsBodyEditor) hsBodyEditor.value(bodyVal); else if (hsBody) hsBody.value = bodyVal;
 		// Både flikarna visas alltid för info; övriga typer har bara teasern.
 		if (hsTabs) hsTabs.hidden = ctx.type !== "info";
 		showTab("teaser");
@@ -631,7 +733,7 @@
 		else hsText.focus();
 		if (ctx.type === "scene") showHsPreview(hsCtx.target);
 	}
-	function closeHsModal() { hsModal.hidden = true; hsCtx = null; destroyHsPreview(); }
+	function closeHsModal() { hsModal.hidden = true; hsCtx = null; hsState = null; destroyHsPreview(); }
 
 	// Liten auto-roterande preview av vald målscen i modalen.
 	let hsPreviewViewer = null, hsPreviewStop = null;
@@ -684,16 +786,21 @@
 		if (!tour.scenes[cur].hotSpots) tour.scenes[cur].hotSpots = [];
 		const creating = hsCtx.mode === "create";
 		let hs = creating ? { id: nextHotspotId(cur), pitch: hsCtx.pitch, yaw: hsCtx.yaw, manual: true } : hsCtx.hs;
-		const teaserV = hsTextVal();
-		const bodyV = hsBodyVal();
+		// Flusha aktivt språks EasyMDE-innehåll i state, kollapsa sedan hela
+		// state till ren sträng (1 språk) eller {kod:text} (>1 språk).
+		saveCurrentLangFields();
+		const teaserI18n = collapseI18n(hsState.text);
+		const bodyI18n = collapseI18n(hsState.body);
 		if (hsCtx.type === "url") {
 			if (!hsUrl.value) { alert("URL krävs."); return; }
-			hs.type = "info"; hs.text = teaserV; hs.URL = hsUrl.value;
+			hs.type = "info"; hs.URL = hsUrl.value;
+			if (teaserI18n) hs.text = teaserI18n; else delete hs.text;
 			delete hs.expandable; delete hs.body;
 		} else if (hsCtx.type === "info") {
-			hs.type = "info"; hs.text = teaserV; delete hs.URL;
-			// Expanderbar härleds: finns text i Läs mer-fliken -> expanderbar.
-			if (bodyV.trim()) { hs.expandable = true; hs.body = bodyV; }
+			hs.type = "info"; delete hs.URL;
+			if (teaserI18n) hs.text = teaserI18n; else delete hs.text;
+			// Expanderbar härleds: finns text i Läs mer-fliken (för något språk) -> expanderbar.
+			if (hasI18nContent(bodyI18n)) { hs.expandable = true; hs.body = bodyI18n; }
 			else { delete hs.expandable; delete hs.body; }
 			if (hsTooltipWidth && hsTooltipWidth.value) hs.tooltipWidth = hsTooltipWidth.value;
 			else delete hs.tooltipWidth;
@@ -702,7 +809,7 @@
 			if (!target) { alert("Välj en målscen."); return; }
 			hs.type = "scene"; hs.sceneId = target; hs.targetPitch = 0;
 			hs.targetYaw = parseFloat(hsTyaw.value) || 0;
-			if (teaserV) hs.text = teaserV; else delete hs.text;
+			if (teaserI18n) hs.text = teaserI18n; else delete hs.text;
 			if (hsTooltipWidth && hsTooltipWidth.value) hs.tooltipWidth = hsTooltipWidth.value;
 			else delete hs.tooltipWidth;
 			delete hs.URL;
@@ -878,8 +985,8 @@
 				body = sceneName(hs.sceneId) + (hasReciprocal(cur, hs.sceneId) ? " (dubbel)" : " (enkel)");
 			} else {
 				// Ren text ur markdownen (bilder/länk-URL:er faller bort) så labeln
-				// blir begriplig. CSS cappar till en rad med "...".
-				body = plainTeaser(hs.text || "") || "(bild)";
+				// blir begriplig. CSS cappar till en rad med "...". Default-språket.
+				body = plainTeaser(resolveDefault(hs.text)) || "(bild)";
 			}
 			label.textContent = kind + ": " + body;
 			label.title = body;

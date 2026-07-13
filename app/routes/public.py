@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from app.database import Project, get_db
 from app.deps import request_origin, templates
+from app.services import i18n
 from app.services.project_files import map_image_path, project_dir, read_map, read_tour
 from app.services.tiling import apply_multires, read_manifest
 
@@ -53,7 +54,7 @@ def public_view(request: Request, token: str, db: Session = Depends(get_db)) -> 
             "asset_base": base,
             "page_url": page_url,
             "og_image": f"{page_url}/map.png" if has_map else None,
-            "og_description": f"Utforska {project.name} i en virtuell 360-rundtur.",
+            "og_description": i18n.og_description(project.name, i18n.tour_default_lang(tour)),
         },
     )
 

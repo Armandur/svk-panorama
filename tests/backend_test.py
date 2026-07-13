@@ -20,6 +20,8 @@ from app.auth import hash_password, make_invite_token, read_invite_token, verify
 from app.routes.preview import FONT_KEYS, _hex  # noqa: E402
 from app.routes.auth import _safe_next  # noqa: E402
 from app.services.bundle import _media_refs, _relativize  # noqa: E402
+from app.services.i18n import og_description, tour_default_lang  # noqa: E402
+from app.services.presets import i18n_text_values, sanitize_i18n_text, sanitize_languages  # noqa: E402
 from app.services.project_files import (  # noqa: E402
     _atomic_write_text,
     _natural_key,
@@ -98,6 +100,94 @@ def test_relativize():
     # Sökvägar ska aldrig vara absoluta/utbrytande efter relativisering.
     bp = tour["scenes"]["1"]["multiRes"]["basePath"]
     check("basePath ej absolut", not bp.startswith("/") and ".." not in bp)
+
+
+def test_relativize_i18n():
+    """Flerspråkigt textfält ({kod: text}) - referensen i EN icke-default-språk-
+    variant måste hittas av _media_refs och relativiseras av _relativize, med
+    dict-strukturen bevarad (inte bara den svenska strängen)."""
+    tour = {
+        "default": {"editorMode": True, "languages": ["sv", "en"]},
+        "scenes": {
+            "1": {
+                "type": "equirectangular",
+                "panorama": "/projects/s/images/1.jpg",
+                "hotSpots": [
+                    {
+                        "type": "info",
+                        "text": {"sv": "Ingen bild här", "en": "See ![](/media/7/bild.jpg) here"},
+                    },
+                ],
+            },
+        },
+    }
+    refs = _media_refs(tour)
+    check("i18n media-refs hittar en-varianten", refs == {(7, "bild.jpg")})
+    _relativize("nonexistent-slug", tour)
+    hs = tour["scenes"]["1"]["hotSpots"][0]
+    check("i18n text förblir dict", isinstance(hs["text"], dict))
+    check("i18n sv-variant orörd", hs["text"]["sv"] == "Ingen bild här")
+    check("i18n en-variant relativiserad", hs["text"]["en"] == "See ![](media/bild.jpg) here")
+
+
+def test_i18n_helpers():
+    from app import config
+
+    # sanitize_languages: dedupe, okända koder bort, ordning bevaras, fallback.
+    check("languages dedupe+ordning", sanitize_languages(["en", "sv", "en", "xx"]) == ["en", "sv"])
+    check("languages okänt -> filtreras bort", sanitize_languages(["xx", "yy"]) == [config.DEFAULT_LANGUAGE])
+    check("languages tom lista -> default", sanitize_languages([]) == [config.DEFAULT_LANGUAGE])
+    check("languages ej lista -> default", sanitize_languages("sv") == [config.DEFAULT_LANGUAGE])
+    check("languages None -> default", sanitize_languages(None) == [config.DEFAULT_LANGUAGE])
+
+    # sanitize_i18n_text: sträng (bakåtkompat) och dict (flerspråkigt).
+    check("i18n_text sträng trimmas", sanitize_i18n_text("  hej  ", 10) == "hej")
+    check("i18n_text tom sträng -> None", sanitize_i18n_text("   ", 10) is None)
+    check("i18n_text sträng klipps", sanitize_i18n_text("abcdefghij", 4) == "abcd")
+    d = sanitize_i18n_text({"sv": " hej ", "en": "hi", "xx": "nope", "de": ""}, 10)
+    check("i18n_text dict droppar okänd kod", "xx" not in d)
+    check("i18n_text dict droppar tomt värde", "de" not in d)
+    check("i18n_text dict trimmar", d["sv"] == "hej")
+    check("i18n_text dict behåller giltiga", d["en"] == "hi")
+    check("i18n_text tom dict -> None", sanitize_i18n_text({}, 10) is None)
+    check("i18n_text annat -> None", sanitize_i18n_text(42, 10) is None)
+
+    # sanitize_branding med dict-content (flerspråkig branding).
+    from app.services.presets import sanitize_branding
+    b = sanitize_branding({"sv": "**Församlingen**", "en": "**The Parish**"}, "large", "top-left")
+    check("branding dict-content behålls som dict", isinstance(b["content"], dict))
+    check("branding dict sv", b["content"]["sv"] == "**Församlingen**")
+    check("branding dict en", b["content"]["en"] == "**The Parish**")
+    check("branding dict size/position", b["size"] == "large" and b["position"] == "top-left")
+    check("branding tom dict -> None", sanitize_branding({}, "medium", "bottom-left") is None)
+
+    # i18n_text_values: str -> [str], dict -> värden, annat -> [].
+    check("i18n_text_values sträng", i18n_text_values("hej") == ["hej"])
+    check("i18n_text_values dict", sorted(i18n_text_values({"sv": "a", "en": "b"})) == ["a", "b"])
+    check("i18n_text_values dict ignorerar icke-strängar", i18n_text_values({"sv": "a", "en": 5}) == ["a"])
+    check("i18n_text_values None -> []", i18n_text_values(None) == [])
+    check("i18n_text_values tal -> []", i18n_text_values(42) == [])
+
+    # og_description: alla 6 språk, {name} bevaras, okänd kod -> default-språk.
+    for lang, expected_start in {
+        "sv": "Utforska", "en": "Explore", "de": "Entdecken",
+        "fi": "Tutustu", "no": "Utforsk", "da": "Udforsk",
+    }.items():
+        d = og_description("Häggdånger", lang)
+        check(f"og_description {lang} innehåller namnet", "Häggdånger" in d)
+        check(f"og_description {lang} rätt inledning", d.startswith(expected_start))
+    check("og_description okänd kod -> default-språk",
+          og_description("X", "xx") == og_description("X", config.DEFAULT_LANGUAGE))
+
+    # tour_default_lang: första i languages, saknad -> DEFAULT_LANGUAGE.
+    check("tour_default_lang första i listan", tour_default_lang({"default": {"languages": ["en", "sv"]}}) == "en")
+    check("tour_default_lang saknad languages -> default", tour_default_lang({"default": {}}) == config.DEFAULT_LANGUAGE)
+    check("tour_default_lang saknad default -> default", tour_default_lang({}) == config.DEFAULT_LANGUAGE)
+
+    # Additiv-först: flerspråkighet är ett rent nytt textformat (str|dict) ovanpå
+    # samma tour.json-fält - äldre str-baserade turer läses precis som förut, så
+    # SCHEMA_VERSION behöver INTE bumpas (jfr test_schema_version-mönstret).
+    check("SCHEMA_VERSION obumpad (additiv i18n-union)", config.SCHEMA_VERSION == 1)
 
 
 def test_export_readiness():
@@ -416,6 +506,8 @@ def main() -> int:
         test_expected_tile_count,
         test_apply_multires,
         test_relativize,
+        test_relativize_i18n,
+        test_i18n_helpers,
         test_export_readiness,
         test_preset_sanitize,
         test_branding_sanitize,

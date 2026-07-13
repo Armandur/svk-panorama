@@ -18,6 +18,17 @@
 		<p>{{ project.name }}</p>
 	</hgroup>
 
+	<details class="panel-group" data-group="pv-sprak" open>
+		<summary>Språk</summary>
+		<div class="panel-group-body">
+			<article>
+				<h3>Turens språk</h3>
+				<p class="hint">Välj vilka språk turen ska finnas på. Ordningen du kryssar i styr - det första ikryssade blir standardspråket för scentitlar, hotspottexter och branding.</p>
+				<div id="lang-checks" class="lang-checks"></div>
+			</article>
+		</div>
+	</details>
+
 	<details class="panel-group" data-group="pv-utseende" open>
 		<summary>Utseende</summary>
 		<div class="panel-group-body">
@@ -41,6 +52,7 @@
 			<article>
 				<h3>Branding / logotyp</h3>
 				<p class="hint">Ett litet överlägg i den publicerade turen - t.ex. en logotyp eller församlingens namn med länk. Markdown stöds: använd bild-knappen i verktygsraden för att infoga ur mediebiblioteket eller skriv <code>[text](https://...)</code>. Lämna tomt för ingen branding.</p>
+				<nav class="hs-tabs" id="branding-lang-tabs" hidden></nav>
 				<textarea id="branding-content" placeholder="![Logotyp](...) eller **Församlingen**"></textarea>
 				<div class="branding-opts">
 					<label>Storlek
@@ -85,6 +97,10 @@
 					<option value="full">Full upplösning</option>
 				</select>
 				<p id="res-hint" class="hint">Multires använder de genererade tiles-kaklen (som i publicerade turen). Preview är en nedskalad bild (snabbt). Full laddar originalbilderna (kan vara stora). Scener utan tiles visas i preview.</p>
+				<div id="preview-lang-wrap" class="preview-lang-wrap" hidden>
+					<label for="preview-lang-select">Förhandsvisningsspråk</label>
+					<select id="preview-lang-select"></select>
+				</div>
 			</article>
 
 			<article>

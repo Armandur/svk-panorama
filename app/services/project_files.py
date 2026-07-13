@@ -117,6 +117,7 @@ def default_tour() -> dict[str, Any]:
             "sceneFadeDuration": 1500,
             "editorMode": False,
             "firstScene": "",
+            "languages": [config.DEFAULT_LANGUAGE],
         },
         "scenes": {},
     }
