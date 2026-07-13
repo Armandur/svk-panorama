@@ -1,21 +1,33 @@
 """Diskanvändning per projekt/användare för admin-översikten.
 
-Live-beräknad (os.walk) - ingen persistens. Tänkt för self-host-skala (ett fåtal
-turer); cache:a om det blir tungt. Skannar de faktiska mapparna direkt under
-PROJECTS_DIR/MEDIA_DIR, så även turer/media utan matchande DB-rad ("ospårat")
-syns som en differens mot summan per användare."""
+Skannar de faktiska mapparna direkt under PROJECTS_DIR/MEDIA_DIR, så även
+turer/media utan matchande DB-rad ("ospårat") syns som en differens mot summan
+per användare.
+
+**Cache:** os.walk över tiles-mappar är dyrt, och admin-vyerna kan träffas ofta.
+Storleken per mapp memoiseras i en in-process TTL-cache (`SVK_STORAGE_CACHE_TTL`,
+default 60 s) -> en walk sker som mest en gång per TTL per mapp, oavsett hur ofta
+sidan laddas. Bounded staleness: siffror kan vara upp till TTL gamla efter en
+uppladdning/tiling. `invalidate()` (och admin-knappen "Räkna om") tömmer cachen
+för färska siffror på begäran. Single-instans-app -> in-process räcker (jfr Fas 3)."""
 from __future__ import annotations
 
 import os
+import threading
+import time
 from pathlib import Path
 
 from app import config
 from app.services.media import owner_dir
 from app.services.project_files import project_dir
 
+# key = str(path) -> (monotonic-tidsstämpel, storlek i byte)
+_cache: dict[str, tuple[float, int]] = {}
+_cache_lock = threading.Lock()
+
 
 def dir_size(path: Path) -> int:
-    """Rekursiv byte-summa av en mapp. 0 om den saknas."""
+    """Rekursiv byte-summa av en mapp. 0 om den saknas. Oachad (rå walk)."""
     if not path.exists():
         return 0
     total = 0
@@ -26,6 +38,34 @@ def dir_size(path: Path) -> int:
             except OSError:
                 pass  # fil kan ha försvunnit mellan walk och stat
     return total
+
+
+def cached_dir_size(path: Path) -> int:
+    """dir_size med TTL-memoisering per mapp (se modul-docstringen)."""
+    ttl = config.STORAGE_CACHE_TTL
+    if ttl <= 0:
+        return dir_size(path)
+    key = str(path)
+    now = time.monotonic()
+    with _cache_lock:
+        hit = _cache.get(key)
+        if hit is not None and now - hit[0] < ttl:
+            return hit[1]
+    # Walk utanför låset (kan vara långsam); en cache-miss-race betyder bara att
+    # två anrop råkar walka samma mapp - redundant, inte fel.
+    size = dir_size(path)
+    with _cache_lock:
+        _cache[key] = (time.monotonic(), size)
+    return size
+
+
+def invalidate(path: Path | None = None) -> None:
+    """Töm hela cachen (path=None) eller bara en mapp."""
+    with _cache_lock:
+        if path is None:
+            _cache.clear()
+        else:
+            _cache.pop(str(path), None)
 
 
 def human_size(n: int) -> str:
@@ -42,11 +82,11 @@ def human_size(n: int) -> str:
 
 
 def project_size(slug: str) -> int:
-    return dir_size(project_dir(slug))
+    return cached_dir_size(project_dir(slug))
 
 
 def media_size(owner_id: int) -> int:
-    return dir_size(owner_dir(owner_id))
+    return cached_dir_size(owner_dir(owner_id))
 
 
 def project_sizes() -> dict[str, int]:
@@ -56,7 +96,7 @@ def project_sizes() -> dict[str, int]:
     if root.exists():
         for child in root.iterdir():
             if child.is_dir():
-                out[child.name] = dir_size(child)
+                out[child.name] = cached_dir_size(child)
     return out
 
 
@@ -67,5 +107,5 @@ def media_sizes() -> dict[int, int]:
     if root.exists():
         for child in root.iterdir():
             if child.is_dir() and child.name.isdigit():
-                out[int(child.name)] = dir_size(child)
+                out[int(child.name)] = cached_dir_size(child)
     return out

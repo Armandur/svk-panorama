@@ -67,6 +67,10 @@ PREVIEW_QUALITY = int(os.environ.get("SVK_PREVIEW_QUALITY", "82"))
 # tänkt att kunna justeras i ett kommande admin-gränssnitt (skriver env/config).
 TILE_CONCURRENCY = max(1, int(os.environ.get("SVK_TILE_CONCURRENCY", "2")))
 
+# Diskanvändnings-cache (admin-lagringsvyn): TTL i sekunder för memoiserad
+# mappstorlek. 0 = av (räkna om varje gång). Se app/services/storage.py.
+STORAGE_CACHE_TTL = int(os.environ.get("SVK_STORAGE_CACHE_TTL", "60"))
+
 # Publik bas-URL för turer/export (t.ex. https://turer.exempel.se). Tom sträng
 # = använd relativa vägar / request-host. Env-default; tänkt att kunna överridas
 # i ett kommande admin-gränssnitt där admin-värdet vinner över env. Konsumeras

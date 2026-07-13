@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session
 
+from app import config
 from app.auth import hash_password, make_invite_token, password_error, require_admin
 from app.database import Project, User, get_db
 from app.deps import (
@@ -120,18 +121,16 @@ def users_page(
     admin: User = Depends(require_admin),
 ) -> HTMLResponse:
     users = db.query(User).order_by(User.created_at.asc()).all()
-    # Diskanvändning: skanna mapparna en gång och summera per användare (turer +
-    # mediepool). Ospårade mappar (utan matchande DB-rad) fångas som differens.
+    # Diskanvändning per användare (turer + mediepool). Cachad per mapp -> billigt.
+    # Full översikt med drill-down finns på /admin/storage.
     psizes = storage.project_sizes()
     msizes = storage.media_sizes()
     slugs_by_owner: dict[int, list[str]] = {}
     for p in db.query(Project).all():
         slugs_by_owner.setdefault(p.owner_id, []).append(p.slug)
     rows = []
-    tracked = 0
     for u in users:
         used = sum(psizes.get(s, 0) for s in slugs_by_owner.get(u.id, [])) + msizes.get(u.id, 0)
-        tracked += used
         rows.append({
             "id": u.id,
             "email": u.email,
@@ -143,7 +142,6 @@ def users_page(
             "invite_url": _invite_url(request, u.id) if u.password_hash is None else None,
             "storage": used,
         })
-    disk_total = sum(psizes.values()) + sum(msizes.values())
     token = new_csrf_token()
     response = templates.TemplateResponse(
         request,
@@ -152,9 +150,6 @@ def users_page(
             "users": rows,
             "me": admin.id,
             "active": "users",
-            "storage_tracked": tracked,
-            "storage_disk": disk_total,
-            "storage_untracked": max(0, disk_total - tracked),
             "msg": request.query_params.get("msg"),
             "error": request.query_params.get("error"),
             "csrf_token": token,
@@ -162,6 +157,83 @@ def users_page(
     )
     set_csrf_cookie(response, token)
     return response
+
+
+@router.get("/admin/storage", response_class=HTMLResponse)
+def storage_page(
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+) -> HTMLResponse:
+    """Dedikerad lagringsöversikt: per användare -> turer + mediepool, ospårade
+    mappar, och totaler. Störst först. Cachad (SVK_STORAGE_CACHE_TTL); knappen
+    'Räkna om' tömmer cachen. Fas 4: gruppera per team (owner_id -> team_id)."""
+    psizes = storage.project_sizes()
+    msizes = storage.media_sizes()
+    users = db.query(User).order_by(User.created_at.asc()).all()
+    projects_by_owner: dict[int, list[Project]] = {}
+    for p in db.query(Project).all():
+        projects_by_owner.setdefault(p.owner_id, []).append(p)
+
+    owned_slugs: set[str] = set()
+    user_rows = []
+    for u in users:
+        tours = []
+        for p in projects_by_owner.get(u.id, []):
+            owned_slugs.add(p.slug)
+            tours.append({"slug": p.slug, "name": p.name, "bytes": psizes.get(p.slug, 0)})
+        tours.sort(key=lambda t: t["bytes"], reverse=True)
+        media_bytes = msizes.get(u.id, 0)
+        total = sum(t["bytes"] for t in tours) + media_bytes
+        user_rows.append({
+            "id": u.id, "email": u.email, "name": u.name,
+            "tours": tours, "media": media_bytes, "total": total,
+        })
+    user_rows.sort(key=lambda r: r["total"], reverse=True)
+
+    # Ospårat: mappar på disk utan matchande DB-rad (orphan-turer / -mediepooler).
+    user_ids = {u.id for u in users}
+    orphan_tours = sorted(
+        [{"slug": s, "bytes": b} for s, b in psizes.items() if s not in owned_slugs],
+        key=lambda o: o["bytes"], reverse=True,
+    )
+    orphan_media = sorted(
+        [{"owner_id": oid, "bytes": b} for oid, b in msizes.items() if oid not in user_ids],
+        key=lambda o: o["bytes"], reverse=True,
+    )
+    tracked = sum(r["total"] for r in user_rows)
+    disk_total = sum(psizes.values()) + sum(msizes.values())
+
+    token = new_csrf_token()
+    response = templates.TemplateResponse(
+        request,
+        "admin_storage.html",
+        {
+            "active": "storage",
+            "user_rows": user_rows,
+            "orphan_tours": orphan_tours,
+            "orphan_media": orphan_media,
+            "tracked": tracked,
+            "disk_total": disk_total,
+            "untracked": max(0, disk_total - tracked),
+            "cache_ttl": config.STORAGE_CACHE_TTL,
+            "csrf_token": token,
+            "msg": request.query_params.get("msg"),
+        },
+    )
+    set_csrf_cookie(response, token)
+    return response
+
+
+@router.post("/admin/storage/refresh")
+def storage_refresh(
+    request: Request,
+    admin: User = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Töm diskanvändnings-cachen -> nästa laddning räknar om från disk."""
+    storage.invalidate()
+    return RedirectResponse(url="/admin/storage?msg=Räknade+om+diskanvändningen", status_code=302)
 
 
 @router.get("/admin/users/{user_id}/projects", response_class=HTMLResponse)

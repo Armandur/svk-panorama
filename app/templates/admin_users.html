@@ -74,15 +74,7 @@
 		</tbody>
 	</table>
 </form>
-
-<p class="storage-summary">
-	Diskanvändning: <strong>{{ human_size(storage_tracked) }}</strong> hos användare
-	· <strong>{{ human_size(storage_disk) }}</strong> totalt på disk
-	{% if storage_untracked > 0 %}
-	· <span class="tile-partial">{{ human_size(storage_untracked) }} ospårat</span>
-	(turer/media utan matchande användare)
-	{% endif %}
-</p>
+<p class="storage-summary"><a href="/admin/storage">Full lagringsöversikt med drill-down &rarr;</a></p>
 
 <article class="admin-create">
 	<h2>Ny användare</h2>

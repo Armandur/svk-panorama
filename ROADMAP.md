@@ -507,13 +507,18 @@ bundlen; ingen datamodellsändring. Browser-verifierat (Playwright): OG-taggar p
       secure context/https). Slutsats: lita på native-knappen. Verifiera på en
       https-deploy (som legacy-turerna i prod, där den redan syns).
 - [x] **Disk-/lagringsöversikt för admin KLAR (2026-07-13).** `services/storage.py`
-      (`dir_size` os.walk, `human_size`, `project_sizes`/`media_sizes` skannar
-      PROJECTS_DIR/MEDIA_DIR en gång). `/admin/users`: Lagring-kolumn per användare
-      (turer + mediepool) + summeringsrad "X hos användare · Y totalt på disk" med
-      ospårat-differens (mappar utan matchande DB-rad). `/admin/users/{id}`:
-      nedbrytning per tur + mediepool + totalt. `human_size` som Jinja-global.
-      Live-beräknad (cache:a om det blir tungt vid större skala). Browser-verifierat
-      (Playwright). Inför Fas 4: owner_id blir team_id, samma skanning håller.
+      (`dir_size` os.walk, `human_size`, `project_sizes`/`media_sizes`). **Egen flik
+      `/admin/storage`** (`admin_storage.html`): totaler (disk/hos användare/ospårat)
+      + drill-down per användare (`<details>` med turer störst-först + mediepool +
+      total) + **Ospårat**-sektion (mappar utan matchande DB-rad). Även Lagring-kolumn
+      på `/admin/users` och nedbrytning på `/admin/users/{id}`. `human_size` som
+      Jinja-global.
+      **TTL-cache KLAR (2026-07-13, byggd på Rasmus begäran):** `cached_dir_size`
+      memoiserar mappstorlek per mapp i in-process dict (`SVK_STORAGE_CACHE_TTL`,
+      default 60 s, 0=av) -> os.walk max en gång per TTL per mapp (mätt ~600x snabbare
+      cache-hit). `invalidate()` + admin-knapp "Räkna om" (`POST /admin/storage/refresh`)
+      för färska siffror på begäran. Browser-verifierat (Playwright). Inför Fas 4:
+      gruppera per team (owner_id -> team_id), samma skanning + cache håller.
 
 ### Mobil-buggfixar (2026-07-13, upptäckta av Rasmus)
 

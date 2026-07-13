@@ -289,13 +289,20 @@ disable/enable/delete). Admin-avatar-routes speglar profile.py (`_process_avatar
 importeras därifrån). Pre-produktion: schemaändring (t.ex. `active`) = radera
 svk.db + starta om.
 
-**Diskanvändning (services/storage.py).** Live-beräknad översikt (ingen persistens).
-`/admin/users` visar Lagring-kolumn per användare (summa av deras turmappar +
-mediepool) + en summeringsrad (hos användare / totalt på disk / ospårat).
-`/admin/users/{id}` visar nedbrytning per tur + mediepool + totalt. `project_sizes`/
-`media_sizes` skannar PROJECTS_DIR/MEDIA_DIR:s barn en gång per sidladdning (undviker
-dubbel-walk); `human_size` exponeras som Jinja-global (`app/deps.py`). Cache:a om det
-blir tungt vid större skala. Fas 4: owner_id -> team_id, samma skanning håller.
+**Diskanvändning (services/storage.py).** Mappstorlek per projekt/användare.
+`project_sizes`/`media_sizes` skannar PROJECTS_DIR/MEDIA_DIR:s barn; `human_size`
+exponeras som Jinja-global (`app/deps.py`). **TTL-cache:** `cached_dir_size`
+memoiserar per mapp i en in-process dict (`SVK_STORAGE_CACHE_TTL`, default 60 s,
+0=av) -> os.walk sker som mest en gång per TTL per mapp oavsett last (mätt ~600x
+snabbare cache-hit). `invalidate(path=None)` tömmer. Ytor:
+- **`/admin/storage`** (egen flik, `admin_storage.html`) - full drill-down:
+  totaler (disk/hos användare/ospårat), per användare ett `<details>` med turer
+  (störst först) + mediepool + total, och en **Ospårat**-sektion (mappar utan
+  matchande DB-rad, t.ex. rester efter borttagna konton). Knappen **Räkna om**
+  (`POST /admin/storage/refresh`) tömmer cachen.
+- `/admin/users` - Lagring-kolumn per användare (at-a-glance) + länk till fliken.
+- `/admin/users/{id}` - nedbrytning per tur + mediepool + totalt.
+Fas 4: gruppera per team (owner_id -> team_id), samma skanning håller.
 
 ## Publik delning (public.py)
 
@@ -357,7 +364,8 @@ kopierar bara de refererade poolbilderna. Usage härleds - ingen DB-tabell.
 (media), `SVK_DB_FILE`
 (svk.db), `SVK_SECRET_KEY` (annars per-start), `SVK_MAX_PANORAMA_MB` (80),
 `SVK_MAX_MAP_MB` (20), `SVK_PREVIEW_MAX_WIDTH` (2048), `SVK_PREVIEW_QUALITY`
-(82), `SVK_TILE_CONCURRENCY` (2), `SVK_BASE_URL` (tom; för framtida export/
+(82), `SVK_TILE_CONCURRENCY` (2), `SVK_STORAGE_CACHE_TTL` (60; diskanvändnings-cachens
+TTL i sek, 0=av), `SVK_BASE_URL` (tom; för framtida export/
 delningslänkar). `TILE_CONCURRENCY` läses per jobbstart -> justerbart utan
 omstart (tänkt admin-UI).
 

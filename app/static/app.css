@@ -727,6 +727,19 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .batch-count { color: var(--pico-muted-color); font-size: 0.9rem; }
 .col-storage { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .storage-summary { color: var(--pico-muted-color); font-size: 0.9rem; margin-top: 0.4rem; }
+
+/* Lagringsfliken (/admin/storage) */
+.storage-totals { display: flex; flex-wrap: wrap; align-items: center; gap: 1.4rem; margin-bottom: 1.2rem; padding: 0.9rem 1.1rem; border: 1px solid var(--pico-muted-border-color); border-radius: 0.4rem; }
+.storage-stat { display: flex; flex-direction: column; }
+.storage-stat-num { font-size: 1.4rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.storage-stat-label { color: var(--pico-muted-color); font-size: 0.8rem; }
+.storage-refresh { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 0 auto; }
+.storage-refresh button { margin: 0; width: auto; }
+details.storage-user { border: 1px solid var(--pico-muted-border-color); border-radius: 0.4rem; margin-bottom: 0.5rem; padding: 0 0.9rem; }
+details.storage-user > summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.7rem 0; cursor: pointer; font-weight: 600; }
+.storage-user-total { font-variant-numeric: tabular-nums; white-space: nowrap; }
+details.storage-user table { margin-bottom: 0.6rem; }
+.storage-orphans { margin-top: 1.4rem; }
 .invite-details summary { cursor: pointer; font-size: 0.85rem; }
 .invite-link { width: 100%; margin-top: 0.3rem; font-family: ui-monospace, monospace; font-size: 0.78rem; }
 .share-qr, .share-embed { margin-top: 0.9rem; }

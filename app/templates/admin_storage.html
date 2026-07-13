@@ -1,0 +1,85 @@
+{% extends "admin_base.html" %}
+{% block title %}Lagring - Admin{% endblock %}
+{% block admin_content %}
+
+<hgroup>
+	<h1>Lagring</h1>
+	<p>Diskanvändning per användare - turer (bilder, tiles, previews, karta, export/backup) och delad mediepool. Störst först. Fäll ut en användare för att borra ner till enskilda turer.</p>
+</hgroup>
+{% if msg %}<p class="profile-ok" role="status">{{ msg }}</p>{% endif %}
+
+<div class="storage-totals">
+	<div class="storage-stat">
+		<span class="storage-stat-num">{{ human_size(disk_total) }}</span>
+		<span class="storage-stat-label">Totalt på disk</span>
+	</div>
+	<div class="storage-stat">
+		<span class="storage-stat-num">{{ human_size(tracked) }}</span>
+		<span class="storage-stat-label">Hos användare</span>
+	</div>
+	{% if untracked > 0 %}
+	<div class="storage-stat">
+		<span class="storage-stat-num tile-partial">{{ human_size(untracked) }}</span>
+		<span class="storage-stat-label">Ospårat</span>
+	</div>
+	{% endif %}
+	<form method="post" action="/admin/storage/refresh" class="storage-refresh">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+		<button type="submit" class="secondary outline">Räkna om</button>
+		<small class="hint">Cachas i {{ cache_ttl }} s</small>
+	</form>
+</div>
+
+{% for u in user_rows %}
+<details class="storage-user"{% if loop.first and u.total %} open{% endif %}>
+	<summary>
+		<span class="storage-user-name">{{ u.name or u.email }}</span>
+		<span class="storage-user-total">{{ human_size(u.total) }}</span>
+	</summary>
+	<table>
+		<thead>
+			<tr><th scope="col">Tur</th><th scope="col">Storlek</th></tr>
+		</thead>
+		<tbody>
+			{% for t in u.tours %}
+			<tr>
+				<td><a href="/projects/{{ t.slug }}/preview">{{ t.name or t.slug }}</a></td>
+				<td class="col-storage">{{ human_size(t.bytes) }}</td>
+			</tr>
+			{% else %}
+			<tr><td colspan="2" class="hint">Inga turer.</td></tr>
+			{% endfor %}
+			<tr>
+				<td>Mediepool (delad)</td>
+				<td class="col-storage">{{ human_size(u.media) }}</td>
+			</tr>
+			<tr>
+				<td><a href="/admin/users/{{ u.id }}">{{ u.email }} &rarr;</a></td>
+				<td class="col-storage"><strong>{{ human_size(u.total) }}</strong></td>
+			</tr>
+		</tbody>
+	</table>
+</details>
+{% endfor %}
+
+{% if orphan_tours or orphan_media %}
+<article class="storage-orphans">
+	<h2>Ospårat</h2>
+	<p class="hint">Mappar på disk utan matchande användare i databasen (t.ex. rester efter borttagna konton). Städa manuellt vid behov.</p>
+	<table>
+		<thead>
+			<tr><th scope="col">Mapp</th><th scope="col">Storlek</th></tr>
+		</thead>
+		<tbody>
+			{% for o in orphan_tours %}
+			<tr><td><code>projects/{{ o.slug }}/</code></td><td class="col-storage">{{ human_size(o.bytes) }}</td></tr>
+			{% endfor %}
+			{% for o in orphan_media %}
+			<tr><td><code>media/{{ o.owner_id }}/</code></td><td class="col-storage">{{ human_size(o.bytes) }}</td></tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</article>
+{% endif %}
+
+{% endblock %}
