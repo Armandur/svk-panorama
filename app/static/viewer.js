@@ -25,14 +25,13 @@
 		? tour.default.languages : ["sv"];
 
 	// localStorage-nyckel för språkvalet nycklas PER TUR (annars läcker valet
-	// mellan olika turer på samma origin - flera /s-länkar eller bundlar). Härleds
-	// ur turens scen-id-set (stabilt, unikt nog, avslöjar ingen slug på /s).
-	var LANG_STORE_KEY = (function () {
-		var ids = Object.keys(tour.scenes || {}).sort().join(",");
-		var h = 5381;
-		for (var i = 0; i < ids.length; i++) { h = ((h << 5) + h + ids.charCodeAt(i)) >>> 0; }
-		return "tour_lang:" + h.toString(36);
-	})();
+	// mellan olika turer på samma origin - flera /s-länkar eller bundlar). Nyckel =
+	// sidans pathname: /projects/<slug>/view, /s/<token> och en bundles filsökväg
+	// är var för sig unika per tur i sin origin (avslöjar ingen slug på /s) OCH
+	// stabila över scen-ändringar (en scen-id-hash skulle nollställa valet vid varje
+	// tillagd/borttagen scen, och kollidera mellan likaformade turar - scen-id är
+	// per-tur småheltal).
+	var LANG_STORE_KEY = "tour_lang:" + (location.pathname || "/");
 
 	// Pannellum har en egen inbyggd titel-ruta som läser scene.title RAKT AV och
 	// skulle visa "[object Object]" för en flerspråkig {kod:text}-titel. Vi
