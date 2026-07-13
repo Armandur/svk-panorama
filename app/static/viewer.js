@@ -157,6 +157,7 @@
 				pendingView = null;
 			}
 			writeHash();
+			positionLangToggle();  // pannellums kontroller finns nu -> placera under dem
 		});
 		// Användarstyrda vy-ändringar (drag/zoom/scenbyte) - inte autorotate.
 		["scenechange", "mouseup", "touchend", "zoomchange"].forEach(function (ev) {
@@ -278,26 +279,73 @@
 			});
 		}
 		if (langToggle) {
-			langToggle.setAttribute("aria-label", window.uiStr("language", currentLang));
-			langToggle.value = currentLang;
+			langBtn.setAttribute("aria-label", window.uiStr("language", currentLang) + ": " + (window.LANG_NAMES[currentLang] || currentLang));
+			if (langCurrentFlag) langCurrentFlag.src = window.langFlag(currentLang);
+			markLangActive();
+			positionLangToggle();
 		}
 	}
 
-	// --- Språkväljare (bara vid fler än ett språk) --------------------------
-	var langToggle = null;
-	if (langs.length >= 2) {
-		langToggle = document.createElement("select");
-		langToggle.className = "lang-toggle";
-		langs.forEach(function (code) {
-			var opt = document.createElement("option");
-			opt.value = code;
-			opt.textContent = window.LANG_NAMES[code] || code;
-			langToggle.appendChild(opt);
+	// --- Språkväljare (flaggor, bara vid fler än ett språk) -----------------
+	// Infälld: bara aktuell flagga. Utfälld: meny med flagga + språknamn.
+	// Placeras längs vänsterkanten under pannellums verktygsknappar (positioneras
+	// mot .pnlm-controls-container efter bygget).
+	var langToggle = null, langBtn = null, langCurrentFlag = null, langMenu = null;
+	function markLangActive() {
+		if (!langMenu) return;
+		Array.prototype.forEach.call(langMenu.children, function (it) {
+			it.classList.toggle("active", it.dataset.lang === currentLang);
 		});
-		langToggle.value = currentLang;
-		langToggle.setAttribute("aria-label", window.uiStr("language", currentLang));
+	}
+	function openLangMenu() { if (langMenu) { langMenu.hidden = false; langToggle.classList.add("open"); markLangActive(); } }
+	function closeLangMenu() { if (langMenu) { langMenu.hidden = true; langToggle.classList.remove("open"); } }
+	function positionLangToggle() {
+		if (!langToggle) return;
+		var cc = document.querySelector(".pnlm-controls-container");
+		if (cc) {
+			var r = cc.getBoundingClientRect();
+			langToggle.style.top = (r.bottom + 6) + "px";
+			langToggle.style.left = Math.max(4, r.left) + "px";
+		} else {
+			langToggle.style.top = "96px";
+			langToggle.style.left = "4px";
+		}
+	}
+	if (langs.length >= 2) {
+		langToggle = document.createElement("div");
+		langToggle.className = "lang-toggle";
+		langBtn = document.createElement("button");
+		langBtn.type = "button";
+		langBtn.className = "lang-current";
+		langCurrentFlag = document.createElement("img");
+		langCurrentFlag.alt = "";
+		langBtn.appendChild(langCurrentFlag);
+		langToggle.appendChild(langBtn);
+		langMenu = document.createElement("div");
+		langMenu.className = "lang-menu";
+		langMenu.hidden = true;
+		langs.forEach(function (code) {
+			var item = document.createElement("button");
+			item.type = "button";
+			item.className = "lang-item";
+			item.dataset.lang = code;
+			var f = document.createElement("img");
+			f.src = window.langFlag(code); f.alt = "";
+			var name = document.createElement("span");
+			name.textContent = window.LANG_NAMES[code] || code;
+			item.appendChild(f); item.appendChild(name);
+			item.addEventListener("click", function () { closeLangMenu(); setLang(code); });
+			langMenu.appendChild(item);
+		});
+		langToggle.appendChild(langMenu);
+		langBtn.addEventListener("click", function (e) {
+			e.stopPropagation();
+			if (langMenu.hidden) openLangMenu(); else closeLangMenu();
+		});
+		document.addEventListener("click", closeLangMenu);
+		document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeLangMenu(); });
+		window.addEventListener("resize", positionLangToggle);
 		document.body.appendChild(langToggle);
-		langToggle.addEventListener("change", function () { setLang(langToggle.value); });
 	}
 
 	function setLang(lang) {

@@ -18,6 +18,24 @@
 		fi: "Suomi", no: "Norsk", da: "Dansk",
 	};
 
+	// Flaggor: vendorade SVG:er (flag-icons, MIT) som data-URI:er -> renderas
+	// IDENTISKT på alla enheter (till skillnad från flagg-emoji som Windows inte
+	// stödjer). Delas av runtime-vieweren, branding-editorn och /mallar. Språk ->
+	// land: en=GB, da=DK; övriga = samma kod.
+	window.LANG_FLAG = { sv: "se", en: "gb", de: "de", fi: "fi", no: "no", da: "dk" };
+	window.FLAG_SVGS = {
+		se: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJmbGFnLWljb25zLXNlIiB2aWV3Qm94PSIwIDAgNjQwIDQ4MCI+CiAgPHBhdGggZmlsbD0iIzAwNTI5MyIgZD0iTTAgMGg2NDB2NDgwSDB6Ii8+CiAgPHBhdGggZmlsbD0iI2ZlY2IwMCIgZD0iTTE3NiAwdjE5Mkgwdjk2aDE3NnYxOTJoOTZWMjg4aDM2OHYtOTZIMjcyVjB6Ii8+Cjwvc3ZnPgo=",
+		gb: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJmbGFnLWljb25zLWdiIiB2aWV3Qm94PSIwIDAgNjQwIDQ4MCI+CiAgPHBhdGggZmlsbD0iIzAxMjE2OSIgZD0iTTAgMGg2NDB2NDgwSDB6Ii8+CiAgPHBhdGggZmlsbD0iI0ZGRiIgZD0ibTc1IDAgMjQ0IDE4MUw1NjIgMGg3OHY2Mkw0MDAgMjQxbDI0MCAxNzh2NjFoLTgwTDMyMCAzMDEgODEgNDgwSDB2LTYwbDIzOS0xNzhMMCA2NFYweiIvPgogIDxwYXRoIGZpbGw9IiNDODEwMkUiIGQ9Im00MjQgMjgxIDIxNiAxNTl2NDBMMzY5IDI4MXptLTE4NCAyMCA2IDM1TDU0IDQ4MEgwek02NDAgMHYzTDM5MSAxOTFsMi00NEw1OTAgMHpNMCAwbDIzOSAxNzZoLTYwTDAgNDJ6Ii8+CiAgPHBhdGggZmlsbD0iI0ZGRiIgZD0iTTI0MSAwdjQ4MGgxNjBWMHpNMCAxNjB2MTYwaDY0MFYxNjB6Ii8+CiAgPHBhdGggZmlsbD0iI0M4MTAyRSIgZD0iTTAgMTkzdjk2aDY0MHYtOTZ6TTI3MyAwdjQ4MGg5NlYweiIvPgo8L3N2Zz4K",
+		de: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJmbGFnLWljb25zLWRlIiB2aWV3Qm94PSIwIDAgNjQwIDQ4MCI+CiAgPHBhdGggZmlsbD0iI2ZjMCIgZD0iTTAgMzIwaDY0MHYxNjBIMHoiLz4KICA8cGF0aCBmaWxsPSIjMDAwMDAxIiBkPSJNMCAwaDY0MHYxNjBIMHoiLz4KICA8cGF0aCBmaWxsPSJyZWQiIGQ9Ik0wIDE2MGg2NDB2MTYwSDB6Ii8+Cjwvc3ZnPgo=",
+		fi: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJmbGFnLWljb25zLWZpIiB2aWV3Qm94PSIwIDAgNjQwIDQ4MCI+CiAgPHBhdGggZmlsbD0iI2ZmZiIgZD0iTTAgMGg2NDB2NDgwSDB6Ii8+CiAgPHBhdGggZmlsbD0iIzAwMmY2YyIgZD0iTTAgMTc0LjVoNjQwdjEzMUgweiIvPgogIDxwYXRoIGZpbGw9IiMwMDJmNmMiIGQ9Ik0xNzUuNSAwaDEzMC45djQ4MGgtMTMxeiIvPgo8L3N2Zz4K",
+		no: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJmbGFnLWljb25zLW5vIiB2aWV3Qm94PSIwIDAgNjQwIDQ4MCI+CiAgPHBhdGggZmlsbD0iI2VkMjkzOSIgZD0iTTAgMGg2NDB2NDgwSDB6Ii8+CiAgPHBhdGggZmlsbD0iI2ZmZiIgZD0iTTE4MCAwaDEyMHY0ODBIMTgweiIvPgogIDxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0wIDE4MGg2NDB2MTIwSDB6Ii8+CiAgPHBhdGggZmlsbD0iIzAwMjY2NCIgZD0iTTIxMCAwaDYwdjQ4MGgtNjB6Ii8+CiAgPHBhdGggZmlsbD0iIzAwMjY2NCIgZD0iTTAgMjEwaDY0MHY2MEgweiIvPgo8L3N2Zz4K",
+		dk: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJmbGFnLWljb25zLWRrIiB2aWV3Qm94PSIwIDAgNjQwIDQ4MCI+CiAgPHBhdGggZmlsbD0iI2M4MTAyZSIgZD0iTTAgMGg2NDAuMXY0ODBIMHoiLz4KICA8cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjA1LjcgMGg2OC42djQ4MGgtNjguNnoiLz4KICA8cGF0aCBmaWxsPSIjZmZmIiBkPSJNMCAyMDUuN2g2NDAuMXY2OC42SDB6Ii8+Cjwvc3ZnPgo=",
+	};
+	// Flagg-data-URI för en språkkod (tom sträng om okänd).
+	window.langFlag = function (langCode) {
+		return window.FLAG_SVGS[window.LANG_FLAG[langCode]] || "";
+	};
+
 	// resolveText: plockar rätt språk ur ett textfält. Ren sträng = default-språk
 	// (bakåtkompat/monospråkigt). Objekt {sv,en,...} -> valt språk, annars fallback:
 	// default (langs[0]), sedan första icke-tomma. Tom sträng om inget finns.
