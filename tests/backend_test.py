@@ -19,7 +19,7 @@ from PIL import Image  # noqa: E402
 from app.auth import hash_password, make_invite_token, read_invite_token, verify_password  # noqa: E402
 from app.routes.preview import FONT_KEYS, _hex  # noqa: E402
 from app.routes.auth import _safe_next  # noqa: E402
-from app.services.bundle import _media_refs, _relativize, missing_translations  # noqa: E402
+from app.services.bundle import _media_refs, _prune_ghost_languages, _relativize, missing_translations  # noqa: E402
 from app.services.i18n import hotspot_in_lang, og_description, tour_default_lang  # noqa: E402
 from app.services.presets import (  # noqa: E402
     i18n_text_values,
@@ -622,6 +622,41 @@ def test_sanitize_hotspot_langs():
     check("hs_langs utan turspråk behåller giltig kod", sanitize_hotspot_langs(["en"], []) == ["en"])
 
 
+def test_prune_ghost_languages():
+    # Bundle-export ska bara skeppa aktiva språk (tour.default.languages). Spöktext
+    # (kod ej i listan, kvar sedan språket togs bort) rensas ur KOPIAN, disk orörd.
+    tour = {
+        "default": {
+            "languages": ["sv", "en"],
+            "branding": {"content": {"sv": "![](/media/1/a.jpg)", "de": "![](/media/1/ghost.jpg)"}},
+        },
+        "scenes": {
+            "1": {
+                "title": {"sv": "Kyrkan", "en": "Church", "de": "Kirche"},
+                "hotSpots": [
+                    {"type": "info", "text": {"sv": "![](/media/1/used.jpg)", "de": "![](/media/1/onlyghost.jpg)"}},
+                    {"type": "info", "text": {"de": "bara spöke"}},  # helt ghost -> fältet tas bort
+                    {"type": "info", "text": "Ren sträng"},  # ren sträng orörd
+                ],
+            },
+        },
+    }
+    _prune_ghost_languages(tour)
+    check("prune: title tappar spök-de", tour["scenes"]["1"]["title"] == {"sv": "Kyrkan", "en": "Church"})
+    check("prune: hotspot-text tappar spök-de", tour["scenes"]["1"]["hotSpots"][0]["text"] == {"sv": "![](/media/1/used.jpg)"})
+    check("prune: helt spök-fält tas bort", "text" not in tour["scenes"]["1"]["hotSpots"][1])
+    check("prune: ren sträng orörd", tour["scenes"]["1"]["hotSpots"][2]["text"] == "Ren sträng")
+    check("prune: branding tappar spök-de", tour["default"]["branding"]["content"] == {"sv": "![](/media/1/a.jpg)"})
+    # Efter prune: media-refs innehåller bara aktiva bilder, INTE ghost-only.
+    refs = _media_refs(tour)
+    check("prune: ghost-only-bilder bundlas inte", (1, "onlyghost.jpg") not in refs and (1, "ghost.jpg") not in refs)
+    check("prune: aktiva bilder kvar i refs", (1, "used.jpg") in refs and (1, "a.jpg") in refs)
+    # Utan languages (monospråkig/äldre tur) -> rör inget (kan inte avgöra aktiva).
+    mono = {"default": {}, "scenes": {"1": {"title": {"sv": "X", "de": "Y"}}}}
+    _prune_ghost_languages(mono)
+    check("prune: utan languages -> orört", mono["scenes"]["1"]["title"] == {"sv": "X", "de": "Y"})
+
+
 def test_hotspot_in_lang():
     check("hotspot_in_lang inget langs-fält -> alla språk", hotspot_in_lang({}, "en") is True)
     check("hotspot_in_lang tom langs-lista -> alla språk", hotspot_in_lang({"langs": []}, "de") is True)
@@ -639,6 +674,7 @@ def main() -> int:
         test_i18n_helpers,
         test_translate_helpers,
         test_sanitize_hotspot_langs,
+        test_prune_ghost_languages,
         test_hotspot_in_lang,
         test_export_readiness,
         test_preset_sanitize,

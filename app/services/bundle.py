@@ -57,6 +57,40 @@ def forget_job(slug: str) -> None:
         _jobs.pop(slug, None)
 
 
+def _prune_ghost_languages(tour: dict) -> None:
+    """Ta bort spökspråk (koder som INTE står i tour.default.languages) ur alla
+    i18n-textfält INFÖR bundle-export. Att ta bort ett språk på uppladdningssteget
+    (`save_languages`) rör bara languages-listan, inte texterna - medvetet
+    icke-destruktivt på disk (re-add återställer). Men bundlen är visningsprodukten
+    och ska bara skeppa AKTIVA språk: annars följer poolbilder som bara refereras i
+    spöktext med i zipen (och storleken växer). Muterar en KOPIA (read_tour) -> disk
+    och backup behåller spöktexten latent. Fält: scen-title, hotspot-text/body,
+    branding.content. En dict som töms helt -> fältet tas bort."""
+    langs = (tour.get("default") or {}).get("languages") or []
+    if not langs:
+        return  # okänd/monospråkig tur -> inga {kod:text}-fält att rensa
+    keep = set(langs)
+
+    def prune(container: dict, key: str) -> None:
+        v = container.get(key)
+        if not isinstance(v, dict):
+            return  # ren sträng (default-språk) eller saknas -> orört
+        pruned = {k: t for k, t in v.items() if k in keep}
+        if pruned:
+            container[key] = pruned
+        else:
+            container.pop(key, None)
+
+    for scene in tour.get("scenes", {}).values():
+        prune(scene, "title")
+        for hs in scene.get("hotSpots", []):
+            prune(hs, "text")
+            prune(hs, "body")
+    branding = (tour.get("default") or {}).get("branding")
+    if isinstance(branding, dict):
+        prune(branding, "content")
+
+
 def _media_refs(tour: dict) -> set[tuple[int, str]]:
     """(owner_id, filnamn) för alla poolbilder som refereras i hotspot-markdown
     OCH i branding-blocket (logotyp) - i ALLA språkvarianter av fälten."""
@@ -192,6 +226,7 @@ def _build(slug: str, project_name: str, include_originals: bool = False) -> Non
     job = _jobs[slug]
     try:
         raw_tour = read_tour(slug)
+        _prune_ghost_languages(raw_tour)  # spökspråk bort ur bundlen (icke-destruktivt, disk orörd)
         media_refs = _media_refs(raw_tour)  # innan URL:erna relativiseras bort
         tour = _relativize(slug, raw_tour)
         map_data = read_map(slug)
