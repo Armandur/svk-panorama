@@ -35,13 +35,14 @@ Opus, konsulterad om angreppssätt - särskilt fynd 1 och 3):
   över scen-ändringar.)
 - **[ÅTGÄRDAT bc80884] BÖR - språk-badge visades även vid 1 språk.** `scene.js`
   grindar badgen på `langs.length > 1`.
-- **[SENARELAGT] BÖR - `/languages` städar inte spöktext för borttagna språk.**
-  Advisor flaggade den föreslagna prunen som möjlig regression: att pruna
-  on-removal är destruktivt (lätt att råka ta bort ett språk och tappa alla
-  översättningar) och harmen är liten (ghost-text ignoreras vid rendering; enda
-  reella läckan är att en bild som bara refereras i borttaget språks ghost-text
-  räknas som använd). Lämnat latent (re-add återställer). Lyft till Rasmus:
-  pruna inte alls / pruna vid export / pruna med varning.
+- **[ÅTGÄRDAT c65b717] BÖR - spöktext för borttagna språk.** Advisor flaggade
+  prune-on-removal som destruktiv (lätt att råka ta bort ett språk och tappa alla
+  översättningar - samma tysta förlust som orphan-fyndet undvek). Rasmus valde
+  alternativ (b): pruna bara vid **bundle-export**, inte på disk. `bundle.py`
+  `_prune_ghost_languages` muterar bundle-kopian (droppar koder ej i
+  `default.languages` ur title/text/body/branding) före `_media_refs`, så
+  poolbilder som bara refereras i spöktext inte följer med i zipen. Disk + backup
+  behåller spöktexten latent (re-add återställer). End-to-end-verifierat.
 
 ## 2026-07-12 - Granskning av produktionshärdning (commit 3e6f9e2)
 
