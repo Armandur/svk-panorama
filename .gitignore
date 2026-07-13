@@ -13,6 +13,9 @@ _tiletest.html
 # Runtime-logg från dev-servern
 dev.log
 
+# Efemära rapporter/genererade sidor (t.ex. systemdocs)
+tmp/
+
 test/
 
 # FastAPI-app: venv, användarprojekt (proprietära), databas, env
