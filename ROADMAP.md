@@ -570,8 +570,8 @@ bundlen; ingen datamodellsändring. Browser-verifierat (Playwright): OG-taggar p
         -> flagg-dropdown väljer språk för EN input (scene.js). Hotspot-modalens språk-
         `<select>` bytt till samma flagg-dropdown för konsekvens.
   - [x] **Översätt-steg (F5) KLAR (2026-07-13).** Eget steg `/projects/{slug}/translate`
-        (`routes/translate.py` + `translate.html` + `translate.js`), i steg-navet EFTER
-        Preview, syns bara vid >1 språk (annars redirect till preview). Hittar luckor
+        (`routes/translate.py` + `translate.html` + `translate.js`), i steg-navet MELLAN
+        Scener och Preview, syns bara vid >1 språk (annars redirect till preview). Hittar luckor
         (fält med källspråk men saknad målspråk: hotspot text/body, scentitel, branding),
         guidad genomgång: klick laddar scen + riktar kamera mot hotspoten (`loadScene`
         med hotspotens pitch/yaw), källtext (skrivskyddad) bredvid EasyMDE-målfält, spar

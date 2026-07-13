@@ -7,11 +7,13 @@
     {'key': 'upload', 'title': 'Uppladdning', 'url': '/projects/' ~ _slug, 'enabled': true},
     {'key': 'plan', 'title': 'Placering', 'url': '/projects/' ~ _slug ~ '/plan', 'enabled': has_map_image and has_scenes},
     {'key': 'scenes', 'title': 'Scenhantering', 'url': '/projects/' ~ _slug ~ '/scenes', 'enabled': has_scenes},
-    {'key': 'preview', 'title': 'Förhandsvisning', 'url': '/projects/' ~ _slug ~ '/preview', 'enabled': has_scenes},
 ] %}
+{# Översätt-steget (bara flerspråkiga turer) ligger MELLAN Scener och Preview:
+   översätt först, förhandsvisa sedan resultatet. #}
 {% if is_multilingual %}
 {% set _steps = _steps + [{'key': 'translate', 'title': 'Översätt', 'url': '/projects/' ~ _slug ~ '/translate', 'enabled': has_scenes}] %}
 {% endif %}
+{% set _steps = _steps + [{'key': 'preview', 'title': 'Förhandsvisning', 'url': '/projects/' ~ _slug ~ '/preview', 'enabled': has_scenes}] %}
 {% set ns = namespace(idx=0) %}
 {% for s in _steps %}{% if s.key == current_step %}{% set ns.idx = loop.index0 %}{% endif %}{% endfor %}
 {% set _prev = _steps[ns.idx - 1] if ns.idx > 0 else none %}

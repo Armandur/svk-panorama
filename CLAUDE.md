@@ -254,8 +254,8 @@ antingen en **ren sträng** (monospråkigt / default-språk / äldre turer) elle
   (`mountLangDropdown(container, {langs,current,onPick,showName})`) = återanvändbar editor-
   dropdown (branding-editorn, scentitel, hotspot-modal, /mallar). Turens språk väljs på
   preview-steget med bockrutor + **drag-and-drop-ordning** (först = default).
-- **Översätt-steg (routes/translate.py, translate.html/js):** eget flödessteg efter
-  Preview, syns bara vid >1 språk (annars redirect). Listar LUCKOR (fält med källspråk
+- **Översätt-steg (routes/translate.py, translate.html/js):** eget flödessteg MELLAN
+  Scener och Preview (översätt först, förhandsvisa sedan), syns bara vid >1 språk (annars redirect). Listar LUCKOR (fält med källspråk
   `languages[0]` men saknad målspråk), guidat: klick laddar scen + riktar kamera mot
   hotspoten, källtext (skrivskyddad) bredvid EasyMDE-målfält, spar via granulär endpoint
   `POST /projects/{slug}/translate` (`set_i18n_lang`). `bundle.missing_translations(tour)`
