@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ site_name() }} - virtuella rundturer av kyrkorummet{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="/static/vendor/fonts/fonts.css">
+<link rel="stylesheet" href="/static/landing.css">
+{% endblock %}
+{# Full-bleed: släpp Pico-containern så hero-sektionerna kan gå kant-till-kant. #}
+{% block main_attrs %} class="landing-main"{% endblock %}
+{% block body_attrs %} class="landing-body"{% endblock %}
+{% block content %}
+
+<section class="hero">
+	<svg class="hero-arch" viewBox="0 0 300 460" aria-hidden="true" preserveAspectRatio="xMidYMax meet">
+		<path d="M20 460 V150 Q20 20 150 20 Q280 20 280 150 V460" fill="none" stroke="currentColor" stroke-width="1.5"/>
+		<path d="M60 460 V165 Q60 70 150 70 Q240 70 240 165 V460" fill="none" stroke="currentColor" stroke-width="1"/>
+		<line x1="150" y1="70" x2="150" y2="460" stroke="currentColor" stroke-width="1"/>
+	</svg>
+	<div class="hero-inner">
+		<p class="eyebrow">Self-host först &middot; byggd på Pannellum</p>
+		<h1 class="hero-title">Virtuella rundturer<br>av <em>kyrkorummet</em></h1>
+		<p class="hero-lede">
+			Bygg avancerade 360-turer av kyrkor och kyrkogårdar. Planera på kartan,
+			kalibrera i panoramat, komplettera med rich text och flera språk - och
+			exportera en självbärande bundle du hostar var du vill.
+		</p>
+		<div class="hero-cta">
+			{% if request.session.get('uid') %}
+			<a href="/editor" role="button" class="cta-primary">Till editorn &rarr;</a>
+			{% else %}
+			<a href="/login" role="button" class="cta-primary">Logga in &rarr;</a>
+			{% endif %}
+			<a href="#features" class="cta-secondary">Se vad du kan göra</a>
+		</div>
+	</div>
+</section>
+
+<section id="features" class="features">
+	<div class="features-inner">
+		<article class="feat">
+			<span class="feat-icon" aria-hidden="true">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3Z"/><path d="M9 3v15M15 6v15"/></svg>
+			</span>
+			<h3>Kartan är sanningskällan</h3>
+			<p>Placera scenerna på en översiktskarta och rita länkar mellan dem. Hotspot-riktningarna härleds ur kartan - du kalibrerar bara en riktning per scen.</p>
+		</article>
+		<article class="feat">
+			<span class="feat-icon" aria-hidden="true">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+			</span>
+			<h3>Flera språk</h3>
+			<p>Skriv varje text på flera språk. Besökaren väljer flagga i vieweren, och ett guidat översättningssteg fångar exakt de luckor som saknas.</p>
+		</article>
+		<article class="feat">
+			<span class="feat-icon" aria-hidden="true">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg>
+			</span>
+			<h3>Självbärande bundle</h3>
+			<p>Exportera en zip med rena statiska filer - fungerar på valfri webbserver i valfri underkatalog, helt utan server-kod. Du äger och hostar turen själv.</p>
+		</article>
+		<article class="feat">
+			<span class="feat-icon" aria-hidden="true">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
+			</span>
+			<h3>Dela &amp; bädda in</h3>
+			<p>Publicera en tur med en oigissbar länk, färdig QR-kod och en embed-snutt - eller bädda in den direkt på församlingens egen sida.</p>
+		</article>
+	</div>
+	<p class="features-foot">
+		{% if not request.session.get('uid') %}Åtkomst sker via inbjudan - <a href="/login">logga in</a> för att börja.{% else %}<a href="/editor">Öppna editorn</a> och fortsätt där du var.{% endif %}
+	</p>
+</section>
+
+{% endblock %}

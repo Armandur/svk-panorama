@@ -54,7 +54,14 @@ class LanguagesPayload(BaseModel):
 
 
 @router.get("/", response_class=HTMLResponse)
-def index(
+def landing(request: Request) -> HTMLResponse:
+    """Publik landningssida (ingen auth). Editorn bor på /editor. Inloggade ser
+    samma sida men med 'Till editorn' som primär-CTA (via request.session i mallen)."""
+    return templates.TemplateResponse(request, "landing.html", {})
+
+
+@router.get("/editor", response_class=HTMLResponse)
+def editor_home(
     request: Request,
     db: Session = Depends(get_db),
     user: User = Depends(require_user),
@@ -145,7 +152,7 @@ async def delete_project(
     delete_project_files(slug)
 
     # Admin som raderar en annans tur -> tillbaka till den användarens turlista.
-    dest = f"/admin/users/{owner_id}/projects" if acted_on_other else "/"
+    dest = f"/admin/users/{owner_id}/projects" if acted_on_other else "/editor"
     return RedirectResponse(url=dest, status_code=303)
 
 

@@ -14,7 +14,7 @@
 	{% set _initial = (_dn[:1] | upper) if _dn else '?' %}
 	<header class="site-header">
 		<nav class="container">
-			<ul><li>{% block brand %}<a href="/"><strong>{{ site_name() }}</strong></a>{% endblock %}</li></ul>
+			<ul><li>{% block brand %}<a href="{{ '/editor' if request.session.get('uid') else '/' }}"><strong>{{ site_name() }}</strong></a>{% endblock %}</li></ul>
 			{% if request.session.get('uid') %}
 			<ul class="nav-right">
 				{% if request.session.get('admin') %}
@@ -50,7 +50,7 @@
 				</li>
 			</ul>
 			{% else %}
-			<ul><li>Editor för virtuella kyrkorundturer</li></ul>
+			<ul class="nav-right"><li><a href="/login" role="button" class="secondary outline nav-btn">Logga in</a></li></ul>
 			{% endif %}
 		</nav>
 	</header>

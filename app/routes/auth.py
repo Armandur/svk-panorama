@@ -14,10 +14,11 @@ router = APIRouter()
 
 
 def _safe_next(next_url: str | None) -> str:
-    """Bara lokala relativa vägar (skydd mot open redirect)."""
+    """Bara lokala relativa vägar (skydd mot open redirect). Tom/ogiltig -> editorns
+    hemsida (/ är den publika landningssidan, inte inloggningsmålet)."""
     if next_url and next_url.startswith("/") and not next_url.startswith("//"):
         return next_url
-    return "/"
+    return "/editor"
 
 
 def _render_login(request: Request, next_url: str, error: str | None, status_code: int = 200) -> HTMLResponse:
@@ -33,7 +34,7 @@ def _render_login(request: Request, next_url: str, error: str | None, status_cod
 
 
 @router.get("/login", response_class=HTMLResponse)
-def login_form(request: Request, next: str = "/") -> HTMLResponse:
+def login_form(request: Request, next: str = "/editor") -> HTMLResponse:
     return _render_login(request, next, error=None)
 
 
@@ -43,7 +44,7 @@ async def login(
     db: Session = Depends(get_db),
     email: str = Form(...),
     password: str = Form(...),
-    next: str = Form("/"),
+    next: str = Form("/editor"),
     _csrf: None = Depends(verify_csrf_form),
 ):
     key = "login:" + ratelimit.client_ip(request)
@@ -129,4 +130,4 @@ async def accept_invite(
     db.commit()
     ratelimit.reset(key)
     set_user_session(request, user)
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url="/editor", status_code=303)

@@ -444,9 +444,10 @@ def test_auth():
     check("hash != klartext", h != "hemligt123")
     # Open redirect-skydd i login-next.
     check("safe_next lokal", _safe_next("/projects/x") == "/projects/x")
-    check("safe_next extern -> /", _safe_next("//evil.com") == "/")
-    check("safe_next absolut-url -> /", _safe_next("http://evil.com") == "/")
-    check("safe_next None -> /", _safe_next(None) == "/")
+    # Fallback = /editor (/ är publik landningssida, inte inloggningsmål).
+    check("safe_next extern -> /editor", _safe_next("//evil.com") == "/editor")
+    check("safe_next absolut-url -> /editor", _safe_next("http://evil.com") == "/editor")
+    check("safe_next None -> /editor", _safe_next(None) == "/editor")
     # Inbjudnings-token (signerad, stateless).
     tok = make_invite_token(42)
     check("invite round-trip", read_invite_token(tok) == 42)

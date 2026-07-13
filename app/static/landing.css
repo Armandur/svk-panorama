@@ -1,0 +1,172 @@
+/* Landningssida (/) - editoriell/arkitektonisk stillhet: varm sten/pergament,
+   liturgisk röd accent, Spectral (serif) display + DM Sans body. Self-hostade
+   typsnitt (fonts.css). Laddas bara på landningssidan. */
+.landing-body {
+	--l-bg: #f6f2ea;
+	--l-bg2: #efe8db;
+	--l-ink: #241f1b;
+	--l-muted: #6f6456;
+	--l-accent: #8b1a1a;
+	--l-accent-ink: #fff;
+	--l-gold: #a9884f;
+	--l-card: #fffdf8;
+	--l-border: #e5ddcd;
+	--l-shadow: 0 1px 2px rgba(60,40,20,.05), 0 8px 30px rgba(60,40,20,.06);
+	--l-serif: "Spectral", Georgia, "Times New Roman", serif;
+	--l-sans: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+	background: var(--l-bg);
+	color: var(--l-ink);
+}
+@media (prefers-color-scheme: dark) {
+	.landing-body {
+		--l-bg: #17130f;
+		--l-bg2: #1f1a14;
+		--l-ink: #efe8dc;
+		--l-muted: #a79a86;
+		--l-accent: #e08a72;
+		--l-accent-ink: #1a1109;
+		--l-gold: #c7a568;
+		--l-card: #201a14;
+		--l-border: #342c22;
+		--l-shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 34px rgba(0,0,0,.35);
+	}
+}
+
+/* Header smälter in i hero-bakgrunden; brand + nav-knappar bläck i stället för
+   Pico-blått (bara på landningen - app-sidorna behåller sin blå identitet). */
+.landing-body .site-header { background: transparent; border-bottom: 0; }
+.landing-body .site-header nav > ul:first-child a { color: var(--l-ink); text-decoration: none; }
+.landing-body .site-header .nav-btn { color: var(--l-ink); border-color: var(--l-border); }
+.landing-body .site-header .nav-btn:hover { border-color: var(--l-accent); color: var(--l-accent); }
+.landing-body .site-header .account-name, .landing-body .site-header .account-caret { color: var(--l-ink); }
+.landing-main { padding: 0; max-width: none; margin: 0; }
+
+/* ---------------------------------------------------------------- Hero */
+.hero {
+	position: relative;
+	overflow: hidden;
+	padding: clamp(3rem, 9vw, 7rem) 1.4rem clamp(3.5rem, 8vw, 6rem);
+	/* Ljus uppifrån - som genom ett högt fönster. */
+	background:
+		radial-gradient(120% 80% at 50% -20%, rgba(255,255,255,.55), transparent 60%),
+		linear-gradient(180deg, var(--l-bg) 0%, var(--l-bg2) 100%);
+}
+@media (prefers-color-scheme: dark) {
+	.hero { background:
+		radial-gradient(120% 80% at 50% -20%, rgba(224,138,114,.14), transparent 62%),
+		linear-gradient(180deg, var(--l-bg) 0%, var(--l-bg2) 100%); }
+}
+.hero-inner { position: relative; max-width: 62rem; margin: 0 auto; }
+.eyebrow {
+	font-family: var(--l-sans);
+	text-transform: uppercase;
+	letter-spacing: .18em;
+	font-size: .74rem;
+	font-weight: 600;
+	color: var(--l-accent);
+	margin: 0 0 1.1rem;
+}
+.hero-title {
+	font-family: var(--l-serif);
+	font-weight: 700;
+	font-size: clamp(2.7rem, 8vw, 5.3rem);
+	line-height: 1.02;
+	letter-spacing: -.015em;
+	margin: 0 0 1.3rem;
+	color: var(--l-ink);
+}
+.hero-title em { font-style: italic; color: var(--l-accent); }
+.hero-lede {
+	font-family: var(--l-sans);
+	font-size: clamp(1.05rem, 1.8vw, 1.32rem);
+	line-height: 1.6;
+	color: var(--l-muted);
+	max-width: 40ch;
+	margin: 0 0 2.2rem;
+}
+.hero-cta { display: flex; flex-wrap: wrap; gap: .9rem 1.4rem; align-items: center; }
+.hero-cta .cta-primary {
+	font-family: var(--l-sans);
+	font-weight: 600;
+	background: var(--l-accent);
+	color: var(--l-accent-ink);
+	border: 1px solid var(--l-accent);
+	border-radius: 999px;
+	padding: .8rem 1.7rem;
+	text-decoration: none;
+	box-shadow: var(--l-shadow);
+	transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+.hero-cta .cta-primary:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 8px 26px rgba(139,26,26,.28); }
+.hero-cta .cta-secondary {
+	font-family: var(--l-sans);
+	font-weight: 500;
+	color: var(--l-ink);
+	text-decoration: none;
+	border-bottom: 1.5px solid var(--l-gold);
+	padding-bottom: 2px;
+}
+.hero-cta .cta-secondary:hover { color: var(--l-accent); }
+
+/* Spetsbåge-/valv-motiv bakom rubriken (dekor). */
+.hero-arch {
+	position: absolute;
+	right: clamp(-6rem, -2vw, 1rem);
+	top: 50%;
+	transform: translateY(-50%);
+	height: 118%;
+	width: auto;
+	color: var(--l-gold);
+	opacity: .16;
+	pointer-events: none;
+}
+@media (max-width: 720px) { .hero-arch { opacity: .08; right: -8rem; } }
+
+/* ---------------------------------------------------------------- Features */
+.features {
+	max-width: 66rem;
+	margin: 0 auto;
+	padding: clamp(2.5rem, 6vw, 4.5rem) 1.4rem clamp(3rem, 7vw, 5rem);
+}
+.features-inner {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+	gap: 1.1rem;
+}
+.feat {
+	background: var(--l-card);
+	border: 1px solid var(--l-border);
+	border-radius: 14px;
+	padding: 1.5rem 1.4rem 1.6rem;
+	box-shadow: var(--l-shadow);
+	transition: transform .15s ease, box-shadow .15s ease;
+}
+.feat:hover { transform: translateY(-3px); box-shadow: 0 10px 34px rgba(60,40,20,.12); }
+.feat-icon {
+	display: inline-flex;
+	width: 44px; height: 44px;
+	align-items: center; justify-content: center;
+	border-radius: 11px;
+	background: color-mix(in srgb, var(--l-accent) 12%, transparent);
+	color: var(--l-accent);
+	margin-bottom: 1rem;
+}
+.feat-icon svg { width: 23px; height: 23px; }
+.feat h3 { font-family: var(--l-serif); font-weight: 600; font-size: 1.25rem; margin: 0 0 .4rem; color: var(--l-ink); letter-spacing: -.01em; }
+.feat p { font-family: var(--l-sans); font-size: .96rem; line-height: 1.55; color: var(--l-muted); margin: 0; }
+.features-foot { font-family: var(--l-sans); text-align: center; color: var(--l-muted); margin: 2.4rem 0 0; }
+.features-foot a { color: var(--l-accent); text-decoration: none; border-bottom: 1px solid currentColor; }
+
+/* ---------------------------------------------------------------- Entré-animation */
+@media (prefers-reduced-motion: no-preference) {
+	.eyebrow, .hero-title, .hero-lede, .hero-cta { opacity: 0; animation: rise .7s cubic-bezier(.2,.7,.2,1) forwards; }
+	.hero-title { animation-delay: .07s; }
+	.hero-lede { animation-delay: .16s; }
+	.hero-cta { animation-delay: .25s; }
+	.feat { opacity: 0; animation: rise .6s ease forwards; }
+	.feat:nth-child(1) { animation-delay: .30s; }
+	.feat:nth-child(2) { animation-delay: .38s; }
+	.feat:nth-child(3) { animation-delay: .46s; }
+	.feat:nth-child(4) { animation-delay: .54s; }
+	@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+}
