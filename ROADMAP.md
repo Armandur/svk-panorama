@@ -558,6 +558,31 @@ bundlen; ingen datamodellsändring. Browser-verifierat (Playwright): OG-taggar p
       branding, "Map"-knapp; monospråkigt oförändrat), 166 backend-tester gröna.
       Kvar/senare: pannellums egna laddnings-/felsträngar (`tour.strings`) lokaliseras
       inte än; ev. fler språk = utöka `config.LANGUAGES` + `LANG_NAMES` (+ woff2 för accenter).
+
+- **Flerspråkighet - uppföljning (Rasmus 2026-07-13, pågår/planerat):**
+  - [~] **Flagg-baserad språkväljare** KLAR i viewern (commit 171abc7). PÅGÅR (subagent):
+        branding-editorns flikar -> flagg-dropdown, /mallar flerspråkig branding +
+        flaggindikatorer på kort, **språkordning via drag-and-drop** (utöver bockrutor;
+        ordning = prioritet, först = default), flagg-switcher-overlay även på /preview.
+        Delad widget `static/lang-dropdown.js` + flagg-infra i markdown.js (`FLAG_SVGS`/
+        `LANG_FLAG`/`langFlag`).
+  - [ ] **Scentitel: dropdown + EN inputruta** (som branding) i stället för tre rutor
+        (`#scene-title-langs` i scene.js). Använd samma `lang-dropdown.js`. Ev. även
+        hotspot-modalens språk-`<select>` -> samma flagg-dropdown för konsekvens.
+  - [ ] **Språkinställningarnas placering:** ligger på preview-steget (efter scenhantering)
+        men behövs innan per-språk-scenredigering -> utred att flytta språkvalet tidigare
+        i flödet. Senare.
+  - [ ] **Översätt-steg (F5) - eget steg, aktivt vid >1 språk, placerat SENARE i flödet**
+        (efter Preview, före Export - inte före Preview). Hittar alla översättningsbara
+        fält (hotspot text/body, scentitlar, branding.content) som har defaultspråk men
+        saknar målspråk; guidad genomgång (ladda scen + rikta kamera mot hotspot + inline-
+        editor med källtext bredvid). Readiness-varning inför export/delning om
+        översättningar saknas. Bygg efter att flagg-dropdown-widgeten landat.
+  - [ ] **Språk-specifika hotspots (Rasmus 2026-07-13):** en hotspot ska kunna finnas
+        BARA på vissa språk (inte alla). Kräver datamodell (t.ex. `hotSpot.langs`-
+        begränsning), viewer-filtrering per aktuellt språk, editor-UI för att markera,
+        och att Översätt/readiness inte flaggar dem som "saknad översättning". Designa.
+
 - [ ] **Versionshistorik / ångra för tur-redigering.** Autospar skriver direkt
       över `tour.json`/`map.json` utan historik; en felaktig kart-/scenändring
       kan bara återställas via en manuell backup-zip. Risken växer när Fas 4 gör
