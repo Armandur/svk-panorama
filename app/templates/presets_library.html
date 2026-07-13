@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Mallar - {{ site_name() }}{% endblock %}
-{% block head %}<link rel="stylesheet" href="/static/vendor/coloris/coloris.min.css"><style>/* Coloris-pickern måste ligga ovanför edit-modalen (.help-modal z-index:3500). */
+{% block head %}<link rel="stylesheet" href="/static/vendor/coloris/coloris.min.css"><link rel="stylesheet" href="/static/vendor/fontawesome/css/font-awesome.min.css"><link rel="stylesheet" href="/static/vendor/easymde/easymde.min.css"><style>/* Coloris-pickern måste ligga ovanför edit-modalen (.help-modal z-index:3500). */
 #clr-picker { z-index: 3600; }</style>{% endblock %}
 {% block content %}
 
@@ -19,8 +19,10 @@
 <script src="/static/vendor/marked/marked.min.js"></script>
 <script src="/static/vendor/dompurify/purify.min.js"></script>
 <script src="/static/markdown.js"></script>
+<script src="/static/lang-dropdown.js"></script>
 <script src="/static/media-library.js"></script>
 <script src="/static/vendor/coloris/coloris.min.js"></script>
+<script src="/static/vendor/easymde/easymde.min.js"></script>
 <script src="/static/preset-library.js"></script>
 <script>
 	document.addEventListener("DOMContentLoaded", function () {

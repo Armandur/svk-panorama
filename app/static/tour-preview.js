@@ -17,11 +17,14 @@
 	// --- Flerspråkighet: turens valda språk (första = standard) + vilket språk
 	// förhandsvisningen just nu renderas på. Styr hotspot-tooltips, scentitlar
 	// och branding (se markdown.js: resolveText/attachHsTooltips/renderBrandingInto).
-	// selectedLangs styrs av kryssrutorna nedan (ordning = kryssordning); sparas
-	// som tour.default.languages vid "Spara inställningar". ---
+	// selectedLangs styrs av drag-listan nedan (ordning = listordning bland de
+	// ikryssade); sparas som tour.default.languages vid "Spara inställningar". ---
 	const LANG_ORDER = Object.keys(window.LANG_NAMES || { sv: 1 });
 	let selectedLangs = (Array.isArray(d.languages) && d.languages.length) ? d.languages.slice() : ["sv"];
 	let previewLang = selectedLangs[0];
+	// Arbetsordning för drag-listan: ALLA 6 språk (inte bara valda) - startar med
+	// de valda (i sin ordning) följt av resten i kanonisk ordning.
+	let langWorkOrder = selectedLangs.concat(LANG_ORDER.filter(function (c) { return selectedLangs.indexOf(c) === -1; }));
 	// Ospärrad kopia av original-titlarna (ren sträng | {kod:text}). Pannellum
 	// får scenerna direkt (scenes: tour.scenes) och har en egen inbyggd
 	// titel-ruta som läser scene.title rakt av - den förstår inte {kod:text}.
@@ -92,8 +95,8 @@
 	const brandingLangTabs = document.getElementById("branding-lang-tabs");
 	const panoramaWrap = document.querySelector(".panorama-wrap");
 	const langChecks = document.getElementById("lang-checks");
-	const previewLangWrap = document.getElementById("preview-lang-wrap");
-	const previewLangSelect = document.getElementById("preview-lang-select");
+	const previewLangToggle = document.getElementById("preview-lang-toggle");
+	let previewLangDD = null;
 
 	// --- Init formulär från tour.default ---
 	let firstScene = d.firstScene && tour.scenes[d.firstScene] ? d.firstScene : sceneIds()[0];
@@ -229,8 +232,9 @@
 		else if (brandingContent) brandingContent.value = v || "";
 	}
 
-	// Flikar (ett per valt språk) - visas bara vid >1 språk. Byte sparar
-	// nuvarande fälts text i state innan nästa språks text laddas in.
+	// Flagg-dropdown (ett val per valt språk) - visas bara vid >1 språk. Byte
+	// sparar nuvarande fälts text i state innan nästa språks text laddas in.
+	let brandingLangDD = null;
 	function ensureBrandingTab() {
 		if (selectedLangs.indexOf(brandingTab) === -1) {
 			brandingTab = selectedLangs[0];
@@ -239,25 +243,27 @@
 	}
 	function renderBrandingTabs() {
 		if (!brandingLangTabs) return;
-		if (selectedLangs.length <= 1) { brandingLangTabs.hidden = true; brandingLangTabs.innerHTML = ""; return; }
+		if (selectedLangs.length <= 1) { brandingLangTabs.hidden = true; brandingLangDD = null; brandingLangTabs.innerHTML = ""; return; }
 		ensureBrandingTab();
-		brandingLangTabs.innerHTML = "";
 		brandingLangTabs.hidden = false;
-		selectedLangs.forEach(function (code) {
-			var b = document.createElement("button");
-			b.type = "button";
-			b.className = "hs-tab" + (code === brandingTab ? " active" : "");
-			b.textContent = window.LANG_NAMES[code] || code;
-			b.addEventListener("click", function () { switchBrandingTab(code); });
-			brandingLangTabs.appendChild(b);
-		});
+		if (!brandingLangDD) {
+			brandingLangDD = window.mountLangDropdown(brandingLangTabs, {
+				langs: selectedLangs,
+				current: brandingTab,
+				showName: true,
+				onPick: switchBrandingTab,
+			});
+		} else {
+			brandingLangDD.setLangs(selectedLangs);
+			brandingLangDD.setCurrent(brandingTab);
+		}
 	}
 	function switchBrandingTab(code) {
 		if (code === brandingTab) return;
 		brandingState[brandingTab] = brandingVal();
 		brandingTab = code;
 		setBrandingVal(brandingState[code] || "");
-		renderBrandingTabs();
+		if (brandingLangDD) brandingLangDD.setCurrent(brandingTab);
 		if (brandingEditor) brandingEditor.codemirror.refresh();
 	}
 
@@ -331,6 +337,7 @@
 				} catch (e) { /* ignore */ }
 			}
 			onSceneChange();
+			positionPreviewLangToggle(); // pannellums kontroller finns nu -> placera under dem
 		});
 	}
 
@@ -669,65 +676,148 @@
 		previewMapClose.addEventListener("click", function () { previewMap.hidden = true; if (previewMapToggle) previewMapToggle.hidden = false; setBrandingForMap(false); });
 	}
 
-	// --- Språk-UI: kryssrutor (turens språk) + förhandsvisningsspråk-väljare ---
+	// --- Språk-UI: drag-och-släpp-lista (turens språk, ordning bland ikryssade
+	// = selectedLangs, först = standard) + flagg-overlay på panoramat för
+	// förhandsvisningsspråk. ---
+	let draggingLangRow = null;
 	function renderLangChecks() {
 		if (!langChecks) return;
 		langChecks.innerHTML = "";
-		LANG_ORDER.forEach(function (code) {
-			const idx = selectedLangs.indexOf(code);
-			const wrap = document.createElement("label");
-			wrap.className = "lang-check";
+		langWorkOrder.forEach(function (code) {
+			const checked = selectedLangs.indexOf(code) !== -1;
+			const row = document.createElement("div");
+			row.className = "lang-order-row";
+			row.draggable = true;
+			row.dataset.lang = code;
+
+			const handle = document.createElement("span");
+			handle.className = "lang-order-handle";
+			handle.setAttribute("aria-hidden", "true");
+			handle.title = "Dra för att ändra ordning";
+			handle.textContent = "≡";
+			row.appendChild(handle);
+
 			const cb = document.createElement("input");
 			cb.type = "checkbox";
-			cb.checked = idx !== -1;
-			cb.addEventListener("change", function () { onLangToggle(code, cb.checked); });
-			wrap.appendChild(cb);
-			wrap.appendChild(document.createTextNode(" " + (window.LANG_NAMES[code] || code)));
+			cb.checked = checked;
+			cb.addEventListener("change", function () { onLangCheckboxChange(cb); });
+			row.appendChild(cb);
+
+			const flag = document.createElement("img");
+			flag.className = "lang-order-flag";
+			flag.src = window.langFlag ? window.langFlag(code) : "";
+			flag.alt = "";
+			row.appendChild(flag);
+
+			const name = document.createElement("span");
+			name.className = "lang-order-name";
+			name.textContent = window.LANG_NAMES[code] || code;
+			row.appendChild(name);
+
+			const idx = selectedLangs.indexOf(code);
 			if (idx !== -1) {
 				const badge = document.createElement("span");
 				badge.className = "lang-badge" + (idx === 0 ? " lang-badge-default" : "");
 				badge.textContent = idx === 0 ? "standard" : String(idx + 1);
-				wrap.appendChild(badge);
+				row.appendChild(badge);
 			}
-			langChecks.appendChild(wrap);
+
+			row.addEventListener("dragstart", onLangRowDragStart);
+			row.addEventListener("dragend", onLangRowDragEnd);
+			row.addEventListener("dragover", onLangRowDragOver);
+			langChecks.appendChild(row);
 		});
 	}
-	function onLangToggle(code, checked) {
-		if (checked) {
-			if (selectedLangs.indexOf(code) === -1) selectedLangs.push(code);
-		} else if (selectedLangs.length <= 1) {
-			renderLangChecks(); // återställ kryssrutan - minst ett språk krävs
-			if (window.showToast) showToast("Minst ett språk måste vara valt.", "error");
-			return;
-		} else {
-			selectedLangs = selectedLangs.filter(function (c) { return c !== code; });
+	function onLangRowDragStart(e) {
+		draggingLangRow = this;
+		this.classList.add("dragging");
+		if (e.dataTransfer) {
+			e.dataTransfer.effectAllowed = "move";
+			try { e.dataTransfer.setData("text/plain", this.dataset.lang); } catch (err) { /* Firefox kräver setData */ }
 		}
+	}
+	function onLangRowDragOver(e) {
+		e.preventDefault();
+		if (!draggingLangRow || draggingLangRow === this) return;
+		const rect = this.getBoundingClientRect();
+		const before = (e.clientY - rect.top) < rect.height / 2;
+		langChecks.insertBefore(draggingLangRow, before ? this : this.nextSibling);
+	}
+	function onLangRowDragEnd() {
+		if (draggingLangRow) draggingLangRow.classList.remove("dragging");
+		draggingLangRow = null;
+		commitLangOrder();
 		renderLangChecks();
 		onLanguagesChanged();
 		onSettingChange(false);
 	}
-	function renderPreviewLangSelect() {
-		if (!previewLangSelect || !previewLangWrap) return;
-		previewLangWrap.hidden = selectedLangs.length <= 1;
-		previewLangSelect.innerHTML = "";
-		selectedLangs.forEach(function (code) {
-			const o = document.createElement("option");
-			o.value = code;
-			o.textContent = window.LANG_NAMES[code] || code;
-			if (code === previewLang) o.selected = true;
-			previewLangSelect.appendChild(o);
+	if (langChecks) langChecks.addEventListener("dragover", function (e) {
+		if (!draggingLangRow) return;
+		e.preventDefault();
+		if (e.target === langChecks) langChecks.appendChild(draggingLangRow);
+	});
+	function commitLangOrder() {
+		langWorkOrder = Array.prototype.map.call(langChecks.children, function (r) { return r.dataset.lang; });
+		selectedLangs = langWorkOrder.filter(function (code) {
+			const row = langChecks.querySelector('.lang-order-row[data-lang="' + code + '"]');
+			const cb = row && row.querySelector("input[type=checkbox]");
+			return cb && cb.checked;
 		});
 	}
-	if (previewLangSelect) previewLangSelect.addEventListener("change", function () {
-		previewLang = previewLangSelect.value;
-		applyHotspotLanguage();
-		refreshSceneLabels();
-		applyBrandingLive();
-		rebuildKeepView();
-	});
+	function onLangCheckboxChange(cb) {
+		if (!cb.checked) {
+			const stillChecked = Array.prototype.some.call(langChecks.querySelectorAll("input[type=checkbox]"), function (c) { return c.checked; });
+			if (!stillChecked) {
+				cb.checked = true;
+				if (window.showToast) showToast("Minst ett språk måste vara valt.", "error");
+				return;
+			}
+		}
+		commitLangOrder();
+		renderLangChecks();
+		onLanguagesChanged();
+		onSettingChange(false);
+	}
+	function renderPreviewLangToggle() {
+		if (!previewLangToggle) return;
+		if (selectedLangs.length <= 1) { previewLangToggle.hidden = true; previewLangDD = null; previewLangToggle.innerHTML = ""; return; }
+		previewLangToggle.hidden = false;
+		if (!previewLangDD) {
+			previewLangDD = window.mountLangDropdown(previewLangToggle, {
+				langs: selectedLangs,
+				current: previewLang,
+				showName: false,
+				onPick: function (code) {
+					previewLang = code;
+					applyHotspotLanguage();
+					refreshSceneLabels();
+					applyBrandingLive();
+					rebuildKeepView();
+				},
+			});
+		} else {
+			previewLangDD.setLangs(selectedLangs);
+			previewLangDD.setCurrent(previewLang);
+		}
+		positionPreviewLangToggle();
+	}
+	function positionPreviewLangToggle() {
+		if (!previewLangToggle || previewLangToggle.hidden || !panoramaWrap) return;
+		const cc = panoramaWrap.querySelector(".pnlm-controls-container");
+		const wrapRect = panoramaWrap.getBoundingClientRect();
+		if (cc) {
+			const r = cc.getBoundingClientRect();
+			previewLangToggle.style.top = (r.bottom - wrapRect.top + 6) + "px";
+			previewLangToggle.style.left = Math.max(4, r.left - wrapRect.left) + "px";
+		} else {
+			previewLangToggle.style.top = "96px";
+			previewLangToggle.style.left = "4px";
+		}
+	}
+	window.addEventListener("resize", positionPreviewLangToggle);
 	function onLanguagesChanged() {
 		if (selectedLangs.indexOf(previewLang) === -1) previewLang = selectedLangs[0];
-		renderPreviewLangSelect();
+		renderPreviewLangToggle();
 		renderBrandingTabs();
 		refreshSceneLabels();
 		applyHotspotLanguage();
@@ -754,7 +844,7 @@
 
 	// --- Start ---
 	renderLangChecks();
-	renderPreviewLangSelect();
+	renderPreviewLangToggle();
 	applyHotspotLanguage();
 
 	buildViewer(firstScene, null);

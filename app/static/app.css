@@ -526,6 +526,29 @@ tr[data-preview-scene] { cursor: help; }
 }
 .panorama-wrap .map-toggle:hover { background: #f8f8f8; }
 .panorama-wrap .map-toggle[hidden] { display: none; }
+/* Förhandsvisningsspråk: flagg-overlay ovanpå panoramat, placerad under
+   pannellums verktygsknappar av tour-preview.js (positionPreviewLangToggle) -
+   SAMMA vita pannellum-kontrollstil som runtime-vieweren (.lang-toggle i
+   viewer.css), inte editorns Pico-tema (mountLangDropdown defaultar annars
+   dit, se .lang-dd-* ovan). */
+.panorama-wrap .lang-dropdown-overlay { position: absolute; z-index: 16; }
+.panorama-wrap .lang-dropdown-overlay[hidden] { display: none; }
+.panorama-wrap .lang-dropdown-overlay .lang-dd-current {
+	display: block; width: 30px; height: 24px; padding: 0;
+	background: #fff; border: 1px solid rgba(0, 0, 0, 0.4); border-radius: 3px;
+	cursor: pointer; overflow: hidden;
+}
+.panorama-wrap .lang-dropdown-overlay .lang-dd-current:hover { border-color: rgba(0, 0, 0, 0.7); }
+.panorama-wrap .lang-dropdown-overlay .lang-dd-current img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.panorama-wrap .lang-dropdown-overlay .lang-dd-name { display: none; }
+.panorama-wrap .lang-dropdown-overlay .lang-dd-menu {
+	min-width: 150px; background: #fff; border: 1px solid rgba(0, 0, 0, 0.4);
+	border-radius: 3px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+.panorama-wrap .lang-dropdown-overlay .lang-dd-item { font-size: 14px; padding: 7px 11px; color: #000; background: #fff; }
+.panorama-wrap .lang-dropdown-overlay .lang-dd-item:hover { background: #f0f0f0; }
+.panorama-wrap .lang-dropdown-overlay .lang-dd-item.active { background: #e8e8e8; font-weight: 600; }
+.panorama-wrap .lang-dropdown-overlay .lang-dd-item img { width: 22px; height: 16px; object-fit: cover; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 1px; }
 .preview-map .map-bar { display: flex; justify-content: flex-end; line-height: 0; }
 .preview-map .map-close {
 	position: relative;
@@ -667,8 +690,69 @@ tr[data-preview-scene] { cursor: help; }
 .lang-check input[type="checkbox"] { margin: 0; }
 .lang-badge { margin-left: auto; font-size: 0.72rem; padding: 0.05rem 0.45rem; border-radius: 1rem; background: var(--pico-muted-border-color); color: var(--pico-muted-color); }
 .lang-badge-default { background: var(--pico-primary); color: var(--pico-primary-inverse, #fff); }
-.preview-lang-wrap { margin-top: 0.6rem; }
-.preview-lang-wrap select { margin: 0; }
+
+/* Drag-och-släpp-lista för turens språk (ersätter de gamla lang-checks-raderna):
+   draghandtag + kryssruta + flagga + namn + ev. standard/ordnings-badge. */
+.lang-order-list { display: flex; flex-direction: column; gap: 0.15rem; margin-top: 0.4rem; }
+.lang-order-row {
+	display: flex; align-items: center; gap: 0.5rem;
+	padding: 0.3rem 0.4rem; border-radius: 3px; font-size: 0.9rem;
+	background: var(--pico-card-background-color, #fff);
+	border: 1px solid transparent;
+}
+.lang-order-row:hover { background: var(--pico-muted-border-color, rgba(115, 130, 140, 0.1)); }
+.lang-order-row.dragging { opacity: 0.4; border: 1px dashed var(--pico-muted-border-color, rgba(115, 130, 140, 0.5)); }
+.lang-order-handle { cursor: grab; color: var(--pico-muted-color); user-select: none; line-height: 1; flex: none; }
+.lang-order-row input[type="checkbox"] { margin: 0; flex: none; }
+.lang-order-flag { width: 22px; height: 16px; object-fit: cover; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 1px; flex: none; }
+.lang-order-name { flex: 1; }
+
+/* Återanvändbar flagg-dropdown (lang-dropdown.js), Pico-stil för editorns
+   sidopanel/modaler (t.ex. branding-språkval, /mallar). Overlay-varianten på
+   själva panoramat (.lang-dropdown-overlay) skrivs över längre ner så den
+   matchar viewerns vita pannellum-kontrollstil i stället. */
+.lang-dropdown { position: relative; display: inline-block; }
+.lang-dd-current {
+	display: flex; align-items: center; gap: 0.4rem; margin: 0;
+	padding: 0.25rem 0.55rem; width: auto;
+	border: 1px solid var(--pico-muted-border-color, rgba(115, 130, 140, 0.4));
+	border-radius: 3px; background: var(--pico-card-background-color, #fff);
+	/* --pico-contrast (INTE --pico-color): Pico ger obeklädda <button> en egen
+	   lokal --pico-color (vit, avsedd för fyllda primärknappar) som annars slår
+	   igenom här och gör texten osynlig mot den ljusa bakgrunden. */
+	color: var(--pico-contrast); cursor: pointer; font-size: 0.85rem; line-height: 1.3;
+}
+.lang-dd-current:hover { border-color: var(--pico-primary); }
+.lang-dd-current img { display: block; width: 22px; height: 16px; object-fit: cover; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 1px; flex: none; }
+.lang-dd-name:empty { display: none; }
+.lang-dropdown.open .lang-dd-current { border-color: var(--pico-primary); }
+.lang-dd-menu {
+	position: absolute; z-index: 40; top: calc(100% + 4px); left: 0;
+	min-width: 150px; background: var(--pico-card-background-color, #fff);
+	border: 1px solid var(--pico-muted-border-color, rgba(115, 130, 140, 0.4));
+	border-radius: 3px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18); overflow: hidden;
+}
+.lang-dd-menu[hidden] { display: none; }
+.lang-dd-item {
+	display: flex; align-items: center; gap: 0.5rem; width: 100%; margin: 0;
+	padding: 0.4rem 0.6rem; border: none; background: none; font: inherit;
+	/* --pico-contrast av samma anledning som .lang-dd-current ovan. */
+	font-size: 0.85rem; color: var(--pico-contrast); text-align: left; cursor: pointer; border-radius: 0;
+}
+.lang-dd-item:hover { background: var(--pico-muted-border-color, rgba(115, 130, 140, 0.12)); }
+.lang-dd-item.active { background: var(--pico-primary); color: var(--pico-primary-inverse, #fff); font-weight: 600; }
+.lang-dd-item img { width: 22px; height: 16px; object-fit: cover; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 1px; flex: none; }
+
+/* Branding-editorns språkval (ersätter de gamla hs-tabs-flikarna) - liten marginal
+   under så EasyMDE inte klistrar sig mot dropdownen. */
+.branding-lang-dd { margin-bottom: 0.5rem; }
+.branding-lang-dd[hidden] { display: none; }
+
+/* /mallar: branding-presetets språkrad + flaggindikatorer på korten. */
+.pe-lang-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.2rem; }
+.pe-lang-label { font-size: 0.9rem; }
+.preset-lang-flags { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.preset-lang-flags img { width: 20px; height: 14px; object-fit: cover; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 1px; }
 
 /* Scentitel per språk (scen.js) + hotspot-modalens språkväljare. */
 .scene-title-langs { display: flex; flex-direction: column; gap: 0.3rem; margin: 0.3rem 0; }

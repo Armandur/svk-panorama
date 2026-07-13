@@ -23,8 +23,8 @@
 		<div class="panel-group-body">
 			<article>
 				<h3>Turens språk</h3>
-				<p class="hint">Välj vilka språk turen ska finnas på. Ordningen du kryssar i styr - det första ikryssade blir standardspråket för scentitlar, hotspottexter och branding.</p>
-				<div id="lang-checks" class="lang-checks"></div>
+				<p class="hint">Kryssa vilka språk turen ska finnas på och dra i handtaget för att ändra ordning. Först i listan bland de ikryssade blir standardspråket för scentitlar, hotspottexter och branding.</p>
+				<div id="lang-checks" class="lang-order-list"></div>
 			</article>
 		</div>
 	</details>
@@ -52,7 +52,7 @@
 			<article>
 				<h3>Branding / logotyp</h3>
 				<p class="hint">Ett litet överlägg i den publicerade turen - t.ex. en logotyp eller församlingens namn med länk. Markdown stöds: använd bild-knappen i verktygsraden för att infoga ur mediebiblioteket eller skriv <code>[text](https://...)</code>. Lämna tomt för ingen branding.</p>
-				<nav class="hs-tabs" id="branding-lang-tabs" hidden></nav>
+				<div class="branding-lang-dd" id="branding-lang-tabs" hidden></div>
 				<textarea id="branding-content" placeholder="![Logotyp](...) eller **Församlingen**"></textarea>
 				<div class="branding-opts">
 					<label>Storlek
@@ -97,10 +97,7 @@
 					<option value="full">Full upplösning</option>
 				</select>
 				<p id="res-hint" class="hint">Multires använder de genererade tiles-kaklen (som i publicerade turen). Preview är en nedskalad bild (snabbt). Full laddar originalbilderna (kan vara stora). Scener utan tiles visas i preview.</p>
-				<div id="preview-lang-wrap" class="preview-lang-wrap" hidden>
-					<label for="preview-lang-select">Förhandsvisningsspråk</label>
-					<select id="preview-lang-select"></select>
-				</div>
+				<p class="hint">Förhandsvisningsspråk väljs med flaggan ovanpå panoramat (syns bara vid fler än ett språk).</p>
 			</article>
 
 			<article>
@@ -233,6 +230,7 @@
 
 <div class="panorama-wrap">
 	<div id="panorama"></div>
+	<div id="preview-lang-toggle" class="lang-dropdown-overlay" hidden></div>
 	<div class="scene-browse">
 		<button id="prev-scene" type="button" class="secondary" title="Föregående scen">&larr;</button>
 		<span id="cur-scene-label">Scen -</span>
@@ -288,6 +286,7 @@
 <script src="/static/vendor/marked/marked.min.js"></script>
 <script src="/static/vendor/dompurify/purify.min.js"></script>
 <script src="/static/markdown.js"></script>
+<script src="/static/lang-dropdown.js"></script>
 <script src="/static/media-library.js"></script>
 <script src="/static/preset-library.js"></script>
 <script src="/static/vendor/easymde/easymde.min.js"></script>

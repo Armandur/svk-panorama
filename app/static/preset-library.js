@@ -23,6 +23,19 @@
 	var FONT_LABEL = { sans: "Sans", serif: "Serif", mono: "Mono", humanist: "Humanist", dmsans: "DM Sans", spectral: "Spectral" };
 	var SIZE_LABEL = { small: "Liten", medium: "Mellan", large: "Stor" };
 	var POS_LABEL = { "bottom-left": "Nere t.v.", "bottom-right": "Nere t.h.", "top-left": "Uppe t.v.", "top-right": "Uppe t.h." };
+	// Presets är inte knutna till en turs språkval -> erbjud alltid alla kanoniska språk.
+	function allLangs() { return Object.keys(window.LANG_NAMES || { sv: 1 }); }
+
+	function uploadBrandImage(file, onSuccess, onError) {
+		var fd = new FormData();
+		fd.append("file", file);
+		fetch("/media/upload", { method: "POST", headers: { "X-CSRF-Token": csrf() }, body: fd })
+			.then(function (r) {
+				if (!r.ok) return r.json().then(function (d) { throw new Error((d && d.detail) || "Uppladdning misslyckades"); });
+				return r.json();
+			}).then(function (d) { onSuccess(d.url); })
+			.catch(function (e) { onError(e.message || "Uppladdning misslyckades"); });
+	}
 
 	function jpost(url, bodyObj) {
 		var opt = { method: "POST", headers: { "X-CSRF-Token": csrf() } };
@@ -141,6 +154,21 @@
 		badges.appendChild(badge(SIZE_LABEL[c.size] || "Mellan"));
 		badges.appendChild(badge(POS_LABEL[c.position] || "Nere h."));
 		card.appendChild(badges);
+
+		// Flaggindikatorer: bara vid flerspråkigt content (dict). Ren sträng
+		// (monospråkigt/bakåtkompat) visar ingen flagga.
+		if (c.content && typeof c.content === "object") {
+			var flags = el("div", "preset-lang-flags");
+			Object.keys(c.content).forEach(function (code) {
+				if (!c.content[code]) return;
+				var f = document.createElement("img");
+				f.src = window.langFlag ? window.langFlag(code) : "";
+				f.alt = (window.LANG_NAMES && window.LANG_NAMES[code]) || code;
+				f.title = f.alt;
+				flags.appendChild(f);
+			});
+			if (flags.children.length) card.appendChild(flags);
+		}
 
 		card.appendChild(cardActions(p, opts,
 			opts.onPickBranding ? function () { opts.onPickBranding(c); } : null,
@@ -286,41 +314,96 @@
 		var isNew = !(p && p.id);
 		showEdit(isNew ? 'Ny branding-mall' : 'Redigera branding');
 		var c = (p && p.config) || {};
+		var ALL_LANGS = allLangs();
 		editBody.innerHTML =
 			'<label>Namn <input type="text" class="pe-name" maxlength="120"></label>' +
-			'<label>Innehåll (markdown) <textarea class="pe-content" rows="4"></textarea></label>' +
-			'<div class="preset-edit-tools"><button type="button" class="pe-img secondary outline">Infoga bild</button></div>' +
+			'<div class="pe-lang-row"><span class="pe-lang-label">Innehåll (markdown) - språk</span><div class="pe-brand-lang"></div></div>' +
+			'<textarea class="pe-content"></textarea>' +
 			'<div class="pe-row"><label>Storlek <select class="pe-size"><option value="small">Liten</option><option value="medium">Mellan</option><option value="large">Stor</option></select></label><label>Position <select class="pe-pos"><option value="bottom-left">Nere vänster</option><option value="bottom-right">Nere höger</option><option value="top-left">Uppe vänster</option><option value="top-right">Uppe höger</option></select></label></div>' +
 			'<div class="preset-brand-stage pe-preview"><div></div></div>' +
 			'<div class="preset-edit-actions"><button type="button" class="pe-save">Spara</button><button type="button" class="pe-cancel secondary outline">Avbryt</button></div>';
 		var q = function (s) { return editBody.querySelector(s); };
 		q(".pe-name").value = (p && p.name) || "";
-		q(".pe-content").value = c.content || "";
 		q(".pe-size").value = ["small", "medium", "large"].indexOf(c.size) !== -1 ? c.size : "medium";
 		q(".pe-pos").value = ["bottom-left", "bottom-right", "top-left", "top-right"].indexOf(c.position) !== -1 ? c.position : "bottom-right";
-		var prev = q(".pe-preview div");
-		function livePreview() {
-			if (window.renderBrandingInto) window.renderBrandingInto(prev, { content: q(".pe-content").value, size: q(".pe-size").value, position: q(".pe-pos").value });
-		}
-		livePreview();
-		q(".pe-content").addEventListener("input", livePreview);
-		q(".pe-size").addEventListener("change", livePreview);
-		q(".pe-pos").addEventListener("change", livePreview);
-		q(".pe-img").addEventListener("click", function () {
+
+		// Flerspråkigt content: state {kod: text} + EN delad editor som byter
+		// innehåll vid språkbyte (samma mönster som preview-stegets branding-editor).
+		// Bakåtkompat: en ren sträng läggs under defaultspråket (sv = ALL_LANGS[0]).
+		var brandingState = {};
+		if (c.content && typeof c.content === "object") brandingState = Object.assign({}, c.content);
+		else if (c.content) brandingState[ALL_LANGS[0]] = c.content;
+		var curLang = ALL_LANGS[0];
+
+		var contentEl = q(".pe-content");
+		var brandEditor = null;
+		function brandMediaAction(editor) {
 			if (!window.openMediaLibrary) { toast("Mediebiblioteket kunde inte öppnas", "error"); return; }
 			window.openMediaLibrary(null, function (url) {
-				var t = q(".pe-content"), ins = "![](" + url + ")";
-				var s = t.selectionStart != null ? t.selectionStart : t.value.length, e = t.selectionEnd != null ? t.selectionEnd : t.value.length;
-				t.value = t.value.slice(0, s) + ins + t.value.slice(e);
-				livePreview();
+				var cm = editor.codemirror;
+				cm.replaceSelection("![](" + url + ")");
+				cm.focus();
 			});
+		}
+		var brandMediaBtn = { name: "media", action: brandMediaAction, className: "fa fa-th", title: "Mediebibliotek" };
+		if (window.EasyMDE) {
+			brandEditor = new EasyMDE({
+				element: contentEl,
+				spellChecker: false,
+				status: false,
+				autoDownloadFontAwesome: false,
+				minHeight: "80px",
+				maxHeight: "30vh",
+				uploadImage: true,
+				imageUploadFunction: uploadBrandImage,
+				toolbar: ["bold", "italic", "heading", "link", "upload-image", brandMediaBtn, "|", "preview", "guide"],
+				previewRender: function (t) { return window.renderMarkdown(t); },
+				placeholder: "![Logotyp](...) eller **Församlingen**",
+			});
+		}
+		function brandVal() { return brandEditor ? brandEditor.value() : contentEl.value; }
+		function setBrandVal(v) { if (brandEditor) brandEditor.value(v || ""); else contentEl.value = v || ""; }
+		setBrandVal(brandingState[curLang] || "");
+
+		var prev = q(".pe-preview div");
+		function livePreview() {
+			if (window.renderBrandingInto) window.renderBrandingInto(prev, { content: brandVal(), size: q(".pe-size").value, position: q(".pe-pos").value });
+		}
+		livePreview();
+		if (brandEditor) brandEditor.codemirror.on("change", livePreview);
+		else contentEl.addEventListener("input", livePreview);
+		q(".pe-size").addEventListener("change", livePreview);
+		q(".pe-pos").addEventListener("change", livePreview);
+
+		window.mountLangDropdown(q(".pe-brand-lang"), {
+			langs: ALL_LANGS,
+			current: curLang,
+			showName: true,
+			onPick: function (code) {
+				brandingState[curLang] = brandVal();
+				curLang = code;
+				setBrandVal(brandingState[curLang] || "");
+				livePreview();
+				if (brandEditor) brandEditor.codemirror.refresh();
+			},
 		});
+
 		q(".pe-cancel").addEventListener("click", closeEdit);
 		q(".pe-save").addEventListener("click", function () {
 			var name = q(".pe-name").value.trim();
 			if (!name) { toast("Namn krävs", "error"); return; }
-			if (!q(".pe-content").value.trim()) { toast("Innehåll krävs", "error"); return; }
-			jpost(isNew ? "/branding-presets" : "/branding-presets/" + p.id, { name: name, config: { content: q(".pe-content").value, size: q(".pe-size").value, position: q(".pe-pos").value } })
+			brandingState[curLang] = brandVal();
+			var filled = Object.keys(brandingState).filter(function (k) { return (brandingState[k] || "").trim(); });
+			if (!filled.length) { toast("Innehåll krävs", "error"); return; }
+			var content;
+			if (filled.length > 1) {
+				var dict = {};
+				filled.forEach(function (k) { dict[k] = brandingState[k].trim(); });
+				content = dict;
+			} else {
+				content = brandingState[filled[0]].trim();
+			}
+			jpost(isNew ? "/branding-presets" : "/branding-presets/" + p.id, { name: name, config: { content: content, size: q(".pe-size").value, position: q(".pe-pos").value } })
 				.then(function () { toast("Branding-mall sparad", "ok"); closeEdit(); reload(); })
 				.catch(function (e) { toast(e.message || "Kunde inte spara", "error"); });
 		});
