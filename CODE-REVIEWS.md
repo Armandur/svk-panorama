@@ -27,9 +27,12 @@ Opus, konsulterad om angreppssätt - särskilt fynd 1 och 3):
 - **[ÅTGÄRDAT bc80884] BÖR - `hs.langs` validerades inte vid spar.** Ny
   `sanitize_hotspot_langs` (presets.py) körs i `save_tour`: droppar ogiltiga koder,
   dedupe, tom/täcker-alla -> inget fält.
-- **[ÅTGÄRDAT bc80884] BÖR - `tour_lang` i localStorage läckte mellan turer.**
-  `viewer.js` nycklar nu på content-hash av scen-id (avslöjar ingen slug på /s,
-  funkar i bundle).
+- **[ÅTGÄRDAT bc80884 + 01de427] BÖR - `tour_lang` i localStorage läckte mellan
+  turer.** `viewer.js` nycklar nu på `location.pathname`. (Första försöket
+  bc80884 använde content-hash av scen-id men KOLLIDERADE - scen-id är per-tur
+  småheltal, så likaformade turer fick samma nyckel; advisor fångade det, 01de427
+  bytte till pathname som är genuint unik per tur i alla tre kontexter och stabil
+  över scen-ändringar.)
 - **[ÅTGÄRDAT bc80884] BÖR - språk-badge visades även vid 1 språk.** `scene.js`
   grindar badgen på `langs.length > 1`.
 - **[SENARELAGT] BÖR - `/languages` städar inte spöktext för borttagna språk.**
