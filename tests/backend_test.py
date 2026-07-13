@@ -527,6 +527,15 @@ def test_translate_helpers():
     # Okänt/annat värde (t.ex. int) -> behandlas som tomt, bygger ändå upp dict.
     check("set_i18n_lang annat värde -> ignoreras som bas", set_i18n_lang(42, "en", "Hi", "sv") == {"en": "Hi"})
 
+    # Redigera KÄLLSPRÅKET (lang == default_lang) via /translate ("Alla texter"-
+    # läget) - routes/translate.py tillåter numera payload.lang == vilket som
+    # helst av tour.default.languages (inte bara målspråk), set_i18n_lang sköter
+    # resten: uppdaterar källnyckeln, övriga målspråk orörda.
+    d = set_i18n_lang({"sv": "Gammal", "en": "Hi", "de": "Hallo"}, "sv", " Ny källtext ", "sv")
+    check("set_i18n_lang redigera källspråk -> källnyckel uppdateras, mål orörda", d == {"sv": "Ny källtext", "en": "Hi", "de": "Hallo"})
+    check("set_i18n_lang töm källspråk -> källnyckel bort, mål kvar", set_i18n_lang({"sv": "Hej", "en": "Hi"}, "sv", "", "sv") == {"en": "Hi"})
+    check("set_i18n_lang sätt källspråk på sträng-fält -> ren sträng", set_i18n_lang("Gammal", "sv", "Ny", "sv") == "Ny")
+
     # missing_translations: samma definition som static/translate.js gap-scan.
     check("missing_translations enspråkig -> 0", missing_translations({"default": {"languages": ["sv"]}, "scenes": {}}) == 0)
     check("missing_translations ingen languages -> 0", missing_translations({"scenes": {}}) == 0)

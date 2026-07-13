@@ -90,9 +90,8 @@ def save_translation(
         if len(languages) <= 1:
             raise HTTPException(status_code=400, detail="Turen är inte flerspråkig")
         default_lang = languages[0]
-        targets = languages[1:]
-        if payload.lang not in targets:
-            raise HTTPException(status_code=400, detail="Okänt målspråk för turen")
+        if payload.lang not in languages:
+            raise HTTPException(status_code=400, detail="Okänt språk för turen")
 
         if payload.kind == "title":
             scene = _scene_or_400(tour, payload.sceneId)
