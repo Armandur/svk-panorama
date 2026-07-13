@@ -79,6 +79,7 @@ app/
     backup.py        # projekt-backup: exportera/importera REDIGERBAR projekt-zip
     presets.py       # tema-/inställningsförinställningar (list/save/delete/default + sanering)
     media.py         # delad mediepool: lagring, metadata (PIL), usage-scan
+    storage.py       # diskanvändning per projekt/användare (admin-översikt, os.walk)
   templates/         # Jinja2. base.html + steg-mallar + _partials
   static/            # CSS/JS (se nedan) + vendor/ (pannellum, pico)
 ```
@@ -287,6 +288,14 @@ att spärra/demota sig själv). Batch: `POST /admin/users/batch` (reset_password
 disable/enable/delete). Admin-avatar-routes speglar profile.py (`_process_avatar`
 importeras därifrån). Pre-produktion: schemaändring (t.ex. `active`) = radera
 svk.db + starta om.
+
+**Diskanvändning (services/storage.py).** Live-beräknad översikt (ingen persistens).
+`/admin/users` visar Lagring-kolumn per användare (summa av deras turmappar +
+mediepool) + en summeringsrad (hos användare / totalt på disk / ospårat).
+`/admin/users/{id}` visar nedbrytning per tur + mediepool + totalt. `project_sizes`/
+`media_sizes` skannar PROJECTS_DIR/MEDIA_DIR:s barn en gång per sidladdning (undviker
+dubbel-walk); `human_size` exponeras som Jinja-global (`app/deps.py`). Cache:a om det
+blir tungt vid större skala. Fas 4: owner_id -> team_id, samma skanning håller.
 
 ## Publik delning (public.py)
 

@@ -32,6 +32,7 @@
 				<th scope="col">Namn</th>
 				<th scope="col">Roll</th>
 				<th scope="col">Status</th>
+				<th scope="col">Lagring</th>
 				<th scope="col"></th>
 			</tr>
 		</thead>
@@ -66,12 +67,22 @@
 					<span class="tile-done">Aktiv</span>
 					{% endif %}
 				</td>
+				<td class="col-storage">{{ human_size(u.storage) }}</td>
 				<td><a href="/admin/users/{{ u.id }}/projects" class="secondary">Turer</a></td>
 			</tr>
 			{% endfor %}
 		</tbody>
 	</table>
 </form>
+
+<p class="storage-summary">
+	Diskanvändning: <strong>{{ human_size(storage_tracked) }}</strong> hos användare
+	· <strong>{{ human_size(storage_disk) }}</strong> totalt på disk
+	{% if storage_untracked > 0 %}
+	· <span class="tile-partial">{{ human_size(storage_untracked) }} ospårat</span>
+	(turer/media utan matchande användare)
+	{% endif %}
+</p>
 
 <article class="admin-create">
 	<h2>Ny användare</h2>

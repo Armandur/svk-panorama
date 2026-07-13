@@ -725,6 +725,8 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .batch-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.8rem; }
 .batch-bar select, .batch-bar button { margin: 0; width: auto; }
 .batch-count { color: var(--pico-muted-color); font-size: 0.9rem; }
+.col-storage { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.storage-summary { color: var(--pico-muted-color); font-size: 0.9rem; margin-top: 0.4rem; }
 .invite-details summary { cursor: pointer; font-size: 0.85rem; }
 .invite-link { width: 100%; margin-top: 0.3rem; font-family: ui-monospace, monospace; font-size: 0.78rem; }
 .share-qr, .share-embed { margin-top: 0.9rem; }

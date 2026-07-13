@@ -107,6 +107,32 @@
 	{% endif %}
 </article>
 
+<article>
+	<h2>Lagring</h2>
+	<p class="hint">Diskanvändning per tur (bilder, tiles, previews, karta, export/backup) plus användarens delade mediepool. Live-beräknad.</p>
+	<table>
+		<thead>
+			<tr><th scope="col">Tur</th><th scope="col">Storlek</th></tr>
+		</thead>
+		<tbody>
+			{% for r in storage_rows %}
+			<tr>
+				<td><a href="/projects/{{ r.slug }}/preview">{{ r.name or r.slug }}</a></td>
+				<td class="col-storage">{{ human_size(r.bytes) }}</td>
+			</tr>
+			{% endfor %}
+			<tr>
+				<td>Mediepool (delad)</td>
+				<td class="col-storage">{{ human_size(storage_media) }}</td>
+			</tr>
+			<tr>
+				<td><strong>Totalt</strong></td>
+				<td class="col-storage"><strong>{{ human_size(storage_total) }}</strong></td>
+			</tr>
+		</tbody>
+	</table>
+</article>
+
 {% with modal_id='admin-avatar-modal',
         avatar_src='/admin/users/' ~ target.id ~ '/avatar',
         post_url='/admin/users/' ~ target.id ~ '/avatar',

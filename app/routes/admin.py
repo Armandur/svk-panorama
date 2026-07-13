@@ -19,6 +19,7 @@ from app.deps import (
 )
 from app.routes.profile import _process_avatar
 from app.services import settings as site_settings
+from app.services import storage
 from app.services.project_files import validate_image_magic, validate_size
 from app.services.tiling import project_tile_state
 
@@ -119,8 +120,19 @@ def users_page(
     admin: User = Depends(require_admin),
 ) -> HTMLResponse:
     users = db.query(User).order_by(User.created_at.asc()).all()
-    rows = [
-        {
+    # Diskanvändning: skanna mapparna en gång och summera per användare (turer +
+    # mediepool). Ospårade mappar (utan matchande DB-rad) fångas som differens.
+    psizes = storage.project_sizes()
+    msizes = storage.media_sizes()
+    slugs_by_owner: dict[int, list[str]] = {}
+    for p in db.query(Project).all():
+        slugs_by_owner.setdefault(p.owner_id, []).append(p.slug)
+    rows = []
+    tracked = 0
+    for u in users:
+        used = sum(psizes.get(s, 0) for s in slugs_by_owner.get(u.id, [])) + msizes.get(u.id, 0)
+        tracked += used
+        rows.append({
             "id": u.id,
             "email": u.email,
             "name": u.name,
@@ -129,14 +141,24 @@ def users_page(
             "active": u.active,
             "pending": u.password_hash is None,
             "invite_url": _invite_url(request, u.id) if u.password_hash is None else None,
-        }
-        for u in users
-    ]
+            "storage": used,
+        })
+    disk_total = sum(psizes.values()) + sum(msizes.values())
     token = new_csrf_token()
     response = templates.TemplateResponse(
         request,
         "admin_users.html",
-        {"users": rows, "me": admin.id, "active": "users", "msg": request.query_params.get("msg"), "error": request.query_params.get("error"), "csrf_token": token},
+        {
+            "users": rows,
+            "me": admin.id,
+            "active": "users",
+            "storage_tracked": tracked,
+            "storage_disk": disk_total,
+            "storage_untracked": max(0, disk_total - tracked),
+            "msg": request.query_params.get("msg"),
+            "error": request.query_params.get("error"),
+            "csrf_token": token,
+        },
     )
     set_csrf_cookie(response, token)
     return response
@@ -180,7 +202,11 @@ def user_detail(
     admin: User = Depends(require_admin),
 ) -> HTMLResponse:
     target = _target_or_404(db, user_id)
-    owns = db.query(Project).filter(Project.owner_id == user_id).count()
+    projects = db.query(Project).filter(Project.owner_id == user_id).order_by(Project.created_at.desc()).all()
+    # Lagringsnedbrytning: per tur + mediepool + total.
+    storage_rows = [{"slug": p.slug, "name": p.name, "bytes": storage.project_size(p.slug)} for p in projects]
+    media_bytes = storage.media_size(user_id)
+    storage_total = sum(r["bytes"] for r in storage_rows) + media_bytes
     token = new_csrf_token()
     response = templates.TemplateResponse(
         request,
@@ -188,10 +214,13 @@ def user_detail(
         {
             "target": target,
             "is_self": target.id == admin.id,
-            "owns": owns,
+            "owns": len(projects),
             "pending": target.password_hash is None,
             "invite_url": _invite_url(request, target.id) if target.password_hash is None else None,
             "active": "users",
+            "storage_rows": storage_rows,
+            "storage_media": media_bytes,
+            "storage_total": storage_total,
             "csrf_token": token,
             "msg": request.query_params.get("msg"),
             "error": request.query_params.get("error"),

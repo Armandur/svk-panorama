@@ -22,6 +22,10 @@ from app.services import settings as _settings  # noqa: E402 (undvik cirkel vid 
 templates.env.globals["site_name"] = _settings.get_site_name
 # Mediepoolens storleksgräns (MB) exponeras så UI:t kan visa den + förvalidera.
 templates.env.globals["media_max_mb"] = config.MAX_MAP_MB
+# Läsbar byte-formattering (diskanvändning i admin-vyer).
+from app.services import storage as _storage  # noqa: E402
+
+templates.env.globals["human_size"] = _storage.human_size
 
 CSRF_COOKIE_NAME = "csrf_token"
 

@@ -506,10 +506,14 @@ bundlen; ingen datamodellsändring. Browser-verifierat (Playwright): OG-taggar p
       på test", vilket berodde på att dev-instansen är http - deviceorientation kräver
       secure context/https). Slutsats: lita på native-knappen. Verifiera på en
       https-deploy (som legacy-turerna i prod, där den redan syns).
-- [ ] **Disk-/lagringsöversikt för admin.** Ingen `du`/quota per användare finns.
-      I self-host-modellen (särskilt inför Fas 4/Team) kan en användare fylla
-      disken oupptäckt. Enkel `du`-summering per användare/projekt på `/admin`
-      ger tidig varning. Passar ihop med Fas 4.
+- [x] **Disk-/lagringsöversikt för admin KLAR (2026-07-13).** `services/storage.py`
+      (`dir_size` os.walk, `human_size`, `project_sizes`/`media_sizes` skannar
+      PROJECTS_DIR/MEDIA_DIR en gång). `/admin/users`: Lagring-kolumn per användare
+      (turer + mediepool) + summeringsrad "X hos användare · Y totalt på disk" med
+      ospårat-differens (mappar utan matchande DB-rad). `/admin/users/{id}`:
+      nedbrytning per tur + mediepool + totalt. `human_size` som Jinja-global.
+      Live-beräknad (cache:a om det blir tungt vid större skala). Browser-verifierat
+      (Playwright). Inför Fas 4: owner_id blir team_id, samma skanning håller.
 
 ### Mobil-buggfixar (2026-07-13, upptäckta av Rasmus)
 
