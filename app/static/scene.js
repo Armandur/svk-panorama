@@ -24,7 +24,12 @@
 	// fält). >1 språk -> scentitel + hotspot-text/body blir {kod:text}. ---
 	const langs = (tour.default && Array.isArray(tour.default.languages) && tour.default.languages.length)
 		? tour.default.languages : ["sv"];
-	function resolveDefault(value) { return window.resolveText ? window.resolveText(value, langs[0], langs) : (typeof value === "string" ? value : ""); }
+	// Vilket språk panoramat/hotspots RENDERAS på i editorn (flagg-overlay på
+	// scenen, bara vid >1 språk). Default = turens standardspråk. Styr all
+	// inline-rendering (hotspot-teaser, scen-etiketter, titel-label, hotspot-lista)
+	// så man kan förhandsvisa varje språk redan under redigering.
+	let sceneLang = langs[0];
+	function resolveDefault(value) { return window.resolveText ? window.resolveText(value, sceneLang, langs) : (typeof value === "string" ? value : ""); }
 	// Ren sträng -> default-språkets ruta (bakåtkompat). Objekt -> icke-tomma koder.
 	function textToState(value) {
 		const out = {};
@@ -314,7 +319,7 @@
 		scenes: cfgScenes,
 	});
 
-	viewer.on("load", function () { refreshSidebar(); updateResUi(viewer.getScene()); });
+	viewer.on("load", function () { refreshSidebar(); updateResUi(viewer.getScene()); setupSceneLangToggle(); });
 	viewer.on("scenechange", function () {
 		setTimeout(function () {
 			refreshSidebar();
@@ -323,6 +328,48 @@
 			applyRes(viewer.getScene()); // applicera valt upplösningsläge på nya scenen
 		}, 50);
 	});
+
+	// --- Språk-overlay på scenpanoramat (bara >1 språk) --------------------
+	// Byt visningsspråk för hotspots/titlar/etiketter redan i editorn, precis som
+	// preview-stegets flagg-overlay. Positioneras under pannellums kontroller.
+	const panoramaWrap = document.querySelector(".panorama-wrap");
+	const sceneLangToggle = document.getElementById("scene-lang-toggle");
+	let sceneLangDD = null;
+	function positionSceneLangToggle() {
+		if (!sceneLangToggle || sceneLangToggle.hidden || !panoramaWrap) return;
+		const cc = document.querySelector(".pnlm-controls-container");
+		const wrapRect = panoramaWrap.getBoundingClientRect();
+		if (cc) {
+			const r = cc.getBoundingClientRect();
+			sceneLangToggle.style.top = (r.bottom - wrapRect.top + 6) + "px";
+			sceneLangToggle.style.left = Math.max(4, r.left - wrapRect.left) + "px";
+		} else {
+			sceneLangToggle.style.top = "96px";
+			sceneLangToggle.style.left = "4px";
+		}
+	}
+	function setupSceneLangToggle() {
+		if (!sceneLangToggle) return;
+		if (langs.length <= 1) { sceneLangToggle.hidden = true; return; }
+		sceneLangToggle.hidden = false;
+		if (!sceneLangDD && window.mountLangDropdown) {
+			sceneLangDD = window.mountLangDropdown(sceneLangToggle, {
+				langs: langs, current: sceneLang,
+				onPick: function (code) {
+					sceneLang = code;
+					const cur = viewer.getScene();
+					syncAndReload(cur);        // bygg om hotspots på nya språket
+					updateTitleLabel(cur);
+					renderHotspotList(cur);
+					titleLang = sceneLang;     // låt scentitel-editorn följa med
+					if (titleDD) titleDD.setCurrent(sceneLang);
+					loadTitleInput(cur);
+				},
+			});
+		}
+		positionSceneLangToggle();
+	}
+	window.addEventListener("resize", positionSceneLangToggle);
 
 	if (sceneTitleInput) sceneTitleInput.addEventListener("input", function () {
 		const cur = viewer.getScene();
@@ -529,10 +576,11 @@
 	function cloneHs(list) {
 		// KLONER till pannellum (tour-datan lämnas orörd). Scen-hotspotens text
 		// bevaras nu som teaser; attachHsTooltips lägger MD-teaser ovanför + scen-
-		// etikett nedanför (samma som i preview/publicerad tur). Editorns egen
-		// inline-rendering visar alltid turens DEFAULT-språk (langs[0]).
+		// etikett nedanför (samma som i preview/publicerad tur). Renderas på
+		// sceneLang (flagg-overlayn) så man kan förhandsvisa varje språk i editorn.
+		// (Filtrerar INTE språk-specifika hotspots här - alla ska gå att redigera.)
 		const cloned = (list || []).map(function (h) { return Object.assign({}, h); });
-		if (window.attachHsTooltips) window.attachHsTooltips(cloned, sceneNamesMap(), langs[0], langs);
+		if (window.attachHsTooltips) window.attachHsTooltips(cloned, sceneNamesMap(), sceneLang, langs);
 		return cloned;
 	}
 
@@ -752,7 +800,7 @@
 		// Per-språk-state (dict {kod:text}) ur befintlig text/body (ren sträng ->
 		// default-språket, bakåtkompat). Språkbyte sker via hs-lang-select.
 		hsState = { text: textToState(ctx.hs && ctx.hs.text), body: textToState(ctx.hs && ctx.hs.body) };
-		hsLangTab = langs[0];
+		hsLangTab = sceneLang;  // öppna på språket panoramat visas på
 		loadLangFields(hsLangTab);
 		setHsLangsBoxes(ctx.hs && Array.isArray(ctx.hs.langs) && ctx.hs.langs.length ? ctx.hs.langs : null);
 		// Rutbredd (teaser-tooltip) för info OCH scen-hotspots; ej URL.
