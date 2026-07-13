@@ -1373,6 +1373,21 @@ details.storage-user table { margin-bottom: 0.6rem; }
 .translate-group-hint { font-size: 0.78rem; color: var(--pico-muted-color); font-style: italic; margin: 0.2rem 0 0; }
 
 .translate-gap-group { list-style: none; margin: 0; padding: 0; }
+/* Under-rubrik per fält inom en scen (Scentitel / Hotspot N · teaser) så
+   hotspotarnas rader grupperas tydligt. Ej klickbar. */
+.translate-field-head {
+	list-style: none;
+	margin: 0.5rem 0 0.15rem;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+	color: var(--pico-muted-color);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.translate-field-head:first-child { margin-top: 0; }
 .translate-gap-row {
 	display: flex;
 	align-items: center;
@@ -1382,6 +1397,7 @@ details.storage-user table { margin-bottom: 0.6rem; }
 	cursor: pointer;
 	font-size: 0.82rem;
 }
+.translate-gap-group .translate-gap-row { padding-left: 0.7rem; }
 .translate-gap-row:hover { background: var(--pico-muted-border-color, rgba(115, 130, 140, 0.1)); }
 /* "Alla texter"-läget: redan översatta poster får en grön tonad bakgrund +
    bock-status. Deklareras FÖRE .active nedan så .active alltid vinner för en

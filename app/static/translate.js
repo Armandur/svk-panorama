@@ -171,6 +171,29 @@
 		return scene && scene.hotSpots && scene.hotSpots[g.hotspotIndex];
 	}
 
+	// Fält-grupp inom en scen: scentitel för sig, VARJE hotspot för sig (dess
+	// teaser + läs mer), så hotspotarna blir tydligt grupperade i listan.
+	function fieldKeyFor(g) {
+		if (g.kind === "title") return "title";
+		if (g.kind === "branding") return "branding";
+		return "hs" + g.hotspotIndex;
+	}
+	function fieldLabelFor(g) {
+		if (g.kind === "title") return "Scentitel";
+		if (g.kind === "branding") return "Branding";
+		const hs = hotspotFor(g);
+		const teaser = hs ? sourceText(hs.text).trim() : "";
+		let label = "Hotspot " + ((g.hotspotIndex | 0) + 1);
+		if (teaser) label += " · " + (teaser.length > 34 ? teaser.slice(0, 34) + "…" : teaser);
+		return label;
+	}
+	// Kort etikett per rad inom en fält-grupp (fältet framgår av under-rubriken).
+	function rowKindLabel(g) {
+		if (g.kind === "hotspot_text") return "Teaser";
+		if (g.kind === "hotspot_body") return "Läs mer";
+		return "";
+	}
+
 	// --- Multires (samma klient-mönster som tour-preview.js: byt equirektangulär
 	// mot multires där tiles finns; övriga scener behåller rå tour.json-panoraman). ---
 	const manifest = (function () { const el = document.getElementById("tiles-data"); return el ? JSON.parse(el.textContent) : {}; })();
@@ -439,8 +462,19 @@
 			} else {
 				const ul = document.createElement("ul");
 				ul.className = "translate-gap-group";
+				let lastFieldKey = null;
 				visibleIdxs.forEach(function (i) {
 					const g = gaps[i];
+					// Under-rubrik när fält-gruppen byts (scentitel / varje hotspot) så
+					// hotspotarnas rader grupperas tydligt.
+					const fk = fieldKeyFor(g);
+					if (fk !== lastFieldKey) {
+						lastFieldKey = fk;
+						const head = document.createElement("li");
+						head.className = "translate-field-head";
+						head.textContent = fieldLabelFor(g);
+						ul.appendChild(head);
+					}
 					const li = document.createElement("li");
 					li.className = "translate-gap-row" + (i === activeIndex ? " active" : "") + (g.translated ? " is-translated" : "");
 					li.dataset.idx = String(i);
@@ -457,10 +491,15 @@
 						status.textContent = g.translated ? "✓" : "";
 						li.appendChild(status);
 					}
-					const kindEl = document.createElement("span");
-					kindEl.className = "translate-gap-kind";
-					kindEl.textContent = KIND_LABELS[g.kind] || g.kind;
-					li.appendChild(kindEl);
+					// Kort kind-etikett bara för hotspots (teaser/läs mer) - för titel/
+					// branding säger under-rubriken redan vilket fält det är.
+					const kindShort = rowKindLabel(g);
+					if (kindShort) {
+						const kindEl = document.createElement("span");
+						kindEl.className = "translate-gap-kind";
+						kindEl.textContent = kindShort;
+						li.appendChild(kindEl);
+					}
 					const snippet = document.createElement("span");
 					// Redan översatt post visar MÅLTEXT-snutten (så man ser vad som
 					// faktiskt står där), oöversatt visar källtexten som idag.
