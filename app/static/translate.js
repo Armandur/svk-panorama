@@ -44,10 +44,12 @@
 	// --- Gap-scan: SAMMA definition som app/services/bundle.py:missing_translations. ---
 	function buildGaps() {
 		const out = [];
-		function addGaps(kind, sceneId, hotspotIndex, value) {
+		// targets = valfri delmängd av TARGETS (t.ex. en språkbegränsad hotspot,
+		// se hotspotInLang i markdown.js) - default hela TARGETS.
+		function addGaps(kind, sceneId, hotspotIndex, value, targets) {
 			const src = sourceText(value).trim();
 			if (!src) return;
-			TARGETS.forEach(function (lang) {
+			(targets || TARGETS).forEach(function (lang) {
 				if (!langText(value, lang).trim()) {
 					out.push({ kind: kind, sceneId: sceneId, hotspotIndex: hotspotIndex, lang: lang, sourceText: src, targetText: "" });
 				}
@@ -57,8 +59,11 @@
 			const scene = tour.scenes[sceneId];
 			addGaps("title", sceneId, null, scene.title);
 			(scene.hotSpots || []).forEach(function (hs, idx) {
-				addGaps("hotspot_text", sceneId, idx, hs.text);
-				if (hs.expandable) addGaps("hotspot_body", sceneId, idx, hs.body);
+				// En hotspot begränsad till vissa språk (hs.langs) ska inte ge
+				// "saknad översättning"-luckor för målspråk den inte visas på.
+				const hsTargets = window.hotspotInLang ? TARGETS.filter(function (lang) { return window.hotspotInLang(hs, lang); }) : TARGETS;
+				addGaps("hotspot_text", sceneId, idx, hs.text, hsTargets);
+				if (hs.expandable) addGaps("hotspot_body", sceneId, idx, hs.body, hsTargets);
 			});
 		});
 		addGaps("branding", null, null, tour.default && tour.default.branding && tour.default.branding.content);

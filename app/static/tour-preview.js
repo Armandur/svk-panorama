@@ -30,6 +30,15 @@
 	const origTitle = {};
 	Object.keys(tour.scenes).forEach(function (id) { origTitle[id] = tour.scenes[id].title; });
 
+	// Samma mönster för hotspots: en språkbegränsad hotspot (hs.langs, se
+	// hotspotInLang i markdown.js) ska kunna dyka upp/försvinna vid
+	// previewLang-byte. Filtrerar vi tour.scenes[id].hotSpots direkt in-place
+	// skulle bortfiltrerade hotspots vara permanent borta vid NÄSTA byte
+	// (arrayen är redan kortare) - spara därför en orörd kopia EN gång och
+	// filtrera ALLTID därifrån.
+	const origHotSpots = {};
+	Object.keys(tour.scenes).forEach(function (id) { origHotSpots[id] = (tour.scenes[id].hotSpots || []).slice(); });
+
 	// --- Upplösning (preview/multires/full) - global för hela förhandsvisningen.
 	// Multires appliceras klient-side (defaultar multires) så man kan byta. Speglar
 	// scenvyns logik men för alla scener på en gång. ---
@@ -717,13 +726,18 @@
 	// språk i stället för "[object Object]". Denna sida sparar aldrig scentitlar
 	// (bara tour.default) så mutationen är ofarlig - bara en visnings-detalj.
 	function applyHotspotLanguage() {
-		if (!window.attachHsTooltips) return;
 		var sceneNames = {};
 		sceneIds().forEach(function (id) {
 			var t = resolvedTitle(id) || ("Scen " + id);
 			sceneNames[id] = t;
 			tour.scenes[id].title = t;
+			// Filtrera FÖRE attachHsTooltips - se origHotSpots-kommentaren ovan.
+			// Bara vid flerspråkig tur (annars visas alla, jfr viewer.js).
+			tour.scenes[id].hotSpots = (selectedLangs.length > 1)
+				? origHotSpots[id].filter(function (h) { return window.hotspotInLang(h, previewLang); })
+				: origHotSpots[id].slice();
 		});
+		if (!window.attachHsTooltips) return;
 		sceneIds().forEach(function (id) { attachHsTooltips(tour.scenes[id].hotSpots, sceneNames, previewLang, selectedLangs); });
 	}
 

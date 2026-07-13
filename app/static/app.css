@@ -761,6 +761,11 @@ tr[data-preview-scene] { cursor: help; }
 .scene-title-langs { flex: none; }
 .scene-title-langs[hidden] { display: none; }
 .hs-lang-wrap { margin-bottom: 0.6rem; }
+/* Hotspot-modalens "Visa på språk" (scene.js): bockrutor, en per turspråk. */
+.hs-langs-wrap { margin-bottom: 0.6rem; }
+.hs-langs-boxes { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.hs-langs-box { display: inline-flex; align-items: center; gap: 0.3rem; margin: 0; font-size: 0.9rem; font-weight: normal; }
+.hs-langs-box input { margin: 0; }
 
 /* Login / inbjudan / admin */
 .login-section { max-width: 26rem; margin: 2rem auto; }
@@ -1325,7 +1330,12 @@ details.storage-user table { margin-bottom: 0.6rem; }
 	padding: 0.4rem 0.5rem;
 	margin-bottom: 0.4rem;
 }
-.hotspot-label { display: block; font-size: 0.9rem; margin-bottom: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hotspot-head-row { display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.3rem; }
+.hotspot-head-row .hotspot-label { flex: 1; min-width: 0; margin-bottom: 0; }
+.hotspot-label { display: block; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Flagg-badge på språkbegränsade hotspots (hs.langs satt) i hotspot-listan. */
+.hotspot-lang-badge { display: inline-flex; gap: 2px; flex: none; }
+.hotspot-lang-badge img { width: 16px; height: 11px; object-fit: cover; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 1px; }
 .hotspot-btns { display: flex; gap: 0.3rem; }
 
 /* --- Översätt-steget (routes/translate.py, static/translate.js) --- */

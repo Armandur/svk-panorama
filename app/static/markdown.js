@@ -51,6 +51,15 @@
 		return "";
 	};
 
+	// hotspotInLang: ska denna hotspot visas på `lang`? hs.langs = valfri lista
+	// begränsade språkkoder, satt via "Visa på språk" i hotspot-modalen
+	// (scene.js). Saknas/tom lista = visas på ALLA språk (bakåtkompatibelt,
+	// default för hotspots utan fältet). Python-spegel: app/services/i18n.py
+	// hotspot_in_lang - håll dem i synk.
+	window.hotspotInLang = function (hs, lang) {
+		return !hs || !Array.isArray(hs.langs) || hs.langs.length === 0 || hs.langs.indexOf(lang) !== -1;
+	};
+
 	// Lokaliserade UI-chrome-strängar (knappar/etiketter som besökaren ser).
 	var _UI = {
 		readMore: { sv: "Läs mer", en: "Read more", de: "Mehr lesen", fi: "Lue lisää", no: "Les mer", da: "Læs mere" },

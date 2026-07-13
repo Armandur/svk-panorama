@@ -261,6 +261,14 @@ antingen en **ren sträng** (monospråkigt / default-språk / äldre turer) elle
   `POST /projects/{slug}/translate` (`set_i18n_lang`). `bundle.missing_translations(tour)`
   matar readiness-varning inför export/delning. Steget gate:as på `is_multilingual`
   (skickas i context av routes som renderar `_step_nav.html`).
+- **Språk-specifika hotspots:** en hotspot kan ha `langs` (lista koder; saknas/tom =
+  alla språk). `hotspotInLang(hs,lang)` (markdown.js) + `i18n.hotspot_in_lang` (Python).
+  Viewer/preview filtrerar per aktuellt språk (origHotSpots-kopia, bara vid >1 språk).
+  Editor: "Visa på språk"-bockrutor i hotspot-modalen. Översätt/`missing_translations`
+  hoppar över språk hotspoten inte finns på.
+- **Placering av språkval:** turens språk (bockrutor + drag-ordning, först=default) väljs
+  på UPPLADDNINGSsteget (`upload.html` + `lang-picker.js` + `upload-lang.js`, sparas via
+  `POST /projects/{slug}/languages` som rör BARA `default.languages`) - inte på preview.
 
 ## static/-JS (editorn)
 

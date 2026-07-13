@@ -20,7 +20,7 @@ from app.auth import hash_password, make_invite_token, read_invite_token, verify
 from app.routes.preview import FONT_KEYS, _hex  # noqa: E402
 from app.routes.auth import _safe_next  # noqa: E402
 from app.services.bundle import _media_refs, _relativize, missing_translations  # noqa: E402
-from app.services.i18n import og_description, tour_default_lang  # noqa: E402
+from app.services.i18n import hotspot_in_lang, og_description, tour_default_lang  # noqa: E402
 from app.services.presets import (  # noqa: E402
     i18n_text_values,
     sanitize_i18n_text,
@@ -558,6 +558,35 @@ def test_translate_helpers():
     }
     check("missing_translations allt översatt -> 0", missing_translations(tour2) == 0)
 
+    # Språkbegränsad hotspot (hs.langs): ska INTE ge luckor för uteslutna mål.
+    tour3 = {
+        "default": {"languages": ["sv", "en", "de"]},
+        "scenes": {
+            "1": {
+                "title": "Kyrkan",  # ren sträng -> lucka för BÅDA målspråken (2)
+                "hotSpots": [
+                    # Bara "en" -> ingen lucka alls (en är redan i langs, de är utesluten).
+                    {"type": "info", "text": {"sv": "Info"}, "langs": ["en"]},
+                    # Expanderbar, begränsad till en+de -> luckor för båda (text+body).
+                    {"type": "info", "text": {"sv": "Klocka"}, "expandable": True, "body": {"sv": "Lång"}, "langs": ["en", "de"]},
+                ],
+            },
+        },
+    }
+    n3 = missing_translations(tour3)
+    # title (2: en,de) + hotspot0.text (bara "en" i langs -> 1 lucka, "de" är
+    # exkluderad och räknas inte) + hotspot1.text (langs en+de -> 2 luckor) +
+    # hotspot1.body (samma, expandable -> 2 luckor) = 2+1+2+2 = 7
+    check("missing_translations hoppar över exkluderade mål", n3 == 7)
+
+
+def test_hotspot_in_lang():
+    check("hotspot_in_lang inget langs-fält -> alla språk", hotspot_in_lang({}, "en") is True)
+    check("hotspot_in_lang tom langs-lista -> alla språk", hotspot_in_lang({"langs": []}, "de") is True)
+    check("hotspot_in_lang matchande kod -> True", hotspot_in_lang({"langs": ["en", "de"]}, "en") is True)
+    check("hotspot_in_lang icke-matchande kod -> False", hotspot_in_lang({"langs": ["en"]}, "sv") is False)
+    check("hotspot_in_lang icke-lista langs -> alla språk", hotspot_in_lang({"langs": "en"}, "sv") is True)
+
 
 def main() -> int:
     for fn in (
@@ -567,6 +596,7 @@ def main() -> int:
         test_relativize_i18n,
         test_i18n_helpers,
         test_translate_helpers,
+        test_hotspot_in_lang,
         test_export_readiness,
         test_preset_sanitize,
         test_branding_sanitize,

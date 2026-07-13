@@ -26,3 +26,15 @@ def tour_default_lang(tour: dict) -> str:
     DEFAULT_LANGUAGE (äldre turer saknar fältet helt)."""
     langs = (tour.get("default") or {}).get("languages") or []
     return langs[0] if langs else config.DEFAULT_LANGUAGE
+
+
+def hotspot_in_lang(hs: dict, lang: str) -> bool:
+    """Ska denna hotspot visas på `lang`? hs["langs"] = valfri lista begränsade
+    språkkoder, satt via "Visa på språk" i hotspot-modalen (scene.js).
+    Saknas/tom lista = visas på ALLA språk (bakåtkompatibelt, default för
+    hotspots utan fältet). JS-spegel: static/markdown.js window.hotspotInLang
+    - håll dem i synk."""
+    langs = hs.get("langs") if isinstance(hs, dict) else None
+    if not isinstance(langs, list) or not langs:
+        return True
+    return lang in langs

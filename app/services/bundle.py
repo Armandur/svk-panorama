@@ -251,22 +251,27 @@ def missing_translations(tour: dict) -> int:
         return 0
     source, targets = languages[0], languages[1:]
 
-    def _gaps(value: Any) -> int:
+    def _gaps(value: Any, field_targets: list[str] | None = None) -> int:
+        tg = targets if field_targets is None else field_targets
         if isinstance(value, str):
-            return len(targets) if value.strip() else 0
+            return len(tg) if value.strip() else 0
         if isinstance(value, dict):
             if not (value.get(source) or "").strip():
                 return 0
-            return sum(1 for lang in targets if not (value.get(lang) or "").strip())
+            return sum(1 for lang in tg if not (value.get(lang) or "").strip())
         return 0
 
     count = 0
     for scene in tour.get("scenes", {}).values():
         count += _gaps(scene.get("title"))
         for hs in scene.get("hotSpots", []):
-            count += _gaps(hs.get("text"))
+            # En hotspot begränsad till vissa språk (hs["langs"]) ska inte ge
+            # luckor för målspråk den inte visas på. SAMMA definition som
+            # gap-scannen i static/translate.js.
+            hs_targets = [lang for lang in targets if i18n.hotspot_in_lang(hs, lang)]
+            count += _gaps(hs.get("text"), hs_targets)
             if hs.get("expandable"):
-                count += _gaps(hs.get("body"))
+                count += _gaps(hs.get("body"), hs_targets)
     branding = (tour.get("default") or {}).get("branding") or {}
     count += _gaps(branding.get("content"))
     return count

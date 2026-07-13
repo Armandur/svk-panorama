@@ -582,10 +582,15 @@ bundlen; ingen datamodellsändring. Browser-verifierat (Playwright): OG-taggar p
   - [ ] **Språkinställningarnas placering:** ligger på preview-steget (efter scenhantering)
         men behövs innan per-språk-scenredigering -> utred att flytta språkvalet tidigare
         i flödet. Senare (Rasmus: "kan ordnas senare").
-  - [ ] **Språk-specifika hotspots (Rasmus 2026-07-13):** en hotspot ska kunna finnas
-        BARA på vissa språk (inte alla). Kräver datamodell (t.ex. `hotSpot.langs`-
-        begränsning), viewer-filtrering per aktuellt språk, editor-UI för att markera,
-        och att Översätt/readiness inte flaggar dem som "saknad översättning". Designa.
+  - [x] **Språk-specifika hotspots KLAR (2026-07-13).** Hotspot får valfritt
+        `langs`-fält (lista språkkoder; saknas/tom = alla språk, additivt/bakåtkompat).
+        Delad `hotspotInLang(hs,lang)` (markdown.js) + `i18n.hotspot_in_lang` (Python).
+        Viewer + preview filtrerar per aktuellt språk (origHotSpots-mönster som origTitle;
+        bara vid >1 språk -> monospråkig tur visar alla även med kvarvarande langs).
+        Editor: "Visa på språk"-bockrutor i hotspot-modalen (alla ikryssade -> inget
+        `langs` lagras), flagg-badge i hotspot-listan. Översätt/`missing_translations`
+        hoppar över språk hotspoten inte finns på. Browser-verifierat (hotspot 4->3 vid
+        en->sv-byte; ingen lucka för uteslutna språk). 185 backend-tester (från 179).
 
 - [ ] **Versionshistorik / ångra för tur-redigering.** Autospar skriver direkt
       över `tour.json`/`map.json` utan historik; en felaktig kart-/scenändring

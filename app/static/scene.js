@@ -578,6 +578,8 @@
 	const hsBody = document.getElementById("hs-body");
 	const hsLangWrap = document.getElementById("hs-lang-wrap");
 	const hsLangDdEl = document.getElementById("hs-lang-dd");
+	const hsLangsWrap = document.getElementById("hs-langs-wrap");
+	const hsLangsBoxes = document.getElementById("hs-langs-boxes");
 
 	// Bilduppladdning för EasyMDE: postar till den delade mediepoolen och infogar
 	// markdown-bildlänken. Funkar i både teaser och läs mer (oavsett expanderbar).
@@ -661,6 +663,51 @@
 		});
 	}
 
+	// --- "Visa på språk" (>1 språk): vilka av turens språk hela hotspoten ska
+	// visas på (hs.langs, se hotspotInLang i markdown.js). Alla ikryssade
+	// (default för nya/obegränsade hotspots) -> hs.langs sätts inte alls vid
+	// spar (visas överallt, håll datan ren). Minst ett måste förbli ikryssat -
+	// annars vore hotspoten osynlig på alla språk, oavsiktligt.
+	if (hsLangsWrap) hsLangsWrap.hidden = langs.length <= 1;
+	if (hsLangsBoxes && langs.length > 1) {
+		langs.forEach(function (code) {
+			const row = document.createElement("label");
+			row.className = "hs-langs-box";
+			const cb = document.createElement("input");
+			cb.type = "checkbox";
+			cb.dataset.lang = code;
+			cb.checked = true;
+			cb.addEventListener("change", function () {
+				const anyChecked = Array.prototype.some.call(hsLangsBoxes.querySelectorAll("input[type=checkbox]"), function (c) { return c.checked; });
+				if (!anyChecked) {
+					cb.checked = true;
+					if (window.showToast) showToast("Minst ett språk måste vara valt.", "error");
+				}
+			});
+			row.appendChild(cb);
+			const flag = document.createElement("img");
+			flag.className = "lang-order-flag";
+			flag.src = window.langFlag ? window.langFlag(code) : "";
+			flag.alt = "";
+			row.appendChild(flag);
+			const name = document.createElement("span");
+			name.textContent = (window.LANG_NAMES && window.LANG_NAMES[code]) || code;
+			row.appendChild(name);
+			hsLangsBoxes.appendChild(row);
+		});
+	}
+	function setHsLangsBoxes(hsLangs) {
+		if (!hsLangsBoxes) return;
+		Array.prototype.forEach.call(hsLangsBoxes.querySelectorAll("input[type=checkbox]"), function (cb) {
+			cb.checked = hsLangs ? hsLangs.indexOf(cb.dataset.lang) !== -1 : true;
+		});
+	}
+	function readHsLangs() {
+		if (!hsLangsBoxes || langs.length <= 1) return undefined;
+		const checked = Array.prototype.filter.call(hsLangsBoxes.querySelectorAll("input[type=checkbox]"), function (c) { return c.checked; }).map(function (c) { return c.dataset.lang; });
+		return checked.length >= langs.length ? undefined : checked;
+	}
+
 	// --- Flikar: Teaser / Läs mer (den senare bara när expanderbar) ---
 	const hsTabs = document.getElementById("hs-tabs");
 	const hsTabBtns = hsTabs ? Array.prototype.slice.call(hsTabs.querySelectorAll(".hs-tab")) : [];
@@ -707,6 +754,7 @@
 		hsState = { text: textToState(ctx.hs && ctx.hs.text), body: textToState(ctx.hs && ctx.hs.body) };
 		hsLangTab = langs[0];
 		loadLangFields(hsLangTab);
+		setHsLangsBoxes(ctx.hs && Array.isArray(ctx.hs.langs) && ctx.hs.langs.length ? ctx.hs.langs : null);
 		// Rutbredd (teaser-tooltip) för info OCH scen-hotspots; ej URL.
 		if (hsWidthWrap) hsWidthWrap.hidden = ctx.type === "url";
 		if (hsTooltipWidth) hsTooltipWidth.value = (ctx.hs && ctx.hs.tooltipWidth) || "";
@@ -819,6 +867,8 @@
 			// aldrig automatiskt, det är destruktivt och oväntat.
 			if (two) ensureReciprocal(cur, target);
 		}
+		const hsLangs = readHsLangs();
+		if (hsLangs) hs.langs = hsLangs; else delete hs.langs;
 		if (creating) tour.scenes[cur].hotSpots.push(hs);
 		closeHsModal();
 		setDirty(true);
@@ -976,6 +1026,8 @@
 		list.forEach(function (hs) {
 			const li = document.createElement("li");
 			li.className = "hotspot-item";
+			const headRow = document.createElement("div");
+			headRow.className = "hotspot-head-row";
 			const label = document.createElement("span");
 			label.className = "hotspot-label";
 			const kind = hs.type === "scene" ? "Scen" : (hs.URL ? "URL" : "Info");
@@ -989,12 +1041,27 @@
 			}
 			label.textContent = kind + ": " + body;
 			label.title = body;
+			headRow.appendChild(label);
+			// Flagg-indikator för hotspots som är begränsade till vissa språk
+			// (hs.langs satt) - så man ser vilka som inte visas överallt.
+			if (Array.isArray(hs.langs) && hs.langs.length) {
+				const badge = document.createElement("span");
+				badge.className = "hotspot-lang-badge";
+				badge.title = "Visas bara på: " + hs.langs.map(function (c) { return (window.LANG_NAMES && window.LANG_NAMES[c]) || c; }).join(", ");
+				hs.langs.forEach(function (code) {
+					const f = document.createElement("img");
+					f.src = window.langFlag ? window.langFlag(code) : "";
+					f.alt = code;
+					badge.appendChild(f);
+				});
+				headRow.appendChild(badge);
+			}
 			const btns = document.createElement("div");
 			btns.className = "hotspot-btns";
 			btns.appendChild(mkHsBtn("Flytta hit", function () { moveHotspot(cur, hs); }));
 			btns.appendChild(mkHsBtn("Redigera", function () { openHsModal({ mode: "edit", type: hsTypeOf(hs), cur: cur, hs: hs }); }));
 			btns.appendChild(mkHsBtn("Ta bort", function () { removeHotspot(cur, hs); }, true));
-			li.appendChild(label);
+			li.appendChild(headRow);
 			li.appendChild(btns);
 			hotspotList.appendChild(li);
 		});

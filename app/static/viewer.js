@@ -33,6 +33,15 @@
 	var origTitle = {};
 	Object.keys(tour.scenes || {}).forEach(function (id) { origTitle[id] = tour.scenes[id].title; });
 
+	// Samma mönster för hotspots: en språkbegränsad hotspot (hs.langs, se
+	// hotspotInLang i markdown.js) ska kunna dyka upp/försvinna vid språkbyte.
+	// Filtrerar vi tour.scenes[id].hotSpots direkt in-place skulle bortfiltrerade
+	// hotspots vara permanent borta vid NÄSTA språkbyte (arrayen är redan
+	// kortare) - spara därför en orörd kopia EN gång och filtrera ALLTID
+	// därifrån, inte från föregående byggs (redan filtrerade) lista.
+	var origHotSpots = {};
+	Object.keys(tour.scenes || {}).forEach(function (id) { origHotSpots[id] = (tour.scenes[id].hotSpots || []).slice(); });
+
 	// --- Djuplänkning (#scene=..&yaw=..&pitch=..&hfov=..&lang=..) ----------
 	// Läs ev. vy + språk ur URL-hashen så en delad länk landar på rätt scen,
 	// riktning och språk. Skrivs tillbaka vid scenbyte, vy-ändring och språkbyte
@@ -101,6 +110,16 @@
 			// Skriv in ren sträng så pannellums titel-ruta inte visar [object Object].
 			if (resolved) tour.scenes[id].title = resolved;
 			else delete tour.scenes[id].title;
+		});
+		// Filtrera FÖRE attachHsTooltips (som muterar de kvarvarande objekten
+		// med tooltip-funktioner för currentLang) - se origHotSpots-kommentaren.
+		// Bara vid flerspråkig tur: en monospråkig tur visar ALLA hotspots även om
+		// någon har kvarvarande hs.langs (t.ex. efter nedgradering fler- -> enspråkig),
+		// så en hotspot aldrig försvinner helt.
+		Object.keys(tour.scenes || {}).forEach(function (id) {
+			tour.scenes[id].hotSpots = (langs.length > 1)
+				? origHotSpots[id].filter(function (h) { return window.hotspotInLang(h, currentLang); })
+				: origHotSpots[id].slice();
 		});
 		if (!window.attachHsTooltips) return;
 		Object.keys(tour.scenes || {}).forEach(function (id) {
