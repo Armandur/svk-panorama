@@ -756,10 +756,13 @@ tr[data-preview-scene] { cursor: help; }
 
 /* Scentitel per språk (scen.js) + hotspot-modalens språkväljare. */
 /* Scentitel: flagg-dropdown + EN inputruta på samma rad (>1 språk). */
-.scene-title-row { display: flex; align-items: stretch; gap: 0.4rem; }
-.scene-title-row input { margin: 0; flex: 1; }
-.scene-title-langs { flex: none; }
+/* Scentitel (>1 språk): flagg-dropdown OVANFÖR inputrutan (staplat), båda i full
+   bredd, så både språkvalet och namnfältet får plats. */
+.scene-title-row { display: flex; flex-direction: column; gap: 0.35rem; }
+.scene-title-row input { margin: 0; width: 100%; }
 .scene-title-langs[hidden] { display: none; }
+.scene-title-langs .lang-dropdown { width: 100%; }
+.scene-title-langs .lang-dd-current { width: 100%; justify-content: flex-start; }
 .hs-lang-wrap { margin-bottom: 0.6rem; }
 /* Hotspot-modalens "Visa på språk" (scene.js): bockrutor, en per turspråk. */
 .hs-langs-wrap { margin-bottom: 0.6rem; }
