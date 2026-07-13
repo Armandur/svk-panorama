@@ -5,6 +5,7 @@ import secrets
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.auth import require_user
@@ -17,9 +18,10 @@ from app.deps import (
     set_csrf_cookie,
     templates,
     verify_csrf_form,
+    verify_csrf_header,
 )
 from app.services.backup import forget_job as forget_backup_job
-from app.services.presets import default_branding
+from app.services.presets import default_branding, sanitize_languages
 from app.services.presets import default_config as default_preset_config
 from app.services.bundle import forget_job as forget_export_job
 from app.services.bundle import job_status as export_job_status
@@ -33,6 +35,7 @@ from app.services.project_files import (
     read_tour,
     rename_project_files,
     slugify,
+    tour_lock,
     write_map,
     write_tour,
 )
@@ -42,6 +45,12 @@ from app.services.tiling import job_status as tile_job_status
 from app.services.tiling import project_tile_state
 
 router = APIRouter()
+
+
+class LanguagesPayload(BaseModel):
+    """Body för POST /projects/{slug}/languages - rör ENBART default.languages."""
+
+    languages: list[str] = []
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -263,8 +272,26 @@ def project_home(
             "has_map_image": map_image_path(slug).exists(),
             "csrf_token": token,
             "slug_error": request.query_params.get("slug_error"),
+            "languages": tour.get("default", {}).get("languages") or ["sv"],
             "is_multilingual": len(tour.get("default", {}).get("languages") or []) > 1,
         },
     )
     set_csrf_cookie(response, token)
     return response
+
+
+@router.post("/projects/{slug}/languages")
+def save_languages(
+    slug: str,
+    payload: LanguagesPayload,
+    project: Project = Depends(get_project_or_404),
+    _csrf: None = Depends(verify_csrf_header),
+) -> dict:
+    """Spara ENBART turens språkval (uppladdningssteget) - rör inget annat
+    fält i default-blocket."""
+    with tour_lock:
+        tour = read_tour(slug)
+        default = tour.setdefault("default", {})
+        default["languages"] = sanitize_languages(payload.languages)
+        write_tour(slug, tour)
+    return {"ok": True}

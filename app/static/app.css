@@ -809,6 +809,8 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .slug-form { margin: 0; padding: 0.6rem 1rem; max-width: 30rem; }
 .slug-form + .slug-form { border-top: 1px dashed var(--pico-muted-border-color); }
 .slug-form button { margin: 0; }
+.lang-picker-section { margin: 0; padding: 0.6rem 1rem; max-width: 30rem; border-top: 1px dashed var(--pico-muted-border-color); }
+.lang-picker-section h3 { margin-top: 0; }
 
 /* Turnamn som primär öppna-länk i projektlistan. */
 .tour-name { font-weight: 600; text-decoration: none; }
