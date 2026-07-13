@@ -188,6 +188,11 @@ Luckor identifierade 2026-07-11 innan team-arbetet.
 
 Upptäckt 2026-07-11 under genomgång.
 
+- [ ] **Kalibreringsstatus ska visas i Kalibrera-kortet (Rasmus 2026-07-13).**
+      "Kalibrerad (offset 88.39 grader)" sätts idag på `calibStateEl` (scene.js
+      rad ~443) men hamnar fel - det ska visas inne i Kalibrera-kortet/-sektionen
+      så man ser scenens aktuella nordoffset där. Flytta/rendera statusen i rätt kort.
+
 - [x] **Färgväljare-lib i stället för native `<input type="color">` KLAR (2026-07-11).**
       Vendorade **Coloris** (`static/vendor/coloris/`, ingen CDN). Tema-färgerna
       (`#theme-dot`/`#theme-current`) är nu Coloris-fält (hex, `data-coloris`), initieras
