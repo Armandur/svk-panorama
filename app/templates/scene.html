@@ -29,8 +29,10 @@
 		</div>
 		<p id="calib-state" aria-live="polite"></p>
 		<label for="scene-title">Scenens namn</label>
-		<input type="text" id="scene-title" maxlength="120" placeholder="t.ex. Koret">
-		<div id="scene-title-langs" class="scene-title-langs" hidden></div>
+		<div class="scene-title-row">
+			<div id="scene-title-langs" class="scene-title-langs" hidden></div>
+			<input type="text" id="scene-title" maxlength="120" placeholder="t.ex. Koret">
+		</div>
 		<label for="res-select">Upplösning i vyn</label>
 		<select id="res-select">
 			<option value="preview">Preview (snabb)</option>
@@ -122,8 +124,8 @@
 			<button id="hs-modal-close" type="button" class="secondary outline" aria-label="Stäng">&times;</button>
 		</div>
 		<div id="hs-lang-wrap" class="hs-lang-wrap" hidden>
-			<label for="hs-lang-select">Språk</label>
-			<select id="hs-lang-select"></select>
+			<label>Språk</label>
+			<div id="hs-lang-dd"></div>
 		</div>
 		<div id="hs-field-scene-top">
 			<div id="hs-scene-preview" class="hs-scene-preview"></div>
@@ -190,6 +192,7 @@
 <script src="/static/vendor/marked/marked.min.js"></script>
 <script src="/static/vendor/dompurify/purify.min.js"></script>
 <script src="/static/markdown.js"></script>
+<script src="/static/lang-dropdown.js"></script>
 <script src="/static/media-library.js"></script>
 <script src="/static/vendor/easymde/easymde.min.js"></script>
 <script src="/static/scene.js"></script>

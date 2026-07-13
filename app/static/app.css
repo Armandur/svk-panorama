@@ -755,11 +755,12 @@ tr[data-preview-scene] { cursor: help; }
 .preset-lang-flags img { width: 20px; height: 14px; object-fit: cover; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 1px; }
 
 /* Scentitel per språk (scen.js) + hotspot-modalens språkväljare. */
-.scene-title-langs { display: flex; flex-direction: column; gap: 0.3rem; margin: 0.3rem 0; }
-.scene-title-lang { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.78rem; color: var(--pico-muted-color); margin: 0; }
-.scene-title-lang input { margin: 0; }
+/* Scentitel: flagg-dropdown + EN inputruta på samma rad (>1 språk). */
+.scene-title-row { display: flex; align-items: stretch; gap: 0.4rem; }
+.scene-title-row input { margin: 0; flex: 1; }
+.scene-title-langs { flex: none; }
+.scene-title-langs[hidden] { display: none; }
 .hs-lang-wrap { margin-bottom: 0.6rem; }
-.hs-lang-wrap select { margin: 0; }
 
 /* Login / inbjudan / admin */
 .login-section { max-width: 26rem; margin: 2rem auto; }

@@ -153,41 +153,35 @@
 		if (sceneTitleLabel) sceneTitleLabel.textContent = resolveDefault(tour.scenes[id] && tour.scenes[id].title);
 	}
 
-	// Scentitel: en input (monospråkigt, oförändrat) eller en input per språk
-	// (>1 språk) - skriver till tour.scenes[id].title som ren sträng resp.
-	// {kod:text} (bakåtkompat: ren sträng -> default-språkets ruta).
+	// Scentitel: EN input i båda lägena. Monospråkigt = ren sträng. Flerspråkigt
+	// = en flagg-dropdown väljer vilket språk inputen redigerar (som branding),
+	// skriver till tour.scenes[id].title som {kod:text} (bakåtkompat: ren sträng
+	// -> default-språket). titleLang = vilket språk inputen just nu visar.
+	let titleLang = langs[0];
+	let titleDD = null;
+	function loadTitleInput(cur) {
+		if (!sceneTitleInput) return;
+		const st = textToState(tour.scenes[cur] && tour.scenes[cur].title);
+		sceneTitleInput.value = st[titleLang] || "";
+	}
 	function renderTitleInputs(cur) {
 		if (langs.length <= 1) {
 			if (sceneTitleInput) { sceneTitleInput.hidden = false; sceneTitleInput.value = resolveDefault(tour.scenes[cur] && tour.scenes[cur].title); }
 			if (sceneTitleLangs) { sceneTitleLangs.hidden = true; sceneTitleLangs.innerHTML = ""; }
 			return;
 		}
-		if (sceneTitleInput) sceneTitleInput.hidden = true;
+		if (sceneTitleInput) sceneTitleInput.hidden = false;
 		if (!sceneTitleLangs) return;
 		sceneTitleLangs.hidden = false;
-		sceneTitleLangs.innerHTML = "";
-		const state = textToState(tour.scenes[cur] && tour.scenes[cur].title);
-		langs.forEach(function (code) {
-			const wrap = document.createElement("label");
-			wrap.className = "scene-title-lang";
-			wrap.textContent = (window.LANG_NAMES && window.LANG_NAMES[code]) || code;
-			const inp = document.createElement("input");
-			inp.type = "text";
-			inp.maxLength = 120;
-			inp.value = state[code] || "";
-			inp.addEventListener("input", function () {
-				const c = viewer.getScene();
-				if (!tour.scenes[c]) return;
-				const st = textToState(tour.scenes[c].title);
-				st[code] = inp.value;
-				const collapsed = collapseI18n(st);
-				if (collapsed) tour.scenes[c].title = collapsed; else delete tour.scenes[c].title;
-				updateTitleLabel(c);
-				setDirty(true);
+		if (!titleDD && window.mountLangDropdown) {
+			titleDD = window.mountLangDropdown(sceneTitleLangs, {
+				langs: langs, current: titleLang, showName: true,
+				onPick: function (code) { titleLang = code; loadTitleInput(viewer.getScene()); },
 			});
-			wrap.appendChild(inp);
-			sceneTitleLangs.appendChild(wrap);
-		});
+		} else if (titleDD) {
+			titleDD.setCurrent(titleLang);
+		}
+		loadTitleInput(cur);
 	}
 
 	// Minikarta uppe till höger: prickar för scener, markerar aktuell + hovrad.
@@ -331,10 +325,17 @@
 	});
 
 	if (sceneTitleInput) sceneTitleInput.addEventListener("input", function () {
-		if (langs.length > 1) return; // per-språk-fälten (renderTitleInputs) styr då
 		const cur = viewer.getScene();
 		if (!tour.scenes[cur]) return;
-		tour.scenes[cur].title = sceneTitleInput.value;
+		if (langs.length <= 1) {
+			tour.scenes[cur].title = sceneTitleInput.value;
+		} else {
+			// Flerspråkigt: skriv till aktuellt språk (titleLang), kollapsa {kod:text}.
+			const st = textToState(tour.scenes[cur].title);
+			st[titleLang] = sceneTitleInput.value;
+			const collapsed = collapseI18n(st);
+			if (collapsed) tour.scenes[cur].title = collapsed; else delete tour.scenes[cur].title;
+		}
 		updateTitleLabel(cur);
 		setDirty(true);
 	});
@@ -576,7 +577,7 @@
 	const hsText = document.getElementById("hs-text");
 	const hsBody = document.getElementById("hs-body");
 	const hsLangWrap = document.getElementById("hs-lang-wrap");
-	const hsLangSelect = document.getElementById("hs-lang-select");
+	const hsLangDdEl = document.getElementById("hs-lang-dd");
 
 	// Bilduppladdning för EasyMDE: postar till den delade mediepoolen och infogar
 	// markdown-bildlänken. Funkar i både teaser och läs mer (oavsett expanderbar).
@@ -641,24 +642,22 @@
 		hsState.text[hsLangTab] = hsTextVal();
 		hsState.body[hsLangTab] = hsBodyVal();
 	}
+	let hsLangDD = null;
 	function loadLangFields(code) {
 		if (!hsState) return;
 		if (hsTextEditor) hsTextEditor.value(hsState.text[code] || ""); else if (hsText) hsText.value = hsState.text[code] || "";
 		if (hsBodyEditor) hsBodyEditor.value(hsState.body[code] || ""); else if (hsBody) hsBody.value = hsState.body[code] || "";
-		if (hsLangSelect) hsLangSelect.value = code;
+		if (hsLangDD) hsLangDD.setCurrent(code);
 	}
 	if (hsLangWrap) hsLangWrap.hidden = langs.length <= 1;
-	if (hsLangSelect && langs.length > 1) {
-		langs.forEach(function (code) {
-			const o = document.createElement("option");
-			o.value = code;
-			o.textContent = (window.LANG_NAMES && window.LANG_NAMES[code]) || code;
-			hsLangSelect.appendChild(o);
-		});
-		hsLangSelect.addEventListener("change", function () {
-			saveCurrentLangFields();
-			hsLangTab = hsLangSelect.value;
-			loadLangFields(hsLangTab);
+	if (hsLangDdEl && langs.length > 1 && window.mountLangDropdown) {
+		hsLangDD = window.mountLangDropdown(hsLangDdEl, {
+			langs: langs, current: hsLangTab, showName: true,
+			onPick: function (code) {
+				saveCurrentLangFields();
+				hsLangTab = code;
+				loadLangFields(code);
+			},
 		});
 	}
 
