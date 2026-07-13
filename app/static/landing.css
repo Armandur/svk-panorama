@@ -32,10 +32,10 @@
 	}
 }
 
-/* Header smälter in i hero-bakgrunden; brand + nav-knappar bläck i stället för
-   Pico-blått (bara på landningen - app-sidorna behåller sin blå identitet). */
+/* Header smälter in i hero-bakgrunden; nav-knappar bläck i stället för Pico-blått
+   (bara på landningen - app-sidorna behåller sin blå identitet). Brand-wordmarken
+   är borttagen på landningen (block brand tom i landing.html) - hero bär identiteten. */
 .landing-body .site-header { background: transparent; border-bottom: 0; }
-.landing-body .site-header nav > ul:first-child a { color: var(--l-accent); text-decoration: none; font-weight: 700; }
 .landing-body .site-header .nav-btn { color: var(--l-ink); border-color: var(--l-border); }
 .landing-body .site-header .nav-btn:hover { border-color: var(--l-accent); color: var(--l-accent); }
 .landing-body .site-header .account-name, .landing-body .site-header .account-caret { color: var(--l-ink); }
