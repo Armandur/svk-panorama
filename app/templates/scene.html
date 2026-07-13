@@ -27,7 +27,6 @@
 			<button id="prev-scene" type="button" class="secondary" title="Föregående scen">&larr; Föreg.</button>
 			<button id="next-scene" type="button" class="secondary" title="Nästa scen">Nästa &rarr;</button>
 		</div>
-		<p id="calib-state" aria-live="polite"></p>
 		<label for="scene-title">Scenens namn</label>
 		<div class="scene-title-row">
 			<div id="scene-title-langs" class="scene-title-langs" hidden></div>
@@ -57,6 +56,7 @@
 
 	<article>
 		<h3>Kalibrera</h3>
+		<p id="calib-state" class="readiness" aria-live="polite"></p>
 		<p class="hint">Vrid vyn så en granne du ser är centrerad, klicka sedan på grannen nedan.</p>
 		<div id="neighbor-list" class="neighbor-list"></div>
 		<p id="scene-readiness" class="readiness" aria-live="polite"></p>
