@@ -51,7 +51,7 @@
 			if (!src) return;
 			(targets || TARGETS).forEach(function (lang) {
 				if (!langText(value, lang).trim()) {
-					out.push({ kind: kind, sceneId: sceneId, hotspotIndex: hotspotIndex, lang: lang, sourceText: src, targetText: "" });
+					out.push({ kind: kind, sceneId: sceneId, hotspotIndex: hotspotIndex, lang: lang, sourceText: src, targetText: "", translated: false });
 				}
 			});
 		}
@@ -69,6 +69,36 @@
 		addGaps("branding", null, null, tour.default && tour.default.branding && tour.default.branding.content);
 		return out;
 	}
+
+	// --- "Alla texter"-läget: SAMMA fältvandring som buildGaps, men listar VARJE
+	// (fält × målspråk)-par som har källspråksinnehåll - översatta som ej.
+	// targetText/translated speglar tour-datans FAKTISKA nuläge (inte bara tomt). ---
+	function buildAllEntries() {
+		const out = [];
+		function addAll(kind, sceneId, hotspotIndex, value, targets) {
+			const src = sourceText(value).trim();
+			if (!src) return;
+			(targets || TARGETS).forEach(function (lang) {
+				const tgt = langText(value, lang).trim();
+				out.push({ kind: kind, sceneId: sceneId, hotspotIndex: hotspotIndex, lang: lang, sourceText: src, targetText: tgt, translated: !!tgt });
+			});
+		}
+		sceneIds().forEach(function (sceneId) {
+			const scene = tour.scenes[sceneId];
+			addAll("title", sceneId, null, scene.title);
+			(scene.hotSpots || []).forEach(function (hs, idx) {
+				const hsTargets = window.hotspotInLang ? TARGETS.filter(function (lang) { return window.hotspotInLang(hs, lang); }) : TARGETS;
+				addAll("hotspot_text", sceneId, idx, hs.text, hsTargets);
+				if (hs.expandable) addAll("hotspot_body", sceneId, idx, hs.body, hsTargets);
+			});
+		});
+		addAll("branding", null, null, tour.default && tour.default.branding && tour.default.branding.content);
+		return out;
+	}
+
+	// mode: "gaps" (default, dagens beteende - bara saknade) eller "all" (alla
+	// översättningsbara fält, översatta som ej).
+	function buildEntries() { return mode === "all" ? buildAllEntries() : buildGaps(); }
 
 	function sceneIds() {
 		return Object.keys(tour.scenes).sort(function (a, b) {
@@ -252,9 +282,10 @@
 	const targetMdWrap = document.getElementById("translate-target-md-wrap");
 	const filterRow = document.getElementById("translate-filter-row");
 	const filterSelect = document.getElementById("translate-lang-filter");
+	const modeSelect = document.getElementById("translate-mode-select");
 
-	let gaps = buildGaps();
-	let totalGaps = gaps.length;
+	let mode = "gaps"; // "gaps" (default) eller "all"
+	let gaps = buildEntries();
 	let activeIndex = -1;
 	let langFilter = ""; // "" = alla målspråk
 	let activeGroupKey = null; // scenId, eller "__branding__" - gruppen som hålls utfälld
@@ -275,15 +306,38 @@
 		});
 	}
 
+	modeSelect.addEventListener("change", function () {
+		mode = modeSelect.value;
+		rebuildEntries();
+	});
+
+	// Räknas alltid ur den FAKTISKA tour-datan (inte listlängden) - så siffrorna
+	// stämmer i BÅDA lägena oavsett om posten tas bort ur listan (Saknade) eller
+	// bara markeras översatt på plats (Alla texter).
+	function overallStats() {
+		let total = 0, done = 0;
+		sceneIds().forEach(function (id) {
+			TARGETS.forEach(function (lang) {
+				const s = sceneLangStats(id, lang);
+				total += s.total; done += s.done;
+			});
+		});
+		TARGETS.forEach(function (lang) {
+			const s = brandingLangStats(lang);
+			total += s.total; done += s.done;
+		});
+		return { total: total, done: done };
+	}
+
 	function updateProgress() {
-		const remaining = gaps.length;
-		const done = Math.max(0, totalGaps - remaining);
-		if (totalGaps === 0) {
-			progressLabel.textContent = "Inga saknade översättningar.";
+		const st = overallStats();
+		if (st.total === 0) {
+			progressLabel.textContent = "Inga texter att översätta.";
 			progressBar.value = 1; progressBar.max = 1;
 		} else {
-			progressLabel.textContent = done + "/" + totalGaps + " översatta (" + remaining + " kvar)";
-			progressBar.value = done; progressBar.max = totalGaps;
+			const remaining = st.total - st.done;
+			progressLabel.textContent = st.done + "/" + st.total + " översatta (" + remaining + " kvar)";
+			progressBar.value = st.done; progressBar.max = st.total;
 		}
 	}
 
@@ -369,20 +423,31 @@
 				visibleIdxs.forEach(function (i) {
 					const g = gaps[i];
 					const li = document.createElement("li");
-					li.className = "translate-gap-row" + (i === activeIndex ? " active" : "");
+					li.className = "translate-gap-row" + (i === activeIndex ? " active" : "") + (g.translated ? " is-translated" : "");
 					li.dataset.idx = String(i);
 					const flag = document.createElement("img");
 					flag.className = "lang-order-flag";
 					flag.src = window.langFlag ? window.langFlag(g.lang) : "";
 					flag.alt = "";
 					li.appendChild(flag);
+					// Status-bock (bara meningsfull i "Alla texter" - i "Saknade" är
+					// g.translated alltid false, så ikonen blir aldrig synlig där).
+					if (mode === "all") {
+						const status = document.createElement("span");
+						status.className = "translate-row-status";
+						status.textContent = g.translated ? "✓" : "";
+						li.appendChild(status);
+					}
 					const kindEl = document.createElement("span");
 					kindEl.className = "translate-gap-kind";
 					kindEl.textContent = KIND_LABELS[g.kind] || g.kind;
 					li.appendChild(kindEl);
 					const snippet = document.createElement("span");
-					snippet.className = "translate-gap-snippet";
-					snippet.textContent = g.sourceText.length > 60 ? g.sourceText.slice(0, 60) + "…" : g.sourceText;
+					// Redan översatt post visar MÅLTEXT-snutten (så man ser vad som
+					// faktiskt står där), oöversatt visar källtexten som idag.
+					const snippetSrc = g.translated ? g.targetText : g.sourceText;
+					snippet.className = "translate-gap-snippet" + (g.translated ? " is-translated" : "");
+					snippet.textContent = snippetSrc.length > 60 ? snippetSrc.slice(0, 60) + "…" : snippetSrc;
 					li.appendChild(snippet);
 					li.addEventListener("click", function () { selectGap(i); });
 					ul.appendChild(li);
@@ -445,16 +510,32 @@
 		targetPlainWrap.hidden = md;
 		targetMdWrap.hidden = !md;
 
+		// Förifyll med BEFINTLIG måltext ("Alla texter": redan översatta poster
+		// ska gå att redigera vidare). I "Saknade" är targetText alltid "" (som
+		// idag), så prefillen blir tom precis som innan.
 		if (md) {
 			srcBox.innerHTML = window.renderMarkdown ? window.renderMarkdown(g.sourceText) : window.escapeHtml(g.sourceText);
 			ensureMdEditor();
-			if (mdEditor) { mdEditor.value(""); mdEditor.codemirror.refresh(); mdEditor.codemirror.focus(); }
-			else { targetMd.value = ""; targetMd.focus(); }
+			if (mdEditor) { mdEditor.value(g.targetText || ""); mdEditor.codemirror.refresh(); mdEditor.codemirror.focus(); }
+			else { targetMd.value = g.targetText || ""; targetMd.focus(); }
 		} else {
 			srcBox.textContent = g.sourceText;
-			targetInput.value = "";
+			targetInput.value = g.targetText || "";
 			targetInput.focus();
 		}
+	}
+
+	// Bygger om listan när läget (Saknade/Alla) byts - behåller ev. språkfilter,
+	// väljer första matchande post (som selectGap() sköter grupp-utfällning +
+	// kamera + rendering för).
+	function rebuildEntries() {
+		gaps = buildEntries();
+		activeIndex = -1;
+		activeGroupKey = null;
+		editorEl.hidden = true;
+		const arr = filteredIndices();
+		if (arr.length) selectGap(arr[0]);
+		else renderGapList();
 	}
 
 	// Håller den JS-lokala tour-kopian i synk efter en lyckad spar (så luckelistans
@@ -480,16 +561,24 @@
 		}
 	}
 
-	// Efter spar: hoppa till nästa lucka som matchar ev. aktivt språkfilter (första
-	// med index >= den nyss sparade, annars wrap till första). Ger filtret inget
-	// träffbart alls kvar (allt på det språket är klart) - nollställ filtret i
-	// stället för att stranda användaren i ett tomt läge.
+	// Efter spar: "Saknade" - luckan är borttagen ur gaps (splice:ad av anroparen),
+	// hoppa till nästa lucka som matchar ev. aktivt språkfilter (första med index
+	// >= den nyss sparade, annars wrap till första). Ger filtret inget träffbart
+	// alls kvar (allt på det språket är klart) - nollställ filtret i stället för
+	// att stranda användaren i ett tomt läge.
+	// "Alla texter" - posten ligger KVAR (bara markerad översatt), så vi hoppar
+	// i stället till NÄSTA post i listan (samma logik som "Hoppa till nästa").
 	function advanceAfterSave() {
 		if (!gaps.length) {
 			editorEl.hidden = true;
 			activeIndex = -1;
 			activeGroupKey = null;
 			renderGapList();
+			return;
+		}
+		if (mode === "all") {
+			const ni = nextFilteredIndex(activeIndex);
+			if (ni !== -1) selectGap(ni); else renderGapList();
 			return;
 		}
 		const arr = filteredIndices();
@@ -514,8 +603,16 @@
 			method: "POST",
 			body: { kind: g.kind, sceneId: g.sceneId, hotspotIndex: g.hotspotIndex, lang: g.lang, value: value },
 		}).then(function () {
-			applyLocal(g, (value || "").trim());
-			gaps.splice(activeIndex, 1);
+			const trimmed = (value || "").trim();
+			applyLocal(g, trimmed);
+			if (mode === "all") {
+				// Posten stannar kvar i listan, bara markerad översatt (radens
+				// bock/färg + N/M-räknarna uppdateras via renderGapList/updateProgress).
+				g.targetText = trimmed;
+				g.translated = !!trimmed;
+			} else {
+				gaps.splice(activeIndex, 1);
+			}
 			if (window.showToast) showToast("Sparat", "ok");
 			advanceAfterSave();
 		}).catch(function (e) {

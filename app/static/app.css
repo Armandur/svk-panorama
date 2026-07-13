@@ -1344,6 +1344,9 @@ details.storage-user table { margin-bottom: 0.6rem; }
 /* --- Översätt-steget (routes/translate.py, static/translate.js) --- */
 .translate-progress { margin: 0 0 0.75rem; }
 .translate-progress p { font-size: 0.85rem; margin: 0 0 0.25rem; }
+.translate-mode-row { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.5rem; font-size: 0.82rem; }
+.translate-mode-row label { margin: 0; font-weight: 600; color: var(--pico-muted-color); white-space: nowrap; }
+.translate-mode-row select { width: auto; flex: 1; margin: 0; padding: 0.25rem 0.5rem; font-size: 0.82rem; }
 .translate-filter-row { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.6rem; font-size: 0.82rem; }
 .translate-filter-row label { margin: 0; font-weight: 600; color: var(--pico-muted-color); white-space: nowrap; }
 .translate-filter-row select { width: auto; flex: 1; margin: 0; padding: 0.25rem 0.5rem; font-size: 0.82rem; }
@@ -1380,10 +1383,18 @@ details.storage-user table { margin-bottom: 0.6rem; }
 	font-size: 0.82rem;
 }
 .translate-gap-row:hover { background: var(--pico-muted-border-color, rgba(115, 130, 140, 0.1)); }
+/* "Alla texter"-läget: redan översatta poster får en grön tonad bakgrund +
+   bock-status. Deklareras FÖRE .active nedan så .active alltid vinner för en
+   post som råkar vara både översatt och markerad. I "Saknade"-läget förekommer
+   .is-translated aldrig (alla poster där är per definition oöversatta). */
+.translate-gap-row.is-translated { background: color-mix(in srgb, var(--svk-accent) 8%, transparent); }
+.translate-gap-row.is-translated:hover { background: color-mix(in srgb, var(--svk-accent) 14%, transparent); }
 .translate-gap-row.active { background: var(--svk-accent); color: var(--pico-primary-inverse); }
 .translate-gap-row .lang-order-flag { flex: none; }
+.translate-row-status { flex: none; width: 1.1em; text-align: center; font-weight: 700; color: var(--svk-accent); }
 .translate-gap-kind { flex: none; font-weight: 600; }
 .translate-gap-snippet { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.85; }
+.translate-gap-snippet.is-translated { font-style: italic; }
 
 .translate-editor { border-top: 1px solid var(--pico-muted-border-color); padding-top: 0.6rem; }
 .translate-field { margin-bottom: 0.6rem; }
