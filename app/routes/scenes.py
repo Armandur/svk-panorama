@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from app.database import Project
 from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
-from app.services.presets import sanitize_i18n_text
+from app.services.presets import sanitize_hotspot_langs, sanitize_i18n_text
 from app.services.project_files import map_image_path, read_map, read_tour, tour_lock, write_tour
 from app.services.tiling import read_manifest
 
@@ -66,6 +66,7 @@ def save_tour(
     with tour_lock:  # läs-modifiera-skriv atomiskt mot andra tour.json-skrivare
         tour = read_tour(slug)
         scenes = tour.get("scenes", {})
+        tour_languages = tour.get("default", {}).get("languages") or []
         updated = 0
         for scene_id, upd in payload.scenes.items():
             if scene_id not in scenes:
@@ -75,12 +76,13 @@ def save_tour(
                 scene.pop("northOffset", None)
             else:
                 scene["northOffset"] = round(upd.northOffset, 2)
-            if upd.title is not None:
-                title = sanitize_i18n_text(upd.title, 200)  # str | {kod: text} | None
-                if title:
-                    scene["title"] = title
-                else:
-                    scene.pop("title", None)
+            # /tour är en full per-scen-överskrivning (hotSpots ersätts alltid) och
+            # scene.js skickar ALLTID title -> None betyder "rensa", inte "rör ej".
+            title = sanitize_i18n_text(upd.title, 200)  # str | {kod: text} | None
+            if title:
+                scene["title"] = title
+            else:
+                scene.pop("title", None)
             if upd.calibRef:
                 scene["calibRef"] = upd.calibRef
             else:
@@ -98,6 +100,15 @@ def save_tour(
                 scene.pop("pitch", None)
             else:
                 scene["pitch"] = round(upd.pitch, 2)
+            # Sanera hotspot-`langs` (språkbegränsning) - annars kan klienten spara
+            # ogiltiga/okända koder som filtret sedan litar på (fynd 4).
+            for hs in upd.hotSpots:
+                if isinstance(hs, dict) and "langs" in hs:
+                    cleaned = sanitize_hotspot_langs(hs.get("langs"), tour_languages)
+                    if cleaned:
+                        hs["langs"] = cleaned
+                    else:
+                        hs.pop("langs", None)
             scene["hotSpots"] = upd.hotSpots
             updated += 1
         write_tour(slug, tour)

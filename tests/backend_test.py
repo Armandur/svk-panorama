@@ -23,6 +23,7 @@ from app.services.bundle import _media_refs, _relativize, missing_translations  
 from app.services.i18n import hotspot_in_lang, og_description, tour_default_lang  # noqa: E402
 from app.services.presets import (  # noqa: E402
     i18n_text_values,
+    sanitize_hotspot_langs,
     sanitize_i18n_text,
     sanitize_languages,
     set_i18n_lang,
@@ -588,6 +589,38 @@ def test_translate_helpers():
     # hotspot1.body (samma, expandable -> 2 luckor) = 2+1+2+2 = 7
     check("missing_translations hoppar över exkluderade mål", n3 == 7)
 
+    # Föräldralöst fält (fynd 1): källtext (sv) TOM men målspråk har text ->
+    # räknas som 1 lucka (källan måste fyllas, annars fel fallback + osynligt).
+    tour4 = {
+        "default": {"languages": ["sv", "en", "de"]},
+        "scenes": {
+            "1": {
+                "title": {"en": "Church"},  # orphan: ingen sv, en finns -> 1
+                "hotSpots": [
+                    {"type": "info", "text": {"en": "Bell"}},  # orphan, källspråk gäller -> 1
+                    # Källspråket (sv) exkluderat via langs -> källtext förväntas
+                    # saknas, INGEN orphan-lucka (source_applies=False).
+                    {"type": "info", "text": {"de": "Glocke"}, "langs": ["en", "de"]},
+                    {"type": "info", "text": {"en": ""}},  # tomt mål också -> 0
+                ],
+            },
+        },
+    }
+    check("missing_translations orphan-källspråk = 1 lucka per fält", missing_translations(tour4) == 2)
+
+
+def test_sanitize_hotspot_langs():
+    tl = ["sv", "en", "de"]
+    check("hs_langs giltig delmängd behålls", sanitize_hotspot_langs(["en", "de"], tl) == ["en", "de"])
+    check("hs_langs täcker alla -> None", sanitize_hotspot_langs(["sv", "en", "de"], tl) is None)
+    check("hs_langs droppar okända koder", sanitize_hotspot_langs(["en", "xx"], tl) == ["en"])
+    check("hs_langs dedupe + ordning", sanitize_hotspot_langs(["en", "en", "sv"], tl) == ["en", "sv"])
+    check("hs_langs tom lista -> None", sanitize_hotspot_langs([], tl) is None)
+    check("hs_langs bara ogiltiga -> None", sanitize_hotspot_langs(["xx", "zz"], tl) is None)
+    check("hs_langs icke-lista -> None", sanitize_hotspot_langs("en", tl) is None)
+    # Utan turspråk faller täcker-alla-guarden bort -> giltig kod behålls.
+    check("hs_langs utan turspråk behåller giltig kod", sanitize_hotspot_langs(["en"], []) == ["en"])
+
 
 def test_hotspot_in_lang():
     check("hotspot_in_lang inget langs-fält -> alla språk", hotspot_in_lang({}, "en") is True)
@@ -605,6 +638,7 @@ def main() -> int:
         test_relativize_i18n,
         test_i18n_helpers,
         test_translate_helpers,
+        test_sanitize_hotspot_langs,
         test_hotspot_in_lang,
         test_export_readiness,
         test_preset_sanitize,

@@ -24,6 +24,16 @@
 	var langs = (tour.default && Array.isArray(tour.default.languages) && tour.default.languages.length)
 		? tour.default.languages : ["sv"];
 
+	// localStorage-nyckel för språkvalet nycklas PER TUR (annars läcker valet
+	// mellan olika turer på samma origin - flera /s-länkar eller bundlar). Härleds
+	// ur turens scen-id-set (stabilt, unikt nog, avslöjar ingen slug på /s).
+	var LANG_STORE_KEY = (function () {
+		var ids = Object.keys(tour.scenes || {}).sort().join(",");
+		var h = 5381;
+		for (var i = 0; i < ids.length; i++) { h = ((h << 5) + h + ids.charCodeAt(i)) >>> 0; }
+		return "tour_lang:" + h.toString(36);
+	})();
+
 	// Pannellum har en egen inbyggd titel-ruta som läser scene.title RAKT AV och
 	// skulle visa "[object Object]" för en flerspråkig {kod:text}-titel. Vi
 	// resolverar därför titeln till en ren sträng och skriver in den i
@@ -67,7 +77,7 @@
 	function pickInitialLang() {
 		if (initialHash && initialHash.lang && langs.indexOf(initialHash.lang) !== -1) return initialHash.lang;
 		try {
-			var stored = localStorage.getItem("tour_lang");
+			var stored = localStorage.getItem(LANG_STORE_KEY);
 			if (stored && langs.indexOf(stored) !== -1) return stored;
 		} catch (e) { /* privat läge/blockerad storage - ignorera */ }
 		var nav = ((navigator.language || "") + "").slice(0, 2).toLowerCase();
@@ -370,7 +380,7 @@
 	function setLang(lang) {
 		if (langs.indexOf(lang) === -1 || lang === currentLang) return;
 		currentLang = lang;
-		try { localStorage.setItem("tour_lang", currentLang); } catch (e) { /* privat läge/blockerad storage */ }
+		try { localStorage.setItem(LANG_STORE_KEY, currentLang); } catch (e) { /* privat läge/blockerad storage */ }
 		writeHash(); // uppdaterar #lang= direkt (viewer finns fortfarande kvar här)
 		rebuildViewer();
 	}

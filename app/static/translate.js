@@ -40,16 +40,41 @@
 		if (value && typeof value === "object") return value[lang] || "";
 		return "";
 	}
+	// Första målspråket (≠ källspråk) som HAR text, för att visa som referens när
+	// källtexten saknas (föräldralöst fält, se addGaps/addAll). null = inget.
+	function firstTargetText(value, langsList) {
+		const arr = langsList || TARGETS;
+		for (let k = 0; k < arr.length; k++) {
+			if (arr[k] === SOURCE) continue;
+			const t = langText(value, arr[k]).trim();
+			if (t) return { text: t, lang: arr[k] };
+		}
+		return null;
+	}
 
 	// --- Gap-scan: SAMMA definition som app/services/bundle.py:missing_translations. ---
 	function buildGaps() {
 		const out = [];
 		// targets = valfri delmängd av TARGETS (t.ex. en språkbegränsad hotspot,
-		// se hotspotInLang i markdown.js) - default hela TARGETS.
-		function addGaps(kind, sceneId, hotspotIndex, value, targets) {
+		// se hotspotInLang i markdown.js) - default hela TARGETS. sourceApplies =
+		// false när källspråket inte gäller fältet (hotspot exkluderar källspråket).
+		function addGaps(kind, sceneId, hotspotIndex, value, targets, sourceApplies) {
+			const tg = targets || TARGETS;
 			const src = sourceText(value).trim();
-			if (!src) return;
-			(targets || TARGETS).forEach(function (lang) {
+			if (!src) {
+				// Föräldralöst fält: källtext saknas men något målspråk har text.
+				// Yta EN källspråks-lucka så fältet inte försvinner ur listan
+				// (annars osynligt + fel språk-fallback i vieweren). SAMMA
+				// definition som app/services/bundle.py:missing_translations.
+				if (sourceApplies !== false) {
+					const ref = firstTargetText(value, tg);
+					if (ref) {
+						out.push({ kind: kind, sceneId: sceneId, hotspotIndex: hotspotIndex, lang: SOURCE, sourceText: "", targetText: "", orphanSource: true, orphanRef: ref.text, orphanRefLang: ref.lang, translated: false });
+					}
+				}
+				return;
+			}
+			tg.forEach(function (lang) {
 				if (!langText(value, lang).trim()) {
 					out.push({ kind: kind, sceneId: sceneId, hotspotIndex: hotspotIndex, lang: lang, sourceText: src, targetText: "", translated: false });
 				}
@@ -57,16 +82,17 @@
 		}
 		sceneIds().forEach(function (sceneId) {
 			const scene = tour.scenes[sceneId];
-			addGaps("title", sceneId, null, scene.title);
+			addGaps("title", sceneId, null, scene.title, TARGETS, true);
 			(scene.hotSpots || []).forEach(function (hs, idx) {
 				// En hotspot begränsad till vissa språk (hs.langs) ska inte ge
 				// "saknad översättning"-luckor för målspråk den inte visas på.
 				const hsTargets = window.hotspotInLang ? TARGETS.filter(function (lang) { return window.hotspotInLang(hs, lang); }) : TARGETS;
-				addGaps("hotspot_text", sceneId, idx, hs.text, hsTargets);
-				if (hs.expandable) addGaps("hotspot_body", sceneId, idx, hs.body, hsTargets);
+				const srcOk = window.hotspotInLang ? window.hotspotInLang(hs, SOURCE) : true;
+				addGaps("hotspot_text", sceneId, idx, hs.text, hsTargets, srcOk);
+				if (hs.expandable) addGaps("hotspot_body", sceneId, idx, hs.body, hsTargets, srcOk);
 			});
 		});
-		addGaps("branding", null, null, tour.default && tour.default.branding && tour.default.branding.content);
+		addGaps("branding", null, null, tour.default && tour.default.branding && tour.default.branding.content, TARGETS, true);
 		return out;
 	}
 
@@ -78,11 +104,16 @@
 	function buildAllEntries() {
 		const out = [];
 		function addAll(kind, sceneId, hotspotIndex, value, langs) {
+			const useLangs = langs || languages;
 			const src = sourceText(value).trim();
-			if (!src) return;
-			(langs || languages).forEach(function (lang) {
+			// Visa fältet om det har NÅGOT innehåll - källtext ELLER någon
+			// målöversättning. Föräldralöst fält (måltext men tom källa) ska
+			// alltså synas här också, med källspråksraden markerad ofärdig.
+			const ref = src ? null : firstTargetText(value, useLangs);
+			if (!src && !ref) return; // äkta tomt fält -> visas inte
+			useLangs.forEach(function (lang) {
 				if (lang === SOURCE) {
-					out.push({ kind: kind, sceneId: sceneId, hotspotIndex: hotspotIndex, lang: lang, sourceText: src, targetText: src, translated: true });
+					out.push({ kind: kind, sceneId: sceneId, hotspotIndex: hotspotIndex, lang: lang, sourceText: src, targetText: src, translated: !!src, orphanSource: !src, orphanRef: ref ? ref.text : "", orphanRefLang: ref ? ref.lang : SOURCE });
 					return;
 				}
 				const tgt = langText(value, lang).trim();
@@ -156,6 +187,12 @@
 	}
 	function brandingHasAnyTarget() {
 		return TARGETS.some(function (lang) { return brandingLangStats(lang).total > 0; });
+	}
+	// Har gruppen (scen/branding) någon föräldralös källspråks-lucka? Sådana fält
+	// har ingen källtext -> syns inte i target-räknarna (sceneLangStats kräver
+	// källtext), men gruppen måste ändå renderas och inte falskt markeras klar.
+	function groupHasOrphan(key) {
+		return gaps.some(function (g) { return groupKeyFor(g) === key && g.orphanSource; });
 	}
 	function sceneYaw(id) { const sc = tour.scenes[id]; return sc && typeof sc.yaw === "number" ? sc.yaw : undefined; }
 	function scenePitch(id) { const sc = tour.scenes[id]; return sc && typeof sc.pitch === "number" ? sc.pitch : undefined; }
@@ -398,8 +435,8 @@
 		}
 		doneMsgEl.hidden = true;
 
-		const keys = sceneIds().filter(sceneHasAnyTarget);
-		if (brandingHasAnyTarget()) keys.push("__branding__");
+		const keys = sceneIds().filter(function (id) { return sceneHasAnyTarget(id) || groupHasOrphan(id); });
+		if (brandingHasAnyTarget() || groupHasOrphan("__branding__")) keys.push("__branding__");
 
 		keys.forEach(function (key) {
 			const idxs = [];
@@ -407,7 +444,7 @@
 			const visibleIdxs = idxs.filter(function (i) { return !langFilter || gaps[i].lang === langFilter; });
 
 			const stats = key === "__branding__" ? statsForAllTargets(brandingLangStats) : statsForAllTargets(function (lang) { return sceneLangStats(key, lang); });
-			const allDone = TARGETS.every(function (lang) { return stats[lang].total === 0 || stats[lang].done === stats[lang].total; });
+			const allDone = !groupHasOrphan(key) && TARGETS.every(function (lang) { return stats[lang].total === 0 || stats[lang].done === stats[lang].total; });
 
 			const details = document.createElement("details");
 			details.className = "translate-scene-group" + (allDone ? " done" : "");
@@ -502,8 +539,10 @@
 					}
 					const snippet = document.createElement("span");
 					// Redan översatt post visar MÅLTEXT-snutten (så man ser vad som
-					// faktiskt står där), oöversatt visar källtexten som idag.
-					const snippetSrc = g.translated ? g.targetText : g.sourceText;
+					// faktiskt står där), oöversatt visar källtexten som idag. En
+					// föräldralös källspråks-lucka (ingen källtext) visar den
+					// befintliga översättningen som referens (annars blank rad).
+					const snippetSrc = g.orphanSource ? (g.orphanRef || "") : (g.translated ? g.targetText : g.sourceText);
 					snippet.className = "translate-gap-snippet" + (g.translated ? " is-translated" : "");
 					snippet.textContent = snippetSrc.length > 60 ? snippetSrc.slice(0, 60) + "…" : snippetSrc;
 					li.appendChild(snippet);
@@ -563,9 +602,15 @@
 		// målfältets etikett märks tydligt som källspråk.
 		const isSource = g.lang === SOURCE;
 		document.getElementById("translate-editor-title").textContent = KIND_LABELS[g.kind] || g.kind;
-		sourceFieldEl.hidden = isSource;
-		document.getElementById("translate-source-flag").src = window.langFlag ? window.langFlag(SOURCE) : "";
-		document.getElementById("translate-source-name").textContent = (window.LANG_NAMES && window.LANG_NAMES[SOURCE]) || SOURCE;
+		// Källreferens: normalt källspråkstexten. En föräldralös källspråks-lucka
+		// redigerar SJÄLV källan - referensen är då den BEFINTLIGA översättningen
+		// (annat språk) så man vet vad fältet ska säga. Vanlig källspråksrad utan
+		// orphan har ingen referens (fältet ÄR källan) -> dölj rutan.
+		const refText = g.orphanSource ? (g.orphanRef || "") : g.sourceText;
+		const refLang = g.orphanSource ? (g.orphanRefLang || SOURCE) : SOURCE;
+		sourceFieldEl.hidden = isSource && !g.orphanSource;
+		document.getElementById("translate-source-flag").src = window.langFlag ? window.langFlag(refLang) : "";
+		document.getElementById("translate-source-name").textContent = ((window.LANG_NAMES && window.LANG_NAMES[refLang]) || refLang) + (g.orphanSource ? " (befintlig översättning)" : "");
 		document.getElementById("translate-target-flag").src = window.langFlag ? window.langFlag(g.lang) : "";
 		document.getElementById("translate-target-name").textContent = ((window.LANG_NAMES && window.LANG_NAMES[g.lang]) || g.lang) + (isSource ? " (källspråk)" : "");
 
@@ -579,12 +624,12 @@
 		// är targetText alltid "" (som idag), så prefillen blir tom precis som
 		// innan.
 		if (md) {
-			srcBox.innerHTML = window.renderMarkdown ? window.renderMarkdown(g.sourceText) : window.escapeHtml(g.sourceText);
+			srcBox.innerHTML = window.renderMarkdown ? window.renderMarkdown(refText) : window.escapeHtml(refText);
 			ensureMdEditor();
 			if (mdEditor) { mdEditor.value(g.targetText || ""); mdEditor.codemirror.refresh(); mdEditor.codemirror.focus(); }
 			else { targetMd.value = g.targetText || ""; targetMd.focus(); }
 		} else {
-			srcBox.textContent = g.sourceText;
+			srcBox.textContent = refText;
 			targetInput.value = g.targetText || "";
 			targetInput.focus();
 		}
@@ -682,17 +727,23 @@
 		}).then(function () {
 			const trimmed = (value || "").trim();
 			applyLocal(g, trimmed);
+			if (window.showToast) showToast("Sparat", "ok");
 			if (mode === "all") {
 				// Posten stannar kvar i listan, bara markerad översatt (radens
 				// bock/färg + N/M-räknarna uppdateras via renderGapList/updateProgress).
 				g.targetText = trimmed;
 				g.translated = !!trimmed;
-				if (g.lang === SOURCE) syncSourceText(g, trimmed);
+				if (g.lang === SOURCE) { g.orphanSource = !trimmed; syncSourceText(g, trimmed); }
+				advanceAfterSave();
+			} else if (g.orphanSource && trimmed) {
+				// Källtexten är nu ifylld -> fältet är inte längre föräldralöst och
+				// kan ha vanliga målspråks-luckor som INTE fanns i listan medan det
+				// var föräldralöst. Bygg om gap-listan så de dyker upp.
+				rebuildEntries();
 			} else {
 				gaps.splice(activeIndex, 1);
+				advanceAfterSave();
 			}
-			if (window.showToast) showToast("Sparat", "ok");
-			advanceAfterSave();
 		}).catch(function (e) {
 			if (window.showToast) showToast(e.message, "error");
 		}).then(function () { btn.removeAttribute("aria-busy"); });

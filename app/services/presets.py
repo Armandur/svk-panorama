@@ -73,6 +73,26 @@ def set_i18n_lang(current: Any, lang: str, new_text: str, default_lang: str) -> 
     return d
 
 
+def sanitize_hotspot_langs(value: Any, tour_languages: list[str]) -> list[str] | None:
+    """Hotspot-fältet `langs` (begränsa hotspoten till vissa språk, se
+    hotspot_in_lang/hotspotInLang). Behåll bara giltiga koder i bevarad ordning,
+    utan dubbletter. Returnerar None (droppa fältet) om listan är tom eller
+    täcker ALLA turens språk (= ingen begränsning) - speglar klientens setHsLangs
+    (scene.js) som inte lagrar `langs` när alla rutor är ikryssade."""
+    if not isinstance(value, list):
+        return None
+    seen: list[str] = []
+    for code in value:
+        if isinstance(code, str) and code in config.LANGUAGES and code not in seen:
+            seen.append(code)
+    if not seen:
+        return None
+    tl = set(tour_languages or [])
+    if tl and set(seen) >= tl:
+        return None
+    return seen
+
+
 def i18n_text_values(value: Any) -> list[str]:
     """Alla textvarianter av ett fält som kan vara ren sträng (default-språk),
     {kod: text} (flerspråkigt) eller saknas/annat. Delas av regex-skanningar

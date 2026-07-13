@@ -243,20 +243,28 @@ def missing_translations(tour: dict) -> int:
     """Antal saknade översättningar: fält med innehåll på källspråket
     (languages[0]) men tomt/saknas på ett målspråk (languages[1:]). En ren
     sträng (ej dict) räknas som "bara källspråket ifyllt" -> lucka för ALLA
-    målspråk. SAMMA definition som gap-scannen i static/translate.js - håll dem
-    i synk. Fält: scen-title, hotspot-text, hotspot-body (bara om expandable),
+    målspråk. ETT fält vars källspråk är TOMT men som har text på något målspråk
+    (föräldralöst/orphan) räknas som EN lucka - källtexten måste fyllas i, annars
+    faller vieweren tillbaka på fel språk och fältet är osynligt utan detta.
+    SAMMA definition som gap-scannen i static/translate.js - håll dem i synk.
+    Fält: scen-title, hotspot-text, hotspot-body (bara om expandable),
     default.branding.content."""
     languages = (tour.get("default") or {}).get("languages") or []
     if len(languages) <= 1:
         return 0
     source, targets = languages[0], languages[1:]
 
-    def _gaps(value: Any, field_targets: list[str] | None = None) -> int:
+    def _gaps(value: Any, field_targets: list[str] | None = None, source_applies: bool = True) -> int:
         tg = targets if field_targets is None else field_targets
         if isinstance(value, str):
             return len(tg) if value.strip() else 0
         if isinstance(value, dict):
             if not (value.get(source) or "").strip():
+                # Orphan: källtext saknas men något målspråk har text -> 1 lucka
+                # (fyll källspråket). source_applies=False (hotspot exkluderar
+                # källspråket via langs) -> källtext förväntas saknas, ingen lucka.
+                if source_applies and any((value.get(lang) or "").strip() for lang in tg):
+                    return 1
                 return 0
             return sum(1 for lang in tg if not (value.get(lang) or "").strip())
         return 0
@@ -269,9 +277,10 @@ def missing_translations(tour: dict) -> int:
             # luckor för målspråk den inte visas på. SAMMA definition som
             # gap-scannen i static/translate.js.
             hs_targets = [lang for lang in targets if i18n.hotspot_in_lang(hs, lang)]
-            count += _gaps(hs.get("text"), hs_targets)
+            src_ok = i18n.hotspot_in_lang(hs, source)
+            count += _gaps(hs.get("text"), hs_targets, src_ok)
             if hs.get("expandable"):
-                count += _gaps(hs.get("body"), hs_targets)
+                count += _gaps(hs.get("body"), hs_targets, src_ok)
     branding = (tour.get("default") or {}).get("branding") or {}
     count += _gaps(branding.get("content"))
     return count

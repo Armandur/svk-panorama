@@ -1091,8 +1091,9 @@
 			label.title = body;
 			headRow.appendChild(label);
 			// Flagg-indikator för hotspots som är begränsade till vissa språk
-			// (hs.langs satt) - så man ser vilka som inte visas överallt.
-			if (Array.isArray(hs.langs) && hs.langs.length) {
+			// (hs.langs satt) - så man ser vilka som inte visas överallt. Bara
+			// meningsfull i en flerspråkig tur (i en enspråkig visas allt ändå).
+			if (langs.length > 1 && Array.isArray(hs.langs) && hs.langs.length) {
 				const badge = document.createElement("span");
 				badge.className = "hotspot-lang-badge";
 				badge.title = "Visas bara på: " + hs.langs.map(function (c) { return (window.LANG_NAMES && window.LANG_NAMES[c]) || c; }).join(", ");
