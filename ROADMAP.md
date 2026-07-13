@@ -625,11 +625,11 @@ domän själv. Fortsatt single-host Docker (inget S3/kö/multi-instans, jfr Fas 
          + `X-Forwarded-Host` (reverse_proxy gör Proto default; verifiera Host).
          Då blir `request.base_url` = `https://<tenant-host>/` korrekt.
 
-      **Rekommenderat (single seam):** konsolidera de 5 call sites till EN helper
-      (t.ex. `deps.request_origin(request)` nu, som senare blir
-      `team_origin(team, request)` när Team finns) så per-team-domänbytet sker på ETT
-      ställe och inget glöms. Billigt att göra i förväg (ren refaktor, oförändrat
-      beteende) - reducerar Fas 4-ytan. Kan tas när som helst före Fas 4.
+      **Single seam KLART (2026-07-13):** de 5 call sites är konsoliderade till
+      `deps.request_origin(request)` (oförändrat beteende, 121 tester gröna,
+      OG/share_url rök-testade). När Team finns byts denna helper till
+      `team_origin(team, request)` (eller så läser den `Team.base_url`) på ETT
+      ställe -> per-team-domänbytet kan inte glömmas i någon route.
 
       **og:url-policy att besluta:** ska en tur som nås på BÅDE plattform-subdomän och
       kundens egna domän ha per-domän `og:url` (varje domän egen förhandsvisning,

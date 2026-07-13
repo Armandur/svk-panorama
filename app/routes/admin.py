@@ -7,11 +7,11 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session
 
-from app import config
 from app.auth import hash_password, make_invite_token, password_error, require_admin
 from app.database import Project, User, get_db
 from app.deps import (
     new_csrf_token,
+    request_origin,
     set_csrf_cookie,
     templates,
     verify_csrf_form,
@@ -31,8 +31,7 @@ def admin_home(admin: User = Depends(require_admin)) -> RedirectResponse:
 
 
 def _invite_url(request: Request, user_id: int) -> str:
-    base = config.BASE_URL or str(request.base_url).rstrip("/")
-    return f"{base}/accept-invite?token={make_invite_token(user_id)}"
+    return f"{request_origin(request)}/accept-invite?token={make_invite_token(user_id)}"
 
 
 def _target_or_404(db: Session, user_id: int) -> User:

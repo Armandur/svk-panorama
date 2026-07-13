@@ -16,9 +16,8 @@ _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 def _hex(value: str, fallback: str) -> str:
     return value if _HEX_RE.match(value or "") else fallback
 
-from app import config
 from app.database import Project
-from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
+from app.deps import get_project_or_404, new_csrf_token, request_origin, set_csrf_cookie, templates, verify_csrf_header
 from app.services.presets import sanitize_branding
 from app.services.project_files import _natural_key, map_image_path, read_map, read_tour, tour_lock, write_tour
 from app.services.tiling import read_manifest
@@ -58,8 +57,7 @@ def preview_view(
     token = new_csrf_token()
     share_url = None
     if project.share_token:
-        origin = config.BASE_URL or str(request.base_url).rstrip("/")
-        share_url = f"{origin}/s/{project.share_token}"
+        share_url = f"{request_origin(request)}/s/{project.share_token}"
     response = templates.TemplateResponse(
         request,
         "preview.html",

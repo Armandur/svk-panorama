@@ -7,13 +7,13 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
-from app import config
 from app.auth import require_user
 from app.database import Project, User
 from app.deps import (
     get_db,
     get_project_or_404,
     new_csrf_token,
+    request_origin,
     set_csrf_cookie,
     templates,
     verify_csrf_form,
@@ -140,8 +140,7 @@ async def delete_project(
 
 
 def _share_url(request: Request, token: str) -> str:
-    origin = config.BASE_URL or str(request.base_url).rstrip("/")
-    return f"{origin}/s/{token}"
+    return f"{request_origin(request)}/s/{token}"
 
 
 def _wants_json(request: Request) -> bool:

@@ -13,9 +13,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from sqlalchemy.orm import Session
 
-from app import config
 from app.database import Project, get_db
-from app.deps import templates
+from app.deps import request_origin, templates
 from app.services.project_files import map_image_path, project_dir, read_map, read_tour
 from app.services.tiling import apply_multires, read_manifest
 
@@ -42,8 +41,7 @@ def public_view(request: Request, token: str, db: Session = Depends(get_db)) -> 
     # den publika basen så pannellum hämtar via token-routen i stället.
     tour = json.loads(json.dumps(tour).replace(f"/projects/{slug}/", base))
     has_map = map_image_path(slug).exists()
-    origin = config.BASE_URL or str(request.base_url).rstrip("/")
-    page_url = f"{origin}/s/{token}"
+    page_url = f"{request_origin(request)}/s/{token}"
     return templates.TemplateResponse(
         request,
         "viewer.html",

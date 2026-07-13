@@ -25,7 +25,20 @@ templates.env.globals["media_max_mb"] = config.MAX_MAP_MB
 
 CSRF_COOKIE_NAME = "csrf_token"
 
-__all__ = ["get_db", "templates", "CSRF_COOKIE_NAME"]  # get_db re-exporteras här
+__all__ = ["get_db", "templates", "CSRF_COOKIE_NAME", "request_origin"]  # get_db re-exporteras här
+
+
+def request_origin(request: Request) -> str:
+    """Absolut origin (schema + host, utan avslutande /) för externa länkar:
+    delningslänkar, OG-taggar, inbjudningslänkar. `SVK_BASE_URL` vinner om satt,
+    annars härleds den ur requesten (Host + schema).
+
+    SINGLE SEAM (Fas 4): när team kör på egna domäner ska detta bli per-team
+    (`Team.base_url`) - byt HÄR så alla call sites följer med. Se ROADMAP
+    "OG + absoluta URL:er i multi-tenant". Bakom reverse proxy (Caddy) krävs
+    proxy-headers (`--proxy-headers` + X-Forwarded-Proto/Host) för att
+    `request.base_url` ska ge korrekt https-schema och tenant-host."""
+    return config.BASE_URL or str(request.base_url).rstrip("/")
 
 
 # --- CSRF ----------------------------------------------------------------

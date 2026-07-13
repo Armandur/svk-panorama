@@ -4,9 +4,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 
-from app import config
 from app.database import Project
-from app.deps import get_project_or_404, templates
+from app.deps import get_project_or_404, request_origin, templates
 from app.services.project_files import map_image_path, read_map, read_tour
 from app.services.tiling import apply_multires, read_manifest
 
@@ -24,7 +23,7 @@ def view_tour(
     if manifest:
         apply_multires(tour, manifest)
     has_map = map_image_path(slug).exists()
-    origin = config.BASE_URL or str(request.base_url).rstrip("/")
+    origin = request_origin(request)
     return templates.TemplateResponse(
         request,
         "viewer.html",
