@@ -16,8 +16,10 @@ from app.deps import (
     get_project_or_404,
     new_csrf_token,
     request_origin,
+    resolve_workspace,
     set_csrf_cookie,
     templates,
+    user_workspaces,
     verify_csrf_form,
     verify_csrf_header,
     visible_projects_clause,
@@ -87,6 +89,7 @@ def editor_home(
             "current_user": user,
             "csrf_token": token,
             "guide_text": site_settings.get_workflow_text(),
+            "workspaces": user_workspaces(db, user),
         },
     )
     set_csrf_cookie(response, token)
@@ -98,6 +101,7 @@ async def create_project(
     request: Request,
     db: Session = Depends(get_db),
     name: str = Form(...),
+    scope: str = Form(None),
     user: User = Depends(require_user),
     editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_form),
@@ -106,6 +110,13 @@ async def create_project(
     if not name:
         raise HTTPException(status_code=400, detail="Namn krävs")
 
+    # Yta (arbetsyte-modellen): team-tur eller personlig. scope=None -> default (teamet
+    # om medlem, annars personlig). Ogiltig/otillåten yta avvisas (t.ex. personlig när
+    # can_personal=False) - lita aldrig på klientens värde.
+    team_id, ok = resolve_workspace(db, user, scope)
+    if not ok:
+        raise HTTPException(status_code=400, detail="Ogiltig arbetsyta")
+
     base_slug = slugify(name)
     slug = base_slug
     suffix = 2
@@ -113,9 +124,8 @@ async def create_project(
         slug = f"{base_slug}-{suffix}"
         suffix += 1
 
-    # Har användaren team äger teamet turen (team_id); owner_id bevaras som
-    # "skapad av". Team-lös -> team_id None, ägs solo via owner_id.
-    project = Project(slug=slug, name=name, owner_id=user.id, team_id=user.team_id)
+    # owner_id bevaras alltid som "skapad av"; team_id avgör ytan (None = personlig).
+    project = Project(slug=slug, name=name, owner_id=user.id, team_id=team_id)
     db.add(project)
     db.commit()
 

@@ -55,6 +55,14 @@
 			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 			<label for="name">Namn på kyrka/kyrkogård</label>
 			<input type="text" id="name" name="name" required maxlength="200" placeholder="t.ex. Härnösands gamla kyrkogård">
+			{% if workspaces and workspaces | length > 1 %}
+			<label for="scope">Arbetsyta</label>
+			<select id="scope" name="scope">
+				{% for w in workspaces %}
+				<option value="{{ w.key }}">{{ w.label }}{% if w.scope == 'team' %} (team){% elif w.scope == 'personal' %} (personlig){% endif %}</option>
+				{% endfor %}
+			</select>
+			{% endif %}
 			<button type="submit">Skapa projekt</button>
 		</form>
 	</article>

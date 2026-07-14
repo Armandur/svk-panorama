@@ -115,6 +115,44 @@ def resource_owner_key(user: User) -> str:
     return user.owner_key
 
 
+def project_owner_key(project: Project) -> str:
+    """Ytans mediapool-nyckel för en TUR: team-<id> för team-tur, annars ägarens
+    personliga <owner_id>. Media följer turens yta (arbetsyte-modellen), inte
+    användarens primära pool."""
+    return f"team-{project.team_id}" if project.team_id is not None else str(project.owner_id)
+
+
+def user_workspaces(db: Session, user: User) -> list[dict]:
+    """Ytor användaren kan skapa turer i (och har egen mediapool för). Teamet först
+    (=default vid skapande), sedan Personlig om tillåten. Single-team nu; listan
+    växer vid multi-team. Varje: {key, scope: team|personal, label, team_id}."""
+    out: list[dict] = []
+    if user.team_id is not None:
+        from app.database import Team
+
+        team = db.get(Team, user.team_id)
+        out.append({"key": f"team-{user.team_id}", "scope": "team",
+                    "label": team.name if team else "Team", "team_id": user.team_id})
+    if user.can_personal or user.team_id is None:
+        out.append({"key": str(user.id), "scope": "personal", "label": "Personlig", "team_id": None})
+    return out
+
+
+def resolve_workspace(db: Session, user: User, key: str | None) -> tuple[int | None, bool]:
+    """Mappa en vald ytanyckel -> (team_id, ok). team_id=None = personlig tur.
+    ok=False om nyckeln inte är en av användarens tillåtna ytor. key=None -> första
+    (default) ytan. Validerar mot user_workspaces (aldrig lita på klientens värde)."""
+    workspaces = user_workspaces(db, user)
+    if not workspaces:
+        return (None, True)  # ingen yta (edge) -> personlig fallback
+    if key is None:
+        return (workspaces[0]["team_id"], True)
+    for w in workspaces:
+        if w["key"] == key:
+            return (w["team_id"], True)
+    return (None, False)
+
+
 def visible_projects_clause(user: User):
     """SQLAlchemy-villkor för turer en användare SER i sina listor: sina egna
     (owner_id) + (om hen har team) teamets turer. FÄLLA (verifierad SQLAlchemy
