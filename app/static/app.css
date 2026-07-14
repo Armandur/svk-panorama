@@ -101,11 +101,14 @@
 
 /* --- Projektlista: lista/kort-växel + kort ---------------------------- */
 .list-toolbar { display: flex; justify-content: flex-end; margin-bottom: .6rem; }
-.view-toggle { display: inline-flex; border: 1px solid var(--pico-muted-border-color); border-radius: 1rem; overflow: hidden; }
+.view-toggle { display: inline-flex; width: auto; border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius); overflow: hidden; }
 .view-toggle .view-btn {
-	font-size: .8rem; padding: .25rem .8rem; margin: 0; width: auto; border: 0;
-	background: transparent; color: var(--pico-color); cursor: pointer; border-radius: 0;
+	display: inline-flex; align-items: center; justify-content: center;
+	width: 2.1rem; height: 1.9rem; padding: 0; margin: 0; border: 0; border-radius: 0;
+	background: transparent; color: var(--pico-muted-color); cursor: pointer;
 }
+.view-toggle .view-btn + .view-btn { border-left: 1px solid var(--pico-muted-border-color); }
+.view-toggle .view-btn:hover { color: var(--pico-color); }
 .view-toggle .view-btn.active { background: var(--svk-accent, #2f6f4f); color: #fff; }
 
 #projects-views[data-view="table"] .tour-cards { display: none; }
