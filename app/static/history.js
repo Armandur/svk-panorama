@@ -100,12 +100,27 @@
 		return frag;
 	}
 
+	// Jämförelsebas: mot föregående version (default) eller mot nuläget (visar vad
+	// en återställning skulle ändra).
+	var base = "previous";
+	var SUMMARY = {
+		previous: "Ändringar mot föregående",
+		current: "Skillnad mot nuläget (vad en återställning ändrar)"
+	};
+
+	function setSummaries() {
+		document.querySelectorAll("details.hist-diff > summary").forEach(function (s) {
+			s.textContent = SUMMARY[base];
+		});
+	}
+
 	function loadDiff(details) {
 		var body = details.querySelector(".hist-diff-body");
 		if (!body || body.dataset.loaded === "1") return;
 		body.dataset.loaded = "1";
+		body.innerHTML = '<span class="hist-diff-loading" aria-busy="true">Laddar…</span>';
 		var version = details.closest(".hist-item").dataset.version;
-		fetch("/projects/" + encodeURIComponent(slug) + "/history/" + encodeURIComponent(version) + "/diff", {
+		fetch("/projects/" + encodeURIComponent(slug) + "/history/" + encodeURIComponent(version) + "/diff?base=" + base, {
 			headers: { "Accept": "application/json" }
 		}).then(function (r) {
 			if (!r.ok) throw new Error("diff " + r.status);
@@ -113,9 +128,11 @@
 		}).then(function (d) {
 			body.innerHTML = "";
 			if (d.oldest) {
-				body.innerHTML = '<p class="diff-empty">Äldsta sparade läget - inget att jämföra mot.</p>';
+				body.innerHTML = '<p class="diff-empty">Äldsta sparade läget - inget tidigare att jämföra mot.</p>';
 			} else if (!d.groups.length) {
-				body.innerHTML = '<p class="diff-empty">Inga spårade ändringar.</p>';
+				body.innerHTML = d.mode === "current"
+					? '<p class="diff-empty">Ingen skillnad mot nuläget - den här versionen är redan aktiv.</p>'
+					: '<p class="diff-empty">Inga spårade ändringar.</p>';
 			} else {
 				body.appendChild(renderGroups(d.groups));
 			}
@@ -125,9 +142,27 @@
 		});
 	}
 
+	function switchBase(next) {
+		if (next === base) return;
+		base = next;
+		document.querySelectorAll(".hist-basetoggle .base-btn").forEach(function (b) {
+			b.classList.toggle("active", b.dataset.base === base);
+		});
+		setSummaries();
+		// Invalidera laddade diffar; ladda om öppna direkt, övriga vid nästa öppning.
+		document.querySelectorAll("details.hist-diff").forEach(function (d) {
+			var body = d.querySelector(".hist-diff-body");
+			if (body) body.dataset.loaded = "0";
+			if (d.open) loadDiff(d);
+		});
+	}
+
 	if (slug) {
 		document.querySelectorAll("details.hist-diff").forEach(function (d) {
 			d.addEventListener("toggle", function () { if (d.open) loadDiff(d); });
+		});
+		document.querySelectorAll(".hist-basetoggle .base-btn").forEach(function (b) {
+			b.addEventListener("click", function () { switchBase(b.dataset.base); });
 		});
 	}
 })();

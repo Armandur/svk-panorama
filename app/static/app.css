@@ -115,6 +115,18 @@
 .hist-item form { margin: 0; flex-shrink: 0; }
 .hist-item form button { margin: 0; }
 
+/* Växel: jämför diffen mot föregående version eller mot nuläget */
+.hist-basetoggle { display: flex; align-items: center; gap: .4rem; margin: 1rem 0 .3rem; flex-wrap: wrap; }
+.hist-basetoggle-label { font-size: .85rem; color: var(--pico-muted-color); }
+.hist-basetoggle .base-btn {
+	font-size: .8rem; padding: .2rem .7rem; margin: 0; width: auto;
+	border: 1px solid var(--pico-muted-border-color); border-radius: 1rem;
+	background: transparent; color: var(--pico-color); cursor: pointer;
+}
+.hist-basetoggle .base-btn.active {
+	background: var(--svk-accent, #2f6f4f); color: #fff; border-color: var(--svk-accent, #2f6f4f);
+}
+
 /* Expanderbar semantisk diff per version */
 .hist-diff { margin-top: .5rem; }
 .hist-diff > summary {

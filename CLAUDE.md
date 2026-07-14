@@ -200,11 +200,16 @@ TILL T (ersattes vid T); UI:t säger "Gällde till ..." (ärlig pre-overwrite-se
   `children` med FÄLTNIVÅ-diff (text/brödtext/placering/målscen/URL/språk, gammalt→nytt).
   Nod = `{kind: added|removed|changed|section, text, children?, collapsible?}`. Ren funktion,
   i18n-medveten (`_text_summary`), matchar scener/hotspots på id, `_fmt(None)="–"`.
-  Varje versionsrad har en `<details>` som lat-laddar diffen mot den kronologiskt
-  FÖREGÅENDE (äldre) versionen (`history.previous_version`); äldsta raden saknar diff.
-  `history.js` renderar rekursivt: grupper = öppna accordions, scener = kollapsade
-  accordions (håller långa diffar hanterbara), section-rubriker + färgrader grönt +/rött
-  −/gult ~ (`diff-add/del/chg`), nästlade listor indenteras.
+  Varje versionsrad har en `<details>` som lat-laddar diffen. **Jämförelsebas via
+  `?base=`:** `previous` (default) = mot kronologiskt FÖREGÅENDE version ("vad detta spar
+  ändrade", `history.previous_version`, äldsta raden saknar diff); `current` = mot NULÄGET
+  (diff-riktning nuläge→version, dvs "vad en återställning skulle ändra": + = läggs
+  tillbaka, - = tas bort). En växel överst i historiken (`.hist-basetoggle`) byter base
+  för alla rader live (history.js nollar `data-loaded`, laddar om öppna, uppdaterar
+  summary-texten). I `current`-läge får även äldsta raden en diff; identisk-mot-nuläget
+  ger "redan aktiv". `history.js` renderar rekursivt: grupper = öppna accordions, scener =
+  kollapsade accordions (håller långa diffar hanterbara), section-rubriker + färgrader
+  grönt +/rött −/gult ~ (`diff-add/del/chg`), nästlade listor indenteras.
 - **Exkludering:** `_history/` ligger under gitignorade `projects/<slug>/`. backup.py
   (whitelist-enumerering) och bundle.py (`_collect`) globar inte brett -> följer inte med
   i arkiv/export. storage.py `os.walk` räknar det mot projektstorlek (minor, ok).

@@ -14,6 +14,7 @@ from app.services import history, historydiff
 from app.services.project_files import (
     map_image_path,
     project_dir,
+    read_map,
     read_tour,
     tour_lock,
     write_map,
@@ -50,20 +51,28 @@ def history_view(
 def version_diff(
     slug: str,
     version: int,
+    base: str = "previous",
     project: Project = Depends(get_project_or_404),
 ) -> JSONResponse:
-    """Semantisk diff av en version mot den kronologiskt föregående (äldre).
-    Lat-laddad när en rad expanderas i historikvyn."""
+    """Semantisk diff av en version, lat-laddad när en rad expanderas.
+    base=previous: mot den kronologiskt föregående (äldre) versionen - "vad detta
+    spar ändrade". base=current: mot NULÄGET - "vad en återställning skulle ändra"
+    (riktning nuläge -> version, så + = läggs tillbaka, - = tas bort)."""
     pdir = project_dir(slug)
     try:
         new = history.read_version(pdir, version)
     except KeyError:
         raise HTTPException(status_code=404, detail="Versionen finns inte")
+    if base == "current":
+        old = {"tour.json": read_tour(slug), "map.json": read_map(slug)}
+        return JSONResponse({"mode": "current", "oldest": False, "base": "current",
+                             "groups": historydiff.diff(old, new)})
     prev = history.previous_version(pdir, version)
     if prev is None:
-        return JSONResponse({"oldest": True, "base": None, "groups": []})
+        return JSONResponse({"mode": "previous", "oldest": True, "base": None, "groups": []})
     old = history.read_version(pdir, prev)
-    return JSONResponse({"oldest": False, "base": prev, "groups": historydiff.diff(old, new)})
+    return JSONResponse({"mode": "previous", "oldest": False, "base": prev,
+                         "groups": historydiff.diff(old, new)})
 
 
 @router.post("/projects/{slug}/history/restore")

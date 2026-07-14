@@ -20,6 +20,11 @@
 	<p class="hist-blurb">Varje gång du sparar arkiveras det föregående läget här. En version i listan visar alltså det läge som <strong>gällde fram till</strong> tidpunkten - att återställa den tar dig tillbaka dit. Återställning är alltid reversibel: nuläget sparas som en ny version först.</p>
 
 	{% if versions %}
+	<div class="hist-basetoggle" role="group" aria-label="Jämför diffen mot">
+		<span class="hist-basetoggle-label">Jämför mot:</span>
+		<button type="button" class="base-btn active" data-base="previous">föregående version</button>
+		<button type="button" class="base-btn" data-base="current">nuläget</button>
+	</div>
 	<ul class="hist-list">
 		{% for v in versions %}
 		<li class="hist-item" data-version="{{ v.id }}">
@@ -39,12 +44,10 @@
 					<button type="submit" class="secondary outline">Återställ</button>
 				</form>
 			</div>
-			{% if not loop.last %}
 			<details class="hist-diff">
 				<summary>Ändringar mot föregående</summary>
 				<div class="hist-diff-body" data-loaded="0"><span class="hist-diff-loading" aria-busy="true">Laddar…</span></div>
 			</details>
-			{% endif %}
 		</li>
 		{% endfor %}
 	</ul>

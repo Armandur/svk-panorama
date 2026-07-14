@@ -835,6 +835,13 @@ def test_history_diff():
     kt = " | ".join(i["kind"] + ":" + i["text"] for i in karta)
     check("diff: scen placerad/borttagen/länk", "placerad" in kt and "borttagen" in kt and "länk" in kt)
 
+    # Riktning: base=current bygger diff(nuläge, version) så "+" = vad en restore
+    # lägger tillbaka. Omvänd riktning byter added<->removed.
+    fwd = group(hd.diff(old, new), "Scener")["items"]
+    rev = group(hd.diff(new, old), "Scener")["items"]
+    check("diff: riktning A->B Tornet added", any(i["kind"] == "added" and "Tornet" in i["text"] for i in fwd))
+    check("diff: riktning B->A Tornet removed", any(i["kind"] == "removed" and "Tornet" in i["text"] for i in rev))
+
     # Identiska relevanta fält -> inga grupper.
     check("diff: identiskt -> tomt", hd.diff(old, old) == [])
     # Saknad map.json i en snapshot hanteras (bara tour jämförs).
