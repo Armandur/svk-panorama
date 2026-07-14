@@ -9,10 +9,11 @@ import json
 import re
 from typing import Any
 
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from app import config
-from app.database import BrandingPreset, ThemePreset
+from app.database import BrandingPreset, ThemePreset, User
 
 _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 _FONTS = {"sans", "serif", "mono", "humanist", "dmsans", "spectral"}
@@ -160,25 +161,39 @@ def _dump(row: Any) -> dict[str, Any]:
 
 
 # --- Generisk CRUD delad av ThemePreset och BrandingPreset (identiska kolumner) ---
-def _list(db: Session, Model: Any, owner_id: int) -> list[dict[str, Any]]:
-    rows = db.query(Model).filter(Model.owner_id == owner_id).order_by(Model.name).all()
+# Scope (Fas 4): en användare med team ser/äger TEAMETS presets (team_id-match,
+# delas i teamet); en solo-användare sina personliga (owner_id + team_id NULL).
+# owner_id bevaras alltid som "skapad av". Solo-klausulen skriver team_id IS NULL
+# EXPLICIT (avsiktligt) - inte den läckande `team_id == None`-fällan.
+def _scope_clause(Model: Any, user: User):
+    if user.team_id is not None:
+        return Model.team_id == user.team_id
+    return and_(Model.owner_id == user.id, Model.team_id.is_(None))
+
+
+def _new_scope(user: User) -> dict[str, Any]:
+    return {"owner_id": user.id, "team_id": user.team_id}
+
+
+def _list(db: Session, Model: Any, user: User) -> list[dict[str, Any]]:
+    rows = db.query(Model).filter(_scope_clause(Model, user)).order_by(Model.name).all()
     return [_dump(r) for r in rows]
 
 
-def _save(db: Session, Model: Any, owner_id: int, name: str, config_json: str) -> dict[str, Any]:
+def _save(db: Session, Model: Any, user: User, name: str, config_json: str) -> dict[str, Any]:
     """Skapa eller skriv över (per namn) en förinställning. config_json = redan sanerad JSON."""
     name = (name or "").strip()[:120] or "Förinställning"
-    row = db.query(Model).filter(Model.owner_id == owner_id, Model.name == name).first()
+    row = db.query(Model).filter(_scope_clause(Model, user), Model.name == name).first()
     if row is None:
-        row = Model(owner_id=owner_id, name=name, is_default=False)
+        row = Model(**_new_scope(user), name=name, is_default=False)
         db.add(row)
     row.config = config_json
     db.commit()
     return _dump(row)
 
 
-def _delete(db: Session, Model: Any, owner_id: int, preset_id: int) -> bool:
-    row = db.query(Model).filter(Model.owner_id == owner_id, Model.id == preset_id).first()
+def _delete(db: Session, Model: Any, user: User, preset_id: int) -> bool:
+    row = db.query(Model).filter(_scope_clause(Model, user), Model.id == preset_id).first()
     if row is None:
         return False
     db.delete(row)
@@ -186,12 +201,12 @@ def _delete(db: Session, Model: Any, owner_id: int, preset_id: int) -> bool:
     return True
 
 
-def _set_default(db: Session, Model: Any, owner_id: int, preset_id: int, is_default: bool) -> bool:
-    row = db.query(Model).filter(Model.owner_id == owner_id, Model.id == preset_id).first()
+def _set_default(db: Session, Model: Any, user: User, preset_id: int, is_default: bool) -> bool:
+    row = db.query(Model).filter(_scope_clause(Model, user), Model.id == preset_id).first()
     if row is None:
         return False
     if is_default:
-        db.query(Model).filter(Model.owner_id == owner_id).update({"is_default": False})
+        db.query(Model).filter(_scope_clause(Model, user)).update({"is_default": False})
         row.is_default = True
     else:
         row.is_default = False
@@ -199,20 +214,20 @@ def _set_default(db: Session, Model: Any, owner_id: int, preset_id: int, is_defa
     return True
 
 
-def _default_row(db: Session, Model: Any, owner_id: int) -> Any:
+def _default_row(db: Session, Model: Any, user: User) -> Any:
     return (
         db.query(Model)
-        .filter(Model.owner_id == owner_id, Model.is_default.is_(True))
+        .filter(_scope_clause(Model, user), Model.is_default.is_(True))
         .first()
     )
 
 
-def _guard_name_clash(db: Session, Model: Any, owner_id: int, name: str, preset_id: int) -> None:
+def _guard_name_clash(db: Session, Model: Any, user: User, name: str, preset_id: int) -> None:
     """Namnbyte får inte kollidera med en ANNAN mall - annars kan den namn-baserade
     upserten (_save, "Spara som mall") senare träffa fel rad. Kastar ValueError."""
     clash = (
         db.query(Model)
-        .filter(Model.owner_id == owner_id, Model.name == name, Model.id != preset_id)
+        .filter(_scope_clause(Model, user), Model.name == name, Model.id != preset_id)
         .first()
     )
     if clash is not None:
@@ -220,60 +235,60 @@ def _guard_name_clash(db: Session, Model: Any, owner_id: int, name: str, preset_
 
 
 # --- Tema-presets ---
-def list_presets(db: Session, owner_id: int) -> list[dict[str, Any]]:
-    return _list(db, ThemePreset, owner_id)
+def list_presets(db: Session, user: User) -> list[dict[str, Any]]:
+    return _list(db, ThemePreset, user)
 
 
-def save_preset(db: Session, owner_id: int, name: str, config: dict[str, Any]) -> dict[str, Any]:
-    return _save(db, ThemePreset, owner_id, name, json.dumps(sanitize_config(config), ensure_ascii=False))
+def save_preset(db: Session, user: User, name: str, config: dict[str, Any]) -> dict[str, Any]:
+    return _save(db, ThemePreset, user, name, json.dumps(sanitize_config(config), ensure_ascii=False))
 
 
-def update_preset(db: Session, owner_id: int, preset_id: int, name: str, config: dict[str, Any]) -> dict[str, Any] | None:
+def update_preset(db: Session, user: User, preset_id: int, name: str, config: dict[str, Any]) -> dict[str, Any] | None:
     """Redigera en befintlig tema-mall (id) - namn + config. None om den saknas."""
-    row = db.query(ThemePreset).filter(ThemePreset.owner_id == owner_id, ThemePreset.id == preset_id).first()
+    row = db.query(ThemePreset).filter(_scope_clause(ThemePreset, user), ThemePreset.id == preset_id).first()
     if row is None:
         return None
     new_name = (name or "").strip()[:120] or row.name
-    _guard_name_clash(db, ThemePreset, owner_id, new_name, preset_id)
+    _guard_name_clash(db, ThemePreset, user, new_name, preset_id)
     row.name = new_name
     row.config = json.dumps(sanitize_config(config), ensure_ascii=False)
     db.commit()
     return _dump(row)
 
 
-def delete_preset(db: Session, owner_id: int, preset_id: int) -> bool:
-    return _delete(db, ThemePreset, owner_id, preset_id)
+def delete_preset(db: Session, user: User, preset_id: int) -> bool:
+    return _delete(db, ThemePreset, user, preset_id)
 
 
-def set_default(db: Session, owner_id: int, preset_id: int, is_default: bool) -> bool:
-    return _set_default(db, ThemePreset, owner_id, preset_id, is_default)
+def set_default(db: Session, user: User, preset_id: int, is_default: bool) -> bool:
+    return _set_default(db, ThemePreset, user, preset_id, is_default)
 
 
-def default_config(db: Session, owner_id: int) -> dict[str, Any] | None:
-    """Config för ägarens standard-tema-förinställning (för nya turer), eller None.
-    Saneras vid läsning -> ev. stale branding-nyckel droppas (branding är egen mall)."""
-    row = _default_row(db, ThemePreset, owner_id)
+def default_config(db: Session, user: User) -> dict[str, Any] | None:
+    """Config för ägarens/teamets standard-tema-förinställning (för nya turer), eller
+    None. Saneras vid läsning -> ev. stale branding-nyckel droppas (branding egen mall)."""
+    row = _default_row(db, ThemePreset, user)
     return sanitize_config(json.loads(row.config) if row.config else {}) if row else None
 
 
 # --- Branding-presets (egen mall, se BrandingPreset) ---
-def list_branding_presets(db: Session, owner_id: int) -> list[dict[str, Any]]:
-    return _list(db, BrandingPreset, owner_id)
+def list_branding_presets(db: Session, user: User) -> list[dict[str, Any]]:
+    return _list(db, BrandingPreset, user)
 
 
-def save_branding_preset(db: Session, owner_id: int, name: str, config: dict[str, Any]) -> dict[str, Any] | None:
+def save_branding_preset(db: Session, user: User, name: str, config: dict[str, Any]) -> dict[str, Any] | None:
     """Spara en branding-mall. None (tom content) -> inget sparas (route -> 400)."""
     c = config or {}
     sb = sanitize_branding(c.get("content"), c.get("size"), c.get("position"))
     if not sb:
         return None
-    return _save(db, BrandingPreset, owner_id, name, json.dumps(sb, ensure_ascii=False))
+    return _save(db, BrandingPreset, user, name, json.dumps(sb, ensure_ascii=False))
 
 
-def update_branding_preset(db: Session, owner_id: int, preset_id: int, name: str, config: dict[str, Any]) -> dict[str, Any] | None:
+def update_branding_preset(db: Session, user: User, preset_id: int, name: str, config: dict[str, Any]) -> dict[str, Any] | None:
     """Redigera en befintlig branding-mall (id). None = hittades inte (404).
     Kastar ValueError vid tom content eller namnkollision (400)."""
-    row = db.query(BrandingPreset).filter(BrandingPreset.owner_id == owner_id, BrandingPreset.id == preset_id).first()
+    row = db.query(BrandingPreset).filter(_scope_clause(BrandingPreset, user), BrandingPreset.id == preset_id).first()
     if row is None:
         return None
     c = config or {}
@@ -281,24 +296,24 @@ def update_branding_preset(db: Session, owner_id: int, preset_id: int, name: str
     if not sb:
         raise ValueError("Branding får inte vara tom")
     new_name = (name or "").strip()[:120] or row.name
-    _guard_name_clash(db, BrandingPreset, owner_id, new_name, preset_id)
+    _guard_name_clash(db, BrandingPreset, user, new_name, preset_id)
     row.name = new_name
     row.config = json.dumps(sb, ensure_ascii=False)
     db.commit()
     return _dump(row)
 
 
-def delete_branding_preset(db: Session, owner_id: int, preset_id: int) -> bool:
-    return _delete(db, BrandingPreset, owner_id, preset_id)
+def delete_branding_preset(db: Session, user: User, preset_id: int) -> bool:
+    return _delete(db, BrandingPreset, user, preset_id)
 
 
-def set_branding_default(db: Session, owner_id: int, preset_id: int, is_default: bool) -> bool:
-    return _set_default(db, BrandingPreset, owner_id, preset_id, is_default)
+def set_branding_default(db: Session, user: User, preset_id: int, is_default: bool) -> bool:
+    return _set_default(db, BrandingPreset, user, preset_id, is_default)
 
 
-def default_branding(db: Session, owner_id: int) -> dict[str, Any] | None:
-    """Ägarens standard-branding (för nya turer), sanerad, eller None."""
-    row = _default_row(db, BrandingPreset, owner_id)
+def default_branding(db: Session, user: User) -> dict[str, Any] | None:
+    """Ägarens/teamets standard-branding (för nya turer), sanerad, eller None."""
+    row = _default_row(db, BrandingPreset, user)
     if not row:
         return None
     c = json.loads(row.config) if row.config else {}

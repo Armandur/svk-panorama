@@ -94,7 +94,7 @@ def test_relativize():
          "body": "Mer: /media/7/ab12-karta.jpg och /media/7/foo.png"},
     ]
     refs = _media_refs(tour)  # innan relativisering
-    check("media-refs hittade", refs == {(7, "ab12-karta.jpg"), (7, "foo.png")})
+    check("media-refs hittade", refs == {("7", "ab12-karta.jpg"), ("7", "foo.png")})
     _relativize("nonexistent-slug", tour)  # tom manifest -> apply_multires no-op
     check("basePath relativ", tour["scenes"]["1"]["multiRes"]["basePath"] == "tiles/1")
     check("panorama relativ", tour["scenes"]["2"]["panorama"] == "images/2.jpg")
@@ -128,7 +128,7 @@ def test_relativize_i18n():
         },
     }
     refs = _media_refs(tour)
-    check("i18n media-refs hittar en-varianten", refs == {(7, "bild.jpg")})
+    check("i18n media-refs hittar en-varianten", refs == {("7", "bild.jpg")})
     _relativize("nonexistent-slug", tour)
     hs = tour["scenes"]["1"]["hotSpots"][0]
     check("i18n text förblir dict", isinstance(hs["text"], dict))
@@ -329,7 +329,7 @@ def test_backup_security():
     tour = {"scenes": {"1": {"hotSpots": [
         {"text": "![](/media/7/ab-x.jpg)", "body": "igen /media/7/y.png"},
     ]}}}
-    check("backup media_refs", _media_refs(tour) == {(7, "ab-x.jpg"), (7, "y.png")})
+    check("backup media_refs", _media_refs(tour) == {("7", "ab-x.jpg"), ("7", "y.png")})
 
 
 def test_media_pool():
@@ -345,14 +345,14 @@ def test_media_pool():
     try:
         buf = io.BytesIO()
         Image.new("RGB", (40, 30), (2, 2, 2)).save(buf, "JPEG")
-        name = media.store(1, "min bild.jpg", buf.getvalue())
+        name = media.store("1", "min bild.jpg", buf.getvalue())
         # Oigissbart namn: hex-prefix + saniterat basnamn.
         check("store oigissbart namn", name.endswith("-min bild.jpg") is False and name.endswith(".jpg"))
-        check("resolve egen fil", media.resolve(1, name) is not None)
-        check("resolve fel ägare -> None", media.resolve(2, name) is None)
-        check("resolve traversal -> None", media.resolve(1, "../../etc/passwd") is None)
-        check("resolve okänt -> None", media.resolve(1, "saknas.jpg") is None)
-        items = media.list_pool(1)
+        check("resolve egen fil", media.resolve("1", name) is not None)
+        check("resolve fel ägare -> None", media.resolve("2", name) is None)
+        check("resolve traversal -> None", media.resolve("1", "../../etc/passwd") is None)
+        check("resolve okänt -> None", media.resolve("1", "saknas.jpg") is None)
+        items = media.list_pool("1")
         check("list_pool en post", len(items) == 1)
         check("list_pool mått", items[0]["width"] == 40 and items[0]["height"] == 30)
         check("list_pool url", items[0]["url"] == f"/media/1/{name}")
@@ -361,10 +361,10 @@ def test_media_pool():
         check("display_name strippar hex-prefix", media.display_name(name) == "min-bild.jpg")
         check("list_pool orig", items[0]["orig"] == "min-bild.jpg")
         # Tumnagel genereras + cachas, och ligger i dold .thumbs (ej listad).
-        th = media.ensure_thumb(1, name)
+        th = media.ensure_thumb("1", name)
         check("ensure_thumb skapar fil", th is not None and th.is_file())
         check("thumb ligger i .thumbs", th.parent.name == ".thumbs")
-        check("list_pool listar ej thumben", len(media.list_pool(1)) == 1)
+        check("list_pool listar ej thumben", len(media.list_pool("1")) == 1)
 
         # Usage-scan mot en turs tour.json.
         pdir = config.PROJECTS_DIR / "kyrka"
@@ -376,7 +376,7 @@ def test_media_pool():
             "2": {"hotSpots": [{"type": "info", "text": f"![](/media/1/{name})"}]},
         }}
         project_files.write_tour("kyrka", tour)
-        usage = media.scan_usage(1, [("kyrka", "Kyrkan")])
+        usage = media.scan_usage("1", [("kyrka", "Kyrkan")])
         check("usage hittad", name in usage)
         # Per scen: en post per (tur, scen) som refererar bilden.
         check("usage två scener", len(usage[name]) == 2)
@@ -387,11 +387,23 @@ def test_media_pool():
         check("usage scen2 räknar 1", u2["count"] == 1)
         check("usage scen2 titel tom", u2["scene_title"] == "")
         check("usage projektnamn", u1["project"] == "Kyrkan")
-        check("usage annan ägare tom", media.scan_usage(2, [("kyrka", "Kyrkan")]) == {})
+        check("usage annan ägare tom", media.scan_usage("2", [("kyrka", "Kyrkan")]) == {})
 
-        check("delete fel ägare -> False", media.delete(2, name) is False)
-        check("delete egen -> True", media.delete(1, name) is True)
-        check("delete igen -> False", media.delete(1, name) is False)
+        check("delete fel ägare -> False", media.delete("2", name) is False)
+        check("delete egen -> True", media.delete("1", name) is True)
+        check("delete igen -> False", media.delete("1", name) is False)
+
+        # Team-nyckel: egen namnrymd (team-<id>) skild från solo (<user_id>).
+        tname = media.store("team-1", "logga.png", buf.getvalue())
+        check("team-pool resolve", media.resolve("team-1", tname) is not None)
+        check("team-pool url-prefix", media.media_url("team-1", tname) == f"/media/team-1/{tname}")
+        check("solo ser inte team-poolen", media.resolve("1", tname) is None)
+        # Ägar-nyckel-validering (serve-routen litar på denna mot traversal).
+        check("valid key: siffror", media.valid_owner_key("42"))
+        check("valid key: team-", media.valid_owner_key("team-42"))
+        check("invalid key: traversal", not media.valid_owner_key("../etc"))
+        check("invalid key: godtycklig", not media.valid_owner_key("team-x"))
+        check("resolve ogiltig nyckel -> None", media.resolve("../../etc", "passwd") is None)
     finally:
         config.MEDIA_DIR, config.PROJECTS_DIR = old_media, old_projects
 
@@ -650,8 +662,8 @@ def test_prune_ghost_languages():
     check("prune: branding tappar spök-de", tour["default"]["branding"]["content"] == {"sv": "![](/media/1/a.jpg)"})
     # Efter prune: media-refs innehåller bara aktiva bilder, INTE ghost-only.
     refs = _media_refs(tour)
-    check("prune: ghost-only-bilder bundlas inte", (1, "onlyghost.jpg") not in refs and (1, "ghost.jpg") not in refs)
-    check("prune: aktiva bilder kvar i refs", (1, "used.jpg") in refs and (1, "a.jpg") in refs)
+    check("prune: ghost-only-bilder bundlas inte", ("1", "onlyghost.jpg") not in refs and ("1", "ghost.jpg") not in refs)
+    check("prune: aktiva bilder kvar i refs", ("1", "used.jpg") in refs and ("1", "a.jpg") in refs)
     # Utan languages (monospråkig/äldre tur) -> rör inget (kan inte avgöra aktiva).
     mono = {"default": {}, "scenes": {"1": {"title": {"sv": "X", "de": "Y"}}}}
     _prune_ghost_languages(mono)

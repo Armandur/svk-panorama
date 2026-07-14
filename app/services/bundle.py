@@ -36,7 +36,7 @@ _lock = threading.Lock()
 
 # Poolbilds-URL i hotspot-markdown: /media/<owner_id>/<filnamn>. Bundlen kopierar
 # de refererade filerna till media/<filnamn> och skriver om URL:erna dit.
-_MEDIA_REF_RE = re.compile(r"/media/(\d+)/([A-Za-z0-9._-]+)")
+_MEDIA_REF_RE = re.compile(r"/media/(team-\d+|\d+)/([A-Za-z0-9._-]+)")
 
 
 def export_dir(slug: str) -> Path:
@@ -91,20 +91,21 @@ def _prune_ghost_languages(tour: dict) -> None:
         prune(branding, "content")
 
 
-def _media_refs(tour: dict) -> set[tuple[int, str]]:
-    """(owner_id, filnamn) för alla poolbilder som refereras i hotspot-markdown
-    OCH i branding-blocket (logotyp) - i ALLA språkvarianter av fälten."""
-    refs: set[tuple[int, str]] = set()
+def _media_refs(tour: dict) -> set[tuple[str, str]]:
+    """(ägar-nyckel, filnamn) för alla poolbilder som refereras i hotspot-markdown
+    OCH i branding-blocket (logotyp) - i ALLA språkvarianter av fälten. Nyckeln är
+    en sträng (`<user_id>` eller `team-<id>`, se services/media.py) - INTE int."""
+    refs: set[tuple[str, str]] = set()
     for scene in tour.get("scenes", {}).values():
         for hs in scene.get("hotSpots", []):
             for key in ("text", "body"):
                 for val in i18n_text_values(hs.get(key)):
                     for m in _MEDIA_REF_RE.finditer(val):
-                        refs.add((int(m.group(1)), m.group(2)))
+                        refs.add((m.group(1), m.group(2)))
     branding = (tour.get("default") or {}).get("branding") or {}
     for val in i18n_text_values(branding.get("content")):
         for m in _MEDIA_REF_RE.finditer(val):
-            refs.add((int(m.group(1)), m.group(2)))
+            refs.add((m.group(1), m.group(2)))
     return refs
 
 

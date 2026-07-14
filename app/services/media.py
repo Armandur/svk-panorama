@@ -1,8 +1,13 @@
 """Delad mediepool per ägare (mediebibliotek v2): bilder till info-hotspots
 markdown, återanvändbara mellan projekt. Lagras platt under
-`media/<owner_id>/<name>` och refereras med absoluta, oigissbara capability-URL:er
-`/media/<owner_id>/<name>` som funkar identiskt i editorn, publika /s-vyn och den
-exporterade bundlen (ingen URL-omskrivning behövs). "Ägare" = User nu, Team i Fas 4.
+`media/<owner>/<name>` och refereras med absoluta, oigissbara capability-URL:er
+`/media/<owner>/<name>` som funkar identiskt i editorn, publika /s-vyn och den
+exporterade bundlen (ingen URL-omskrivning behövs).
+
+**Ägar-nyckel (`owner`, sträng):** `str(user_id)` för en solo-användare, eller
+`team-<team_id>` för ett team (Fas 4 - delad pool inom teamet). Team-prefixet
+undviker att User.id och Team.id kolliderar på samma numeriska katalog. Nyckeln
+byggs av deps.resource_owner_key(user); serveringsrouten validerar formatet.
 
 Ingen DB-tabell: metadata härleds ur filsystemet (stat + PIL) och användning
 skannas ur ägarens tur-JSON vid behov."""
@@ -28,6 +33,14 @@ _UNSAFE_RE = re.compile(r"[^A-Za-z0-9._-]+")
 # ett läsbart visningsnamn (originalfilen, saniterad).
 _HEX_PREFIX_RE = re.compile(r"^[0-9a-f]{12}-")
 
+# Giltig ägar-nyckel: rena siffror (user-id) eller team-<siffror>. Serve-routen tar
+# nyckeln ur URL:en -> validera mot traversal (`..`, snedstreck m.m.).
+OWNER_KEY_RE = re.compile(r"^(team-)?[0-9]+$")
+
+
+def valid_owner_key(owner: str) -> bool:
+    return bool(OWNER_KEY_RE.match(owner))
+
 
 def display_name(name: str) -> str:
     return _HEX_PREFIX_RE.sub("", name)
@@ -43,27 +56,29 @@ def _safe_suffix(orig_name: str) -> str:
     return stem or "bild"
 
 
-def owner_dir(owner_id: int) -> Path:
-    return config.MEDIA_DIR / str(owner_id)
+def owner_dir(owner: str) -> Path:
+    return config.MEDIA_DIR / owner
 
 
-def media_url(owner_id: int, name: str) -> str:
-    return f"/media/{owner_id}/{name}"
+def media_url(owner: str, name: str) -> str:
+    return f"/media/{owner}/{name}"
 
 
-def store(owner_id: int, orig_name: str, content: bytes) -> str:
+def store(owner: str, orig_name: str, content: bytes) -> str:
     """Spara innehåll i ägarens pool, returnera det oigissbara filnamnet."""
-    d = owner_dir(owner_id)
+    d = owner_dir(owner)
     d.mkdir(parents=True, exist_ok=True)
     name = secrets.token_hex(6) + "-" + _safe_suffix(orig_name)
     (d / name).write_bytes(content)
     return name
 
 
-def resolve(owner_id: int, name: str) -> Path | None:
+def resolve(owner: str, name: str) -> Path | None:
     """Traversal-säker upplösning: returnera filsökväg om `name` är en fil direkt
-    i ägarens poolmapp, annars None."""
-    base = owner_dir(owner_id).resolve()
+    i ägarens poolmapp, annars None. Ogiltig ägar-nyckel -> None."""
+    if not valid_owner_key(owner):
+        return None
+    base = owner_dir(owner).resolve()
     if not base.exists():
         return None
     target = (base / name).resolve()
@@ -85,22 +100,22 @@ def _dimensions(path: Path) -> tuple[int | None, int | None]:
 THUMB_MAX = 480
 
 
-def _thumb_dir(owner_id: int) -> Path:
-    return owner_dir(owner_id) / ".thumbs"
+def _thumb_dir(owner: str) -> Path:
+    return owner_dir(owner) / ".thumbs"
 
 
-def thumb_url(owner_id: int, name: str) -> str:
-    return f"/media/{owner_id}/thumb/{name}"
+def thumb_url(owner: str, name: str) -> str:
+    return f"/media/{owner}/thumb/{name}"
 
 
-def ensure_thumb(owner_id: int, name: str) -> Path | None:
+def ensure_thumb(owner: str, name: str) -> Path | None:
     """Returnera (och generera vid behov) en JPEG-tumnagel för poolbilden.
     Poolnamn är unika/oföränderliga -> tumnageln blir aldrig stale. Faller
     tillbaka på originalet om PIL inte kan läsa bilden."""
-    src = resolve(owner_id, name)
+    src = resolve(owner, name)
     if src is None:
         return None
-    dst = _thumb_dir(owner_id) / (name + ".jpg")
+    dst = _thumb_dir(owner) / (name + ".jpg")
     if dst.exists():
         return dst
     dst.parent.mkdir(parents=True, exist_ok=True)
@@ -122,9 +137,9 @@ def ensure_thumb(owner_id: int, name: str) -> Path | None:
     return dst
 
 
-def list_pool(owner_id: int) -> list[dict[str, Any]]:
+def list_pool(owner: str) -> list[dict[str, Any]]:
     """Ägarens poolbilder, nyast först, med metadata (pixlar/storlek/mtime)."""
-    d = owner_dir(owner_id)
+    d = owner_dir(owner)
     items: list[dict[str, Any]] = []
     if d.exists():
         for f in sorted(d.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
@@ -134,8 +149,8 @@ def list_pool(owner_id: int) -> list[dict[str, Any]]:
                 items.append({
                     "name": f.name,
                     "orig": display_name(f.name),
-                    "url": media_url(owner_id, f.name),
-                    "thumb": thumb_url(owner_id, f.name),
+                    "url": media_url(owner, f.name),
+                    "thumb": thumb_url(owner, f.name),
                     "size": st.st_size,
                     "width": w,
                     "height": h,
@@ -144,12 +159,12 @@ def list_pool(owner_id: int) -> list[dict[str, Any]]:
     return items
 
 
-def delete(owner_id: int, name: str) -> bool:
-    target = resolve(owner_id, name)
+def delete(owner: str, name: str) -> bool:
+    target = resolve(owner, name)
     if target is None:
         return False
     target.unlink()
-    thumb = _thumb_dir(owner_id) / (name + ".jpg")
+    thumb = _thumb_dir(owner) / (name + ".jpg")
     if thumb.exists():
         try:
             thumb.unlink()
@@ -158,12 +173,12 @@ def delete(owner_id: int, name: str) -> bool:
     return True
 
 
-def scan_usage(owner_id: int, projects: list[tuple[str, str]]) -> dict[str, list[dict[str, Any]]]:
+def scan_usage(owner: str, projects: list[tuple[str, str]]) -> dict[str, list[dict[str, Any]]]:
     """Härled var varje poolbild används, PER SCEN. `projects` = [(slug, project_name)].
-    Räknar förekomster av `/media/<owner_id>/<fil>` i varje scens hotspot-text/body.
+    Räknar förekomster av `/media/<owner>/<fil>` i varje scens hotspot-text/body.
     Returnerar {filnamn: [{slug, project, scene_id, scene_title, count}]} - en post
     per (tur, scen) som refererar bilden, för breadcrumbs i biblioteket."""
-    pattern = re.compile(re.escape(f"/media/{owner_id}/") + f"({_NAME_CHARS})")
+    pattern = re.compile(re.escape(f"/media/{owner}/") + f"({_NAME_CHARS})")
     usage: dict[str, list[dict[str, Any]]] = {}
     for slug, pname in projects:
         try:

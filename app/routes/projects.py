@@ -123,10 +123,10 @@ async def create_project(
     tour = default_tour()
     # Ny tur ärver ägarens standard-förinställningar om satta: temat (tema-preset)
     # och branding (egen branding-mall) hanteras var för sig.
-    preset = default_preset_config(db, user.id)
+    preset = default_preset_config(db, user)
     if preset:
         tour.setdefault("default", {}).update(preset)
-    brand = default_branding(db, user.id)
+    brand = default_branding(db, user)
     if brand:
         tour.setdefault("default", {})["branding"] = brand
     write_tour(slug, tour, editor=editor)

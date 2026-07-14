@@ -33,7 +33,7 @@ FORMAT = "svk-project"
 # Arkivets schemaversion = verktygets aktuella (config.SCHEMA_VERSION). Import
 # gate:ar på denna (avvisar nyare arkiv); se _check_archive_version.
 VERSION = SCHEMA_VERSION
-_MEDIA_REF_RE = re.compile(r"/media/(\d+)/([A-Za-z0-9._-]+)")
+_MEDIA_REF_RE = re.compile(r"/media/(team-\d+|\d+)/([A-Za-z0-9._-]+)")
 # Tillåtna arcnames i arkivet (ingen absolut väg / ".." / konstiga tecken).
 _SAFE_ARC_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*$")
 _STORED_EXT = {".jpg", ".jpeg", ".png", ".tif"}
@@ -67,19 +67,20 @@ def _read_tour(slug: str) -> dict:
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
 
 
-def _media_refs(tour: dict) -> set[tuple[int, str]]:
-    """(owner_id, filnamn) - speglar bundle._media_refs, i ALLA språkvarianter."""
-    refs: set[tuple[int, str]] = set()
+def _media_refs(tour: dict) -> set[tuple[str, str]]:
+    """(ägar-nyckel, filnamn) - speglar bundle._media_refs, i ALLA språkvarianter.
+    Nyckeln är en sträng (`<user_id>`/`team-<id>`), inte int."""
+    refs: set[tuple[str, str]] = set()
     for scene in tour.get("scenes", {}).values():
         for hs in scene.get("hotSpots", []):
             for key in ("text", "body"):
                 for v in i18n_text_values(hs.get(key)):
                     for m in _MEDIA_REF_RE.finditer(v):
-                        refs.add((int(m.group(1)), m.group(2)))
+                        refs.add((m.group(1), m.group(2)))
     branding = (tour.get("default") or {}).get("branding") or {}
     for v in i18n_text_values(branding.get("content")):
         for m in _MEDIA_REF_RE.finditer(v):
-            refs.add((int(m.group(1)), m.group(2)))
+            refs.add((m.group(1), m.group(2)))
     return refs
 
 
@@ -220,8 +221,10 @@ def import_project(src_zip: Path, user, db) -> Project:
         # Allt efter DB-raden: rulla tillbaka (radera rad + halvskriven mapp) om
         # extrahering/omskrivning kraschar, så ingen spöktur blir kvar.
         try:
-            _extract(z, slug, user.id)
-            _rewrite_refs(slug, old_slug, user.id)
+            # Importerad media landar i importörens pool (team-<id> eller <user_id>)
+            # och referenserna skrivs om dit.
+            _extract(z, slug, user.owner_key)
+            _rewrite_refs(slug, old_slug, user.owner_key)
         except Exception as exc:  # noqa: BLE001 - rollback + rent fel till klienten
             db.delete(project)
             db.commit()
@@ -245,12 +248,13 @@ def _check_extracted_image(path: Path, name: str) -> None:
         raise ValueError(f"{name} har för stora mått ({megapixels:.0f} MP, max {MAX_IMAGE_MEGAPIXELS} MP).")
 
 
-def _extract(z: zipfile.ZipFile, slug: str, owner_id: int) -> None:
+def _extract(z: zipfile.ZipFile, slug: str, owner: str) -> None:
     """Extrahera arkivet (efter _validate_members). Magic-kollar bilder så en
-    riggad `.jpg`/`.png` som egentligen är HTML avvisas."""
+    riggad `.jpg`/`.png` som egentligen är HTML avvisas. `owner` = importörens
+    ägar-nyckel (team-<id>/<user_id>) - dit poolbilderna landar."""
     ensure_project_structure(slug)
     pd = project_dir(slug).resolve()
-    pool = media.owner_dir(owner_id)
+    pool = media.owner_dir(owner)
     for info in z.infolist():
         n = info.filename
         if n.endswith("/") or n == "project.json":
@@ -278,14 +282,14 @@ def _extract(z: zipfile.ZipFile, slug: str, owner_id: int) -> None:
             _check_extracted_image(dest, n)
 
 
-def _rewrite_refs(new_slug: str, old_slug: str, owner_id: int) -> None:
+def _rewrite_refs(new_slug: str, old_slug: str, owner: str) -> None:
     """Skriv om `/projects/<gammal-slug>/` -> nya slugen och media-referensernas
-    owner_id -> importörens, i tour.json + tiles/manifest.json."""
+    ägar-nyckel -> importörens, i tour.json + tiles/manifest.json."""
     for path in (tour_json_path(new_slug), tiles_manifest_path(new_slug)):
         if not path.exists():
             continue
         txt = path.read_text(encoding="utf-8")
         if old_slug:
             txt = txt.replace(f"/projects/{old_slug}/", f"/projects/{new_slug}/")
-        txt = _MEDIA_REF_RE.sub(lambda m: f"/media/{owner_id}/{m.group(2)}", txt)
+        txt = _MEDIA_REF_RE.sub(lambda m: f"/media/{owner}/{m.group(2)}", txt)
         path.write_text(txt, encoding="utf-8")

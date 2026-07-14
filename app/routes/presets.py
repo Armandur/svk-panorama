@@ -26,7 +26,7 @@ def presets_page(request: Request, user: User = Depends(require_user)):
 
 @router.get("/presets")
 def list_presets(user: User = Depends(require_user), db: Session = Depends(get_db)) -> JSONResponse:
-    return JSONResponse({"presets": presets.list_presets(db, user.id)})
+    return JSONResponse({"presets": presets.list_presets(db, user)})
 
 
 @router.post("/presets")
@@ -40,7 +40,7 @@ async def save_preset(
     name = (data.get("name") or "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="Namn krävs")
-    preset = presets.save_preset(db, user.id, name, data.get("config") or {})
+    preset = presets.save_preset(db, user, name, data.get("config") or {})
     return JSONResponse({"preset": preset})
 
 
@@ -57,7 +57,7 @@ async def update_preset(
     if not name:
         raise HTTPException(status_code=400, detail="Namn krävs")
     try:
-        preset = presets.update_preset(db, user.id, preset_id, name, data.get("config") or {})
+        preset = presets.update_preset(db, user, preset_id, name, data.get("config") or {})
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     if preset is None:
@@ -72,7 +72,7 @@ def delete_preset(
     db: Session = Depends(get_db),
     _csrf: None = Depends(verify_csrf_header),
 ) -> JSONResponse:
-    if not presets.delete_preset(db, user.id, preset_id):
+    if not presets.delete_preset(db, user, preset_id):
         raise HTTPException(status_code=404, detail="Förinställningen hittades inte")
     return JSONResponse({"ok": True})
 
@@ -86,7 +86,7 @@ async def set_default(
     _csrf: None = Depends(verify_csrf_header),
 ) -> JSONResponse:
     data = await request.json()
-    if not presets.set_default(db, user.id, preset_id, bool(data.get("isDefault"))):
+    if not presets.set_default(db, user, preset_id, bool(data.get("isDefault"))):
         raise HTTPException(status_code=404, detail="Förinställningen hittades inte")
     return JSONResponse({"ok": True})
 
@@ -94,7 +94,7 @@ async def set_default(
 # --- Branding-mallar (egen mall skild från tema-presets) ---
 @router.get("/branding-presets")
 def list_branding(user: User = Depends(require_user), db: Session = Depends(get_db)) -> JSONResponse:
-    return JSONResponse({"presets": presets.list_branding_presets(db, user.id)})
+    return JSONResponse({"presets": presets.list_branding_presets(db, user)})
 
 
 @router.post("/branding-presets")
@@ -108,7 +108,7 @@ async def save_branding(
     name = (data.get("name") or "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="Namn krävs")
-    preset = presets.save_branding_preset(db, user.id, name, data.get("config") or {})
+    preset = presets.save_branding_preset(db, user, name, data.get("config") or {})
     if preset is None:
         raise HTTPException(status_code=400, detail="Branding får inte vara tom")
     return JSONResponse({"preset": preset})
@@ -127,7 +127,7 @@ async def update_branding(
     if not name:
         raise HTTPException(status_code=400, detail="Namn krävs")
     try:
-        preset = presets.update_branding_preset(db, user.id, preset_id, name, data.get("config") or {})
+        preset = presets.update_branding_preset(db, user, preset_id, name, data.get("config") or {})
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     if preset is None:
@@ -142,7 +142,7 @@ def delete_branding(
     db: Session = Depends(get_db),
     _csrf: None = Depends(verify_csrf_header),
 ) -> JSONResponse:
-    if not presets.delete_branding_preset(db, user.id, preset_id):
+    if not presets.delete_branding_preset(db, user, preset_id):
         raise HTTPException(status_code=404, detail="Branding-mallen hittades inte")
     return JSONResponse({"ok": True})
 
@@ -156,6 +156,6 @@ async def set_branding_default(
     _csrf: None = Depends(verify_csrf_header),
 ) -> JSONResponse:
     data = await request.json()
-    if not presets.set_branding_default(db, user.id, preset_id, bool(data.get("isDefault"))):
+    if not presets.set_branding_default(db, user, preset_id, bool(data.get("isDefault"))):
         raise HTTPException(status_code=404, detail="Branding-mallen hittades inte")
     return JSONResponse({"ok": True})

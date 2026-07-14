@@ -54,6 +54,13 @@ class User(Base):
         DateTime, default=datetime.datetime.utcnow
     )
 
+    @property
+    def owner_key(self) -> str:
+        """Ägar-nyckel för delade resurser (mediepool): `team-<id>` om användaren
+        har team (delad pool), annars `<user_id>`. Team-prefixet undviker att
+        User.id och Team.id kolliderar på samma mediekatalog. En sanningskälla."""
+        return f"team-{self.team_id}" if self.team_id is not None else str(self.id)
+
 
 class Project(Base):
     __tablename__ = "projects"
@@ -83,6 +90,9 @@ class ThemePreset(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    # Team-ägd preset (Fas 4, delas i teamet). None = personlig (owner_id). Scopas
+    # via presets._scope_clause. owner_id bevaras som "skapad av".
+    team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.id"), nullable=True, index=True)
     name: Mapped[str] = mapped_column(String(120))
     config: Mapped[str] = mapped_column(Text)  # JSON
     is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -98,6 +108,9 @@ class BrandingPreset(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    # Team-ägd preset (Fas 4, delas i teamet). None = personlig (owner_id). Scopas
+    # via presets._scope_clause. owner_id bevaras som "skapad av".
+    team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.id"), nullable=True, index=True)
     name: Mapped[str] = mapped_column(String(120))
     config: Mapped[str] = mapped_column(Text)  # JSON
     is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

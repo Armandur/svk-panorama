@@ -19,7 +19,14 @@ class MediaBatch(BaseModel):
 from app import config
 from app.auth import require_user
 from app.database import Project, User, get_db
-from app.deps import new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
+from app.deps import (
+    new_csrf_token,
+    resource_owner_key,
+    set_csrf_cookie,
+    templates,
+    verify_csrf_header,
+    visible_projects_clause,
+)
 from app.services import media
 from app.services.project_files import (
     validate_extension,
@@ -52,8 +59,9 @@ async def upload_media(
     validate_size(content, filename, config.MAX_MAP_MB)
     validate_image_magic(content, filename)
     validate_image_dimensions(content, filename)
-    name = media.store(user.id, filename, content)
-    return JSONResponse({"url": media.media_url(user.id, name), "name": name})
+    owner = resource_owner_key(user)
+    name = media.store(owner, filename, content)
+    return JSONResponse({"url": media.media_url(owner, name), "name": name})
 
 
 @router.get("/media/list")
@@ -61,13 +69,15 @@ def list_media(
     user: User = Depends(require_user),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
-    """Ägarens pool med metadata + härledd användning + hens projektlista (filter)."""
-    items = media.list_pool(user.id)
+    """Ägarens/teamets pool med metadata + härledd användning + projektlista (filter)."""
+    owner = resource_owner_key(user)
+    items = media.list_pool(owner)
+    # Skanna användning över turer användaren ser (egna + teamets) - matchar poolen.
     projects = [
         (p.slug, p.name)
-        for p in db.query(Project).filter(Project.owner_id == user.id).order_by(Project.name).all()
+        for p in db.query(Project).filter(visible_projects_clause(user)).order_by(Project.name).all()
     ]
-    usage = media.scan_usage(user.id, projects)
+    usage = media.scan_usage(owner, projects)
     for it in items:
         it["usage"] = usage.get(it["name"], [])
     return JSONResponse({
@@ -82,7 +92,7 @@ def delete_media(
     user: User = Depends(require_user),
     _csrf: None = Depends(verify_csrf_header),
 ) -> JSONResponse:
-    if not media.delete(user.id, name):
+    if not media.delete(resource_owner_key(user), name):
         raise HTTPException(status_code=404, detail="Filen hittades inte")
     return JSONResponse({"ok": True})
 
@@ -94,25 +104,27 @@ def batch_delete_media(
     _csrf: None = Depends(verify_csrf_header),
 ) -> JSONResponse:
     """Radera flera poolbilder på en gång (owner-scopat via media.delete)."""
-    deleted = sum(1 for name in payload.names if media.delete(user.id, name))
+    owner = resource_owner_key(user)
+    deleted = sum(1 for name in payload.names if media.delete(owner, name))
     return JSONResponse({"deleted": deleted})
 
 
-@router.get("/media/{owner_id}/thumb/{name}")
-def serve_thumb(owner_id: int, name: str) -> FileResponse:
+@router.get("/media/{owner}/thumb/{name}")
+def serve_thumb(owner: str, name: str) -> FileResponse:
     """Nedskalad tumnagel (genereras + cachas vid första anrop). Capability-URL
-    som originalet - ingen auth-grind, bara traversal-guard via media.resolve."""
-    thumb = media.ensure_thumb(owner_id, name)
+    som originalet - ingen auth-grind, bara traversal-guard via media.resolve
+    (som även validerar ägar-nyckelns format)."""
+    thumb = media.ensure_thumb(owner, name)
     if thumb is None:
         raise HTTPException(status_code=404, detail="Filen hittades inte")
     return FileResponse(thumb)
 
 
-@router.get("/media/{owner_id}/{name}")
-def serve_media(owner_id: int, name: str) -> FileResponse:
+@router.get("/media/{owner}/{name}")
+def serve_media(owner: str, name: str) -> FileResponse:
     """Capability-URL: ingen auth-grind (oigissbart namn), bara traversal-guard.
     Så publika /s-vyn och bundlen når bilden direkt, som turinnehåll."""
-    target = media.resolve(owner_id, name)
+    target = media.resolve(owner, name)
     if target is None:
         raise HTTPException(status_code=404, detail="Filen hittades inte")
     return FileResponse(target)

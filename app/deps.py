@@ -109,6 +109,12 @@ def get_editor(user: User = Depends(require_user)) -> dict:
     return {"by": user.id, "name": user.name or user.email}
 
 
+def resource_owner_key(user: User) -> str:
+    """Ägar-nyckel för delade resurser (mediepool). Se User.owner_key - en
+    sanningskälla (team-<id> för team, annars <user_id>)."""
+    return user.owner_key
+
+
 def visible_projects_clause(user: User):
     """SQLAlchemy-villkor för turer en användare SER i sina listor: sina egna
     (owner_id) + (om hen har team) teamets turer. FÄLLA (verifierad SQLAlchemy
