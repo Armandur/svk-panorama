@@ -726,6 +726,16 @@ per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga 
       ser teamets alla turer och sätter teamets `base_url`. Super-admin får team-lista
       (skapa team, sätt/nolla domän, se alla). `require_team_admin`-gate analogt med
       `require_admin`.
+- [ ] **Team-utrymmesgräns + användningsvyer (todo 2026-07-14).** Varje team kan ha en
+      satt lagringskvot (`Team.storage_quota_bytes`, super-admin sätter; ev. team-default).
+      TRE synlighetsnivåer: (a) **medlem** ser teamets ÖVERGRIPANDE användning mot gränsen
+      (summa + procent/mätare, ingen drill-down); (b) **team-admin** ser det i DETALJ likt
+      super-admin - per användare och per tur (återanvänd `/admin/storage`-drill-downen men
+      team-scopad, inte global); (c) **super-admin** ser alla team. Bygger på 4.2:s per-team-
+      gruppering i storage-vyn (redan flaggad) - kvot är ett tak ovanpå den skanningen
+      (`storage.project_sizes`/`media_sizes` + `cached_dir_size` håller). Beslut kvar: hård
+      gräns (blockera uppladdning/tiling/export över kvot) vs mjuk (bara varning). Media-
+      poolen (`team-<id>`) + teamets turer räknas mot kvoten.
 - [ ] **Egna domäner per team.** `Team.base_url` används för alla genererings-/
       delningslänkar (ersätter globala `SVK_BASE_URL`) - invite-länkar, export, /view.
       Host-baserad tenant-resolution: middleware slår upp request-Host -> team så
