@@ -7,7 +7,7 @@ funkar i editorn, publika /s-vyn och bundlen utan URL-omskrivning. Listning,
 uppladdning och radering är auth-grindade till den inloggade ägaren."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -21,12 +21,30 @@ from app.auth import require_user
 from app.database import Project, User, get_db
 from app.deps import (
     new_csrf_token,
-    resource_owner_key,
+    project_owner_key,
     set_csrf_cookie,
     templates,
+    user_can_access_project,
+    user_may_use_workspace,
+    user_workspaces,
     verify_csrf_header,
-    visible_projects_clause,
 )
+
+
+def _pool_owner(db: Session, user: User, slug: str | None, owner: str | None) -> str:
+    """Vilken mediapool (ytanyckel) en förfrågan gäller. `slug` = redigeringskontext
+    -> turens yta (gate:ad); `owner` = explicit yta (/media-sidan, validerad); annars
+    användarens primära yta. Media följer turens yta i arbetsyte-modellen."""
+    if slug:
+        project = db.query(Project).filter(Project.slug == slug).first()
+        if project is None or not user_can_access_project(user, project):
+            raise HTTPException(status_code=404, detail="Turen hittades inte")
+        return project_owner_key(project)
+    if owner:
+        if not user_may_use_workspace(db, user, owner):
+            raise HTTPException(status_code=403, detail="Otillåten arbetsyta")
+        return owner
+    return user.owner_key
 from app.services import media
 from app.services.project_files import (
     validate_extension,
@@ -38,11 +56,28 @@ from app.services.project_files import (
 router = APIRouter()
 
 
+def _workspace_projects(db: Session, owner: str) -> list[tuple[str, str]]:
+    """Turerna i en yta (för usage-scan): team-<id> -> teamets turer; <user_id> ->
+    ägarens personliga turer (team_id NULL)."""
+    if owner.startswith("team-"):
+        q = db.query(Project).filter(Project.team_id == int(owner[5:]))
+    else:
+        q = db.query(Project).filter(Project.owner_id == int(owner), Project.team_id.is_(None))
+    return [(p.slug, p.name) for p in q.order_by(Project.name).all()]
+
+
 @router.get("/media")
-def media_library_page(request: Request, user: User = Depends(require_user)):
-    """Administrationsvy: hela ägarens pool med metadata + användning."""
+def media_library_page(
+    request: Request,
+    user: User = Depends(require_user),
+    db: Session = Depends(get_db),
+):
+    """Administrationsvy: pool per arbetsyta (yta-växlare) med metadata + användning."""
     token = new_csrf_token()
-    resp = templates.TemplateResponse(request, "media_library.html", {"csrf_token": token})
+    resp = templates.TemplateResponse(
+        request, "media_library.html",
+        {"csrf_token": token, "workspaces": user_workspaces(db, user)},
+    )
     set_csrf_cookie(resp, token)
     return resp
 
@@ -50,49 +85,55 @@ def media_library_page(request: Request, user: User = Depends(require_user)):
 @router.post("/media/upload")
 async def upload_media(
     file: UploadFile = File(...),
+    slug: str = Query(None),
+    owner: str = Query(None),
     user: User = Depends(require_user),
+    db: Session = Depends(get_db),
     _csrf: None = Depends(verify_csrf_header),
 ) -> JSONResponse:
+    pool = _pool_owner(db, user, slug, owner)
     filename = file.filename or "bild"
     validate_extension(filename, config.ALLOWED_MAP_EXT)  # jpg/jpeg/png
     content = await file.read()
     validate_size(content, filename, config.MAX_MAP_MB)
     validate_image_magic(content, filename)
     validate_image_dimensions(content, filename)
-    owner = resource_owner_key(user)
-    name = media.store(owner, filename, content)
-    return JSONResponse({"url": media.media_url(owner, name), "name": name})
+    name = media.store(pool, filename, content)
+    return JSONResponse({"url": media.media_url(pool, name), "name": name})
 
 
 @router.get("/media/list")
 def list_media(
+    slug: str = Query(None),
+    owner: str = Query(None),
     user: User = Depends(require_user),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
-    """Ägarens/teamets pool med metadata + härledd användning + projektlista (filter)."""
-    owner = resource_owner_key(user)
-    items = media.list_pool(owner)
-    # Skanna användning över turer användaren ser (egna + teamets) - matchar poolen.
-    projects = [
-        (p.slug, p.name)
-        for p in db.query(Project).filter(visible_projects_clause(user)).order_by(Project.name).all()
-    ]
-    usage = media.scan_usage(owner, projects)
+    """Ytans pool med metadata + härledd användning + ytans projektlista (filter).
+    Yta väljs via slug (turens yta) eller owner (explicit); annars primär yta."""
+    pool = _pool_owner(db, user, slug, owner)
+    items = media.list_pool(pool)
+    projects = _workspace_projects(db, pool)
+    usage = media.scan_usage(pool, projects)
     for it in items:
         it["usage"] = usage.get(it["name"], [])
     return JSONResponse({
         "items": items,
         "projects": [{"slug": s, "name": n} for s, n in projects],
+        "owner": pool,
     })
 
 
 @router.post("/media/{name}/delete")
 def delete_media(
     name: str,
+    slug: str = Query(None),
+    owner: str = Query(None),
     user: User = Depends(require_user),
+    db: Session = Depends(get_db),
     _csrf: None = Depends(verify_csrf_header),
 ) -> JSONResponse:
-    if not media.delete(resource_owner_key(user), name):
+    if not media.delete(_pool_owner(db, user, slug, owner), name):
         raise HTTPException(status_code=404, detail="Filen hittades inte")
     return JSONResponse({"ok": True})
 
@@ -100,12 +141,15 @@ def delete_media(
 @router.post("/media/batch-delete")
 def batch_delete_media(
     payload: MediaBatch,
+    slug: str = Query(None),
+    owner: str = Query(None),
     user: User = Depends(require_user),
+    db: Session = Depends(get_db),
     _csrf: None = Depends(verify_csrf_header),
 ) -> JSONResponse:
-    """Radera flera poolbilder på en gång (owner-scopat via media.delete)."""
-    owner = resource_owner_key(user)
-    deleted = sum(1 for name in payload.names if media.delete(owner, name))
+    """Radera flera poolbilder på en gång (yta-scopat via _pool_owner)."""
+    pool = _pool_owner(db, user, slug, owner)
+    deleted = sum(1 for name in payload.names if media.delete(pool, name))
     return JSONResponse({"deleted": deleted})
 
 

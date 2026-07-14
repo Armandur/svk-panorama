@@ -5,8 +5,17 @@
 <section class="login-section media-manage">
 	<hgroup>
 		<h1>Mediebibliotek</h1>
-		<p>Bilder du laddar upp här kan återanvändas i info-hotspots över alla dina turer.</p>
+		<p>Bilder du laddar upp här kan återanvändas i info-hotspots över turerna i arbetsytan.</p>
 	</hgroup>
+	{% if workspaces and workspaces | length > 1 %}
+	<label for="media-workspace">Arbetsyta
+		<select id="media-workspace">
+			{% for w in workspaces %}
+			<option value="{{ w.key }}">{{ w.label }}{% if w.scope == 'team' %} (team){% elif w.scope == 'personal' %} (personlig){% endif %}</option>
+			{% endfor %}
+		</select>
+	</label>
+	{% endif %}
 	<article>
 		<div id="media-manager"></div>
 	</article>

@@ -138,6 +138,13 @@ def user_workspaces(db: Session, user: User) -> list[dict]:
     return out
 
 
+def user_may_use_workspace(db: Session, user: User, key: str) -> bool:
+    """Får användaren använda ytans mediapool (personlig eller teamets)? Validerar
+    mot user_workspaces - en team-medlem utan can_personal når t.ex. inte sin
+    personliga pool."""
+    return any(w["key"] == key for w in user_workspaces(db, user))
+
+
 def resolve_workspace(db: Session, user: User, key: str | None) -> tuple[int | None, bool]:
     """Mappa en vald ytanyckel -> (team_id, ok). team_id=None = personlig tur.
     ok=False om nyckeln inte är en av användarens tillåtna ytor. key=None -> första

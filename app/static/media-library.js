@@ -24,9 +24,17 @@
 		catch (e) { return ""; }
 	}
 
+	// Aktiv arbetsytas pool-query (?slug=... redigeringskontext / ?owner=... /media-
+	// sidan). Sätts av mountLibrary; alla media-anrop hängs på den så rätt yta träffas.
+	var poolQ = "";
+	function setPoolQuery(opts) {
+		poolQ = opts.slug ? "?slug=" + encodeURIComponent(opts.slug)
+			: (opts.owner ? "?owner=" + encodeURIComponent(opts.owner) : "");
+	}
+
 	// --- Gemensam datakälla ------------------------------------------------
 	function fetchPool() {
-		return fetch("/media/list").then(function (r) {
+		return fetch("/media/list" + poolQ).then(function (r) {
 			if (!r.ok) throw new Error("Kunde inte hämta biblioteket.");
 			return r.json();
 		});
@@ -38,7 +46,7 @@
 	function uploadOne(file, onProgress) {
 		return new Promise(function (resolve, reject) {
 			var xhr = new XMLHttpRequest();
-			xhr.open("POST", "/media/upload");
+			xhr.open("POST", "/media/upload" + poolQ);
 			xhr.setRequestHeader("X-CSRF-Token", csrf());
 			xhr.upload.addEventListener("progress", function (e) {
 				if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100));
@@ -114,7 +122,7 @@
 		pump();
 	}
 	function deleteFile(name) {
-		return fetch("/media/" + encodeURIComponent(name) + "/delete", {
+		return fetch("/media/" + encodeURIComponent(name) + "/delete" + poolQ, {
 			method: "POST", headers: { "X-CSRF-Token": csrf() },
 		}).then(function (r) { if (!r.ok) throw new Error("Kunde inte ta bort."); return r.json(); });
 	}
@@ -247,6 +255,7 @@
 	// opts.onPick (valfri) gör bilderna klickbara för val -> plockar url:en.
 	function mountLibrary(container, opts) {
 		opts = opts || {};
+		setPoolQuery(opts);  // vilken arbetsytas pool anropen ska träffa
 		var data = { items: [], projects: [] };
 		var filter = "all";
 		container.innerHTML =
@@ -432,7 +441,7 @@
 				: Promise.resolve(window.confirm(msg));
 			ask.then(function (ok) {
 				if (!ok) return;
-				fetch("/media/batch-delete", {
+				fetch("/media/batch-delete" + poolQ, {
 					method: "POST",
 					headers: { "X-CSRF-Token": csrf(), "Content-Type": "application/json" },
 					body: JSON.stringify({ names: names }),
@@ -497,12 +506,20 @@
 	function closeModal() { if (modal) modal.hidden = true; }
 
 	// Väljar-modal (scenhantering): samma komponent, med onPick -> stäng vid val.
+	// slug -> turens arbetsyta (media följer turens yta: personlig/team-pool).
 	window.openMediaLibrary = function (slug, onPick) {
 		if (!modal) buildModal();
-		mountLibrary(modalBody, { onPick: function (url) { if (onPick) onPick(url); closeModal(); } });
+		mountLibrary(modalBody, { slug: slug, onPick: function (url) { if (onPick) onPick(url); closeModal(); } });
 		modal.hidden = false;
 	};
 
-	// Inbäddad hanteringsvy (/media-sidan): samma komponent, utan onPick.
-	window.initMediaManager = function (container) { mountLibrary(container, {}); };
+	// Inbäddad hanteringsvy (/media-sidan): yta-växlare (owner) om >1 yta.
+	window.initMediaManager = function (container) {
+		var switcher = document.getElementById("media-workspace");
+		function mount() {
+			mountLibrary(container, switcher && switcher.value ? { owner: switcher.value } : {});
+		}
+		if (switcher) switcher.addEventListener("change", mount);
+		mount();
+	};
 })();
