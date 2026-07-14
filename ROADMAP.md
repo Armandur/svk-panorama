@@ -163,7 +163,7 @@ Kvarvarande arbete är i praktiken auth + multi-tenancy.
 
 Luckor identifierade 2026-07-11 innan team-arbetet.
 
-- [ ] **"Senast ändrad" + "ändrad av" i projektlistan (todo 2026-07-14).** Listvyn i /editor
+- [x] **"Senast ändrad" + "ändrad av" i projektlistan KLAR (2026-07-14).** Listvyn i /editor
       ska ha en **Senast ändrad**-kolumn (inte bara Skapad) - härled ur tour.json/map.json mtime
       (nyaste). I ett TEAMS arbetsyta ska även **vem som ändrat senast** visas - återanvänd
       versionshistorikens attribution: `_history/_pending.json` bär `{by, name}` = vem som
@@ -761,7 +761,7 @@ per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga 
       turens yta (`project_owner_key(project)`), /media-sidan får en yta-växlare. Plus **solo→team
       opt-in**: kryssruta "ta med mina befintliga turer" vid skapa-team (flyttar turer team_id +
       media-pool/URL-omskrivning via `_rewrite_refs`-mönstret).
-- [ ] **/admin/users: visa + filtrera på team (todo 2026-07-14).** Super-admins
+- [x] **/admin/users: visa + filtrera på team KLAR (2026-07-14).** Super-admins
       användarlista ska visa vilket/vilka team varje användare tillhör (kolumn), och
       super-admin ska kunna FILTRERA listan på team. (Multi-team: "vilka team" - blir en
       lista när join-tabellen finns; single-team nu: ett team.)
