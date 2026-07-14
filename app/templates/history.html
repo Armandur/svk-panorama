@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Versionshistorik - {{ project.name }}{% endblock %}
+{% block content %}
+
+<nav class="hist-nav" aria-label="Navigering">
+	<a href="/editor" role="button" class="secondary outline nav-btn">Huvudmeny</a>
+	<a href="/projects/{{ project.slug }}/scenes" role="button" class="secondary outline nav-btn">Till turen</a>
+</nav>
+
+<section>
+	<hgroup>
+		<h1>Versionshistorik</h1>
+		<p>{{ project.name }}</p>
+	</hgroup>
+
+	{% if restored %}
+	<article class="notice restored-notice"><p>Turen återställdes till den valda versionen. Det tidigare läget sparades överst i listan, så du kan ångra genom att återställa det igen.</p></article>
+	{% endif %}
+
+	<p class="hist-blurb">Varje gång du sparar arkiveras det föregående läget här. En version i listan visar alltså det läge som <strong>gällde fram till</strong> tidpunkten - att återställa den tar dig tillbaka dit. Återställning är alltid reversibel: nuläget sparas som en ny version först.</p>
+
+	{% if versions %}
+	<ul class="hist-list">
+		{% for v in versions %}
+		<li class="hist-item">
+			<div class="hist-meta">
+				<span class="hist-time" data-ms="{{ v.epoch_ms }}">…</span>
+				<span class="hist-hint">
+					{%- if v.scenes is not none %}{{ v.scenes }} scen{{ 'er' if v.scenes != 1 else '' }}{% endif -%}
+					{%- if v.languages %} · {{ v.languages | join(', ') }}{% endif -%}
+					{%- if v.size %} · {{ human_size(v.size) }}{% endif -%}
+				</span>
+			</div>
+			<form method="post" action="/projects/{{ project.slug }}/history/restore"
+				data-confirm="Återställa turen till den här versionen? Nuläget sparas som en ny version först, så åtgärden går att ångra." data-confirm-ok="Återställ">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+				<input type="hidden" name="version" value="{{ v.id }}">
+				<button type="submit" class="secondary outline">Återställ</button>
+			</form>
+		</li>
+		{% endfor %}
+	</ul>
+	{% else %}
+	<p><em>Ingen historik ännu - den byggs upp när du sparar ändringar i turen.</em></p>
+	{% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Formatera epoch_ms i besökarens tidszon: absolut + relativ ("för 3 min sedan").
+(function () {
+	function rel(ms) {
+		var s = Math.round((Date.now() - ms) / 1000);
+		if (s < 60) return "nyss";
+		var m = Math.round(s / 60);
+		if (m < 60) return "för " + m + " min sedan";
+		var h = Math.round(m / 60);
+		if (h < 24) return "för " + h + " tim sedan";
+		var d = Math.round(h / 24);
+		return "för " + d + " dygn sedan";
+	}
+	document.querySelectorAll(".hist-time[data-ms]").forEach(function (el) {
+		var ms = parseInt(el.dataset.ms, 10);
+		var abs = new Date(ms).toLocaleString("sv-SE", { dateStyle: "medium", timeStyle: "short" });
+		el.textContent = "Gällde till " + abs;
+		el.title = rel(ms);
+	});
+})();
+</script>
+{% endblock %}

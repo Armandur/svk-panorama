@@ -17,6 +17,7 @@ from app.routes import (
     auth,
     backup,
     export,
+    history,
     media,
     plan,
     presets,
@@ -100,6 +101,7 @@ app.include_router(scenes.router)
 app.include_router(tiling.router)
 app.include_router(preview.router)
 app.include_router(translate.router)
+app.include_router(history.router)
 app.include_router(export.router)
 app.include_router(backup.router)
 app.include_router(viewer.router)

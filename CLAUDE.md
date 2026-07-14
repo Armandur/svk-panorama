@@ -73,6 +73,7 @@ app/
     public.py        # /s/{token} publik delad viewer + /s/{token}/{path} assets (ingen auth)
     media.py         # /media delad mediepool per ägare (upload/list/delete + capability-serve)
     translate.py     # Översätt-steget: gap-scan + guidad granulär översättningsspar (flerspråkigt)
+    history.py       # /history versionslista + /history/restore (återställ tidigare version)
   services/
     project_files.py # filsystemslager: slug, mappar, tour.json/map.json, previews
     tiling.py        # trådat tiling-jobb + manifest + apply_multires()
@@ -81,6 +82,7 @@ app/
     presets.py       # tema-/inställningsförinställningar (list/save/delete/default + sanering)
     media.py         # delad mediepool: lagring, metadata (PIL), usage-scan
     storage.py       # diskanvändning per projekt/användare (admin-översikt, os.walk)
+    history.py       # versionshistorik: snapshot tour+map vid varje write (unified tidslinje)
   templates/         # Jinja2. base.html + steg-mallar + _partials
   static/            # CSS/JS (se nedan) + vendor/ (pannellum, pico)
 ```
@@ -158,6 +160,39 @@ AVVISAS med tydligt meddelande ("skapad med en nyare version"); äldre/samma/sak
 godtas (defaultar fyller nya fält). Vid en framtida brytande ändring: bumpa
 `SCHEMA_VERSION`, lägg ev. en migrate-funktion som körs vid import/läsning, och
 uppdatera denna sektion.
+
+## Versionshistorik / ångra (services/history.py, routes/history.py)
+
+Autospar skriver direkt över `tour.json`/`map.json` utan historik. Historiken ger
+"återställ tidigare version". **Unified tidslinje:** varje `write_tour`/`write_map`
+hakar in `history.snapshot(project_dir)` som arkiverar NUVARANDE (pre-overwrite)
+`tour.json` + `map.json` IHOP till `projects/<slug>/_history/<epoch_ms>/`. Båda
+snapshottas alltid tillsammans (tour.scenes <-> map.scenes är kopplade) -> restore
+skriver båda ihop, desync omöjlig. En version taggad vid T = läget som GÄLLDE FRAM
+TILL T (ersattes vid T); UI:t säger "Gällde till ..." (ärlig pre-overwrite-semantik).
+
+- **DEADLOCK-regel:** `snapshot()` körs INUTI write_tour/write_map, som ofta anropas
+  medan `project_files.tour_lock` redan hålls. Den tar därför ALDRIG tour_lock - bara
+  sitt eget `history._history_lock` (ordning: tour_lock -> _history_lock, aldrig
+  omvänt). Ren fil-I/O; importerar inte project_files (tar projektmappsökväg, deriverar
+  filnamnen `_FILES` själv -> ingen cirkel med write_tour-hooken).
+- **Coalesce + dedup:** hoppa ny snapshot om nyaste < `HISTORY_COALESCE_SEC` (20s;
+  redigerings-burst -> en snapshot) eller om pre-write-innehållet == nyaste versionen.
+- **Retention:** behåll en version om index < `HISTORY_MAX` (50) ELLER ålder <
+  `HISTORY_FLOOR_DAYS` (7). Golvet skyddar "före sessionen"-snapshotten som ett rent
+  antalstak annars vräker. Konstanter i config.py (`SVK_HISTORY_*`-override).
+- **Restore** (`POST /history/restore`, form + CSRF, under tour_lock): force-snapshotta
+  nuläget FÖRST (reversibelt oavsett coalesce), läs vald version, skriv båda via
+  `write_tour(..., snapshot=False)` + `write_map(..., snapshot=False)`. `snapshot=False`
+  hoppar hooken så det inkonsistenta mellanläget (ny tour + gammal map mellan de två
+  skrivningarna) inte arkiveras - korrektheten hänger INTE på coalesce-konstanten.
+- **UI** (`GET /history`, `history.html`): tidslinje nyast först ("Gällde till" abs+rel
+  tid formaterad klient-side i besökarens tidszon, scenantal/språk/storlek-hint,
+  Återställ per rad med `data-confirm`). Nåbar via "Versionshistorik" i `_step_nav`-menyn
+  (ej ett steg). `restored=1` visar ångra-hint.
+- **Exkludering:** `_history/` ligger under gitignorade `projects/<slug>/`. backup.py
+  (whitelist-enumerering) och bundle.py (`_collect`) globar inte brett -> följer inte med
+  i arkiv/export. storage.py `os.walk` räknar det mot projektstorlek (minor, ok).
 
 ## Tema-förinställningar (ThemePreset, services/presets.py, routes/presets.py)
 
@@ -422,7 +457,9 @@ kopierar bara de refererade poolbilderna. Usage härleds - ingen DB-tabell.
 (svk.db), `SVK_SECRET_KEY` (annars per-start), `SVK_MAX_PANORAMA_MB` (80),
 `SVK_MAX_MAP_MB` (20), `SVK_PREVIEW_MAX_WIDTH` (2048), `SVK_PREVIEW_QUALITY`
 (82), `SVK_TILE_CONCURRENCY` (2), `SVK_STORAGE_CACHE_TTL` (60; diskanvändnings-cachens
-TTL i sek, 0=av), `SVK_BASE_URL` (tom; för framtida export/
+TTL i sek, 0=av), `SVK_HISTORY_MAX` (50), `SVK_HISTORY_FLOOR_DAYS` (7),
+`SVK_HISTORY_COALESCE_SEC` (20; versionshistorikens retention/coalesce),
+`SVK_BASE_URL` (tom; för framtida export/
 delningslänkar). `TILE_CONCURRENCY` läses per jobbstart -> justerbart utan
 omstart (tänkt admin-UI).
 

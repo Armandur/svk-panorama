@@ -71,6 +71,18 @@ TILE_CONCURRENCY = max(1, int(os.environ.get("SVK_TILE_CONCURRENCY", "2")))
 # mappstorlek. 0 = av (räkna om varje gång). Se app/services/storage.py.
 STORAGE_CACHE_TTL = int(os.environ.get("SVK_STORAGE_CACHE_TTL", "60"))
 
+# Versionshistorik (app/services/history.py): varje write_tour/write_map
+# arkiverar NUVARANDE (pre-overwrite) tour.json+map.json ihop till
+# projects/<slug>/_history/<epoch_ms>/ - en unified tidslinje man kan återställa.
+# COALESCE_SEC: hoppa ny snapshot om nyaste är yngre än så här (en redigerings-
+# burst kollapsar till en snapshot). MAX + FLOOR_DAYS = generös retention: behåll
+# en version om den är bland de MAX nyaste ELLER yngre än FLOOR_DAYS (golvet
+# skyddar den värdefulla "före sessionen"-snapshotten som ett rent antals-tak
+# annars vräker ut).
+HISTORY_MAX = int(os.environ.get("SVK_HISTORY_MAX", "50"))
+HISTORY_FLOOR_DAYS = int(os.environ.get("SVK_HISTORY_FLOOR_DAYS", "7"))
+HISTORY_COALESCE_SEC = int(os.environ.get("SVK_HISTORY_COALESCE_SEC", "20"))
+
 # Flerspråkighet: språk editorn kan välja bland (kod -> visningsnamn på eget
 # språk). SPEGLAS av window.LANG_NAMES i static/markdown.js - håll i synk. En tur
 # väljer en delmängd i tour.default.languages; först i listan = default-språk.

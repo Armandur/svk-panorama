@@ -666,6 +666,82 @@ def test_hotspot_in_lang():
     check("hotspot_in_lang icke-lista langs -> alla språk", hotspot_in_lang({"langs": "en"}, "sv") is True)
 
 
+def test_history():
+    import json
+
+    from app import config
+    from app.services import history
+
+    tmp = Path(tempfile.mkdtemp())
+    tour = tmp / "tour.json"
+    map_ = tmp / "map.json"
+    hist = tmp / "_history"
+
+    # Ny tur (inga filer) -> inget att arkivera.
+    check("history: tom tur -> None", history.snapshot(tmp) is None)
+
+    tour.write_text('{"scenes": {"a": {}}}', encoding="utf-8")
+    map_.write_text('{"scenes": [], "edges": []}', encoding="utf-8")
+
+    v1 = history.snapshot(tmp)
+    check("history: första snapshot skapas", v1 is not None)
+    check("history: unified (båda filer arkiverade)",
+          (hist / str(v1) / "tour.json").exists() and (hist / str(v1) / "map.json").exists())
+
+    # Coalesce: en ny snapshot direkt (inom fönstret) skapas inte.
+    check("history: coalesce inom fönster -> None", history.snapshot(tmp) is None)
+    # force kringgår coalesce.
+    vf = history.snapshot(tmp, force=True)
+    check("history: force kringgår coalesce", vf is not None and vf != v1)
+
+    orig_coalesce = config.HISTORY_COALESCE_SEC
+    config.HISTORY_COALESCE_SEC = 0  # stäng av coalesce -> testa dedup rent
+    try:
+        check("history: dedup oförändrat -> None", history.snapshot(tmp) is None)
+        tour.write_text('{"scenes": {"a": {}, "b": {}}}', encoding="utf-8")
+        v2 = history.snapshot(tmp)
+        check("history: ändrat innehåll -> ny version", v2 is not None)
+    finally:
+        config.HISTORY_COALESCE_SEC = orig_coalesce
+
+    versions = history.list_versions(tmp)
+    ids = [v["id"] for v in versions]
+    check("history: nyast först", ids == sorted(ids, reverse=True))
+    check("history: metadata scenantal (nyaste=2)", versions[0]["scenes"] == 2)
+
+    # Restore-kärnan: arkivera nuläget (a,b) force, läs v1, skriv tillbaka (bara a).
+    history.snapshot(tmp, force=True)
+    data = history.read_version(tmp, v1)
+    check("history: read_version ger tour.json", "tour.json" in data)
+    tour.write_text(json.dumps(data["tour.json"]), encoding="utf-8")
+    check("history: restore ger v1-innehåll", set(json.loads(tour.read_text())["scenes"]) == {"a"})
+    archived = [json.loads((hist / str(v["id"]) / "tour.json").read_text())
+                for v in history.list_versions(tmp)]
+    check("history: nuläget arkiverat före restore (reversibelt)",
+          any(set(c.get("scenes", {})) == {"a", "b"} for c in archived))
+
+    try:
+        history.read_version(tmp, 1)
+        check("history: okänd version kastar KeyError", False)
+    except KeyError:
+        check("history: okänd version kastar KeyError", True)
+
+    # Retention: antalstak när golvet är av.
+    orig_max, orig_floor = config.HISTORY_MAX, config.HISTORY_FLOOR_DAYS
+    config.HISTORY_COALESCE_SEC = 0
+    config.HISTORY_MAX = 3
+    config.HISTORY_FLOOR_DAYS = 0
+    try:
+        for i in range(8):
+            tour.write_text(json.dumps({"scenes": {str(k): {} for k in range(i + 3)}}), encoding="utf-8")
+            history.snapshot(tmp)
+        check("history: retention antalstak (MAX=3)", len(history.list_versions(tmp)) == 3)
+    finally:
+        config.HISTORY_COALESCE_SEC = orig_coalesce
+        config.HISTORY_MAX = orig_max
+        config.HISTORY_FLOOR_DAYS = orig_floor
+
+
 def main() -> int:
     for fn in (
         test_expected_tile_count,
@@ -689,6 +765,7 @@ def main() -> int:
         test_slug_and_upload_safety,
         test_atomic_write,
         test_auth,
+        test_history,
     ):
         fn()
     print(f"\n{_passed} passed, {_failed} failed")

@@ -595,12 +595,14 @@ bundlen; ingen datamodellsändring. Browser-verifierat (Playwright): OG-taggar p
         hoppar över språk hotspoten inte finns på. Browser-verifierat (hotspot 4->3 vid
         en->sv-byte; ingen lucka för uteslutna språk). 185 backend-tester (från 179).
 
-- [ ] **Versionshistorik / ångra för tur-redigering.** Autospar skriver direkt
-      över `tour.json`/`map.json` utan historik; en felaktig kart-/scenändring
-      kan bara återställas via en manuell backup-zip. Risken växer när Fas 4 gör
-      redigering multi-user (delat team-ägarskap, "alla kan redigera allt"). Enkel
-      lösning: spara N senaste snapshots vid varje spar + en "återställ tidigare
-      version"-vy. Värt att utreda innan Fas 4 gör redigering multi-user.
+- [x] **Versionshistorik / ångra för tur-redigering (KLAR).** `services/history.py`
+      + `routes/history.py`: varje `write_tour`/`write_map` snapshottar NUVARANDE
+      tour.json+map.json ihop (unified tidslinje) till `_history/<epoch_ms>/` före
+      överskrivning. Coalesce (20s) + content-dedup + retention (50 ELLER 7-dygns
+      golv). `/history`-vy (nyast först, "Gällde till"-tid, Återställ per rad) nåbar
+      i steg-menyn. Restore reversibel (force-snapshottar nuläget först, skriver
+      båda med `snapshot=False` -> inget inkonsistent mellanläge). snapshot() tar
+      aldrig tour_lock (deadlock-fri, eget lås). Detaljer i CLAUDE.md.
 
 ### Avfärdat / åt sidan
 

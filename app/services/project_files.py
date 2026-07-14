@@ -19,6 +19,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from app import config
+from app.services import history
 
 # Serialiserar läs-modifiera-skriv av tour.json mellan alla muterande routes
 # (uppladdning, radering, scen-spar, turinställningar) så samtidiga skrivningar
@@ -130,7 +131,13 @@ def read_tour(slug: str) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def write_tour(slug: str, tour: dict[str, Any]) -> None:
+def write_tour(slug: str, tour: dict[str, Any], *, snapshot: bool = True) -> None:
+    # Arkivera NUVARANDE state (tour+map) till versionshistoriken FÖRE skrivningen
+    # (pre-overwrite). Ren fil-I/O, tar aldrig tour_lock. snapshot=False används av
+    # restore-vägen som redan force-snapshottat -> undviker att arkivera det
+    # inkonsistenta mellanläget mellan write_tour och write_map.
+    if snapshot:
+        history.snapshot(project_dir(slug))
     # Stämpla aktuell schemaversion vid varje spar (även äldre turer versioneras
     # när de sparas om) - additiv-först, se config.SCHEMA_VERSION.
     tour["schemaVersion"] = config.SCHEMA_VERSION
@@ -148,7 +155,10 @@ def read_map(slug: str) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def write_map(slug: str, data: dict[str, Any]) -> None:
+def write_map(slug: str, data: dict[str, Any], *, snapshot: bool = True) -> None:
+    # Se write_tour: snapshotta hela state:t (tour+map) före skrivning.
+    if snapshot:
+        history.snapshot(project_dir(slug))
     _atomic_write_text(map_json_path(slug), json.dumps(data, indent="\t", ensure_ascii=False))
 
 
