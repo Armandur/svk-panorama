@@ -726,6 +726,27 @@ per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga 
       ser teamets alla turer och sätter teamets `base_url`. Super-admin får team-lista
       (skapa team, sätt/nolla domän, se alla). `require_team_admin`-gate analogt med
       `require_admin`.
+- [ ] **Multi-team-medlemskap (todo 2026-07-14, framtid - byggs EJ nu).** Idag tillhör en
+      användare EXAKT ett team (`User.team_id`, en FK). Framtid: en användare kan tillhöra
+      FLERA team. Kräver en **medlemskaps-tabell** (`team_members(user_id, team_id, role)`)
+      som ersätter `User.team_id`/`team_role`. Ripplar genom det som byggdes i 4.1:
+      `get_project_or_404`-gaten (`project.team_id IN användarens team-set`),
+      `visible_projects_clause` (owner OR team_id IN memberships), session (lista av
+      medlemskap), `require_team_admin` (per SPECIFIKT team), `owner_key`/media (per yta,
+      inte per user.team_id). **Arbetsyte-modellen (nedan, byggs nu på single-team) är en
+      DELMÄNGD** - scope-dropdown + per-yta-media är samma oavsett antal team; bara
+      kardinaliteten 1↔N skiljer. Pre-prod-data blåsbar -> medlemskaps-tabellen är billig att
+      införa senare (ingen migrering). Bygg när behovet finns.
+- [ ] **Arbetsyte-modell: personliga turer i ett team (todo 2026-07-14, BYGGS NU på single-team,
+      Rasmus).** Personlig + varje team är likvärdiga "ytor" man väljer i en dropdown vid
+      skapa-tur; varje yta har egen mediapool. Beslut (Rasmus 2026-07-14): (1) `User.can_personal`
+      (bool) styr rätten att göra egna icke-team-turer - default True för self-serve, False för
+      konton team-admin skapar; team-admin togglar per medlem. (2) Scope = DROPDOWN (Personlig/
+      \<team\>), default = teamet, byggd för att bara växa vid multi-team. (3) Personlig tur =
+      PERSONLIG mediapool (`media/<user_id>/`), team-tur = team-pool; mediabiblioteket följer
+      turens yta (`project_owner_key(project)`), /media-sidan får en yta-växlare. Plus **solo→team
+      opt-in**: kryssruta "ta med mina befintliga turer" vid skapa-team (flyttar turer team_id +
+      media-pool/URL-omskrivning via `_rewrite_refs`-mönstret).
 - [ ] **Team-utrymmesgräns + användningsvyer (todo 2026-07-14).** Varje team kan ha en
       satt lagringskvot (`Team.storage_quota_bytes`, super-admin sätter; ev. team-default).
       TRE synlighetsnivåer: (a) **medlem** ser teamets ÖVERGRIPANDE användning mot gränsen
