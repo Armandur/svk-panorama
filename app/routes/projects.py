@@ -131,12 +131,12 @@ async def create_project(
 
     ensure_project_structure(slug)
     tour = default_tour()
-    # Ny tur ärver ägarens standard-förinställningar om satta: temat (tema-preset)
-    # och branding (egen branding-mall) hanteras var för sig.
-    preset = default_preset_config(db, user)
+    # Ny tur ärver standard-förinställningarna i TURENS yta (team_id) - en personlig
+    # tur ärver personliga presets, en team-tur teamets. Tema + branding var för sig.
+    preset = default_preset_config(db, user.id, team_id)
     if preset:
         tour.setdefault("default", {}).update(preset)
-    brand = default_branding(db, user)
+    brand = default_branding(db, user.id, team_id)
     if brand:
         tour.setdefault("default", {})["branding"] = brand
     write_tour(slug, tour, editor=editor)

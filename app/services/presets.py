@@ -165,10 +165,18 @@ def _dump(row: Any) -> dict[str, Any]:
 # delas i teamet); en solo-användare sina personliga (owner_id + team_id NULL).
 # owner_id bevaras alltid som "skapad av". Solo-klausulen skriver team_id IS NULL
 # EXPLICIT (avsiktligt) - inte den läckande `team_id == None`-fällan.
+def _scope_filter(Model: Any, owner_id: int, team_id: int | None):
+    """Presets i en YTA: team_id satt -> teamets; None -> ägarens personliga
+    (owner_id + team_id NULL). Explicit yta (används för tur-arv per turens yta)."""
+    if team_id is not None:
+        return Model.team_id == team_id
+    return and_(Model.owner_id == owner_id, Model.team_id.is_(None))
+
+
 def _scope_clause(Model: Any, user: User):
-    if user.team_id is not None:
-        return Model.team_id == user.team_id
-    return and_(Model.owner_id == user.id, Model.team_id.is_(None))
+    """Användarens PRIMÄRA yta (teamet om medlem, annars personlig) - för CRUD/
+    hantering på /mallar. Tur-arv använder _scope_filter med turens yta."""
+    return _scope_filter(Model, user.id, user.team_id)
 
 
 def _new_scope(user: User) -> dict[str, Any]:
@@ -214,10 +222,10 @@ def _set_default(db: Session, Model: Any, user: User, preset_id: int, is_default
     return True
 
 
-def _default_row(db: Session, Model: Any, user: User) -> Any:
+def _default_row(db: Session, Model: Any, owner_id: int, team_id: int | None) -> Any:
     return (
         db.query(Model)
-        .filter(_scope_clause(Model, user), Model.is_default.is_(True))
+        .filter(_scope_filter(Model, owner_id, team_id), Model.is_default.is_(True))
         .first()
     )
 
@@ -264,10 +272,10 @@ def set_default(db: Session, user: User, preset_id: int, is_default: bool) -> bo
     return _set_default(db, ThemePreset, user, preset_id, is_default)
 
 
-def default_config(db: Session, user: User) -> dict[str, Any] | None:
-    """Config för ägarens/teamets standard-tema-förinställning (för nya turer), eller
-    None. Saneras vid läsning -> ev. stale branding-nyckel droppas (branding egen mall)."""
-    row = _default_row(db, ThemePreset, user)
+def default_config(db: Session, owner_id: int, team_id: int | None) -> dict[str, Any] | None:
+    """Config för standard-tema-förinställningen i en YTA (för nya turer i den ytan),
+    eller None. team_id = turens yta (None = personlig). Saneras vid läsning."""
+    row = _default_row(db, ThemePreset, owner_id, team_id)
     return sanitize_config(json.loads(row.config) if row.config else {}) if row else None
 
 
@@ -311,9 +319,10 @@ def set_branding_default(db: Session, user: User, preset_id: int, is_default: bo
     return _set_default(db, BrandingPreset, user, preset_id, is_default)
 
 
-def default_branding(db: Session, user: User) -> dict[str, Any] | None:
-    """Ägarens/teamets standard-branding (för nya turer), sanerad, eller None."""
-    row = _default_row(db, BrandingPreset, user)
+def default_branding(db: Session, owner_id: int, team_id: int | None) -> dict[str, Any] | None:
+    """Standard-branding i en YTA (för nya turer i den ytan), sanerad, eller None.
+    team_id = turens yta (None = personlig)."""
+    row = _default_row(db, BrandingPreset, owner_id, team_id)
     if not row:
         return None
     c = json.loads(row.config) if row.config else {}
