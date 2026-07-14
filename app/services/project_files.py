@@ -131,13 +131,18 @@ def read_tour(slug: str) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def write_tour(slug: str, tour: dict[str, Any], *, snapshot: bool = True) -> None:
+def write_tour(slug: str, tour: dict[str, Any], *, snapshot: bool = True,
+               editor: dict | None = None) -> None:
     # Arkivera NUVARANDE state (tour+map) till versionshistoriken FÖRE skrivningen
     # (pre-overwrite). Ren fil-I/O, tar aldrig tour_lock. snapshot=False används av
     # restore-vägen som redan force-snapshottat -> undviker att arkivera det
     # inkonsistenta mellanläget mellan write_tour och write_map.
+    pdir = project_dir(slug)
     if snapshot:
-        history.snapshot(project_dir(slug))
+        history.snapshot(pdir)  # läser _pending FÖRE vi avancerar den nedan
+    # ALLTID (även vid coalesce/dedup-skip): registrera vem som skapar det nya
+    # nuläget, annars felattribueras nästa arkivering.
+    history.set_pending_editor(pdir, editor)
     # Stämpla aktuell schemaversion vid varje spar (även äldre turer versioneras
     # när de sparas om) - additiv-först, se config.SCHEMA_VERSION.
     tour["schemaVersion"] = config.SCHEMA_VERSION
@@ -155,10 +160,13 @@ def read_map(slug: str) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def write_map(slug: str, data: dict[str, Any], *, snapshot: bool = True) -> None:
+def write_map(slug: str, data: dict[str, Any], *, snapshot: bool = True,
+              editor: dict | None = None) -> None:
     # Se write_tour: snapshotta hela state:t (tour+map) före skrivning.
+    pdir = project_dir(slug)
     if snapshot:
-        history.snapshot(project_dir(slug))
+        history.snapshot(pdir)
+    history.set_pending_editor(pdir, editor)
     _atomic_write_text(map_json_path(slug), json.dumps(data, indent="\t", ensure_ascii=False))
 
 
@@ -230,7 +238,7 @@ def list_scenes(slug: str) -> list[dict[str, Any]]:
     return out
 
 
-def remove_scene(slug: str, scene_id: str) -> None:
+def remove_scene(slug: str, scene_id: str, *, editor: dict | None = None) -> None:
     """Ta bort en scen helt: bildfil, tour.json-post och ev. position/länkar
     i map.json."""
     tour = read_tour(slug)
@@ -249,12 +257,12 @@ def remove_scene(slug: str, scene_id: str) -> None:
     default = tour.setdefault("default", default_tour()["default"])
     if default.get("firstScene") == scene_id:
         default["firstScene"] = next(iter(scenes), "")
-    write_tour(slug, tour)
+    write_tour(slug, tour, editor=editor)
 
     map_data = read_map(slug)
     map_data["scenes"] = [s for s in map_data.get("scenes", []) if s.get("id") != scene_id]
     map_data["edges"] = [e for e in map_data.get("edges", []) if scene_id not in e]
-    write_map(slug, map_data)
+    write_map(slug, map_data, editor=editor)
 
 
 def merge_scene_into_tour(tour: dict[str, Any], scene_id: str, panorama_url: str) -> None:

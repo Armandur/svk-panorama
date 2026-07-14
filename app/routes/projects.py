@@ -12,6 +12,7 @@ from app.auth import require_user
 from app.database import Project, User
 from app.deps import (
     get_db,
+    get_editor,
     get_project_or_404,
     new_csrf_token,
     request_origin,
@@ -97,6 +98,7 @@ async def create_project(
     db: Session = Depends(get_db),
     name: str = Form(...),
     user: User = Depends(require_user),
+    editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:
     name = name.strip()
@@ -124,8 +126,8 @@ async def create_project(
     brand = default_branding(db, user.id)
     if brand:
         tour.setdefault("default", {})["branding"] = brand
-    write_tour(slug, tour)
-    write_map(slug, default_map())
+    write_tour(slug, tour, editor=editor)
+    write_map(slug, default_map(), editor=editor)
 
     return RedirectResponse(url=f"/projects/{slug}", status_code=302)
 
@@ -292,6 +294,7 @@ def save_languages(
     slug: str,
     payload: LanguagesPayload,
     project: Project = Depends(get_project_or_404),
+    editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_header),
 ) -> dict:
     """Spara ENBART turens språkval (uppladdningssteget) - rör inget annat
@@ -300,5 +303,5 @@ def save_languages(
         tour = read_tour(slug)
         default = tour.setdefault("default", {})
         default["languages"] = sanitize_languages(payload.languages)
-        write_tour(slug, tour)
+        write_tour(slug, tour, editor=editor)
     return {"ok": True}

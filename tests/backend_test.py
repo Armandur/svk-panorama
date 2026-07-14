@@ -751,6 +751,41 @@ def test_history():
         config.HISTORY_FLOOR_DAYS = orig_floor
 
 
+def test_history_attribution():
+    import json
+
+    from app.services import history
+
+    tmp = Path(tempfile.mkdtemp())
+    tour = tmp / "tour.json"
+
+    def save(state, editor):
+        # Speglar write_tour-ordningen: snapshot (taggar med nuvarande _pending) ->
+        # avancera _pending -> skriv nytt läge. force för distinkta arkiv i testet.
+        history.snapshot(tmp, force=True)
+        history.set_pending_editor(tmp, editor)
+        tour.write_text(json.dumps(state), encoding="utf-8")
+
+    A = {"by": 1, "name": "Alice"}
+    B = {"by": 2, "name": "Bob"}
+    D = {"by": 4, "name": "Dan"}
+    save({"scenes": {"1": {}}}, A)               # L1 av Alice (inget arkiv än)
+    save({"scenes": {"1": {}, "2": {}}}, B)      # arkiverar L1 -> meta Alice
+    save({"scenes": {"1": {}, "2": {}, "3": {}}}, {"by": 3, "name": "Carol"})  # arkiverar L2 -> meta Bob
+
+    names = [v["editor"]["name"] if v["editor"] else None for v in history.list_versions(tmp)]
+    # Pre-overwrite: ett arkiverat läge attribueras till den som SKAPADE det (föregående spar).
+    check("attrib: nyaste arkiv = Bob (skapade L2)", names[0] == "Bob")
+    check("attrib: äldre arkiv = Alice (skapade L1)", names[1] == "Alice")
+
+    # None-hålet (advisor): ett systemutlöst spar får INTE ärva föregående editor.
+    save({"scenes": {"a": {}}}, None)            # arkiverar Carols läge; _pending -> okänd
+    save({"scenes": {"a": {}, "b": {}}}, D)      # arkiverar det okända läget -> meta okänd, INTE Carol
+    top = history.list_versions(tmp)[0]["editor"]
+    check("attrib: systemspar -> okänd (inte föregående editor)",
+          top is not None and top.get("by") is None and top.get("name") is None)
+
+
 def test_history_diff():
     from app.services import historydiff as hd
 
@@ -872,6 +907,7 @@ def main() -> int:
         test_atomic_write,
         test_auth,
         test_history,
+        test_history_attribution,
         test_history_diff,
     ):
         fn()

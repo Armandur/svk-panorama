@@ -102,6 +102,13 @@ def verify_csrf_header(request: Request) -> None:
         raise HTTPException(status_code=403, detail="Ogiltig eller saknad CSRF-token")
 
 
+def get_editor(user: User = Depends(require_user)) -> dict:
+    """Attribution för versionshistoriken: vem som gör det aktuella sparet. Läser
+    den autentiserade User:n (inte sessionen) - namnet snapshottas som det var vid
+    spar-tid. Skickas som `editor=` till write_tour/write_map."""
+    return {"by": user.id, "name": user.name or user.email}
+
+
 def get_project_or_404(
     slug: str,
     db: Session = Depends(get_db),

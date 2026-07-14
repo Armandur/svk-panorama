@@ -32,6 +32,7 @@
 				<div class="hist-meta">
 					<span class="hist-time" data-ms="{{ v.epoch_ms }}">…</span>
 					<span class="hist-hint">
+						{%- if v.editor and v.editor.name %}Ändrad av {{ v.editor.name }} · {% endif -%}
 						{%- if v.scenes is not none %}{{ v.scenes }} scen{{ 'er' if v.scenes != 1 else '' }}{% endif -%}
 						{%- if v.languages %} · {{ v.languages | join(', ') }}{% endif -%}
 						{%- if v.size %} · {{ human_size(v.size) }}{% endif -%}

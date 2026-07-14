@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
 from app.database import Project
-from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
+from app.deps import get_editor, get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
 from app.schemas import MapPayload
 from app.services.project_files import map_image_path, read_map, read_tour, tour_lock, write_map
 
@@ -42,6 +42,7 @@ def save_map(
     slug: str,
     payload: MapPayload,
     project: Project = Depends(get_project_or_404),
+    editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_header),
 ) -> dict:
     # Serialisera validering + skrivning under det delade tour-låset så en samtidig
@@ -63,5 +64,5 @@ def save_map(
             "scenes": [scene.model_dump() for scene in payload.scenes],
             "edges": [edge.model_dump(by_alias=True) for edge in payload.edges],
         }
-        write_map(slug, data)
+        write_map(slug, data, editor=editor)
     return {"ok": True, "scenes": len(data["scenes"]), "edges": len(data["edges"])}

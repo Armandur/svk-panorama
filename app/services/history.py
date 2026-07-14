@@ -40,6 +40,37 @@ def _history_dir(project_dir: Path) -> Path:
     return project_dir / "_history"
 
 
+def _pending_path(project_dir: Path) -> Path:
+    # Vem som skapade NULÄGET (senaste sparen). Kopieras till en versions meta.json
+    # när nästa spar arkiverar det läget -> korrekt attribution trots pre-overwrite
+    # (en version = ett arkiverat läge = skapat av FÖREGÅENDE sparare).
+    return _history_dir(project_dir) / "_pending.json"
+
+
+def _write_json_atomic(path: Path, data: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    tmp.replace(path)  # atomiskt -> ingen läsare ser en halvskriven _pending
+
+
+def set_pending_editor(project_dir: Path, editor: dict | None) -> None:
+    """Registrera vem som skapar det NYA nuläget (anropas vid VARJE spar, även när
+    ingen snapshot skapades - annars felattribueras nästa arkivering). editor=None
+    lagras som okänd (systemutlöst spar) i stället för att hoppas över."""
+    _write_json_atomic(_pending_path(project_dir), editor or {"by": None, "name": None})
+
+
+def _read_pending(project_dir: Path) -> dict | None:
+    p = _pending_path(project_dir)
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
 def _versions(hist: Path) -> list[int]:
     """Befintliga versioners epoch_ms, nyast först."""
     if not hist.is_dir():
@@ -113,6 +144,12 @@ def snapshot(project_dir: Path, *, force: bool = False) -> int | None:
         for p in present:
             shutil.copy2(p, dest / p.name)
 
+        # Tagga arkivet med vem som skapade DETTA läge (= nuvarande _pending, den
+        # föregående spararen). Läses FÖRE write-vägen avancerar _pending.
+        pending = _read_pending(project_dir)
+        if pending is not None:
+            _write_json_atomic(dest / "meta.json", pending)
+
         _prune(hist, [now_ms] + versions)
         return now_ms
 
@@ -124,7 +161,8 @@ def list_versions(project_dir: Path) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for v in _versions(hist):
         d = hist / str(v)
-        meta: dict[str, Any] = {"id": v, "epoch_ms": v, "scenes": None, "languages": [], "size": 0}
+        meta: dict[str, Any] = {"id": v, "epoch_ms": v, "scenes": None, "languages": [],
+                                "size": 0, "editor": None}
         # Hela blocket under try: en samtidig spar kan prune:a bort d mitt i skanningen
         # (FileNotFoundError) - hoppa den försvunna versionen i stället för att 500:a.
         try:
@@ -133,7 +171,10 @@ def list_versions(project_dir: Path) -> list[dict[str, Any]]:
                 tour = json.loads(tour_f.read_text(encoding="utf-8"))
                 meta["scenes"] = len(tour.get("scenes", {}))
                 meta["languages"] = tour.get("default", {}).get("languages") or []
-            meta["size"] = sum(f.stat().st_size for f in d.iterdir() if f.is_file())
+            meta_f = d / "meta.json"
+            if meta_f.exists():
+                meta["editor"] = json.loads(meta_f.read_text(encoding="utf-8"))
+            meta["size"] = sum(f.stat().st_size for f in d.iterdir() if f.is_file() and f.name in _FILES)
         except (OSError, ValueError):
             if not d.is_dir():
                 continue  # versionen försvann (prune) -> uteslut helt

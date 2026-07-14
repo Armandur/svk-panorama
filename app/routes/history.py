@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from app.database import Project
-from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_form
+from app.deps import get_editor, get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_form
 from app.services import history, historydiff
 from app.services.project_files import (
     map_image_path,
@@ -81,6 +81,7 @@ async def restore_version(
     slug: str,
     version: int = Form(...),
     project: Project = Depends(get_project_or_404),  # gate: ägare eller admin
+    editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:
     pdir = project_dir(slug)
@@ -98,9 +99,10 @@ async def restore_version(
         # arkiverar det inkonsistenta mellanläget (ny tour + gammal map) mellan de två
         # skrivningarna.
         history.snapshot(pdir, force=True)
+        # editor = den som återställer (skapar det nya nuläget).
         if "tour.json" in data:
-            write_tour(slug, data["tour.json"], snapshot=False)
+            write_tour(slug, data["tour.json"], snapshot=False, editor=editor)
         if "map.json" in data:
-            write_map(slug, data["map.json"], snapshot=False)
+            write_map(slug, data["map.json"], snapshot=False, editor=editor)
 
     return RedirectResponse(url=f"/projects/{slug}/history?restored=1", status_code=303)

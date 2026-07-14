@@ -11,7 +11,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel
 
 from app.database import Project
-from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
+from app.deps import get_editor, get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
 from app.services.presets import set_i18n_lang
 from app.services.project_files import map_image_path, read_map, read_tour, tour_lock, write_tour
 from app.services.tiling import read_manifest
@@ -82,6 +82,7 @@ def save_translation(
     slug: str,
     payload: TranslateUpdate,
     project: Project = Depends(get_project_or_404),
+    editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_header),
 ) -> dict:
     with tour_lock:  # läs-modifiera-skriv atomiskt mot andra tour.json-skrivare
@@ -114,5 +115,5 @@ def save_translation(
             field = "text" if payload.kind == "hotspot_text" else "body"
             _apply_lang(hotspots[idx], field, payload.lang, payload.value, default_lang)
 
-        write_tour(slug, tour)
+        write_tour(slug, tour, editor=editor)
     return {"ok": True}

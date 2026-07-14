@@ -17,7 +17,7 @@ def _hex(value: str, fallback: str) -> str:
     return value if _HEX_RE.match(value or "") else fallback
 
 from app.database import Project
-from app.deps import get_project_or_404, new_csrf_token, request_origin, set_csrf_cookie, templates, verify_csrf_header
+from app.deps import get_editor, get_project_or_404, new_csrf_token, request_origin, set_csrf_cookie, templates, verify_csrf_header
 from app.services.presets import sanitize_branding
 from app.services.project_files import _natural_key, map_image_path, read_map, read_tour, tour_lock, write_tour
 from app.services.tiling import read_manifest
@@ -82,6 +82,7 @@ def save_tour_settings(
     slug: str,
     payload: TourSettings,
     project: Project = Depends(get_project_or_404),
+    editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_header),
 ) -> dict:
     with tour_lock:  # läs-modifiera-skriv atomiskt mot andra tour.json-skrivare
@@ -107,5 +108,5 @@ def save_tour_settings(
         else:
             default.pop("branding", None)
         default["editorMode"] = False
-        write_tour(slug, tour)
+        write_tour(slug, tour, editor=editor)
     return {"ok": True}

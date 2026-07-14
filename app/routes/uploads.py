@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 
 from app import config
 from app.database import Project
-from app.deps import get_project_or_404, verify_csrf_form
+from app.deps import get_editor, get_project_or_404, verify_csrf_form
 from app.services.project_files import (
     clear_preview,
     ensure_project_structure,
@@ -35,6 +35,7 @@ async def upload_images(
     slug: str,
     files: list[UploadFile] = File(...),
     project: Project = Depends(get_project_or_404),
+    editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_form),
 ):
     if not files:
@@ -67,7 +68,7 @@ async def upload_images(
         with tour_lock:
             tour = read_tour(slug)
             merge_scene_into_tour(tour, scene_id, panorama_url)
-            write_tour(slug, tour)
+            write_tour(slug, tour, editor=editor)
         scene_ids.append(scene_id)
 
     # Fetch-anrop (async uppladdning i webbläsaren) får JSON med scen-id:n så
@@ -106,9 +107,10 @@ def delete_image(
     slug: str,
     scene_id: str,
     project: Project = Depends(get_project_or_404),
+    editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:
     with tour_lock:
-        remove_scene(slug, scene_id)
+        remove_scene(slug, scene_id, editor=editor)
     drop_scene_tiles(slug, scene_id)
     return RedirectResponse(url=f"/projects/{slug}", status_code=302)

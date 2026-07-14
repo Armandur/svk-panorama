@@ -210,9 +210,23 @@ TILL T (ersattes vid T); UI:t säger "Gällde till ..." (ärlig pre-overwrite-se
   ger "redan aktiv". `history.js` renderar rekursivt: grupper = öppna accordions, scener =
   kollapsade accordions (håller långa diffar hanterbara), section-rubriker + färgrader
   grönt +/rött −/gult ~ (`diff-add/del/chg`), nästlade listor indenteras.
+- **Attribution ("ändrad av"):** varje snapshot får en `meta.json` = `{by, name}` för vem
+  som SKAPADE det arkiverade läget. Pre-overwrite gör det subtilt: den som skapade ett läge
+  är den FÖREGÅENDE spararen, inte den som arkiverar det. Löses med
+  `_history/_pending.json` = vem som skapade nuläget: `snapshot()` kopierar `_pending` till
+  arkivets `meta.json` FÖRE write-vägen avancerar `_pending` till aktuell sparare. INVARIANT:
+  `set_pending_editor` körs vid VARJE spar (även coalesce/dedup-skip), aldrig hoppas över -
+  ett systemutlöst spar sätter `{by:None, name:None}` (okänd) i stället för att lämna kvar
+  förra spararen (annars felattribueras nästa arkivering). Editor byggs ur den autentiserade
+  User:n via `deps.get_editor` (dependency, inte session) och trådas som `editor=` till
+  write_tour/write_map (+ remove_scene) från ALLA muterande routes (scenes/plan/preview/
+  translate/uploads/projects/history-restore). `list_versions` exponerar `editor`; historik-
+  vyn visar "Ändrad av X". Additivt - äldre versioner utan meta visar ingen attribution.
 - **Exkludering:** `_history/` ligger under gitignorade `projects/<slug>/`. backup.py
   (whitelist-enumerering) och bundle.py (`_collect`) globar inte brett -> följer inte med
   i arkiv/export. storage.py `os.walk` räknar det mot projektstorlek (minor, ok).
+  `_pending.json` (fil, ej siffermapp) och `meta.json` (ej i `_FILES`) rörs inte av
+  `_versions`/`read_version`/`_same_content`.
 
 ## Tema-förinställningar (ThemePreset, services/presets.py, routes/presets.py)
 
