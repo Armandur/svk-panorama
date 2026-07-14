@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Team - {{ site_name() }}{% endblock %}
+{% block content %}
+
+{% if team %}
+<section>
+	<hgroup>
+		<h1>{{ team.name }}</h1>
+		<p>Team <code>{{ team.slug }}</code>{% if current_user.team_role == 'team_admin' %} · du är team-admin{% endif %}</p>
+	</hgroup>
+
+	<article>
+		<h3>Medlemmar</h3>
+		<table>
+			<thead><tr><th scope="col">Namn</th><th scope="col">E-post</th><th scope="col">Roll</th></tr></thead>
+			<tbody>
+				{% for m in members %}
+				<tr>
+					<td>{{ m.name or '-' }}</td>
+					<td>{{ m.email }}</td>
+					<td>{% if m.team_role == 'team_admin' %}Team-admin{% else %}Medlem{% endif %}{% if m.id == current_user.id %} (du){% endif %}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		<p><small>Turer och mediepool delas mellan teamets medlemmar.</small></p>
+	</article>
+</section>
+{% else %}
+<section>
+	<hgroup>
+		<h1>Skapa team</h1>
+		<p>Ett team äger turer gemensamt - alla medlemmar kan se och redigera teamets turer och dela mediepool. Du blir team-admin och kan bjuda in fler.</p>
+	</hgroup>
+	<form method="post" action="/teams">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+		<label>Teamnamn
+			<input type="text" name="name" required autocomplete="off" placeholder="T.ex. Härnösands stift">
+		</label>
+		<button type="submit">Skapa team</button>
+	</form>
+</section>
+{% endif %}
+{% endblock %}

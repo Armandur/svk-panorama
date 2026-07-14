@@ -70,10 +70,15 @@ def _user_from_session(request: Request, db: Session) -> User | None:
     user = db.get(User, uid)
     if user is None or not user.active:  # spärrat konto -> ingen giltig session
         return None
-    # Håll sessionens cachade flaggor i synk med DB - roll kan ändras av en admin
-    # medan användaren är inloggad (annars visas Admin-knappen kvar felaktigt).
+    # Håll sessionens cachade flaggor i synk med DB - roll/team kan ändras av en
+    # admin medan användaren är inloggad (annars visas Admin-knappen kvar felaktigt
+    # eller fel team-scope används).
     if request.session.get("admin") != bool(user.is_admin):
         request.session["admin"] = bool(user.is_admin)
+    if request.session.get("team_id") != user.team_id:
+        request.session["team_id"] = user.team_id
+    if request.session.get("team_role") != user.team_role:
+        request.session["team_role"] = user.team_role
     return user
 
 
@@ -95,9 +100,24 @@ def require_admin(user: User = Depends(require_user)) -> User:
     return user
 
 
+def require_team_admin(user: User = Depends(require_user)) -> User:
+    """Team-admin för sitt EGET team (eller super-admin). Team-scopad
+    användarhantering gaterar på detta; queries måste dessutom filtrera på
+    user.team_id så en team-admin bara rör sitt eget teams användare."""
+    from app.database import TEAM_ROLE_ADMIN
+
+    if user.is_admin:
+        return user
+    if user.team_id is None or user.team_role != TEAM_ROLE_ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Team-adminbehörighet krävs")
+    return user
+
+
 def set_user_session(request: Request, user: User) -> None:
     """Fyll sessionen med det nav/kontokortet behöver (id + visningsdata)."""
     request.session["uid"] = user.id
     request.session["admin"] = bool(user.is_admin)
     request.session["name"] = user.name or ""
     request.session["email"] = user.email
+    request.session["team_id"] = user.team_id
+    request.session["team_role"] = user.team_role

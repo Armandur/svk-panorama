@@ -27,6 +27,7 @@ from app.routes import (
     projects,
     public,
     scenes,
+    teams,
     tiling,
     translate,
     uploads,
@@ -92,6 +93,7 @@ async def no_cache_static(request, call_next):
 app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(profile.router)
+app.include_router(teams.router)
 app.include_router(projects.router)
 app.include_router(presets.router)
 app.include_router(uploads.router)
