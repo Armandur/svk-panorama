@@ -9,6 +9,20 @@
 {% if msg %}<p class="profile-ok" role="status">{{ msg }}</p>{% endif %}
 {% if error %}<p class="login-error" role="alert">{{ error }}</p>{% endif %}
 
+{% if teams %}
+<form method="get" action="/admin/users" class="user-team-filter">
+	<label>Filtrera på team
+		<select name="team" onchange="this.form.submit()">
+			<option value="">Alla</option>
+			<option value="none" {% if team_filter == 'none' %}selected{% endif %}>Utan team</option>
+			{% for tid, tname in teams.items() %}
+			<option value="{{ tid }}" {% if team_filter == tid|string %}selected{% endif %}>{{ tname }}</option>
+			{% endfor %}
+		</select>
+	</label>
+</form>
+{% endif %}
+
 <form method="post" action="/admin/users/batch" id="batch-form">
 	<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 	<div class="batch-bar">
@@ -30,6 +44,7 @@
 				<th scope="col" class="col-check"><input type="checkbox" id="check-all" aria-label="Markera alla"></th>
 				<th scope="col">E-post</th>
 				<th scope="col">Namn</th>
+				<th scope="col">Team</th>
 				<th scope="col">Roll</th>
 				<th scope="col">Status</th>
 				<th scope="col">Lagring</th>
@@ -54,6 +69,7 @@
 				</td>
 				<td><a href="/admin/users/{{ u.id }}" title="Hantera användare">{{ u.email }}</a></td>
 				<td>{{ u.name or "" }}</td>
+				<td>{% if u.team %}{{ u.team }}{% if u.team_role == 'team_admin' %} <small>(admin)</small>{% endif %}{% else %}<small>-</small>{% endif %}</td>
 				<td>{{ "Admin" if u.is_admin else "Användare" }}</td>
 				<td>
 					{% if u.pending %}

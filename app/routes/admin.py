@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app import config
 from app.auth import hash_password, make_invite_token, password_error, require_admin
-from app.database import Project, User, get_db
+from app.database import Project, Team, User, get_db
 from app.deps import (
     new_csrf_token,
     request_origin,
@@ -120,7 +120,15 @@ def users_page(
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin),
 ) -> HTMLResponse:
-    users = db.query(User).order_by(User.created_at.asc()).all()
+    teams = {t.id: t.name for t in db.query(Team).order_by(Team.name).all()}
+    # Filter på team: "" = alla, "none" = team-lösa, "<id>" = det teamet.
+    team_filter = request.query_params.get("team") or ""
+    q = db.query(User)
+    if team_filter == "none":
+        q = q.filter(User.team_id.is_(None))
+    elif team_filter.isdigit():
+        q = q.filter(User.team_id == int(team_filter))
+    users = q.order_by(User.created_at.asc()).all()
     # Diskanvändning per användare (turer + mediepool). Cachad per mapp -> billigt.
     # Full översikt med drill-down finns på /admin/storage.
     psizes = storage.project_sizes()
@@ -135,6 +143,8 @@ def users_page(
             "id": u.id,
             "email": u.email,
             "name": u.name,
+            "team": teams.get(u.team_id) if u.team_id else None,
+            "team_role": u.team_role,
             "has_avatar": u.avatar is not None,
             "is_admin": u.is_admin,
             "active": u.active,
@@ -150,6 +160,8 @@ def users_page(
             "users": rows,
             "me": admin.id,
             "active": "users",
+            "teams": teams,
+            "team_filter": team_filter,
             "msg": request.query_params.get("msg"),
             "error": request.query_params.get("error"),
             "csrf_token": token,
