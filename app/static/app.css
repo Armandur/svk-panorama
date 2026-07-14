@@ -99,6 +99,23 @@
 
 .notice { border-left: 4px solid var(--svk-warn); }
 
+/* --- Redigeringslås (check-out/check-in) ------------------------------ */
+.editor-lock-banner {
+	position: fixed; top: 0; left: 0; right: 0; z-index: 2000;
+	display: flex; align-items: center; justify-content: center; gap: 1rem;
+	padding: .35rem .8rem; font-size: .85rem; color: #fff;
+}
+.editor-lock-banner.lock-mine { background: rgba(47, 111, 79, .92); }      /* du redigerar */
+.editor-lock-banner.lock-other { background: rgba(181, 52, 47, .95); font-weight: 600; }  /* låst av annan */
+.editor-lock-banner .lock-btn {
+	margin: 0; width: auto; padding: .1rem .7rem; font-size: .8rem;
+	background: rgba(255, 255, 255, .18); color: #fff; border: 1px solid rgba(255, 255, 255, .5);
+	border-radius: 1rem; cursor: pointer;
+}
+.editor-lock-banner .lock-btn:hover { background: rgba(255, 255, 255, .3); }
+/* Läsläge: tona ner + spärra formulär-spar (servern ger 409 som riktig garanti). */
+body.editor-locked button[type="submit"] { opacity: .5; pointer-events: none; }
+
 /* --- Projektlista: lista/kort-växel + kort ---------------------------- */
 .list-toolbar { display: flex; justify-content: flex-end; margin-bottom: .6rem; }
 .view-toggle { display: inline-flex; width: auto; border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius); overflow: hidden; }
