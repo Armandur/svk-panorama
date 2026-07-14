@@ -300,7 +300,8 @@
 	function uploadImg(file, onSuccess, onError) {
 		const fd = new FormData();
 		fd.append("file", file);
-		fetch("/media/upload", {
+		// slug -> turens arbetsyta (personlig/team-pool), inte användarens primära.
+		fetch("/media/upload?slug=" + encodeURIComponent(slug), {
 			method: "POST",
 			headers: { "X-CSRF-Token": window.getCsrfToken ? getCsrfToken() : "" },
 			body: fd,
