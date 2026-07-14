@@ -198,3 +198,23 @@ def get_project_or_404(
     if project is None or not user_can_access_project(user, project):
         raise HTTPException(status_code=404, detail="Projektet hittades inte")
     return project
+
+
+def require_edit_access(
+    project: Project = Depends(get_project_or_404),
+    user: User = Depends(require_user),
+    db: Session = Depends(get_db),
+) -> Project:
+    """Skriv-guard för redigeringslåset: en TEAM-turs skrivning tillåts BARA om
+    skrivaren HÅLLER ett färskt lås (inte bara "ingen annan håller det") - annars
+    409. Solo-turer (team_id NULL) låses inte. Läggs på alla muterande edit-routes."""
+    from app.services import checkout
+
+    if project.team_id is None:
+        return project
+    if checkout.holds_fresh(project, user.id):
+        return project
+    holder = checkout.current_holder(db, project)
+    if holder:
+        raise HTTPException(status_code=409, detail=f"Turen är utcheckad av {holder['name']}")
+    raise HTTPException(status_code=409, detail="Checka ut turen innan du redigerar")

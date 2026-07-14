@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from app.database import Project
-from app.deps import get_editor, get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
+from app.deps import get_editor, get_project_or_404, new_csrf_token, require_edit_access, set_csrf_cookie, templates, verify_csrf_header
 from app.services.presets import sanitize_hotspot_langs, sanitize_i18n_text
 from app.services.project_files import map_image_path, read_map, read_tour, tour_lock, write_tour
 from app.services.tiling import read_manifest
@@ -60,7 +60,7 @@ def scene_view(
 def save_tour(
     slug: str,
     payload: TourSavePayload,
-    project: Project = Depends(get_project_or_404),
+    project: Project = Depends(require_edit_access),
     editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_header),
 ) -> dict:

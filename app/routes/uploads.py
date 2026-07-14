@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 
 from app import config
 from app.database import Project
-from app.deps import get_editor, get_project_or_404, verify_csrf_form
+from app.deps import get_editor, get_project_or_404, require_edit_access, verify_csrf_form
 from app.services.project_files import (
     clear_preview,
     ensure_project_structure,
@@ -34,7 +34,7 @@ async def upload_images(
     request: Request,
     slug: str,
     files: list[UploadFile] = File(...),
-    project: Project = Depends(get_project_or_404),
+    project: Project = Depends(require_edit_access),
     editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_form),
 ):
@@ -106,7 +106,7 @@ async def upload_map_image(
 def delete_image(
     slug: str,
     scene_id: str,
-    project: Project = Depends(get_project_or_404),
+    project: Project = Depends(require_edit_access),
     editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:

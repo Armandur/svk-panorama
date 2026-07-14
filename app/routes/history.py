@@ -8,9 +8,12 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
-from app.database import Project
+from sqlalchemy.orm import Session
+
+from app.auth import require_user
+from app.database import Project, User, get_db
 from app.deps import get_editor, get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_form
-from app.services import history, historydiff
+from app.services import checkout, history, historydiff
 from app.services.project_files import (
     map_image_path,
     project_dir,
@@ -80,10 +83,20 @@ async def restore_version(
     request: Request,
     slug: str,
     version: int = Form(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
     project: Project = Depends(get_project_or_404),  # gate: ägare eller admin
     editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:
+    # Restore är en engångsåtgärd (inte ett redigeringssteg): blockera BARA om någon
+    # ANNAN håller redigeringslåset - annars skulle vi klobba deras pågående arbete.
+    # Fritt/mitt -> tillåt (till skillnad från edit-routes som kräver att man HÅLLER
+    # låset). Team-turer; solo-turer har inget lås.
+    if project.team_id is not None:
+        holder = checkout.current_holder(db, project)
+        if holder and holder["id"] != user.id:
+            raise HTTPException(status_code=409, detail=f"Turen är utcheckad av {holder['name']} - kan inte återställa nu")
     pdir = project_dir(slug)
     with tour_lock:
         # Läs målversionen FÖRST: force-snapshotten nedan lägger till en version och

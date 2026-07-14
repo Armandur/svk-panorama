@@ -16,6 +16,7 @@ from app.routes import (
     assets,
     auth,
     backup,
+    checkout,
     export,
     history,
     media,
@@ -104,6 +105,7 @@ app.include_router(tiling.router)
 app.include_router(preview.router)
 app.include_router(translate.router)
 app.include_router(history.router)
+app.include_router(checkout.router)
 app.include_router(export.router)
 app.include_router(backup.router)
 app.include_router(viewer.router)

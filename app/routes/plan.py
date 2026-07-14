@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
 from app.database import Project
-from app.deps import get_editor, get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_header
+from app.deps import get_editor, get_project_or_404, new_csrf_token, require_edit_access, set_csrf_cookie, templates, verify_csrf_header
 from app.schemas import MapPayload
 from app.services.project_files import map_image_path, read_map, read_tour, tour_lock, write_map
 
@@ -41,7 +41,7 @@ def plan_view(
 def save_map(
     slug: str,
     payload: MapPayload,
-    project: Project = Depends(get_project_or_404),
+    project: Project = Depends(require_edit_access),
     editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_header),
 ) -> dict:

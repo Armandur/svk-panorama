@@ -16,6 +16,7 @@ from app.deps import (
     get_project_or_404,
     new_csrf_token,
     request_origin,
+    require_edit_access,
     resolve_workspace,
     set_csrf_cookie,
     templates,
@@ -336,7 +337,7 @@ def project_home(
 def save_languages(
     slug: str,
     payload: LanguagesPayload,
-    project: Project = Depends(get_project_or_404),
+    project: Project = Depends(require_edit_access),
     editor: dict = Depends(get_editor),
     _csrf: None = Depends(verify_csrf_header),
 ) -> dict:

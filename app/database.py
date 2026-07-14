@@ -79,6 +79,10 @@ class Project(Base):
     # teamet turen och owner_id bevaras bara som "skapad av" (spårbarhet). Slug är
     # fortsatt GLOBALT unik (per-team-slug är Fas 4b).
     team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.id"), nullable=True, index=True)
+    # Redigeringslås (check-out/check-in, team-turer): vem som checkat ut turen för
+    # redigering + när (för stale-timeout). None = incheckad. Se services/checkout.py.
+    checked_out_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    checked_out_at: Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
     # Oigissbar token för publik delning (/s/{token}). None = inte delad.
     share_token: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True, index=True)
     created_at: Mapped[datetime.datetime] = mapped_column(

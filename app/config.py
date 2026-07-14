@@ -83,6 +83,11 @@ HISTORY_MAX = int(os.environ.get("SVK_HISTORY_MAX", "50"))
 HISTORY_FLOOR_DAYS = int(os.environ.get("SVK_HISTORY_FLOOR_DAYS", "7"))
 HISTORY_COALESCE_SEC = int(os.environ.get("SVK_HISTORY_COALESCE_SEC", "20"))
 
+# Redigeringslås (check-out/check-in för team-turer): hur länge ett lås är giltigt
+# utan heartbeat innan det räknas som övergivet (stale) och kan tas över. Klienten
+# skickar heartbeat oftare än så. Se services/checkout.py.
+CHECKOUT_STALE_SEC = int(os.environ.get("SVK_CHECKOUT_STALE_SEC", "180"))
+
 # Flerspråkighet: språk editorn kan välja bland (kod -> visningsnamn på eget
 # språk). SPEGLAS av window.LANG_NAMES i static/markdown.js - håll i synk. En tur
 # väljer en delmängd i tour.default.languages; först i listan = default-språk.
