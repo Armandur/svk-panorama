@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.auth import require_user
 from app.database import Project, User, get_db
-from app.deps import get_project_or_404, verify_csrf_header
+from app.deps import get_project_or_404, verify_csrf_header, visible_projects_clause
 from app.services import tiling
 
 router = APIRouter()
@@ -51,8 +51,8 @@ def tile_jobs(
     """Bulk-status för in-memory-jobb (billig, för live-polling på listan och
     hemsidan). Bara användarens egna turer (admin ser alla)."""
     jobs = tiling.all_jobs()
-    # Bara egna turer (index visar bara egna) - andras nås via admin-vyn.
-    owned = {slug for (slug,) in db.query(Project.slug).filter(Project.owner_id == user.id).all()}
+    # Bara turer användaren ser i sin lista (egna + teamets) - matchar editor_home.
+    owned = {slug for (slug,) in db.query(Project.slug).filter(visible_projects_clause(user)).all()}
     return {
         slug: {"status": j["status"], "done": j["done"], "total": j["total"]}
         for slug, j in jobs.items()

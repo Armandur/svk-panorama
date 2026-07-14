@@ -20,6 +20,7 @@ from app.deps import (
     templates,
     verify_csrf_form,
     verify_csrf_header,
+    visible_projects_clause,
 )
 from app.services.backup import forget_job as forget_backup_job
 from app.services.presets import default_branding, sanitize_languages
@@ -67,11 +68,11 @@ def editor_home(
     db: Session = Depends(get_db),
     user: User = Depends(require_user),
 ) -> HTMLResponse:
-    # Alla ser bara sina EGNA turer här (även admin) - andras turer nås via
-    # Admin -> Användare.
+    # Egna turer + teamets turer (om användaren har team). Andras/andra teams
+    # turer nås via Admin -> Användare. Team-lös -> bara egna (None-guardad).
     projects = (
         db.query(Project)
-        .filter(Project.owner_id == user.id)
+        .filter(visible_projects_clause(user))
         .order_by(Project.created_at.desc())
         .all()
     )
@@ -112,7 +113,9 @@ async def create_project(
         slug = f"{base_slug}-{suffix}"
         suffix += 1
 
-    project = Project(slug=slug, name=name, owner_id=user.id)
+    # Har användaren team äger teamet turen (team_id); owner_id bevaras som
+    # "skapad av". Team-lös -> team_id None, ägs solo via owner_id.
+    project = Project(slug=slug, name=name, owner_id=user.id, team_id=user.team_id)
     db.add(project)
     db.commit()
 

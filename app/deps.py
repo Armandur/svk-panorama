@@ -109,16 +109,41 @@ def get_editor(user: User = Depends(require_user)) -> dict:
     return {"by": user.id, "name": user.name or user.email}
 
 
+def visible_projects_clause(user: User):
+    """SQLAlchemy-villkor för turer en användare SER i sina listor: sina egna
+    (owner_id) + (om hen har team) teamets turer. FÄLLA (verifierad SQLAlchemy
+    2.0.51): `Project.team_id == user.team_id` när user.team_id is None kompilerar
+    till `team_id IS NULL` -> skulle returnera ALLA team-lösa turer i systemet
+    (cross-user-läcka). Bygg därför team-klausulen BARA när user.team_id is not
+    None. (Admin ser också bara egna+team här; hela systemet nås via admin-vyn.)"""
+    from sqlalchemy import or_
+
+    own = Project.owner_id == user.id
+    if user.team_id is not None:
+        return or_(own, Project.team_id == user.team_id)
+    return own
+
+
+def user_can_access_project(user: User, project: Project) -> bool:
+    """Fas 4 3-vägs-ägarskap: super-admin ser allt; en team-tur nås av teamets
+    medlemmar (team_id-match); en team-lös tur nås av sin ägare. Symmetriskt
+    None-säkert - en team-lös användare (team_id None) matchar ALDRIG en team-tur,
+    och en team-tur kräver att BÅDA team_id är satta och lika."""
+    if user.is_admin:
+        return True
+    if project.team_id is not None:
+        return project.team_id == user.team_id
+    return project.owner_id == user.id
+
+
 def get_project_or_404(
     slug: str,
     db: Session = Depends(get_db),
     user: User = Depends(require_user),
 ) -> Project:
-    """Kräver inloggning och att projektet ägs av användaren (eller admin).
+    """Kräver inloggning och att projektet ägs av användaren/teamet (eller admin).
     Returnerar 404 även vid fel ägare - läck inte att slugen finns."""
     project = db.query(Project).filter(Project.slug == slug).first()
-    if project is None:
-        raise HTTPException(status_code=404, detail="Projektet hittades inte")
-    if not user.is_admin and project.owner_id != user.id:
+    if project is None or not user_can_access_project(user, project):
         raise HTTPException(status_code=404, detail="Projektet hittades inte")
     return project

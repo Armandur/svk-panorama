@@ -213,7 +213,8 @@ def import_project(src_zip: Path, user, db) -> Project:
         name = (manifest.get("name") or old_slug or "Importerad tur").strip() or "Importerad tur"
         slug = _unique_slug(db, slugify(old_slug or name))
 
-        project = Project(slug=slug, name=name, owner_id=user.id)
+        # Importerad tur hamnar i importörens team (om hen har ett), annars solo.
+        project = Project(slug=slug, name=name, owner_id=user.id, team_id=user.team_id)
         db.add(project)
         db.commit()
         # Allt efter DB-raden: rulla tillbaka (radera rad + halvskriven mapp) om
