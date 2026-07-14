@@ -751,6 +751,90 @@ def test_history():
         config.HISTORY_FLOOR_DAYS = orig_floor
 
 
+def test_history_diff():
+    from app.services import historydiff as hd
+
+    def group(groups, title):
+        return next((g for g in groups if g["title"] == title), None)
+
+    def kinds(items):
+        return sorted((i["kind"], i["text"]) for i in items)
+
+    old = {
+        "tour.json": {
+            "default": {
+                "languages": ["sv"],
+                "theme": {"font": "sans", "dotColor": "#111111"},
+                "branding": {"content": "Gammal", "size": "medium", "position": "bottom-right"},
+                "autoRotate": -2,
+            },
+            "scenes": {
+                "1": {"title": "Koret", "panorama": "/i/1.jpg",
+                      "hotSpots": [{"id": 0, "type": "info", "text": "A"},
+                                   {"id": 1, "type": "scene", "sceneId": "2"}]},
+                "2": {"title": "Långhuset", "panorama": "/i/2.jpg", "hotSpots": []},
+            },
+        },
+        "map.json": {
+            "scenes": [{"id": "1", "position": {"x": 10, "y": 10}},
+                       {"id": "2", "position": {"x": 50, "y": 50}}],
+            "edges": [{"from": "1", "to": "2", "twoway": True}],
+        },
+    }
+    new = {
+        "tour.json": {
+            "default": {
+                "languages": ["sv", "en"],
+                "theme": {"font": "serif", "dotColor": "#111111"},
+                "branding": {"content": "Ny text", "size": "large", "position": "bottom-right"},
+                "autoRotate": -2,
+            },
+            "scenes": {
+                "1": {"title": "Altaret", "panorama": "/i/1.jpg",
+                      "hotSpots": [{"id": 0, "type": "info", "text": "A2"},
+                                   {"id": 2, "type": "url", "text": "Länk"}]},
+                "3": {"title": "Tornet", "panorama": "/i/3.jpg", "hotSpots": []},
+            },
+        },
+        "map.json": {
+            "scenes": [{"id": "1", "position": {"x": 10, "y": 10}},
+                       {"id": "3", "position": {"x": 80, "y": 20}}],
+            "edges": [{"from": "1", "to": "3", "twoway": False}],
+        },
+    }
+
+    groups = hd.diff(old, new)
+    titles = [g["title"] for g in groups]
+    check("diff: grupper i ordning", titles == ["Scener", "Språk", "Tema", "Branding", "Karta"])
+
+    scener = group(groups, "Scener")["items"]
+    by_kind = {(i["kind"], i["text"].split(" (")[0].split(" ")[0]) for i in scener}
+    # Scen 3 tillagd, scen 2 borttagen, scen 1 ändrad.
+    check("diff: scen tillagd", any(i["kind"] == "added" and "Tornet" in i["text"] for i in scener))
+    check("diff: scen borttagen", any(i["kind"] == "removed" and "Långhuset" in i["text"] for i in scener))
+    changed = next(i for i in scener if i["kind"] == "changed")
+    check("diff: ändrad scen = Altaret", "Altaret" in changed["text"])
+    subtexts = " ".join(s["text"] for s in changed["sub"])
+    check("diff: titeländring i sub", "titel" in subtexts)
+    check("diff: hotspot tillagd (url)", any(s["kind"] == "added" and "länk" in s["text"] for s in changed["sub"]))
+    check("diff: hotspot borttagen (scen)", any(s["kind"] == "removed" and "scen 2" in s["text"] for s in changed["sub"]))
+    check("diff: hotspot ändrad (info text)", any(s["kind"] == "changed" and "text" in s["text"] for s in changed["sub"]))
+
+    check("diff: språk +en", kinds(group(groups, "Språk")["items"]) == [("added", "en")])
+    check("diff: tema font ändrad", any("typsnitt" in i["text"] for i in group(groups, "Tema")["items"]))
+    brand = group(groups, "Branding")["items"]
+    check("diff: branding text + storlek", any("text" in i["text"] for i in brand) and any("storlek" in i["text"] for i in brand))
+
+    karta = group(groups, "Karta")["items"]
+    kt = " | ".join(i["kind"] + ":" + i["text"] for i in karta)
+    check("diff: scen placerad/borttagen/länk", "placerad" in kt and "borttagen" in kt and "länk" in kt)
+
+    # Identiska relevanta fält -> inga grupper.
+    check("diff: identiskt -> tomt", hd.diff(old, old) == [])
+    # Saknad map.json i en snapshot hanteras (bara tour jämförs).
+    check("diff: saknad map ok", isinstance(hd.diff({"tour.json": old["tour.json"]}, {"tour.json": new["tour.json"]}), list))
+
+
 def main() -> int:
     for fn in (
         test_expected_tile_count,
@@ -775,6 +859,7 @@ def main() -> int:
         test_atomic_write,
         test_auth,
         test_history,
+        test_history_diff,
     ):
         fn()
     print(f"\n{_passed} passed, {_failed} failed")

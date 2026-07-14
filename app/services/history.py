@@ -141,6 +141,13 @@ def list_versions(project_dir: Path) -> list[dict[str, Any]]:
     return out
 
 
+def previous_version(project_dir: Path, version_id: int) -> int | None:
+    """Närmast ÄLDRE versions id (för diff mot föregående), eller None om
+    version_id är den äldsta kända."""
+    older = [v for v in _versions(_history_dir(project_dir)) if v < version_id]
+    return max(older) if older else None
+
+
 def read_version(project_dir: Path, version_id: int) -> dict[str, dict[str, Any]]:
     """Läs en versions arkiverade filer. Returnerar {filnamn: data} bara för de
     filer som faktiskt fanns i snapshotten (en tidig snapshot kan sakna map.json).

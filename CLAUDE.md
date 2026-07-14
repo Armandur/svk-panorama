@@ -83,6 +83,7 @@ app/
     media.py         # delad mediepool: lagring, metadata (PIL), usage-scan
     storage.py       # diskanvändning per projekt/användare (admin-översikt, os.walk)
     history.py       # versionshistorik: snapshot tour+map vid varje write (unified tidslinje)
+    historydiff.py   # semantisk diff mellan två versioner (scener/hotspots/språk/tema/karta)
   templates/         # Jinja2. base.html + steg-mallar + _partials
   static/            # CSS/JS (se nedan) + vendor/ (pannellum, pico)
 ```
@@ -186,10 +187,18 @@ TILL T (ersattes vid T); UI:t säger "Gällde till ..." (ärlig pre-overwrite-se
   `write_tour(..., snapshot=False)` + `write_map(..., snapshot=False)`. `snapshot=False`
   hoppar hooken så det inkonsistenta mellanläget (ny tour + gammal map mellan de två
   skrivningarna) inte arkiveras - korrektheten hänger INTE på coalesce-konstanten.
-- **UI** (`GET /history`, `history.html`): tidslinje nyast först ("Gällde till" abs+rel
-  tid formaterad klient-side i besökarens tidszon, scenantal/språk/storlek-hint,
-  Återställ per rad med `data-confirm`). Nåbar via "Versionshistorik" i `_step_nav`-menyn
-  (ej ett steg). `restored=1` visar ångra-hint.
+- **UI** (`GET /history`, `history.html` + `static/history.js`): tidslinje nyast först
+  ("Gällde till" abs+rel tid formaterad klient-side i besökarens tidszon, scenantal/
+  språk/storlek-hint, Återställ per rad med `data-confirm`). Nåbar via "Versionshistorik"
+  i `_step_nav`-menyn (ej ett steg). `restored=1` visar ångra-hint.
+- **Semantisk diff** (`services/historydiff.py`, `GET /history/{version}/diff`): rå
+  JSON-textdiff blir brusig för strukturerad data -> `historydiff.diff(old, new)` jämför
+  på ENTITETSNIVÅ (scener +/-/~ med hotspot-/titel-/kalibrerings-sub-ändringar, språk,
+  tema, branding, inställningar, kartposition/länkar) och returnerar grupper med
+  +/-/~-rader. Ren funktion, i18n-medveten (`_text_summary`), matchar scener på id och
+  hotspots på `id`-fältet. Varje versionsrad har en `<details>` som lat-laddar diffen mot
+  den kronologiskt FÖREGÅENDE (äldre) versionen (`history.previous_version`); äldsta raden
+  saknar diff. `history.js` renderar grönt +/rött −/gult ~ (klasser `diff-add/del/chg`).
 - **Exkludering:** `_history/` ligger under gitignorade `projects/<slug>/`. backup.py
   (whitelist-enumerering) och bundle.py (`_collect`) globar inte brett -> följer inte med
   i arkiv/export. storage.py `os.walk` räknar det mot projektstorlek (minor, ok).

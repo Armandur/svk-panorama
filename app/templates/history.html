@@ -22,21 +22,29 @@
 	{% if versions %}
 	<ul class="hist-list">
 		{% for v in versions %}
-		<li class="hist-item">
-			<div class="hist-meta">
-				<span class="hist-time" data-ms="{{ v.epoch_ms }}">…</span>
-				<span class="hist-hint">
-					{%- if v.scenes is not none %}{{ v.scenes }} scen{{ 'er' if v.scenes != 1 else '' }}{% endif -%}
-					{%- if v.languages %} · {{ v.languages | join(', ') }}{% endif -%}
-					{%- if v.size %} · {{ human_size(v.size) }}{% endif -%}
-				</span>
+		<li class="hist-item" data-version="{{ v.id }}">
+			<div class="hist-row">
+				<div class="hist-meta">
+					<span class="hist-time" data-ms="{{ v.epoch_ms }}">…</span>
+					<span class="hist-hint">
+						{%- if v.scenes is not none %}{{ v.scenes }} scen{{ 'er' if v.scenes != 1 else '' }}{% endif -%}
+						{%- if v.languages %} · {{ v.languages | join(', ') }}{% endif -%}
+						{%- if v.size %} · {{ human_size(v.size) }}{% endif -%}
+					</span>
+				</div>
+				<form method="post" action="/projects/{{ project.slug }}/history/restore"
+					data-confirm="Återställa turen till den här versionen? Nuläget sparas som en ny version först, så åtgärden går att ångra." data-confirm-ok="Återställ">
+					<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+					<input type="hidden" name="version" value="{{ v.id }}">
+					<button type="submit" class="secondary outline">Återställ</button>
+				</form>
 			</div>
-			<form method="post" action="/projects/{{ project.slug }}/history/restore"
-				data-confirm="Återställa turen till den här versionen? Nuläget sparas som en ny version först, så åtgärden går att ångra." data-confirm-ok="Återställ">
-				<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-				<input type="hidden" name="version" value="{{ v.id }}">
-				<button type="submit" class="secondary outline">Återställ</button>
-			</form>
+			{% if not loop.last %}
+			<details class="hist-diff">
+				<summary>Ändringar mot föregående</summary>
+				<div class="hist-diff-body" data-loaded="0"><span class="hist-diff-loading" aria-busy="true">Laddar…</span></div>
+			</details>
+			{% endif %}
 		</li>
 		{% endfor %}
 	</ul>
@@ -47,25 +55,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-// Formatera epoch_ms i besökarens tidszon: absolut + relativ ("för 3 min sedan").
-(function () {
-	function rel(ms) {
-		var s = Math.round((Date.now() - ms) / 1000);
-		if (s < 60) return "nyss";
-		var m = Math.round(s / 60);
-		if (m < 60) return "för " + m + " min sedan";
-		var h = Math.round(m / 60);
-		if (h < 24) return "för " + h + " tim sedan";
-		var d = Math.round(h / 24);
-		return "för " + d + " dygn sedan";
-	}
-	document.querySelectorAll(".hist-time[data-ms]").forEach(function (el) {
-		var ms = parseInt(el.dataset.ms, 10);
-		var abs = new Date(ms).toLocaleString("sv-SE", { dateStyle: "medium", timeStyle: "short" });
-		el.textContent = "Gällde till " + abs;
-		el.title = rel(ms);
-	});
-})();
-</script>
+<script src="/static/history.js"></script>
 {% endblock %}

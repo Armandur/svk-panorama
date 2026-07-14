@@ -6,11 +6,11 @@ restore. Restore är reversibelt: nuläget force-snapshottas innan det skrivs ö
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from app.database import Project
 from app.deps import get_project_or_404, new_csrf_token, set_csrf_cookie, templates, verify_csrf_form
-from app.services import history
+from app.services import history, historydiff
 from app.services.project_files import (
     map_image_path,
     project_dir,
@@ -44,6 +44,26 @@ def history_view(
     )
     set_csrf_cookie(response, token)
     return response
+
+
+@router.get("/projects/{slug}/history/{version}/diff")
+def version_diff(
+    slug: str,
+    version: int,
+    project: Project = Depends(get_project_or_404),
+) -> JSONResponse:
+    """Semantisk diff av en version mot den kronologiskt föregående (äldre).
+    Lat-laddad när en rad expanderas i historikvyn."""
+    pdir = project_dir(slug)
+    try:
+        new = history.read_version(pdir, version)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Versionen finns inte")
+    prev = history.previous_version(pdir, version)
+    if prev is None:
+        return JSONResponse({"oldest": True, "base": None, "groups": []})
+    old = history.read_version(pdir, prev)
+    return JSONResponse({"oldest": False, "base": prev, "groups": historydiff.diff(old, new)})
 
 
 @router.post("/projects/{slug}/history/restore")

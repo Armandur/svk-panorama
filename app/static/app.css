@@ -105,15 +105,39 @@
 .restored-notice { border-left-color: var(--svk-ok, #2e7d32); }
 .hist-list { list-style: none; padding: 0; margin: 1rem 0 0; }
 .hist-item {
-	display: flex; align-items: center; justify-content: space-between; gap: 1rem;
 	padding: .7rem .9rem; border: 1px solid var(--pico-muted-border-color);
 	border-radius: var(--pico-border-radius); margin-bottom: .5rem;
 }
+.hist-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .hist-meta { display: flex; flex-direction: column; gap: .15rem; min-width: 0; }
 .hist-time { font-weight: 600; }
 .hist-hint { color: var(--pico-muted-color); font-size: .85rem; }
 .hist-item form { margin: 0; flex-shrink: 0; }
 .hist-item form button { margin: 0; }
+
+/* Expanderbar semantisk diff per version */
+.hist-diff { margin-top: .5rem; }
+.hist-diff > summary {
+	cursor: pointer; font-size: .85rem; color: var(--pico-muted-color);
+	list-style-position: inside;
+}
+.hist-diff[open] > summary { margin-bottom: .4rem; }
+.hist-diff-body { font-size: .85rem; }
+.hist-diff-loading, .diff-empty { color: var(--pico-muted-color); }
+.diff-group-title {
+	font-size: .8rem; text-transform: uppercase; letter-spacing: .03em;
+	color: var(--pico-muted-color); margin: .5rem 0 .2rem;
+}
+.diff-lines { list-style: none; padding: 0; margin: 0; }
+.diff-sub { margin: .1rem 0 .3rem 1.4rem; }
+.diff-line {
+	padding: .05rem 0; line-height: 1.4;
+	font-family: var(--pico-font-family-monospace, monospace);
+}
+.diff-sym { display: inline-block; width: 1ch; font-weight: 700; text-align: center; }
+.diff-add { color: var(--svk-ok, #2f6f4f); }
+.diff-del { color: var(--svk-danger, #b02a37); }
+.diff-chg { color: var(--svk-warn, #b5872b); }
 
 /* --- Planeringsvy (helskärm: vänsterpanel 100% hög + autopassande karta) - */
 
