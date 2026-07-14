@@ -163,6 +163,15 @@ Kvarvarande arbete är i praktiken auth + multi-tenancy.
 
 Luckor identifierade 2026-07-11 innan team-arbetet.
 
+- [ ] **Kort-vy för projektlistan i /editor (todo 2026-07-14).** Växla mellan tabell och
+      KORT-vy (localStorage, som media-bibliotekets kort/list-växel). Varje kort visar en
+      **tumnagel av turens inställda första scen** (`tour.default.firstScene`) om sådan finns;
+      vid **hover** byter previewen till ett snurrande mini-pannellum av den scenen -
+      återanvänd editorns preview-metod (`static/preview.js` `ScenePreview.driveViewer` +
+      hover-preview-mönstret från scen-/preview-vyn). Fallback-kedja: ingen firstScene ->
+      visa **kartbilden** (`map.png`) som tumnagel; ingen karta heller -> tom yta. Tumnagel
+      för scen kan återanvända previews-lagret (`previews/<id>.jpg`, lat genererat).
+
 - [x] **Byt turens visningsnamn KLAR (2026-07-11).** `POST /projects/{slug}/rename`
       (gate + CSRF) uppdaterar `Project.name`. Fält i "Turinställningar"-sektionen på
       uppladdningssidan (bredvid slug-bytet).
