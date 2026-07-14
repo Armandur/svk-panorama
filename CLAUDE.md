@@ -429,6 +429,23 @@ Slug fortsatt globalt unik (per-team-slug + disk-namespace = Fas 4b).
 - **Team-livscykel:** self-serve `POST /teams` (skaparen blir team_admin). `/team`-sida:
   medlemslista + (team-admin) bjud in (`POST /team/invite` -> vilande konto med team_id satt,
   ärvs vid accept-invite), promota/degradera roll, ta bort medlem. `require_team_admin`-gate.
+- **Arbetsyte-modell (personliga turer i ett team):** Personlig + varje team är likvärdiga
+  "ytor". `User.can_personal` (bool, default True self-serve / False för konton team-admin
+  bjuder in) styr rätten till egna icke-team-turer; team-admin togglar per medlem. Skapa-tur
+  har en scope-DROPDOWN (`deps.user_workspaces` -> Personlig/\<team\>, team=default) validerad
+  av `resolve_workspace` (personlig avvisas 400 om can_personal=False). `Project.team_id` =
+  None -> personlig, satt -> team.
+- **Per-yta mediapool:** media följer TURENS yta, inte användarens primära. `deps.project_owner_key
+  (project)` = `team-<id>`/`<owner_id>`. Media-endpoints tar `slug` (redigeringskontext, härleder
+  turens yta via gate) eller `owner` (explicit, `user_may_use_workspace`-validerad); annars primär
+  yta (`_pool_owner` i routes/media.py). **VIKTIGT:** ALLA klient-uppladdningar till /media/upload
+  måste skicka `?slug=` (media-library.js `poolQ` + EasyMDE-uppladdarna i scene/tour-preview/
+  translate) - annars hamnar bilden i primär pool. `/media`-sidan har en yta-växlare.
+  Presets ärvs fortfarande per ANVÄNDARE (user.team_id), inte per turens yta - medveten asymmetri.
+- **Solo→team opt-in:** kryssruta "ta med mina turer" vid skapa-team -> `teams._bring_solo_to_team`
+  flyttar solo-turer (team_id), personliga poolen -> team-poolen, skriver om `/media/<id>/`-refs.
+- **Multi-team (framtid, EJ byggt):** en användare tillhör EXAKT ett team (`User.team_id`). Flera
+  team kräver join-tabell -> arbetsyte-modellen är designad som en delmängd (dropdownen växer). ROADMAP.
 - **Egna domäner (Fas 4.3, ej byggt):** `Team.base_url` -> `request_origin`, host-baserad
   tenant-middleware, proxy-headers, domänverifiering, Caddy on-demand TLS. Se ROADMAP.
 
