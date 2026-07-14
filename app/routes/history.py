@@ -55,16 +55,20 @@ async def restore_version(
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:
     pdir = project_dir(slug)
-    if not any(v["id"] == version for v in history.list_versions(pdir)):
-        raise HTTPException(status_code=404, detail="Versionen finns inte")
-
     with tour_lock:
-        # Force-snapshotta nuläget FÖRST -> restore blir reversibel oavsett
-        # coalesce-fönstret. Skriv sedan den valda versionen med snapshot=False så
-        # write_map-hooken inte arkiverar det inkonsistenta mellanläget (ny tour +
-        # gammal map) mellan de två skrivningarna.
+        # Läs målversionen FÖRST: force-snapshotten nedan lägger till en version och
+        # kan trigga retention-prune som annars skulle radera just den version vi vill
+        # återställa (äldsta posten när historiken är full). read_version kastar
+        # KeyError -> 404 (stänger även validate-to-read-gapet).
+        try:
+            data = history.read_version(pdir, version)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="Versionen finns inte")
+        # Force-snapshotta nuläget -> restore blir reversibel oavsett coalesce-fönstret.
+        # Skriv sedan den valda versionen med snapshot=False så write_map-hooken inte
+        # arkiverar det inkonsistenta mellanläget (ny tour + gammal map) mellan de två
+        # skrivningarna.
         history.snapshot(pdir, force=True)
-        data = history.read_version(pdir, version)
         if "tour.json" in data:
             write_tour(slug, data["tour.json"], snapshot=False)
         if "map.json" in data:

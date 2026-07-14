@@ -736,6 +736,15 @@ def test_history():
             tour.write_text(json.dumps({"scenes": {str(k): {} for k in range(i + 3)}}), encoding="utf-8")
             history.snapshot(tmp)
         check("history: retention antalstak (MAX=3)", len(history.list_versions(tmp)) == 3)
+        # Regression: restore-kärnans ordning måste vara läs-FÖRST. Att återställa
+        # den ÄLDSTA synliga versionen när historiken är full -> force-snapshotten
+        # prunar bort den. Läser vi den innan snapshot överlever den; annars KeyError.
+        oldest = history.list_versions(tmp)[-1]["id"]
+        data = history.read_version(tmp, oldest)   # läs FÖRST
+        history.snapshot(tmp, force=True)          # prunar bort oldest
+        check("history: äldsta versionen läst före prune (ingen KeyError)", "tour.json" in data)
+        check("history: oldest verkligen prunad efter snapshot",
+              not (tmp / "_history" / str(oldest)).exists())
     finally:
         config.HISTORY_COALESCE_SEC = orig_coalesce
         config.HISTORY_MAX = orig_max

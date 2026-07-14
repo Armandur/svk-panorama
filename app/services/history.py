@@ -124,16 +124,19 @@ def list_versions(project_dir: Path) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for v in _versions(hist):
         d = hist / str(v)
-        meta: dict[str, Any] = {"id": v, "epoch_ms": v, "scenes": None, "languages": []}
-        tour_f = d / "tour.json"
-        if tour_f.exists():
-            try:
+        meta: dict[str, Any] = {"id": v, "epoch_ms": v, "scenes": None, "languages": [], "size": 0}
+        # Hela blocket under try: en samtidig spar kan prune:a bort d mitt i skanningen
+        # (FileNotFoundError) - hoppa den försvunna versionen i stället för att 500:a.
+        try:
+            tour_f = d / "tour.json"
+            if tour_f.exists():
                 tour = json.loads(tour_f.read_text(encoding="utf-8"))
                 meta["scenes"] = len(tour.get("scenes", {}))
                 meta["languages"] = tour.get("default", {}).get("languages") or []
-            except (OSError, ValueError):
-                pass
-        meta["size"] = sum(f.stat().st_size for f in d.iterdir() if f.is_file())
+            meta["size"] = sum(f.stat().st_size for f in d.iterdir() if f.is_file())
+        except (OSError, ValueError):
+            if not d.is_dir():
+                continue  # versionen försvann (prune) -> uteslut helt
         out.append(meta)
     return out
 
