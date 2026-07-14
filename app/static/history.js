@@ -29,38 +29,73 @@
 		changed: { sym: "~", cls: "diff-chg" }
 	};
 
-	function line(kind, text) {
+	// Färgad rad "+ text" / "- text" / "~ text".
+	function lineEl(kind, text, tag) {
 		var k = KIND[kind] || { sym: "•", cls: "" };
-		var li = document.createElement("li");
-		li.className = "diff-line " + k.cls;
+		var el = document.createElement(tag || "div");
+		el.className = "diff-line " + k.cls;
 		var s = document.createElement("span");
 		s.className = "diff-sym";
 		s.textContent = k.sym;
-		li.appendChild(s);
-		li.appendChild(document.createTextNode(" " + text));
-		return li;
+		el.appendChild(s);
+		el.appendChild(document.createTextNode(" " + text));
+		return el;
+	}
+
+	// Behållare för en lista av noder (indenteras via CSS när den är nästlad).
+	function renderNodes(nodes) {
+		var wrap = document.createElement("div");
+		wrap.className = "diff-nodes";
+		nodes.forEach(function (n) { wrap.appendChild(renderNode(n)); });
+		return wrap;
+	}
+
+	function renderNode(node) {
+		var kids = node.children && node.children.length ? node.children : null;
+
+		// Sektionsrubrik (t.ex. "Hotspots") - ingen symbol/färg, bara gruppering.
+		if (node.kind === "section") {
+			var sec = document.createElement("div");
+			sec.className = "diff-section";
+			var t = document.createElement("div");
+			t.className = "diff-section-title";
+			t.textContent = node.text;
+			sec.appendChild(t);
+			if (kids) sec.appendChild(renderNodes(kids));
+			return sec;
+		}
+
+		// Collapsible nod (scen) -> accordion, kollapsat som default (kan bli långt).
+		if (node.collapsible) {
+			var det = document.createElement("details");
+			det.className = "diff-node";
+			var sum = lineEl(node.kind, node.text, "summary");
+			sum.classList.add("diff-summary");
+			det.appendChild(sum);
+			if (kids) det.appendChild(renderNodes(kids));
+			return det;
+		}
+
+		// Vanlig rad, ev. med nästlade fält-ändringar (hotspot > fält).
+		var item = document.createElement("div");
+		item.className = "diff-item";
+		item.appendChild(lineEl(node.kind, node.text));
+		if (kids) item.appendChild(renderNodes(kids));
+		return item;
 	}
 
 	function renderGroups(groups) {
 		var frag = document.createDocumentFragment();
 		groups.forEach(function (g) {
-			var h = document.createElement("h4");
-			h.className = "diff-group-title";
-			h.textContent = g.title;
-			frag.appendChild(h);
-			var ul = document.createElement("ul");
-			ul.className = "diff-lines";
-			g.items.forEach(function (it) {
-				var li = line(it.kind, it.text);
-				if (it.sub && it.sub.length) {
-					var sub = document.createElement("ul");
-					sub.className = "diff-lines diff-sub";
-					it.sub.forEach(function (s) { sub.appendChild(line(s.kind, s.text)); });
-					li.appendChild(sub);
-				}
-				ul.appendChild(li);
-			});
-			frag.appendChild(ul);
+			var det = document.createElement("details");
+			det.className = "diff-group";
+			det.open = true;  // grupper öppna som default; scener kollapsade inuti
+			var sum = document.createElement("summary");
+			sum.className = "diff-group-title";
+			sum.textContent = g.title;
+			det.appendChild(sum);
+			det.appendChild(renderNodes(g.items));
+			frag.appendChild(det);
 		});
 		return frag;
 	}

@@ -72,58 +72,80 @@ def _hotspot_label(hs: dict[str, Any], lang: str) -> str:
     return t or "hotspot"
 
 
-def _hotspot_change_note(old: dict[str, Any], new: dict[str, Any]) -> str:
-    """Kort beskrivning av VAD som ändrades i en hotspot (utan att lista varje
-    fält - håll diffen läsbar)."""
-    notes = []
-    if old.get("text") != new.get("text") or old.get("body") != new.get("body"):
-        notes.append("text")
-    if old.get("yaw") != new.get("yaw") or old.get("pitch") != new.get("pitch"):
-        notes.append("placering")
-    if (old.get("sceneId") != new.get("sceneId")
-            or old.get("targetYaw") != new.get("targetYaw")
-            or old.get("targetPitch") != new.get("targetPitch")):
-        notes.append("mål")
+def _change_line(label: str, old: Any, new: Any, lang: str | None = None) -> dict:
+    o = _text_summary(old, lang) if lang else _fmt(old)
+    n = _text_summary(new, lang) if lang else _fmt(new)
+    return {"kind": CHANGE, "text": f"{label}: {o} → {n}"}
+
+
+def _hotspot_field_changes(old: dict[str, Any], new: dict[str, Any], lang: str) -> list[dict]:
+    """Fältnivå-ändringar inom EN hotspot (samma id, olika innehåll)."""
+    ch = []
+    if old.get("text") != new.get("text"):
+        ch.append(_change_line("text", old.get("text"), new.get("text"), lang))
+    if old.get("body") != new.get("body"):
+        ch.append(_change_line("brödtext", old.get("body"), new.get("body"), lang))
+    parts = []
+    if old.get("yaw") != new.get("yaw"):
+        parts.append(f"yaw {_fmt(old.get('yaw'))} → {_fmt(new.get('yaw'))}")
+    if old.get("pitch") != new.get("pitch"):
+        parts.append(f"pitch {_fmt(old.get('pitch'))} → {_fmt(new.get('pitch'))}")
+    if parts:
+        ch.append({"kind": CHANGE, "text": "placering: " + ", ".join(parts)})
+    if old.get("sceneId") != new.get("sceneId"):
+        ch.append(_change_line("målscen", old.get("sceneId"), new.get("sceneId")))
+    if old.get("targetYaw") != new.get("targetYaw") or old.get("targetPitch") != new.get("targetPitch"):
+        ch.append({"kind": CHANGE, "text": "målriktning ändrad"})
     if old.get("URL") != new.get("URL"):
-        notes.append("URL")
+        ch.append(_change_line("URL", old.get("URL"), new.get("URL")))
     if old.get("langs") != new.get("langs"):
-        notes.append("språk")
-    return ", ".join(notes) or "ändrad"
+        ch.append(_change_line("visas på språk", old.get("langs"), new.get("langs")))
+    if old.get("type") != new.get("type"):
+        ch.append(_change_line("typ", old.get("type"), new.get("type")))
+    return ch
 
 
 def _diff_hotspots(old_hs: list, new_hs: list, lang: str) -> list[dict]:
+    """Hotspot-noder för en scen. Ändrad hotspot får `children` med fältnivå-diff."""
     old_map = {_hotspot_key(h): h for h in old_hs if isinstance(h, dict)}
     new_map = {_hotspot_key(h): h for h in new_hs if isinstance(h, dict)}
-    subs = []
+    nodes = []
     for k, h in new_map.items():
         if k not in old_map:
-            subs.append({"kind": ADD, "text": f"hotspot {_hotspot_label(h, lang)}"})
+            nodes.append({"kind": ADD, "text": _hotspot_label(h, lang)})
     for k, h in old_map.items():
         if k not in new_map:
-            subs.append({"kind": REMOVE, "text": f"hotspot {_hotspot_label(h, lang)}"})
+            nodes.append({"kind": REMOVE, "text": _hotspot_label(h, lang)})
     for k, h in new_map.items():
         if k in old_map and old_map[k] != h:
-            note = _hotspot_change_note(old_map[k], h)
-            subs.append({"kind": CHANGE, "text": f"hotspot {_hotspot_label(h, lang)} ({note})"})
-    return subs
+            fields = _hotspot_field_changes(old_map[k], h, lang)
+            nodes.append({"kind": CHANGE, "text": _hotspot_label(h, lang), "children": fields})
+    return nodes
 
 
 def _diff_scene(old: dict[str, Any], new: dict[str, Any], lang: str) -> list[dict]:
-    """Sub-ändringar inom en scen som finns i båda versionerna."""
-    subs = []
+    """Children för en scen som finns i båda versionerna: scenfält + en Hotspots-
+    sektion (semantisk gruppering scen > hotspot > fält)."""
+    children = []
     if old.get("title") != new.get("title"):
-        subs.append({"kind": CHANGE,
-                     "text": f'titel: {_text_summary(old.get("title"), lang)} → {_text_summary(new.get("title"), lang)}'})
-    if old.get("yaw") != new.get("yaw") or old.get("pitch") != new.get("pitch"):
-        subs.append({"kind": CHANGE, "text": "startriktning ändrad"})
+        children.append(_change_line("titel", old.get("title"), new.get("title"), lang))
+    parts = []
+    if old.get("yaw") != new.get("yaw"):
+        parts.append(f"yaw {_fmt(old.get('yaw'))} → {_fmt(new.get('yaw'))}")
+    if old.get("pitch") != new.get("pitch"):
+        parts.append(f"pitch {_fmt(old.get('pitch'))} → {_fmt(new.get('pitch'))}")
+    if parts:
+        children.append({"kind": CHANGE, "text": "startriktning: " + ", ".join(parts)})
     if old.get("northOffset") != new.get("northOffset"):
-        subs.append({"kind": CHANGE, "text": "kalibrering (nordoffset) ändrad"})
+        children.append(_change_line("kalibrering (nordoffset)", old.get("northOffset"), new.get("northOffset")))
     if old.get("horizonRoll") != new.get("horizonRoll"):
-        subs.append({"kind": CHANGE, "text": "horisontlutning ändrad"})
+        children.append(_change_line("horisontlutning", old.get("horizonRoll"), new.get("horizonRoll")))
     if _pano_name(old.get("panorama")) != _pano_name(new.get("panorama")):
-        subs.append({"kind": CHANGE, "text": "panoramabild ersatt"})
-    subs.extend(_diff_hotspots(old.get("hotSpots") or [], new.get("hotSpots") or [], lang))
-    return subs
+        children.append({"kind": CHANGE, "text": "panoramabild ersatt"})
+    hs = _diff_hotspots(old.get("hotSpots") or [], new.get("hotSpots") or [], lang)
+    if hs:
+        children.append({"kind": "section", "text": "Hotspots", "children": hs})
+    return children
 
 
 def _pano_name(url: Any) -> str:
@@ -140,16 +162,18 @@ def _diff_scenes(old_tour: dict, new_tour: dict, lang: str) -> list[dict]:
     for sid, sc in new_scenes.items():
         if sid not in old_scenes:
             n = len(sc.get("hotSpots") or [])
-            items.append({"kind": ADD, "text": _scene_label(sid, sc, lang),
-                          "sub": [{"kind": ADD, "text": f"{n} hotspot{'ar' if n != 1 else ''}"}] if n else []})
+            note = f" ({n} hotspot{'ar' if n != 1 else ''})" if n else ""
+            items.append({"kind": ADD, "text": _scene_label(sid, sc, lang) + note})
     for sid, sc in old_scenes.items():
         if sid not in new_scenes:
-            items.append({"kind": REMOVE, "text": _scene_label(sid, sc, lang), "sub": []})
+            items.append({"kind": REMOVE, "text": _scene_label(sid, sc, lang)})
     for sid, sc in new_scenes.items():
         if sid in old_scenes:
-            subs = _diff_scene(old_scenes[sid], sc, lang)
-            if subs:
-                items.append({"kind": CHANGE, "text": _scene_label(sid, sc, lang), "sub": subs})
+            children = _diff_scene(old_scenes[sid], sc, lang)
+            if children:
+                # collapsible -> renderas som accordion (kan bli långt vid många hotspots).
+                items.append({"kind": CHANGE, "text": _scene_label(sid, sc, lang),
+                              "collapsible": True, "children": children})
     return items
 
 
@@ -182,8 +206,12 @@ def _diff_dict_fields(old: dict, new: dict, fields: dict[str, str]) -> list[dict
 
 
 def _fmt(v: Any) -> str:
+    if v is None:
+        return "–"  # saknat värde (t.ex. odefinierad yaw = default)
     if isinstance(v, bool):
         return "på" if v else "av"
+    if isinstance(v, list):
+        return ", ".join(str(x) for x in v) or "–"
     return _trunc(str(v))
 
 

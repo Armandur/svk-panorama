@@ -124,20 +124,40 @@
 .hist-diff[open] > summary { margin-bottom: .4rem; }
 .hist-diff-body { font-size: .85rem; }
 .hist-diff-loading, .diff-empty { color: var(--pico-muted-color); }
-.diff-group-title {
-	font-size: .8rem; text-transform: uppercase; letter-spacing: .03em;
-	color: var(--pico-muted-color); margin: .5rem 0 .2rem;
+
+/* Grupp-accordion (Scener, Karta, ...) - öppet som default */
+.diff-group { margin: .2rem 0; }
+.diff-group > summary.diff-group-title {
+	cursor: pointer; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em;
+	color: var(--pico-muted-color); font-weight: 600; padding: .15rem 0;
 }
-.diff-lines { list-style: none; padding: 0; margin: 0; }
-.diff-sub { margin: .1rem 0 .3rem 1.4rem; }
+/* Nästlade nodlistor indenteras (utom gruppens direkta lista) */
+.diff-nodes { margin: 0; }
+.diff-node > .diff-nodes,
+.diff-section > .diff-nodes,
+.diff-item > .diff-nodes { padding-left: 1.3rem; }
+
 .diff-line {
-	padding: .05rem 0; line-height: 1.4;
+	padding: .05rem 0; line-height: 1.45;
 	font-family: var(--pico-font-family-monospace, monospace);
+	white-space: pre-wrap; word-break: break-word;
 }
 .diff-sym { display: inline-block; width: 1ch; font-weight: 700; text-align: center; }
 .diff-add { color: var(--svk-ok, #2f6f4f); }
 .diff-del { color: var(--svk-danger, #b02a37); }
 .diff-chg { color: var(--svk-warn, #b5872b); }
+
+/* Scen-accordion (kollapsat) */
+.diff-node { margin: .05rem 0; }
+.diff-node > summary.diff-summary { cursor: pointer; list-style-position: inside; }
+.diff-node > summary.diff-summary::-webkit-details-marker { display: none; }
+
+/* Sektionsrubrik inuti en scen (t.ex. Hotspots) */
+.diff-section { margin: .25rem 0; }
+.diff-section-title {
+	font-size: .78rem; font-weight: 600; color: var(--pico-muted-color);
+	margin: .15rem 0;
+}
 
 /* --- Planeringsvy (helskärm: vänsterpanel 100% hög + autopassande karta) - */
 

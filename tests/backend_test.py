@@ -808,17 +808,23 @@ def test_history_diff():
     check("diff: grupper i ordning", titles == ["Scener", "Språk", "Tema", "Branding", "Karta"])
 
     scener = group(groups, "Scener")["items"]
-    by_kind = {(i["kind"], i["text"].split(" (")[0].split(" ")[0]) for i in scener}
     # Scen 3 tillagd, scen 2 borttagen, scen 1 ändrad.
     check("diff: scen tillagd", any(i["kind"] == "added" and "Tornet" in i["text"] for i in scener))
     check("diff: scen borttagen", any(i["kind"] == "removed" and "Långhuset" in i["text"] for i in scener))
     changed = next(i for i in scener if i["kind"] == "changed")
     check("diff: ändrad scen = Altaret", "Altaret" in changed["text"])
-    subtexts = " ".join(s["text"] for s in changed["sub"])
-    check("diff: titeländring i sub", "titel" in subtexts)
-    check("diff: hotspot tillagd (url)", any(s["kind"] == "added" and "länk" in s["text"] for s in changed["sub"]))
-    check("diff: hotspot borttagen (scen)", any(s["kind"] == "removed" and "scen 2" in s["text"] for s in changed["sub"]))
-    check("diff: hotspot ändrad (info text)", any(s["kind"] == "changed" and "text" in s["text"] for s in changed["sub"]))
+    check("diff: ändrad scen collapsible", changed.get("collapsible") is True)
+    kids = changed["children"]
+    check("diff: titeländring bland children", any("titel" in c["text"] for c in kids))
+    # Hotspots ligger under en semantisk sektionsnod.
+    hs_sec = next(c for c in kids if c.get("kind") == "section" and c["text"] == "Hotspots")
+    hs = hs_sec["children"]
+    check("diff: hotspot tillagd (url/länk)", any(s["kind"] == "added" and "länk" in s["text"] for s in hs))
+    check("diff: hotspot borttagen (scen)", any(s["kind"] == "removed" and "scen 2" in s["text"] for s in hs))
+    hs_changed = next(s for s in hs if s["kind"] == "changed")
+    check("diff: ändrad hotspot har fält-children", bool(hs_changed.get("children")))
+    check("diff: hotspot fältnivå text gammalt->nytt",
+          any("text:" in f["text"] and "A" in f["text"] for f in hs_changed["children"]))
 
     check("diff: språk +en", kinds(group(groups, "Språk")["items"]) == [("added", "en")])
     check("diff: tema font ändrad", any("typsnitt" in i["text"] for i in group(groups, "Tema")["items"]))

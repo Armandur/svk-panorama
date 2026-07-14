@@ -193,12 +193,18 @@ TILL T (ersattes vid T); UI:t säger "Gällde till ..." (ärlig pre-overwrite-se
   i `_step_nav`-menyn (ej ett steg). `restored=1` visar ångra-hint.
 - **Semantisk diff** (`services/historydiff.py`, `GET /history/{version}/diff`): rå
   JSON-textdiff blir brusig för strukturerad data -> `historydiff.diff(old, new)` jämför
-  på ENTITETSNIVÅ (scener +/-/~ med hotspot-/titel-/kalibrerings-sub-ändringar, språk,
-  tema, branding, inställningar, kartposition/länkar) och returnerar grupper med
-  +/-/~-rader. Ren funktion, i18n-medveten (`_text_summary`), matchar scener på id och
-  hotspots på `id`-fältet. Varje versionsrad har en `<details>` som lat-laddar diffen mot
-  den kronologiskt FÖREGÅENDE (äldre) versionen (`history.previous_version`); äldsta raden
-  saknar diff. `history.js` renderar grönt +/rött −/gult ~ (klasser `diff-add/del/chg`).
+  på ENTITETSNIVÅ och returnerar en NÄSTLAD nod-modell. Grupper: Scener/Språk/Tema/
+  Branding/Inställningar/Karta. **Hierarki scen > hotspot > fält:** en ändrad scen är en
+  `collapsible`-nod (accordion) med `children` = scenfält-ändringar (titel/startriktning/
+  kalibrering, gammalt→nytt) + en `section`-nod "Hotspots"; varje ändrad hotspot har egna
+  `children` med FÄLTNIVÅ-diff (text/brödtext/placering/målscen/URL/språk, gammalt→nytt).
+  Nod = `{kind: added|removed|changed|section, text, children?, collapsible?}`. Ren funktion,
+  i18n-medveten (`_text_summary`), matchar scener/hotspots på id, `_fmt(None)="–"`.
+  Varje versionsrad har en `<details>` som lat-laddar diffen mot den kronologiskt
+  FÖREGÅENDE (äldre) versionen (`history.previous_version`); äldsta raden saknar diff.
+  `history.js` renderar rekursivt: grupper = öppna accordions, scener = kollapsade
+  accordions (håller långa diffar hanterbara), section-rubriker + färgrader grönt +/rött
+  −/gult ~ (`diff-add/del/chg`), nästlade listor indenteras.
 - **Exkludering:** `_history/` ligger under gitignorade `projects/<slug>/`. backup.py
   (whitelist-enumerering) och bundle.py (`_collect`) globar inte brett -> följer inte med
   i arkiv/export. storage.py `os.walk` räknar det mot projektstorlek (minor, ok).
