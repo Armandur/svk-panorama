@@ -404,6 +404,34 @@ antingen en **ren sträng** (monospråkigt / default-språk / äldre turer) elle
   med `[data-pw-new]`/`[data-pw-confirm]`): röd outline (`aria-invalid`) + `.field-hint`
   vid fältet, servern validerar som fallback. UX-mönster för all fältvalidering.
 
+## Team & multi-tenancy (Fas 4.1, routes/teams.py)
+
+Turer kan ägas av ett **team** i stället för en enskild användare. VALFRITT - en
+solo-användare (`User.team_id` NULL) äger sina turer själv. Modeller (`database.py`):
+`Team` (id/namn/slug/base_url), `User.team_id`+`team_role` (member|team_admin, skild
+från globala `is_admin`=super-admin), `Project.team_id` (team-ägd; `owner_id` bevaras
+som "skapad av"). Alla FK:er nullable -> **noll team = identiskt beteende** (acceptanstest).
+Slug fortsatt globalt unik (per-team-slug + disk-namespace = Fas 4b).
+
+- **Access-gate:** `deps.user_can_access_project(user, project)` (använd av `get_project_or_404`):
+  super-admin ELLER (`project.team_id is not None and == user.team_id`) ELLER (team-lös tur
+  och `owner_id == user.id`). ~25 routes ärver via gaten.
+- **Listningar** (`editor_home`, `tile_jobs`, media-filter): `deps.visible_projects_clause(user)`
+  = egna + teamets turer. **FÄLLA:** bygg team-klausulen BARA när `user.team_id is not None`
+  - annars kompilerar `Project.team_id == None` till `IS NULL` och läcker alla team-lösa turer.
+- **Session:** bär `team_id`/`team_role`, synkas i `_user_from_session` som `admin`-flaggan.
+- **Delade resurser (media/presets) per team:** ägar-nyckeln är `User.owner_key`
+  (`team-<id>` för team, `<user_id>` solo - team-prefix undviker id-krock på mediekatalog).
+  Media: `media/<owner_key>/`, serve-routen validerar nyckelformat (`media.valid_owner_key`).
+  `bundle/backup._MEDIA_REF_RE` matchar `team-<id>` och `_media_refs` behåller strängnyckeln.
+  Presets: `team_id`-kolumn, all CRUD scopas via `presets._scope_clause` (team-match ELLER
+  owner_id+team_id NULL). Entrypoints tar `user`.
+- **Team-livscykel:** self-serve `POST /teams` (skaparen blir team_admin). `/team`-sida:
+  medlemslista + (team-admin) bjud in (`POST /team/invite` -> vilande konto med team_id satt,
+  ärvs vid accept-invite), promota/degradera roll, ta bort medlem. `require_team_admin`-gate.
+- **Egna domäner (Fas 4.3, ej byggt):** `Team.base_url` -> `request_origin`, host-baserad
+  tenant-middleware, proxy-headers, domänverifiering, Caddy on-demand TLS. Se ROADMAP.
+
 ## Auth + admin (routes/auth.py, admin.py, profile.py)
 
 Sluten inbjudan, session bär `uid`. `User.active` (bool): spärrat konto nekas i

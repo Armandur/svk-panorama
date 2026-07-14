@@ -637,8 +637,15 @@ och teamB vill båda döpa en tur `tour1`). Domäner är strikt downstream (en d
 till ett team, så team måste finnas först). Detta gör Fas 4-kärnan mycket mindre än
 ROADMAP:s ursprungliga inramning antyder. Fasordning:
 
-**Det enda beslut som gatar kodning: delad media/preset-pool - kärna eller 4b?**
-REKOMMENDATION: 4b (skjut upp). Media-URL:er är capability-baserade
+**BESLUTAT (2026-07-14, Rasmus):** delad media/preset-pool ska vara i KÄRNAN, OCH
+pre-produktionsdata får blåsas rent. Det senare tar bort hela migreringsminfältet
+(nedan) - vi designar media/presets team-scopat FRÅN BÖRJAN i stället för att migrera
+befintlig data. Ingen `_rewrite_refs`-engångsmigrering behövs; svk.db blåses vid
+schemaändring (befintlig pre-prod-policy). Team-pooler får eget namnprefix
+(`media/team-<id>/`) så User.id och Team.id inte kolliderar på samma katalog. Nedan
+resonemang bevarat som bakgrund till varför migrering hade varit dyrt (undviks nu).
+
+REKOMMENDATION (ej vald - migreringsvägen): 4b (skjut upp). Media-URL:er är capability-baserade
 (`/media/<owner_id>/<name>`, ingen auth-grind) -> en team-tur som medlem A skapat med
 referenser till A:s pool RENDERAR ändå korrekt när medlem B visar/redigerar den. Det enda
 som förloras genom att skjuta upp delad pool är att B kan BLÄDDRA A:s pool för att infoga
@@ -676,7 +683,17 @@ caveat.
 
 ---
 
-- [ ] **Team-modell (nivå ovanpå User).** Ny `Team` (id, namn, slug, base_url,
+**STATUS (2026-07-14): Fas 4.1 KLAR + team-admin (4.2 delvis).** Byggt + verifierat mot
+8005 (commits efter versionshistoriken): Team/User.team_id+team_role/Project.team_id
+(nullable), 3-vägs-gate (`user_can_access_project`), team-medvetna listningar
+(`visible_projects_clause`, None-guardad), session-sync, self-serve team + `/team`-sida,
+team-admin bjud in/promota/ta-bort medlemmar (`require_team_admin`), DELAD media- och
+preset-pool per team (`User.owner_key`=`team-<id>`, `presets._scope_clause`). Acceptanstest:
+noll team -> identiskt beteende. Detaljer i CLAUDE.md ("Team & multi-tenancy"). **Kvar:**
+super-admin team-lista + per-team-gruppering i /admin/storage (4.2), egna domäner (4.3),
+per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga speccen.
+
+- [x] **Team-modell (nivå ovanpå User) - KLAR (4.1).** Ny `Team` (id, namn, slug, base_url,
       created_at). `User.team_id` (FK, **nullable**) + `User.team_role`
       (member|team_admin) vid sidan av globala `is_admin` (super-admin).
       **Beslutade produktval (2026-07-11):**
