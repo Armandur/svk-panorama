@@ -627,6 +627,55 @@ kunna köra på **egen domän/subdomän**. Målbild: super-admin (jag) sköter b
 (reverse proxy + TLS-baslinje); team-admin sköter sitt teams användare, turer och
 domän själv. Fortsatt single-host Docker (inget S3/kö/multi-instans, jfr Fas 3).
 
+### Implementationsplan (sekvenserad, 2026-07-14 - kartlagd via 4 subagenter + advisor)
+
+**Kärninsikt:** team-ägarskap (dela + redigera turer inom ett team) och team-admin går
+att shippa UTAN det dyra disk-/path-/URL-/jobbnyckel-refaktoret OCH utan egna domäner -
+**så länge slugs förblir globalt unika**. Agent-kartläggningen visar att den enda
+forcing function för disk-refaktoret är per-team-slug-ÅTERANVÄNDNING (kosmetiskt: teamA
+och teamB vill båda döpa en tur `tour1`). Domäner är strikt downstream (en domän löser
+till ett team, så team måste finnas först). Detta gör Fas 4-kärnan mycket mindre än
+ROADMAP:s ursprungliga inramning antyder. Fasordning:
+
+**Det enda beslut som gatar kodning: delad media/preset-pool - kärna eller 4b?**
+REKOMMENDATION: 4b (skjut upp). Media-URL:er är capability-baserade
+(`/media/<owner_id>/<name>`, ingen auth-grind) -> en team-tur som medlem A skapat med
+referenser till A:s pool RENDERAR ändå korrekt när medlem B visar/redigerar den. Det enda
+som förloras genom att skjuta upp delad pool är att B kan BLÄDDRA A:s pool för att infoga
+nya bilder. Den smala begränsningen undviker hela migreringsminfältet (slå ihop pooler,
+skriva om `/media/<id>/` i tour.json + `branding_presets.config` (DB, saknar rewrite-väg
+idag) + tiles/manifest + **historik-snapshots** (frusna kopior -> restore återinför brutna
+refs) + dedupe av presets med dubbla `is_default`/namn). Skjut upp allt med dokumenterad
+caveat.
+
+**Fas 4.1 - DB + gate + listningar (shippbar helt ensam).**
+- DB (`database.py`): ny `Team`, `User.team_id`+`team_role` (member|team_admin), `Project.team_id` - ALLA nullable. `create_all` (blås svk.db pre-produktion). Behåll `Project.slug unique=True` globalt (per-team-slug är 4b).
+- Gate (`deps.py:get_project_or_404`, ENDA seam - ~25 routes ärver): super-admin ELLER (`project.team_id is not None and project.team_id == user.team_id`) ELLER (`project.team_id is None and project.owner_id == user.id`). Skriv team-villkoret symmetriskt None-säkert.
+- Session (`auth.py`): bär `team_id`/`team_role`, synka i `_user_from_session` som `admin`-flaggan idag.
+- Listningar som KRINGGÅR gaten (måste röras var för sig): `editor_home` (projects.py:74), `tile_jobs` (tiling.py:55, måste matcha editor_home EXAKT), `list_media`-projektfilter (media.py:68).
+  **FÄLLA (verifierad SQLAlchemy 2.0.51):** `or_(Project.owner_id==uid, Project.team_id==user.team_id)` när `user.team_id is None` kompilerar till `... OR team_id IS NULL` -> returnerar användarens egna turer PLUS alla team-lösa turer i hela systemet (cross-user-läcka, på som default). Bygg team-klausulen BARA när `user.team_id is not None`.
+- Skapande: `create_project` (projects.py:115) + `import_project` (backup.py:216) ärver `user.team_id`. `delete_project`-redirect (projects.py:145-157) generaliseras bortom `user.is_admin`.
+- **Acceptanstest (det som gör 4.1 shippbar isolerat):** med NOLL team skapade beter sig varje befintligt flöde identiskt (allt team_id NULL -> gaten tar owner_id-grenen, create ärver NULL, listningar reduceras till owner_id).
+
+**Fas 4.2 - Team-livscykel + team-admin-UI.**
+- Self-serve skapa team (skaparen blir `team_admin`). `require_team_admin`-gate (analog `require_admin`).
+- Team-scopad användar-CRUD: återanvänd Skiva 2-3-flödet men med `WHERE User.team_id == team_admin.team_id` i VARJE query (users_page, user_detail, user_projects, batch, create/disable/promote). `create_user` sätter `team_id`.
+- Invite-token (`auth.py`, stateless, bär bara `user_id` idag): team-scope kräver att `user.team_id` är satt vid tokengenerering (token behöver inte bära team_id om användarraden redan har det).
+- Admin storage/users-vyer grupperas per team (admin.py:130/176). **FÄLLA:** `msizes.get(u.id)` + `orphan_media`-checken (admin.py:186/201) korrelerar mot `User.id` - efter team-scope måste de slå mot team-nyckel annars felklassas team-pooler som "Ospårat".
+
+**Fas 4.3 - Egna domäner (bara när ett team vill ha egen domän; team-ägarskap är nyttigt shippat UTAN detta).**
+- `request_origin` (deps.py, 5 call sites redan konsoliderade) -> läs `Team.base_url` före `config.BASE_URL`/request-host.
+- Tenant-resolution-middleware (host -> Team), placerad EFTER `SessionMiddleware` men FÖRE routrar, sätter `request.state.team`.
+- **proxy-headers (saknas idag, verifierat):** `ProxyHeadersMiddleware` + uvicorn `--proxy-headers --forwarded-allow-ips=<caddy-ip>` + Caddy `X-Forwarded-Proto/Host` - annars ger `request.base_url` fel scheme (http) och host bakom Caddy.
+- Domänverifiering (TXT/token) INNAN aktivering (annars kan team A claima team B:s domän / trigga cert för godtycklig host). Caddy on-demand TLS + ask-endpoint `GET /internal/tls-allowed?host=` (ny oautad route). Överväg wildcard `<team>.svk-panorama.se` som nollkonfig-default först.
+- Besluta og:url-policy: per-domän (request/Team.base_url, rätt för white-label) vs kanonisk.
+
+**Fas 4b (uppskjutet, valfritt - ingen deferral-penalty):**
+- **Per-team-slug + disk-namespace-refaktor.** Agent 2:s hela yta: `project_dir` blir id-/team-medveten, jobb-dictar (tiling/bundle/backup) byter nyckel från slug till `Project.id` (konkret krock bekräftad: teamA/tour1 vs teamB/tour1 delar `_jobs["tour1"]`), traversal-guards (delete/rename bryts DIREKT -> alltid 400 vid två nivåer), 15 `/projects/{slug}/...`-routes (URL-form-beslut: tvånivå-URL vs platt slug + intern id-mappning), bootstrap-glob + storage-scan (antar en nivå). Composite unique `(team_id, slug)` (SQLite: NULL distinkt -> team-lösa behöver separat global slug-unikhet). Engångs flat->nested-migrering.
+- **Delad media/preset-pool per team** (se gating-beslutet ovan): poolsammanslagning + URL-omskrivning + preset-dedupe. Mall för URL-omskrivning finns i `backup.py:_rewrite_refs` (regex textsub). Media-namnrymd: ge team-pooler eget prefix (`media/team-<id>/`) - annars kan `User.id` och `Team.id` kollidera på samma numeriska katalog (`storage.media_sizes` skiljer dem inte).
+
+---
+
 - [ ] **Team-modell (nivå ovanpå User).** Ny `Team` (id, namn, slug, base_url,
       created_at). `User.team_id` (FK, **nullable**) + `User.team_role`
       (member|team_admin) vid sidan av globala `is_admin` (super-admin).
