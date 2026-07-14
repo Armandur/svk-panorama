@@ -5,16 +5,53 @@ helst kan skapa ett team (blir team_admin). En användare tillhör ett team (enk
 FK). Team-scopad användarhantering (bjuda in fler m.m.) ligger i team-admin-UI:t."""
 from __future__ import annotations
 
+import re
+import shutil
+
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.auth import make_invite_token, require_team_admin, require_user, set_user_session
-from app.database import TEAM_ROLE_ADMIN, TEAM_ROLE_MEMBER, Team, User, get_db
+from app.database import TEAM_ROLE_ADMIN, TEAM_ROLE_MEMBER, Project, Team, User, get_db
 from app.deps import new_csrf_token, request_origin, set_csrf_cookie, templates, verify_csrf_form
-from app.services.project_files import slugify
+from app.services import media as media_svc
+from app.services.project_files import _atomic_write_text, slugify, tour_json_path
+from app.services.tiling import manifest_path
 
 router = APIRouter()
+
+
+def _bring_solo_to_team(db: Session, user: User, team: Team) -> int:
+    """Flytta användarens SOLO-turer (team_id NULL) in i det nya teamet: sätt team_id,
+    flytta hela den personliga mediapoolen -> team-poolen och skriv om
+    `/media/<user_id>/`-referenser -> `/media/team-<id>/` i tour.json + tiles-manifest.
+    Nytt team -> tom team-pool, ren flytt. Returnerar antal flyttade turer."""
+    solo = db.query(Project).filter(Project.owner_id == user.id, Project.team_id.is_(None)).all()
+    if not solo:
+        return 0
+    old_key, new_key = str(user.id), f"team-{team.id}"
+
+    # Flytta personliga poolens filer (inkl. .thumbs) in i team-poolen.
+    src, dst = media_svc.owner_dir(old_key), media_svc.owner_dir(new_key)
+    if src.exists():
+        dst.mkdir(parents=True, exist_ok=True)
+        for entry in src.iterdir():
+            target = dst / entry.name
+            if not target.exists():
+                shutil.move(str(entry), str(target))
+
+    # Skriv om media-referenser (textsub som backup._rewrite_refs; `/`-gränsen hindrar
+    # att /media/1/ råkar träffa /media/10/).
+    ref_re = re.compile(r"/media/" + re.escape(old_key) + "/")
+    for p in solo:
+        p.team_id = team.id
+        for path in (tour_json_path(p.slug), manifest_path(p.slug)):
+            if path.exists():
+                txt = ref_re.sub(f"/media/{new_key}/", path.read_text(encoding="utf-8"))
+                _atomic_write_text(path, txt)
+    db.commit()
+    return len(solo)
 
 
 @router.get("/team", response_class=HTMLResponse)
@@ -28,6 +65,9 @@ def team_page(
         db.query(User).filter(User.team_id == user.team_id).order_by(User.created_at).all()
         if user.team_id else []
     )
+    # Antal solo-turer (för "ta med mina turer"-valet på skapa-team-formuläret).
+    solo_count = 0 if user.team_id else db.query(Project).filter(
+        Project.owner_id == user.id, Project.team_id.is_(None)).count()
     is_team_admin = user.is_admin or user.team_role == TEAM_ROLE_ADMIN
     # Inbjudningslänk per ännu ej aktiverad medlem (password_hash None) - stateless
     # token, härledd ur user-id, så team-admin kan kopiera länken när som helst.
@@ -44,7 +84,7 @@ def team_page(
         {
             "team": team, "members": members, "current_user": user,
             "is_team_admin": is_team_admin, "invite_links": invite_links,
-            "csrf_token": token,
+            "solo_count": solo_count, "csrf_token": token,
         },
     )
     set_csrf_cookie(response, token)
@@ -141,11 +181,13 @@ async def create_team(
     request: Request,
     db: Session = Depends(get_db),
     name: str = Form(...),
+    bring_tours: str = Form(None),
     user: User = Depends(require_user),
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:
     """Skapa ett team och gör skaparen till team_admin. En användare tillhör ETT
-    team - redan medlem -> vägra (byte/lämna hanteras separat senare)."""
+    team - redan medlem -> vägra (byte/lämna hanteras separat senare). bring_tours=1
+    flyttar skaparens befintliga solo-turer + personliga mediapool in i teamet."""
     if user.team_id is not None:
         raise HTTPException(status_code=400, detail="Du tillhör redan ett team")
     name = name.strip()
@@ -162,6 +204,11 @@ async def create_team(
     team = Team(name=name, slug=slug)
     db.add(team)
     db.commit()
+
+    # Flytta solo-turer FÖRE team_id sätts på användaren (flytten läser owner_key =
+    # <user_id>, dvs den gamla personliga poolen).
+    if bring_tours == "1":
+        _bring_solo_to_team(db, user, team)
 
     user.team_id = team.id
     user.team_role = TEAM_ROLE_ADMIN

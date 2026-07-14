@@ -80,6 +80,13 @@
 		<label>Teamnamn
 			<input type="text" name="name" required autocomplete="off" placeholder="T.ex. Härnösands stift">
 		</label>
+		{% if solo_count %}
+		<label>
+			<input type="checkbox" name="bring_tours" value="1" checked>
+			Ta med mina befintliga turer ({{ solo_count }} st) in i teamet
+		</label>
+		<small>Turerna och deras mediepool flyttas till teamet och delas med medlemmarna. Lämnar du rutan tom stannar de personliga.</small>
+		{% endif %}
 		<button type="submit">Skapa team</button>
 	</form>
 </section>
