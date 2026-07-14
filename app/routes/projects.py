@@ -88,9 +88,24 @@ def editor_home(
     for p in projects:
         mt = last_modified(p.slug)
         editor = history.pending_editor(project_dir(p.slug)) if p.team_id is not None else None
+        # Kort-vyns tumnagel: turens första scen (preview, snurrbar vid hover) ->
+        # kartbild -> tom. first_scene = None om ingen scen.
+        tour = read_tour(p.slug)
+        first_scene = (tour.get("default", {}) or {}).get("firstScene") or None
+        if first_scene and first_scene not in (tour.get("scenes") or {}):
+            first_scene = None
+        has_map = map_image_path(p.slug).exists()
+        if first_scene:
+            thumb = f"/projects/{p.slug}/previews/{first_scene}.jpg"
+        elif has_map:
+            thumb = f"/projects/{p.slug}/map.png"
+        else:
+            thumb = None
         meta[p.slug] = {
             "modified": _dt.datetime.fromtimestamp(mt) if mt else None,
             "editor": (editor or {}).get("name"),
+            "first_scene": first_scene,
+            "thumb": thumb,
         }
     token = new_csrf_token()
     response = templates.TemplateResponse(

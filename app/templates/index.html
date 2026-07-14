@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Projekt - {{ site_name() }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/vendor/pannellum.css">{% endblock %}
 {% block content %}
 
 <section>
@@ -9,7 +10,14 @@
 	</hgroup>
 
 	{% if projects %}
-	<table>
+	<div class="list-toolbar">
+		<div class="view-toggle" role="group" aria-label="Visningsläge">
+			<button type="button" class="view-btn" data-view="table" title="Lista">Lista</button>
+			<button type="button" class="view-btn" data-view="cards" title="Kort">Kort</button>
+		</div>
+	</div>
+	<div id="projects-views" data-view="table">
+	<table class="projects-table">
 		<thead>
 			<tr>
 				<th scope="col">Namn</th>
@@ -51,6 +59,33 @@
 			{% endfor %}
 		</tbody>
 	</table>
+
+	<div class="tour-cards">
+		{% for p in projects %}
+		{% set st = tile_states[p.slug] %}
+		{% set pm = project_meta[p.slug] %}
+		<article class="tour-card" data-slug="{{ p.slug }}"{% if pm.first_scene %} data-first-scene="{{ pm.first_scene }}"{% endif %}>
+			<a href="/projects/{{ p.slug }}" class="tour-card-thumb">
+				{% if pm.thumb %}<img src="{{ pm.thumb }}" alt="" loading="lazy">{% else %}<span class="tour-card-empty">Ingen bild</span>{% endif %}
+			</a>
+			<div class="tour-card-body">
+				<a href="/projects/{{ p.slug }}" class="tour-name">{{ p.name }}</a>
+				<div class="tour-card-meta">
+					{% if team_name %}<span class="tour-card-ws">{{ team_name if p.team_id else 'Personlig' }}</span>{% endif %}
+					<span class="tile-badge tile-{{ st.status }}" data-slug="{{ p.slug }}"
+						{% if st.status == 'running' %}aria-busy="true"{% endif %}>{%- if st.status == 'running' -%}Genererar tiles {{ st.done }}/{{ st.total }}{%- elif st.status == 'done' -%}Tiles klara{%- elif st.status == 'partial' -%}{{ st.tiled }}/{{ st.tileable }} tilade{%- elif st.status == 'error' -%}Tiling-fel{%- endif -%}</span>
+				</div>
+				{% if pm.modified %}<small class="tour-card-mod">Ändrad {{ pm.modified.strftime("%Y-%m-%d %H:%M") }}{% if pm.editor %} av {{ pm.editor }}{% endif %}</small>{% endif %}
+				<form method="post" action="/projects/{{ p.slug }}/delete"
+					data-confirm="Ta bort turen {{ p.name }}? Alla bilder, tiles och exporter raderas permanent och går inte att ångra." data-confirm-danger data-confirm-ok="Ta bort">
+					<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+					<button type="submit" class="secondary outline delete-btn">Ta bort</button>
+				</form>
+			</div>
+		</article>
+		{% endfor %}
+	</div>
+	</div>
 	{% else %}
 	<p><em>Inga projekt ännu - skapa ditt första nedan.</em></p>
 	{% endif %}
@@ -105,4 +140,7 @@
 </script>
 <script src="/static/index.js"></script>
 <script src="/static/import-project.js"></script>
+<script src="/static/vendor/pannellum.js"></script>
+<script src="/static/preview.js"></script>
+<script src="/static/index-cards.js"></script>
 {% endblock %}

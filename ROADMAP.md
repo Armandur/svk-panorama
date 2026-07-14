@@ -168,7 +168,14 @@ Luckor identifierade 2026-07-11 innan team-arbetet.
       (nyaste). I ett TEAMS arbetsyta ska även **vem som ändrat senast** visas - återanvänd
       versionshistorikens attribution: `_history/_pending.json` bär `{by, name}` = vem som
       skapade nuvarande state (se history.set_pending_editor). Gäller både list- och kort-vyn.
-- [ ] **Kort-vy för projektlistan i /editor (todo 2026-07-14).** Växla mellan tabell och
+- [ ] **/editor: arbetsyte-flikar (vänster) + global sök (todo 2026-07-14).** Med många team +
+      många turer blir listan väldigt lång. I stället: varje yta (Personlig + varje team) blir en
+      FLIK till vänster i /editor - teamikon (team-admin kan sätta en bild, jfr avatar-croppen) +
+      text - så man växlar dagens /editor-lista PER yta. Ovanför listan: en global SÖKRUTA
+      (fritext på turnamn/slug, ev. över alla ytor). Bygger på arbetsyte-modellen (user_workspaces)
+      + kort/list-växeln. Kopplar till multi-team (flera team-flikar). Team-ikon = ny kolumn/blob
+      på Team (`Team.icon`?) som team-admin sätter.
+- [ ] **Kort-vy för projektlistan i /editor KLAR (2026-07-14).** Växla mellan tabell och
       KORT-vy (localStorage, som media-bibliotekets kort/list-växel). Varje kort visar en
       **tumnagel av turens inställda första scen** (`tour.default.firstScene`) om sådan finns;
       vid **hover** byter previewen till ett snurrande mini-pannellum av den scenen -
