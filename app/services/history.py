@@ -71,6 +71,12 @@ def _read_pending(project_dir: Path) -> dict | None:
         return None
 
 
+def pending_editor(project_dir: Path) -> dict | None:
+    """Vem som skapade det NUVARANDE state:t (senaste sparen) - {by, name} eller
+    None. För 'ändrad av' i projektlistan. Se set_pending_editor."""
+    return _read_pending(project_dir)
+
+
 def _versions(hist: Path) -> list[int]:
     """Befintliga versioners epoch_ms, nyast först."""
     if not hist.is_dir():

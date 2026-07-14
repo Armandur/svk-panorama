@@ -170,6 +170,13 @@ def write_map(slug: str, data: dict[str, Any], *, snapshot: bool = True,
     _atomic_write_text(map_json_path(slug), json.dumps(data, indent="\t", ensure_ascii=False))
 
 
+def last_modified(slug: str) -> float | None:
+    """Senaste ändringstid (epoch) för turens data = nyaste mtime av tour.json/
+    map.json, eller None om ingen finns. För 'Senast ändrad' i projektlistan."""
+    times = [p.stat().st_mtime for p in (tour_json_path(slug), map_json_path(slug)) if p.exists()]
+    return max(times) if times else None
+
+
 def scene_id_from_filename(filename: str) -> str:
     return Path(filename).stem
 

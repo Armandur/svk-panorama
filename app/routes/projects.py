@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.auth import require_user
-from app.database import Project, User
+from app.database import Project, Team, User
 from app.deps import (
     get_db,
     get_editor,
@@ -34,8 +34,10 @@ from app.services.project_files import (
     default_tour,
     delete_project_files,
     ensure_project_structure,
+    last_modified,
     list_scenes,
     map_image_path,
+    project_dir,
     read_tour,
     rename_project_files,
     slugify,
@@ -43,6 +45,7 @@ from app.services.project_files import (
     write_map,
     write_tour,
 )
+from app.services import history
 from app.services import settings as site_settings
 from app.services.tiling import forget_job as forget_tile_job
 from app.services.tiling import job_status as tile_job_status
@@ -79,6 +82,16 @@ def editor_home(
         .all()
     )
     tile_states = {p.slug: project_tile_state(p.slug) for p in projects}
+    # Per tur: senast ändrad (mtime) + ändrad av (team-turer, ur historik-attributionen).
+    import datetime as _dt
+    meta = {}
+    for p in projects:
+        mt = last_modified(p.slug)
+        editor = history.pending_editor(project_dir(p.slug)) if p.team_id is not None else None
+        meta[p.slug] = {
+            "modified": _dt.datetime.fromtimestamp(mt) if mt else None,
+            "editor": (editor or {}).get("name"),
+        }
     token = new_csrf_token()
     response = templates.TemplateResponse(
         request,
@@ -86,10 +99,12 @@ def editor_home(
         {
             "projects": projects,
             "tile_states": tile_states,
+            "project_meta": meta,
             "current_user": user,
             "csrf_token": token,
             "guide_text": site_settings.get_workflow_text(),
             "workspaces": user_workspaces(db, user),
+            "team_name": (db.get(Team, user.team_id).name if user.team_id else None),
         },
     )
     set_csrf_cookie(response, token)

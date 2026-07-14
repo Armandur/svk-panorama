@@ -14,22 +14,30 @@
 			<tr>
 				<th scope="col">Namn</th>
 				<th scope="col">Slug</th>
+				{% if team_name %}<th scope="col">Yta</th>{% endif %}
 				<th scope="col">Tiles</th>
 				<th scope="col">Skapad</th>
+				<th scope="col">Senast ändrad</th>
 				<th scope="col"></th>
 			</tr>
 		</thead>
 		<tbody>
 			{% for p in projects %}
 			{% set st = tile_states[p.slug] %}
+			{% set pm = project_meta[p.slug] %}
 			<tr>
 				<td><a href="/projects/{{ p.slug }}" class="tour-name">{{ p.name }}</a></td>
 				<td><code>{{ p.slug }}</code></td>
+				{% if team_name %}<td>{{ team_name if p.team_id else 'Personlig' }}</td>{% endif %}
 				<td>
 					<span class="tile-badge tile-{{ st.status }}" data-slug="{{ p.slug }}"
 						{% if st.status == 'running' %}aria-busy="true"{% endif %}>{%- if st.status == 'running' -%}Genererar tiles {{ st.done }}/{{ st.total }}{%- elif st.status == 'done' -%}Tiles klara{%- elif st.status == 'partial' -%}{{ st.tiled }}/{{ st.tileable }} tilade{%- elif st.status == 'error' -%}Tiling-fel{%- endif -%}</span>
 				</td>
 				<td>{{ p.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+				<td>
+					{%- if pm.modified %}{{ pm.modified.strftime("%Y-%m-%d %H:%M") }}{% else %}-{% endif -%}
+					{%- if pm.editor %}<br><small>av {{ pm.editor }}</small>{% endif -%}
+				</td>
 				<td>
 					<div class="row-actions">
 						<form method="post" action="/projects/{{ p.slug }}/delete"
