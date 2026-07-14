@@ -14,6 +14,26 @@ class Base(DeclarativeBase):
     pass
 
 
+# Team-roller (vid sidan av globala User.is_admin = super-admin).
+TEAM_ROLE_MEMBER = "member"
+TEAM_ROLE_ADMIN = "team_admin"
+
+
+class Team(Base):
+    """Organisation som äger turer och delar media/presets bland sina medlemmar
+    (Fas 4). VALFRITT - en användare kan sakna team (team_id NULL) och äger då
+    sina turer solo. `base_url` = teamets egna domän (Fas 4.3, tom tills satt)."""
+    __tablename__ = "teams"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(200))
+    slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    base_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.utcnow
+    )
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -26,6 +46,10 @@ class User(Base):
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     # Spärrat konto: sessionen nekas och login blockeras (se app/auth.py).
     active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    # Team-medlemskap (Fas 4). Nullable = solo-användare utan team. team_role är
+    # member|team_admin (team-lokal roll, skild från globala is_admin/super-admin).
+    team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.id"), nullable=True, index=True)
+    team_role: Mapped[str] = mapped_column(String(20), default=TEAM_ROLE_MEMBER, nullable=False)
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow
     )
@@ -40,6 +64,10 @@ class Project(Base):
     # Ägare (multi-tenant). Nullable för bakåtkompatibilitet med tidiga projekt
     # som backfillas till bootstrap-admin.
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    # Team-ägd tur (Fas 4). None = solo-tur (ägs via owner_id). Är team_id satt äger
+    # teamet turen och owner_id bevaras bara som "skapad av" (spårbarhet). Slug är
+    # fortsatt GLOBALT unik (per-team-slug är Fas 4b).
+    team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.id"), nullable=True, index=True)
     # Oigissbar token för publik delning (/s/{token}). None = inte delad.
     share_token: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True, index=True)
     created_at: Mapped[datetime.datetime] = mapped_column(
