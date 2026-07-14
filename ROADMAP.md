@@ -783,7 +783,7 @@ per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga 
       gräns (blockera uppladdning/tiling/export över kvot) vs mjuk (bara varning). Media-
       poolen (`team-<id>`) + teamets turer räknas mot kvoten.
 
-- [ ] **Check-out/check-in-redigeringslås (todo 2026-07-14, Rasmus - HÖG prio).** Samtidig
+- [x] **Check-out/check-in-redigeringslås KLAR (2026-07-15).** Samtidig
       redigering i team är idag sista-skrivning-vinner (tour_lock är atomiskt per spar men
       ingen konfliktdetektering). VALT ANGREPP (Rasmus): en **check-out/check-in-modell** i
       stället för optimistisk detektering. När en användare öppnar ett redigeringssteg

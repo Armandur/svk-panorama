@@ -444,6 +444,18 @@ Slug fortsatt globalt unik (per-team-slug + disk-namespace = Fas 4b).
   Presets ärvs fortfarande per ANVÄNDARE (user.team_id), inte per turens yta - medveten asymmetri.
 - **Solo→team opt-in:** kryssruta "ta med mina turer" vid skapa-team -> `teams._bring_solo_to_team`
   flyttar solo-turer (team_id), personliga poolen -> team-poolen, skriver om `/media/<id>/`-refs.
+- **Redigeringslås (check-out/check-in, `services/checkout.py` + `routes/checkout.py`):** skydd mot
+  att två teammedlemmar skriver över varandra. En TEAM-tur checkas ut när man öppnar ett redigerings-
+  steg (`editor-lock.js` på upload/plan/scenes/preview/translate) -> andra ser läsläge. Solo-turer
+  (team_id NULL) låses INTE. **Atomär acquire:** EN villkorad `UPDATE ... WHERE checked_out_by IS NULL
+  OR = me OR checked_out_at < stale` + rowcount (aldrig läs-sedan-skriv). **Write-guard**
+  (`deps.require_edit_access` på alla muterande edit-routes): en team-turs skrivning tillåts BARA om
+  skrivaren HÅLLER ett färskt lås -> annars 409 (inte bara "ingen annan håller"). History-restore är
+  undantag: blockeras bara om NÅGON ANNAN håller (engångsåtgärd). `Project.checked_out_by/at`, naiv
+  UTC, `SVK_CHECKOUT_STALE_SEC` (180). Heartbeat 60s (upptäcker övertagande, varnar live), unload ->
+  sendBeacon `/checkin` (form-CSRF, kan ej sätta header). Team-admin/super-admin **tvingar incheck**.
+  Klienten är UX; servern (409) är garantin. VIKTIGT: nya muterande edit-routes måste ta
+  `Depends(require_edit_access)` i stället för `get_project_or_404`.
 - **Multi-team (framtid, EJ byggt):** en användare tillhör EXAKT ett team (`User.team_id`). Flera
   team kräver join-tabell -> arbetsyte-modellen är designad som en delmängd (dropdownen växer). ROADMAP.
 - **Egna domäner (Fas 4.3, ej byggt):** `Team.base_url` -> `request_origin`, host-baserad
