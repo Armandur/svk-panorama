@@ -9,22 +9,60 @@
 		<p>Team <code>{{ team.slug }}</code>{% if current_user.team_role == 'team_admin' %} · du är team-admin{% endif %}</p>
 	</hgroup>
 
+	{% if request.query_params.get('err') == 'upptagen' %}
+	<article class="notice"><p>E-postadressen används redan av ett konto.</p></article>
+	{% endif %}
+
 	<article>
 		<h3>Medlemmar</h3>
 		<table>
-			<thead><tr><th scope="col">Namn</th><th scope="col">E-post</th><th scope="col">Roll</th></tr></thead>
+			<thead><tr><th scope="col">Namn</th><th scope="col">E-post</th><th scope="col">Roll</th>{% if is_team_admin %}<th scope="col"></th>{% endif %}</tr></thead>
 			<tbody>
 				{% for m in members %}
 				<tr>
 					<td>{{ m.name or '-' }}</td>
-					<td>{{ m.email }}</td>
+					<td>{{ m.email }}{% if m.password_hash is none %} <small>(inbjuden)</small>{% endif %}</td>
 					<td>{% if m.team_role == 'team_admin' %}Team-admin{% else %}Medlem{% endif %}{% if m.id == current_user.id %} (du){% endif %}</td>
+					{% if is_team_admin %}
+					<td>
+						{% if m.id in invite_links %}
+						<button type="button" class="secondary outline copy-invite" data-link="{{ invite_links[m.id] }}">Kopiera inbjudningslänk</button>
+						{% elif m.id != current_user.id %}
+						<div class="row-actions">
+							<form method="post" action="/team/members/{{ m.id }}/role">
+								<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+								<input type="hidden" name="role" value="{{ 'member' if m.team_role == 'team_admin' else 'team_admin' }}">
+								<button type="submit" class="secondary outline">{{ 'Gör till medlem' if m.team_role == 'team_admin' else 'Gör till team-admin' }}</button>
+							</form>
+							<form method="post" action="/team/members/{{ m.id }}/remove"
+								data-confirm="Ta bort {{ m.name or m.email }} ur teamet? Personen blir en team-lös användare. Teamets turer påverkas inte." data-confirm-danger data-confirm-ok="Ta bort">
+								<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+								<button type="submit" class="secondary outline delete-btn">Ta bort</button>
+							</form>
+						</div>
+						{% endif %}
+					</td>
+					{% endif %}
 				</tr>
 				{% endfor %}
 			</tbody>
 		</table>
 		<p><small>Turer och mediepool delas mellan teamets medlemmar.</small></p>
 	</article>
+
+	{% if is_team_admin %}
+	<article>
+		<h3>Bjud in medlem</h3>
+		<form method="post" action="/team/invite" class="invite-form">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<label>E-post
+				<input type="email" name="email" required autocomplete="off" placeholder="namn@exempel.se">
+			</label>
+			<button type="submit">Skapa inbjudan</button>
+		</form>
+		<p><small>En inbjudningslänk skapas för den nya medlemmen - kopiera den från medlemslistan och skicka.</small></p>
+	</article>
+	{% endif %}
 </section>
 {% else %}
 <section>
@@ -41,4 +79,18 @@
 	</form>
 </section>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Kopiera inbjudningslänk till urklipp (fallback: prompt).
+document.querySelectorAll(".copy-invite").forEach(function (b) {
+	b.addEventListener("click", function () {
+		var link = b.dataset.link;
+		(navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject())
+			.then(function () { if (window.showToast) showToast("Länk kopierad"); b.textContent = "Kopierad!"; setTimeout(function () { b.textContent = "Kopiera inbjudningslänk"; }, 1500); })
+			.catch(function () { window.prompt("Kopiera inbjudningslänken:", link); });
+	});
+});
+</script>
 {% endblock %}

@@ -18,6 +18,7 @@ import time
 from pathlib import Path
 
 from app import config
+from app.services import media
 from app.services.media import owner_dir
 from app.services.project_files import project_dir
 
@@ -85,8 +86,9 @@ def project_size(slug: str) -> int:
     return cached_dir_size(project_dir(slug))
 
 
-def media_size(owner_id: int) -> int:
-    return cached_dir_size(owner_dir(owner_id))
+def media_size(owner: str) -> int:
+    """`owner` = ägar-nyckel (User.owner_key): `<user_id>` eller `team-<id>`."""
+    return cached_dir_size(owner_dir(owner))
 
 
 def project_sizes() -> dict[str, int]:
@@ -100,12 +102,13 @@ def project_sizes() -> dict[str, int]:
     return out
 
 
-def media_sizes() -> dict[int, int]:
-    """{owner_id: bytes} för varje numerisk mapp under MEDIA_DIR."""
-    out: dict[int, int] = {}
+def media_sizes() -> dict[str, int]:
+    """{ägar-nyckel: bytes} för varje poolmapp under MEDIA_DIR. Nyckeln är en sträng
+    (`<user_id>` eller `team-<id>`) som matchar User.owner_key."""
+    out: dict[str, int] = {}
     root = config.MEDIA_DIR
     if root.exists():
         for child in root.iterdir():
-            if child.is_dir() and child.name.isdigit():
-                out[int(child.name)] = cached_dir_size(child)
+            if child.is_dir() and media.valid_owner_key(child.name):
+                out[child.name] = cached_dir_size(child)
     return out

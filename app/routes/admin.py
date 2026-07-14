@@ -130,7 +130,7 @@ def users_page(
         slugs_by_owner.setdefault(p.owner_id, []).append(p.slug)
     rows = []
     for u in users:
-        used = sum(psizes.get(s, 0) for s in slugs_by_owner.get(u.id, [])) + msizes.get(u.id, 0)
+        used = sum(psizes.get(s, 0) for s in slugs_by_owner.get(u.id, [])) + msizes.get(u.owner_key, 0)
         rows.append({
             "id": u.id,
             "email": u.email,
@@ -176,6 +176,10 @@ def storage_page(
         projects_by_owner.setdefault(p.owner_id, []).append(p)
 
     owned_slugs: set[str] = set()
+    # Mediepoolen nycklas på owner_key (team-<id> delas av flera medlemmar) - attribuera
+    # varje pool EN gång (första medlemmen) så team-poolen inte dubbelräknas och
+    # untracked inte blir negativ. Full per-team-gruppering: Fas 4.2.
+    seen_media: set[str] = set()
     user_rows = []
     for u in users:
         tours = []
@@ -183,7 +187,9 @@ def storage_page(
             owned_slugs.add(p.slug)
             tours.append({"slug": p.slug, "name": p.name, "bytes": psizes.get(p.slug, 0)})
         tours.sort(key=lambda t: t["bytes"], reverse=True)
-        media_bytes = msizes.get(u.id, 0)
+        key = u.owner_key
+        media_bytes = 0 if key in seen_media else msizes.get(key, 0)
+        seen_media.add(key)
         total = sum(t["bytes"] for t in tours) + media_bytes
         user_rows.append({
             "id": u.id, "email": u.email, "name": u.name,
@@ -192,13 +198,13 @@ def storage_page(
     user_rows.sort(key=lambda r: r["total"], reverse=True)
 
     # Ospårat: mappar på disk utan matchande DB-rad (orphan-turer / -mediepooler).
-    user_ids = {u.id for u in users}
+    owner_keys = {u.owner_key for u in users}
     orphan_tours = sorted(
         [{"slug": s, "bytes": b} for s, b in psizes.items() if s not in owned_slugs],
         key=lambda o: o["bytes"], reverse=True,
     )
     orphan_media = sorted(
-        [{"owner_id": oid, "bytes": b} for oid, b in msizes.items() if oid not in user_ids],
+        [{"owner_id": oid, "bytes": b} for oid, b in msizes.items() if oid not in owner_keys],
         key=lambda o: o["bytes"], reverse=True,
     )
     tracked = sum(r["total"] for r in user_rows)
@@ -277,7 +283,7 @@ def user_detail(
     projects = db.query(Project).filter(Project.owner_id == user_id).order_by(Project.created_at.desc()).all()
     # Lagringsnedbrytning: per tur + mediepool + total.
     storage_rows = [{"slug": p.slug, "name": p.name, "bytes": storage.project_size(p.slug)} for p in projects]
-    media_bytes = storage.media_size(user_id)
+    media_bytes = storage.media_size(target.owner_key)
     storage_total = sum(r["bytes"] for r in storage_rows) + media_bytes
     token = new_csrf_token()
     response = templates.TemplateResponse(
