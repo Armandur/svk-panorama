@@ -163,6 +163,11 @@ Kvarvarande arbete är i praktiken auth + multi-tenancy.
 
 Luckor identifierade 2026-07-11 innan team-arbetet.
 
+- [ ] **"Senast ändrad" + "ändrad av" i projektlistan (todo 2026-07-14).** Listvyn i /editor
+      ska ha en **Senast ändrad**-kolumn (inte bara Skapad) - härled ur tour.json/map.json mtime
+      (nyaste). I ett TEAMS arbetsyta ska även **vem som ändrat senast** visas - återanvänd
+      versionshistorikens attribution: `_history/_pending.json` bär `{by, name}` = vem som
+      skapade nuvarande state (se history.set_pending_editor). Gäller både list- och kort-vyn.
 - [ ] **Kort-vy för projektlistan i /editor (todo 2026-07-14).** Växla mellan tabell och
       KORT-vy (localStorage, som media-bibliotekets kort/list-växel). Varje kort visar en
       **tumnagel av turens inställda första scen** (`tour.default.firstScene`) om sådan finns;
