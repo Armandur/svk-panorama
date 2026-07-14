@@ -50,6 +50,10 @@ class User(Base):
     # member|team_admin (team-lokal roll, skild från globala is_admin/super-admin).
     team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.id"), nullable=True, index=True)
     team_role: Mapped[str] = mapped_column(String(20), default=TEAM_ROLE_MEMBER, nullable=False)
+    # Får användaren äga PERSONLIGA turer (utanför teamet)? Default True för self-serve;
+    # konton en team-admin skapar sätts False (org äger allt de gör). Team-admin togglar.
+    # Se arbetsyte-modellen (ROADMAP).
+    can_personal: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow
     )

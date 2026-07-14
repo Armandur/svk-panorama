@@ -34,6 +34,11 @@
 								<input type="hidden" name="role" value="{{ 'member' if m.team_role == 'team_admin' else 'team_admin' }}">
 								<button type="submit" class="secondary outline">{{ 'Gör till medlem' if m.team_role == 'team_admin' else 'Gör till team-admin' }}</button>
 							</form>
+							<form method="post" action="/team/members/{{ m.id }}/personal" title="Får äga egna turer utanför teamet">
+								<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+								<input type="hidden" name="allow" value="{{ '0' if m.can_personal else '1' }}">
+								<button type="submit" class="secondary outline">Egna turer: {{ 'på' if m.can_personal else 'av' }}</button>
+							</form>
 							<form method="post" action="/team/members/{{ m.id }}/remove"
 								data-confirm="Ta bort {{ m.name or m.email }} ur teamet? Personen blir en team-lös användare. Teamets turer påverkas inte." data-confirm-danger data-confirm-ok="Ta bort">
 								<input type="hidden" name="csrf_token" value="{{ csrf_token }}">

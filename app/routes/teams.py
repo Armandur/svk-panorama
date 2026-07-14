@@ -69,7 +69,9 @@ async def invite_member(
         raise HTTPException(status_code=400, detail="E-post krävs")
     if db.query(User).filter(User.email == email).first() is not None:
         return RedirectResponse(url="/team?err=upptagen", status_code=303)
-    db.add(User(email=email, team_id=admin.team_id, team_role=TEAM_ROLE_MEMBER))
+    # Konton en team-admin skapar äger inte egna turer utanför teamet (default) -
+    # team-admin kan slå på det per medlem efteråt.
+    db.add(User(email=email, team_id=admin.team_id, team_role=TEAM_ROLE_MEMBER, can_personal=False))
     db.commit()
     return RedirectResponse(url="/team", status_code=303)
 
@@ -95,6 +97,22 @@ async def set_member_role(
     if target.id == admin.id:
         raise HTTPException(status_code=400, detail="Du kan inte ändra din egen roll")
     target.team_role = TEAM_ROLE_ADMIN if role == TEAM_ROLE_ADMIN else TEAM_ROLE_MEMBER
+    db.commit()
+    return RedirectResponse(url="/team", status_code=303)
+
+
+@router.post("/team/members/{user_id}/personal")
+async def set_member_personal(
+    request: Request,
+    user_id: int,
+    db: Session = Depends(get_db),
+    allow: str = Form(...),
+    admin: User = Depends(require_team_admin),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Team-admin styr om en medlem får äga egna (icke-team) turer."""
+    target = _team_target(db, admin, user_id)
+    target.can_personal = allow == "1"
     db.commit()
     return RedirectResponse(url="/team", status_code=303)
 
