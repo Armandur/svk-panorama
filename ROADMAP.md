@@ -782,6 +782,46 @@ per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga 
       (`storage.project_sizes`/`media_sizes` + `cached_dir_size` håller). Beslut kvar: hård
       gräns (blockera uppladdning/tiling/export över kvot) vs mjuk (bara varning). Media-
       poolen (`team-<id>`) + teamets turer räknas mot kvoten.
+
+- [ ] **Check-out/check-in-redigeringslås (todo 2026-07-14, Rasmus - HÖG prio).** Samtidig
+      redigering i team är idag sista-skrivning-vinner (tour_lock är atomiskt per spar men
+      ingen konfliktdetektering). VALT ANGREPP (Rasmus): en **check-out/check-in-modell** i
+      stället för optimistisk detektering. När en användare öppnar ett redigeringssteg
+      (plan/scenes/preview/translate) **checkas turen ut** -> andra i teamet kan bara TITTA
+      (redigeringsstegen låsta, visar "Utcheckad av X"). Check-in släpper låset.
+      **Team-admin OCH super-admin kan tvinga incheck** (om någon lämnat turen utcheckad).
+      Modell: `Project.checked_out_by` (nullable FK user) + `checked_out_at`. Hantera
+      döda lås: heartbeat medan man redigerar + timeout (auto-släpp efter inaktivitet), plus
+      admin-tvingad incheck som säkerhetsventil. Gäller redigerings-routes (skriv-endpoints
+      nekar om utcheckad av annan); /view + /s (visning) opåverkade. Störst värde för team.
+- [ ] **Team-livscykel + skyddsräcken (todo 2026-07-14, Rasmus).** (a) **Byt teamnamn /
+      radera team** (team-admin) - finns inte alls idag. Radera team: vad händer med teamets
+      turer/media/presets? (arkivera/överför till en medlem, eller blockera om turer finns.)
+      (b) **Sista-admin-skydd + överlämning:** ett team får aldrig bli helt utan team-admin -
+      kräv att man utser en ny admin innan den sista lämnar/degraderas/raderas (idag kan
+      super-admins radering av enda admin lämna teamet admin-löst). (c) **Lämna team** (medlem
+      själv) + **flytta en ENSKILD tur mellan ytor** (Personlig <-> team, mellan team) efteråt -
+      återanvänd `teams._bring_solo_to_team`-flyttlogiken per tur (idag bara allt-eller-inget
+      vid team-skapande).
+- [ ] **Attribution i delad kontext (todo 2026-07-14, Rasmus).** (a) **Radera-varning för
+      andras turer:** i ett team kan vem som helst radera en kollegas tur - bekräftelsen ska
+      säga "skapad av X" (owner_id finns redan). (b) **"Uppladdad av" i mediabiblioteket**
+      (delad pool -> vem la in vad; kräver att uppladdaren stämplas, ny metadata). (c) Ev.
+      enkel **team-aktivitetslista** ("senaste ändringar i teamet", härledd ur mtime +
+      historik-attribution).
+- [ ] **Team-UI-puts (todo 2026-07-14, Rasmus).** `can_personal`-knappen ("Egna turer: på/av")
+      som en riktig switch/toggle. Medlemsåtgärderna på /team (promota/egna turer/ta bort)
+      samlade i en liten åtgärds-meny (⋯) per rad. (Gäst-/läsrätts-roll SLOPAD - Rasmus: i
+      stället ett **demo-team med demo-användare som resettas periodiskt** för att testa, och
+      **beställare får åtkomst via delad preview** `/s/{token}`, inte ett konto.)
+- [ ] **Inbjudan via e-post (todo 2026-07-14, FÖRBERED - Lettermint dröjer).** Idag skapas
+      kontot direkt och länken kopieras manuellt. När Lettermint SMTP implementeras: skicka
+      inbjudningsmejl automatiskt + hantera väntande inbjudningar (återkalla/skicka om/se
+      utgång). Förbered strukturen; själva utskicket väntar på Lettermint.
+- [ ] **Demo-team (todo 2026-07-14, Rasmus).** Ett demo-team med demo-användare (och ett par
+      demo-turer) som **resettas periodiskt** så folk kan testa editorn utan att röra riktig
+      data. Ersätter behovet av en gäst-roll. Reset = schemalagt skript som återställer teamets
+      turer/media/medlemslösenord till ett känt utgångsläge.
 - [ ] **Egna domäner per team.** `Team.base_url` används för alla genererings-/
       delningslänkar (ersätter globala `SVK_BASE_URL`) - invite-länkar, export, /view.
       Host-baserad tenant-resolution: middleware slår upp request-Host -> team så
