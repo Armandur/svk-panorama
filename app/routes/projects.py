@@ -85,6 +85,25 @@ def editor_home(
         .all()
     )
     tile_states = {p.slug: project_tile_state(p.slug) for p in projects}
+    # Arbetsyte-flikar (vänster i /editor): UNION av användarens ytor (user_workspaces) och
+    # de ytor som FAKTISKT finns bland de synliga turerna. Fällan (advisor): en tur kan höra
+    # till en yta användaren saknar flik för (t.ex. can_personal=False-medlems gamla solo-tur,
+    # eller en tur skapad i ett team man sedan lämnat) -> den måste ändå få en flik, annars är
+    # den oåtkomlig. team_id -> namn hämtas per distinkt team bland turerna (inte antaget).
+    workspaces = user_workspaces(db, user)
+    tour_team_ids = {p.team_id for p in projects if p.team_id is not None}
+    team_names = {t.id: t.name for t in db.query(Team).filter(Team.id.in_(tour_team_ids)).all()} \
+        if tour_team_ids else {}
+    ws_tabs, seen_ws = [], set()
+    for w in workspaces:
+        ws_tabs.append({"key": w["key"], "label": w["label"], "team_id": w["team_id"]})
+        seen_ws.add(w["key"])
+    for p in projects:
+        key = f"team-{p.team_id}" if p.team_id is not None else "personal"
+        if key not in seen_ws:
+            ws_tabs.append({"key": key, "team_id": p.team_id,
+                            "label": team_names.get(p.team_id, "Team") if p.team_id else "Personlig"})
+            seen_ws.add(key)
     # Per tur: senast ändrad (mtime) + ändrad av (team-turer, ur historik-attributionen).
     import datetime as _dt
     # Skapar-namn för team-turer gjorda av NÅGON ANNAN (radera-varning "skapad av X").
@@ -133,7 +152,8 @@ def editor_home(
             "current_user": user,
             "csrf_token": token,
             "guide_text": site_settings.get_workflow_text(),
-            "workspaces": user_workspaces(db, user),
+            "workspaces": workspaces,
+            "ws_tabs": ws_tabs,
             "team_name": (db.get(Team, user.team_id).name if user.team_id else None),
         },
     )

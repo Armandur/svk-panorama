@@ -161,6 +161,19 @@
 
 	<article>
 		<h3>Teaminställningar</h3>
+		<div class="team-icon-row">
+			<span id="team-icon-open" class="avatar avatar-lg" role="button" tabindex="0" title="Ändra team-ikon">
+				<span class="avatar-initial">{{ (team.name[:1] | upper) if team.name else 'T' }}</span>
+				<img class="avatar-img" src="/teams/{{ team.id }}/icon" alt="" onerror="this.remove()">
+				<span class="avatar-cam" aria-hidden="true">
+					<svg viewBox="0 0 24 24" width="26" height="26" fill="#fff"><path d="M9 3l-1.5 2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.5L15 3H9zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+				</span>
+			</span>
+			<div>
+				<strong>Team-ikon</strong>
+				<p class="hint">Klicka för att sätta eller byta ikonen som visas i arbetsyte-flikarna.</p>
+			</div>
+		</div>
 		<form method="post" action="/team/rename" class="team-rename">
 			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 			<label>Teamnamn
@@ -186,6 +199,16 @@
 			<button type="submit" class="secondary outline">Lämna team</button>
 		</form>
 	</article>
+
+	{% if is_team_admin %}
+	{% with modal_id='team-icon-modal',
+	        avatar_src='/teams/' ~ team.id ~ '/icon',
+	        post_url='/team/icon',
+	        delete_url='/team/icon/delete',
+	        initial=(team.name[:1] | upper) if team.name else 'T' %}
+		{% include "_avatar_modal.html" %}
+	{% endwith %}
+	{% endif %}
 </section>
 {% else %}
 <section>
@@ -222,5 +245,12 @@ document.querySelectorAll(".copy-invite").forEach(function (b) {
 			.catch(function () { window.prompt("Kopiera inbjudningslänken:", link); });
 	});
 });
+// Team-ikon: koppla crop-modalen till avatar-crop-factoryn (postar mot /team/icon).
+if (window.initAvatarCrop && document.getElementById("team-icon-modal")) {
+	window.initAvatarCrop({
+		modal: document.getElementById("team-icon-modal"),
+		openBtn: document.getElementById("team-icon-open"),
+	});
+}
 </script>
 {% endblock %}

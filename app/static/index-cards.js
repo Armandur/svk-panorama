@@ -27,6 +27,56 @@
 		});
 	}
 
+	// Arbetsyte-flikar (vänster) + global sök: filtrerar turlistan klient-side. Både
+	// tabellrader OCH kort filtreras per slug (view-toggle döljer bara den ena vyn med
+	// CSS, så filtret måste träffa båda för att överleva ett vy-byte).
+	(function () {
+		var WS_KEY = "editor_ws";
+		var tabs = document.querySelectorAll(".ws-tab");
+		var search = document.getElementById("ws-search");
+		var rows = document.querySelectorAll(".projects-table tbody tr[data-ws]");
+		var cards = document.querySelectorAll(".tour-card[data-ws]");
+		var empty = document.querySelector(".ws-empty");
+		if (!rows.length && !cards.length) return;
+
+		var present = { all: 1 };
+		[].forEach.call(rows, function (r) { present[r.dataset.ws] = 1; });
+		[].forEach.call(cards, function (c) { present[c.dataset.ws] = 1; });
+
+		var activeWs = "all";
+		try {
+			var saved = localStorage.getItem(WS_KEY);
+			if (saved && present[saved]) activeWs = saved;  // validera mot faktiska flikar
+		} catch (e) { /* privat läge */ }
+
+		function apply() {
+			var q = ((search && search.value) || "").trim().toLowerCase();
+			var visible = 0;
+			function test(el) {
+				var ok = (activeWs === "all" || el.dataset.ws === activeWs) &&
+					(!q || (el.dataset.search || "").indexOf(q) !== -1);
+				el.classList.toggle("ws-hidden", !ok);
+				return ok;
+			}
+			[].forEach.call(rows, function (r) { if (test(r)) visible++; });
+			[].forEach.call(cards, test);
+			if (empty) empty.hidden = visible > 0;
+		}
+
+		function setWs(ws) {
+			activeWs = present[ws] ? ws : "all";
+			try { localStorage.setItem(WS_KEY, activeWs); } catch (e) { /* ignore */ }
+			[].forEach.call(tabs, function (t) { t.classList.toggle("active", t.dataset.ws === activeWs); });
+			apply();
+		}
+
+		[].forEach.call(tabs, function (t) {
+			t.addEventListener("click", function () { setWs(t.dataset.ws); });
+		});
+		if (search) search.addEventListener("input", apply);
+		if (tabs.length) setWs(activeWs); else apply();
+	})();
+
 	// Hover -> live mini-pannellum av turens första scen (i tumnagelrutan, ovanpå
 	// den statiska bilden). pointer-events: none så klick fortsatt går till länken.
 	document.querySelectorAll(".tour-card[data-first-scene]").forEach(function (card) {

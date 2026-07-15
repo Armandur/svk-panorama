@@ -132,7 +132,36 @@
 body.editor-locked button[type="submit"] { opacity: .5; pointer-events: none; }
 
 /* --- Projektlista: lista/kort-växel + kort ---------------------------- */
-.list-toolbar { display: flex; justify-content: flex-end; margin-bottom: .6rem; }
+/* /editor: vänster arbetsyte-sidopanel + huvudyta. */
+.editor-layout { display: flex; gap: 1.5rem; align-items: flex-start; }
+.editor-main { flex: 1; min-width: 0; }
+.editor-side { flex: none; width: 12rem; }
+.ws-tabs { display: flex; flex-direction: column; gap: .15rem; position: sticky; top: 1rem; }
+.ws-tab {
+	display: flex; align-items: center; gap: .5rem; width: 100%; text-align: left;
+	padding: .45rem .6rem; border: 1px solid transparent; border-radius: var(--pico-border-radius);
+	/* color: inherit -> Pico sätter --pico-color till vitt INUTI knappar, så var(--pico-color)
+	   blir vit-på-vit; inherit tar body-textfärgen i stället. */
+	background: none; color: inherit; font-size: .9rem; line-height: 1.2; cursor: pointer;
+}
+.ws-tab:hover { background: var(--pico-muted-border-color); }
+.ws-tab.active { background: var(--svk-accent, #2f6f4f); color: #fff; }
+.ws-tab-icon { width: 1.5rem; height: 1.5rem; flex: none; font-size: .7rem; }
+.ws-tab-icon .avatar-initial { font-size: .7rem; }
+.ws-tab-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ws-search {
+	flex: 1; max-width: 22rem; margin: 0 auto 0 0; padding: .35rem .6rem; height: auto;
+	font-size: .9rem;
+}
+.ws-empty { color: var(--pico-muted-color); padding: 1.5rem 0; text-align: center; }
+.ws-hidden { display: none; }
+@media (max-width: 720px) {
+	.editor-layout { flex-direction: column; }
+	.editor-side { width: 100%; }
+	.ws-tabs { flex-direction: row; flex-wrap: wrap; position: static; }
+	.ws-tab { width: auto; }
+}
+.list-toolbar { display: flex; align-items: center; gap: .6rem; justify-content: flex-end; margin-bottom: .6rem; }
 .view-toggle { display: inline-flex; width: auto; border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius); overflow: hidden; }
 .view-toggle .view-btn {
 	display: inline-flex; align-items: center; justify-content: center;
@@ -1019,6 +1048,7 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .storage-stat-label { color: var(--pico-muted-color); font-size: 0.8rem; }
 .storage-refresh { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 0 auto; }
 .storage-refresh button { margin: 0; width: auto; }
+.team-icon-row { display: flex; gap: 1rem; align-items: center; margin-bottom: 1.1rem; }
 .storage-section-h { font-size: 1.05rem; margin: 1.2rem 0 0.5rem; color: var(--pico-muted-color); }
 /* Lagringskvot-mätare (team). */
 .quota-bar { height: 8px; border-radius: 4px; background: var(--pico-muted-border-color); overflow: hidden; margin-bottom: 0.25rem; max-width: 14rem; }

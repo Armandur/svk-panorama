@@ -32,6 +32,9 @@ class Team(Base):
     # Lagringskvot i byte (super-admin sätter). None = obegränsat. Mjuk gräns idag
     # (mätare + varning); en framtida hård guard läser samma storage.quota_status().
     storage_quota_bytes: Mapped[int | None] = mapped_column(nullable=True)
+    # Team-ikon (PNG-blob, center-croppad som avatar), visas i /editor-arbetsyteflikarna.
+    # Team-admin sätter den. None = ingen ikon (fallback: initial).
+    icon: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow
     )

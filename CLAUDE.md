@@ -376,6 +376,14 @@ antingen en **ren sträng** (monospråkigt / default-språk / äldre turer) elle
   startscen-väljare (kartmodal + hover-preview), tema.
 - `upload.js` - parallell per-fil-uppladdning + previews, startar tiling.
 - `tile-status.js` / `index.js` - tiling-status på hemsida / huvudmeny.
+- `index-cards.js` - /editor-listan: kort/list-växel (localStorage) + hover-mini-pannellum +
+  **arbetsyte-flikar + global sök** (vänster sidopanel `.editor-side`). Flik-mängden byggs i
+  `editor_home` som UNION av `user_workspaces` och ytorna bland de renderade turerna (så en tur i en
+  yta man saknar flik för ändå blir nåbar - se ROADMAP). Filtrering klient-side: aktiv flik AND
+  söktext (namn/slug via `data-ws`/`data-search`), träffar BÅDE tabellrad och kort per slug.
+  Team-flik visar `Team.icon` (`GET /teams/{id}/icon`). `.ws-tab` måste ha `color: inherit` (Pico
+  gör `--pico-color` vitt i knappar). **Team.icon** = PNG-blob på Team, team-admin sätter via
+  crop-modal på /team (återanvänder `initAvatarCrop` + `_avatar_modal.html`, `POST /team/icon`).
 - `export.js` - bundle-export-progress + readiness-varningar + opt-in originalbilder.
 - `backup.js` - projekt-backup-progress (redigerbar zip) på preview-steget.
 - (tema-presets) - preset-UI:t på preview-steget bor i `tour-preview.js` (läser/

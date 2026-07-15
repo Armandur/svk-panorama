@@ -9,8 +9,8 @@ import datetime
 import re
 import shutil
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session
 
 from app.auth import make_invite_token, require_team_admin, require_user, set_user_session
@@ -25,6 +25,7 @@ from app.deps import (
     templates,
     user_may_use_workspace,
     verify_csrf_form,
+    verify_csrf_header,
 )
 from app.services import checkout
 from app.services import history
@@ -401,6 +402,61 @@ def delete_team_by_id(db: Session, team_id: int) -> bool:
     db.commit()
     shutil.rmtree(media_svc.owner_dir(f"team-{team_id}"), ignore_errors=True)
     return True
+
+
+@router.get("/teams/{team_id}/icon")
+def team_icon(
+    team_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+) -> Response:
+    """Serverar teamets ikon (PNG). Gated: medlem i teamet eller super-admin."""
+    if not (user.is_admin or user.team_id == team_id):
+        raise HTTPException(status_code=404, detail="Ingen ikon")
+    team = db.get(Team, team_id)
+    if team is None or not team.icon:
+        raise HTTPException(status_code=404, detail="Ingen ikon")
+    return Response(content=team.icon, media_type="image/png", headers={"Cache-Control": "no-cache"})
+
+
+@router.post("/team/icon")
+async def set_team_icon(
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_team_admin),
+    file: UploadFile = File(...),
+    _csrf: None = Depends(verify_csrf_header),
+) -> dict:
+    """Team-admin sätter/byter teamets ikon (center-croppad PNG som avatarer)."""
+    from app.routes.profile import _process_avatar
+    from app.services.project_files import validate_image_magic, validate_size
+
+    if admin.team_id is None:
+        raise HTTPException(status_code=400, detail="Du tillhör inget team")
+    content = await file.read()
+    validate_size(content, file.filename or "bild", max_mb=10)
+    validate_image_magic(content, file.filename or "bild")
+    try:
+        team = db.get(Team, admin.team_id)
+        team.icon = _process_avatar(content)
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="Kunde inte läsa bilden")
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/team/icon/delete")
+async def delete_team_icon(
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_team_admin),
+    _csrf: None = Depends(verify_csrf_header),
+) -> dict:
+    """Team-admin tar bort teamets ikon (fallback: initial i fliken)."""
+    if admin.team_id is None:
+        raise HTTPException(status_code=400, detail="Du tillhör inget team")
+    team = db.get(Team, admin.team_id)
+    team.icon = None
+    db.commit()
+    return {"ok": True}
 
 
 @router.post("/team/delete")

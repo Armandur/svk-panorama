@@ -168,13 +168,19 @@ Luckor identifierade 2026-07-11 innan team-arbetet.
       (nyaste). I ett TEAMS arbetsyta ska även **vem som ändrat senast** visas - återanvänd
       versionshistorikens attribution: `_history/_pending.json` bär `{by, name}` = vem som
       skapade nuvarande state (se history.set_pending_editor). Gäller både list- och kort-vyn.
-- [ ] **/editor: arbetsyte-flikar (vänster) + global sök (todo 2026-07-14).** Med många team +
-      många turer blir listan väldigt lång. I stället: varje yta (Personlig + varje team) blir en
-      FLIK till vänster i /editor - teamikon (team-admin kan sätta en bild, jfr avatar-croppen) +
-      text - så man växlar dagens /editor-lista PER yta. Ovanför listan: en global SÖKRUTA
-      (fritext på turnamn/slug, ev. över alla ytor). Bygger på arbetsyte-modellen (user_workspaces)
-      + kort/list-växeln. Kopplar till multi-team (flera team-flikar). Team-ikon = ny kolumn/blob
-      på Team (`Team.icon`?) som team-admin sätter.
+- [x] **/editor: arbetsyte-flikar (vänster) + global sök KLAR (2026-07-15).** Vänster sidopanel
+      (`.editor-side`, mobil-kollaps) med flikar: "Alla turer" + varje yta. **Flik-mängden = UNION av
+      user_workspaces OCH ytorna som finns bland de renderade turerna** (advisor-fälla: en
+      can_personal=False-medlems gamla solo-tur, eller en tur i ett team man lämnat, saknar
+      user_workspace-flik men måste ändå vara nåbar - verifierat). Team-flik visar **Team.icon**
+      (blob, `_process_avatar`-croppad, `POST /team/icon` via återanvänd `initAvatarCrop` på /team,
+      `GET /teams/{id}/icon` gated). Global sökruta (fritext namn/slug, plain string). Filtrering
+      **klient-side** i index-cards.js: flik AND sök, träffar BÅDE tabellrad och kort per slug (så
+      vy-byte överlever), localStorage aktiv flik (validerad mot faktiska flikar, fallback "all"),
+      JS empty-state. FÄLLA fixad: `.ws-tab` (button) måste ha `color: inherit` - Pico sätter
+      `--pico-color` vitt inuti knappar. Browser-verifierat (flik-klick filtrerar, sök, empty-state,
+      ikon i flik, union-fallet). Team.icon-crop-drive själv ej end-to-end-driven (byte-identisk
+      återanvändning av avatar-croppen).
 - [ ] **Kort-vy för projektlistan i /editor KLAR (2026-07-14).** Växla mellan tabell och
       KORT-vy (localStorage, som media-bibliotekets kort/list-växel). Varje kort visar en
       **tumnagel av turens inställda första scen** (`tour.default.firstScene`) om sådan finns;
