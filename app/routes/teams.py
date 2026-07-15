@@ -124,6 +124,24 @@ def _team_target(db: Session, admin: User, user_id: int) -> User:
     return target
 
 
+def _would_orphan_admin(db: Session, team_id: int, target: User) -> bool:
+    """SKYDDSRÄCKE: True om att degradera/ta bort/lämna som `target` skulle lämna
+    teamet UTAN någon team-admin MEDAN andra medlemmar finns kvar. (Är target inte
+    admin, eller finns fler admins, eller är target ensam medlem -> inget att skydda.)"""
+    if target.team_role != TEAM_ROLE_ADMIN:
+        return False
+    other_admins = db.query(User).filter(
+        User.team_id == team_id, User.team_role == TEAM_ROLE_ADMIN, User.id != target.id
+    ).count()
+    if other_admins > 0:
+        return False
+    other_members = db.query(User).filter(User.team_id == team_id, User.id != target.id).count()
+    return other_members > 0
+
+
+_ORPHAN_MSG = "Utse en ny team-admin först - teamet får inte bli utan admin."
+
+
 @router.post("/team/members/{user_id}/role")
 async def set_member_role(
     request: Request,
@@ -136,7 +154,10 @@ async def set_member_role(
     target = _team_target(db, admin, user_id)
     if target.id == admin.id:
         raise HTTPException(status_code=400, detail="Du kan inte ändra din egen roll")
-    target.team_role = TEAM_ROLE_ADMIN if role == TEAM_ROLE_ADMIN else TEAM_ROLE_MEMBER
+    new_role = TEAM_ROLE_ADMIN if role == TEAM_ROLE_ADMIN else TEAM_ROLE_MEMBER
+    if new_role == TEAM_ROLE_MEMBER and _would_orphan_admin(db, target.team_id, target):
+        raise HTTPException(status_code=400, detail=_ORPHAN_MSG)
+    target.team_role = new_role
     db.commit()
     return RedirectResponse(url="/team", status_code=303)
 
@@ -170,10 +191,84 @@ async def remove_member(
     target = _team_target(db, admin, user_id)
     if target.id == admin.id:
         raise HTTPException(status_code=400, detail="Du kan inte ta bort dig själv")
+    if _would_orphan_admin(db, target.team_id, target):
+        raise HTTPException(status_code=400, detail=_ORPHAN_MSG)
     target.team_id = None
     target.team_role = TEAM_ROLE_MEMBER
     db.commit()
     return RedirectResponse(url="/team", status_code=303)
+
+
+@router.post("/team/rename")
+async def rename_team(
+    request: Request,
+    db: Session = Depends(get_db),
+    name: str = Form(...),
+    admin: User = Depends(require_team_admin),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Byt teamets visningsnamn (team-admin). Slug/adresser oförändrade."""
+    if admin.team_id is None:
+        raise HTTPException(status_code=400, detail="Du tillhör inget team")
+    name = name.strip()
+    if name:
+        team = db.get(Team, admin.team_id)
+        team.name = name
+        db.commit()
+    return RedirectResponse(url="/team", status_code=303)
+
+
+@router.post("/team/leave")
+async def leave_team(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Lämna teamet (blir team-lös). Teamets turer förblir teamägda. Sista-admin-
+    skyddet gäller: den enda admin:en kan inte lämna om andra medlemmar finns kvar."""
+    if user.team_id is None:
+        raise HTTPException(status_code=400, detail="Du tillhör inget team")
+    if _would_orphan_admin(db, user.team_id, user):
+        raise HTTPException(status_code=400, detail="Utse en ny team-admin innan du lämnar teamet.")
+    user.team_id = None
+    user.team_role = TEAM_ROLE_MEMBER
+    db.commit()
+    set_user_session(request, user)  # spegla att man nu är team-lös
+    return RedirectResponse(url="/editor", status_code=303)
+
+
+@router.post("/team/delete")
+async def delete_team(
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_team_admin),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Radera teamet (team-admin). BLOCKERAS om teamet äger turer (flytta/radera dem
+    först - vi tar aldrig bort turdata implicit). Annars: släpp alla medlemmar (team-
+    lösa), radera teamets presets + mediapool, ta bort team-raden."""
+    from app.database import BrandingPreset, ThemePreset
+
+    if admin.team_id is None:
+        raise HTTPException(status_code=400, detail="Du tillhör inget team")
+    tid = admin.team_id
+    if db.query(Project).filter(Project.team_id == tid).count() > 0:
+        return RedirectResponse(url="/team?err=har_turer", status_code=303)
+
+    db.query(User).filter(User.team_id == tid).update(
+        {"team_id": None, "team_role": TEAM_ROLE_MEMBER}, synchronize_session=False)
+    db.query(ThemePreset).filter(ThemePreset.team_id == tid).delete(synchronize_session=False)
+    db.query(BrandingPreset).filter(BrandingPreset.team_id == tid).delete(synchronize_session=False)
+    team = db.get(Team, tid)
+    if team:
+        db.delete(team)
+    db.commit()
+    shutil.rmtree(media_svc.owner_dir(f"team-{tid}"), ignore_errors=True)
+
+    db.refresh(admin)  # bulk-update lämnade sessionsobjektet stale
+    set_user_session(request, admin)
+    return RedirectResponse(url="/editor", status_code=303)
 
 
 @router.post("/teams")

@@ -12,6 +12,9 @@
 	{% if request.query_params.get('err') == 'upptagen' %}
 	<article class="notice"><p>E-postadressen används redan av ett konto.</p></article>
 	{% endif %}
+	{% if request.query_params.get('err') == 'har_turer' %}
+	<article class="notice"><p>Teamet kan inte raderas medan det äger turer. Flytta eller radera turerna först.</p></article>
+	{% endif %}
 
 	<article>
 		<h3>Medlemmar</h3>
@@ -80,7 +83,34 @@
 		</form>
 		<p><small>En inbjudningslänk skapas för den nya medlemmen - kopiera den från medlemslistan och skicka.</small></p>
 	</article>
+
+	<article>
+		<h3>Teaminställningar</h3>
+		<form method="post" action="/team/rename" class="team-rename">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<label>Teamnamn
+				<input type="text" name="name" value="{{ team.name }}" required maxlength="200">
+			</label>
+			<button type="submit" class="secondary">Byt namn</button>
+		</form>
+		<hr>
+		<form method="post" action="/team/delete"
+			data-confirm="Radera teamet {{ team.name }}? Alla medlemmar blir team-lösa. Teamets mediapool och mallar tas bort. (Går bara om teamet inte äger några turer.)" data-confirm-danger data-confirm-ok="Radera team">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<button type="submit" class="secondary outline delete-btn">Radera team</button>
+		</form>
+	</article>
 	{% endif %}
+
+	<article>
+		<h3>Lämna team</h3>
+		<p><small>Du blir en team-lös användare. Teamets turer förblir teamägda.</small></p>
+		<form method="post" action="/team/leave"
+			data-confirm="Lämna teamet {{ team.name }}? Du blir team-lös och ser inte längre teamets turer." data-confirm-danger data-confirm-ok="Lämna team">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<button type="submit" class="secondary outline">Lämna team</button>
+		</form>
+	</article>
 </section>
 {% else %}
 <section>
