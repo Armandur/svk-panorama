@@ -8,7 +8,9 @@
 (function () {
 	"use strict";
 
-	var overlay, titleEl, msgEl, okBtn, cancelBtn, boxEl, resolver, lastFocus;
+	var overlay, titleEl, msgEl, okBtn, altBtn, cancelBtn, boxEl, resolver, lastFocus;
+	// Utfallsvärden per anrop: confirmDialog -> true/false, confirmChoice -> strängar.
+	var okValue = true, altValue = null, cancelValue = false;
 
 	function build() {
 		overlay = document.createElement("div");
@@ -20,6 +22,7 @@
 			'<p class="confirm-msg"></p>' +
 			'<div class="confirm-actions">' +
 			'<button type="button" class="secondary outline confirm-cancel"></button>' +
+			'<button type="button" class="secondary confirm-alt" hidden></button>' +
 			'<button type="button" class="confirm-ok"></button>' +
 			'</div></article>';
 		document.body.appendChild(overlay);
@@ -27,13 +30,15 @@
 		titleEl = overlay.querySelector("#confirm-title");
 		msgEl = overlay.querySelector(".confirm-msg");
 		okBtn = overlay.querySelector(".confirm-ok");
+		altBtn = overlay.querySelector(".confirm-alt");
 		cancelBtn = overlay.querySelector(".confirm-cancel");
-		okBtn.addEventListener("click", function () { done(true); });
-		cancelBtn.addEventListener("click", function () { done(false); });
-		overlay.addEventListener("click", function (e) { if (e.target === overlay) done(false); });
+		okBtn.addEventListener("click", function () { done(okValue); });
+		altBtn.addEventListener("click", function () { done(altValue); });
+		cancelBtn.addEventListener("click", function () { done(cancelValue); });
+		overlay.addEventListener("click", function (e) { if (e.target === overlay) done(cancelValue); });
 		document.addEventListener("keydown", function (e) {
 			if (overlay.hidden) return;
-			if (e.key === "Escape") done(false);
+			if (e.key === "Escape") done(cancelValue);
 		});
 	}
 
@@ -49,9 +54,29 @@
 		opts = opts || {};
 		if (!overlay) build();
 		lastFocus = document.activeElement;
+		okValue = true; cancelValue = false; altValue = null;
 		titleEl.textContent = opts.title || "Bekräfta";
 		msgEl.textContent = message || "";
 		okBtn.textContent = opts.confirmText || "OK";
+		cancelBtn.textContent = opts.cancelText || "Avbryt";
+		altBtn.hidden = true;
+		boxEl.classList.toggle("danger", !!opts.danger);
+		overlay.hidden = false;
+		okBtn.focus();
+		return new Promise(function (resolve) { resolver = resolve; });
+	};
+
+	// Tre-vägs-val: löser "confirm" | "alt" | "cancel". Escape/backdrop -> "cancel".
+	window.confirmChoice = function (message, opts) {
+		opts = opts || {};
+		if (!overlay) build();
+		lastFocus = document.activeElement;
+		okValue = "confirm"; altValue = "alt"; cancelValue = "cancel";
+		titleEl.textContent = opts.title || "Bekräfta";
+		msgEl.textContent = message || "";
+		okBtn.textContent = opts.confirmText || "OK";
+		altBtn.textContent = opts.altText || "";
+		altBtn.hidden = !opts.altText;
 		cancelBtn.textContent = opts.cancelText || "Avbryt";
 		boxEl.classList.toggle("danger", !!opts.danger);
 		overlay.hidden = false;

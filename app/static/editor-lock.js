@@ -46,14 +46,48 @@
 		return b;
 	}
 
+	// Släpp låset + gå till /editor. holding=false FÖRE navigering så pagehide-handlern
+	// inte skickar en andra checkin-beacon.
+	function doCheckin() {
+		checkinFetch().then(function () { holding = false; location.href = "/editor"; });
+	}
+
+	// "Checka in": har steget osparade ändringar (editorDirty) -> fråga spara/förkasta/avbryt.
+	// Spara: kör stegets editorSave, checka in bara om det faktiskt blev rent (annars stanna
+	// kvar - spara misslyckades). Förkasta: editorDiscard (rensar dirty + ev. utkast) + checka in.
+	function checkinFlow() {
+		if (!(window.editorDirty && window.editorDirty()) || !window.confirmChoice) {
+			doCheckin();
+			return;
+		}
+		window.confirmChoice("Du har osparade ändringar i det här steget. Vad vill du göra?", {
+			title: "Osparade ändringar",
+			confirmText: "Spara och checka in",
+			altText: "Checka in utan att spara",
+			cancelText: "Avbryt",
+		}).then(function (choice) {
+			if (choice === "cancel") return;
+			if (choice === "confirm") {
+				Promise.resolve(window.editorSave && window.editorSave()).then(function () {
+					if (window.editorDirty && window.editorDirty()) {
+						if (window.showToast) showToast("Kunde inte spara - du är fortfarande utcheckad.", "error");
+					} else {
+						doCheckin();
+					}
+				});
+			} else {  // "alt" = förkasta
+				if (window.editorDiscard) window.editorDiscard();
+				doCheckin();
+			}
+		});
+	}
+
 	function showHolding() {
 		document.body.classList.remove("editor-locked");
 		var b = renderBanner('<span>Du redigerar den här turen.</span>', "lock-mine");
 		var btn = document.createElement("button");
 		btn.type = "button"; btn.className = "lock-btn"; btn.textContent = "Checka in";
-		btn.addEventListener("click", function () {
-			checkinFetch().then(function () { holding = false; location.href = "/editor"; });
-		});
+		btn.addEventListener("click", checkinFlow);
 		b.appendChild(btn);
 	}
 	function showReadonly(holder) {

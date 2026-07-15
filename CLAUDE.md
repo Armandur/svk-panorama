@@ -345,8 +345,17 @@ antingen en **ren sträng** (monospråkigt / default-språk / äldre turer) elle
 - `confirm-modal.js` - stylad bekräftelsedialog som ersätter native `confirm()`.
   `window.confirmDialog(msg, {danger,confirmText}) -> Promise<boolean>` + drop-in för
   `<form data-confirm="..." [data-confirm-danger] [data-confirm-ok="..."]>` (fångar
-  submit, frågar, skickar vid ja). Laddas globalt i base.html. Använd detta - inte
-  `confirm()`.
+  submit, frågar, skickar vid ja). Även `window.confirmChoice(msg, {confirmText,altText,
+  cancelText}) -> Promise<"confirm"|"alt"|"cancel">` (tre-vägs, Escape/backdrop=cancel) -
+  används av check-in-flödet (Spara/Förkasta/Avbryt). Laddas globalt i base.html. Använd detta -
+  inte `confirm()`.
+- **Check-in-kontrakt (osparade ändringar):** "Checka in" (`editor-lock.js`) frågar via
+  `confirmChoice` när steget har osparade ändringar. Varje ackumulerande redigeringssteg
+  registrerar på `window`: `editorDirty()` (bool), `editorSave()` (Promise, returnerar HELA
+  save-kedjan inkl. `setDirty(false)`), `editorDiscard()` (rensar dirty + ev. localStorage-utkast).
+  Registrerat i `plan.js`/`scene.js`/`tour-preview.js`; translate/upload sparar direkt (ingen dirty).
+  Spara re-checkar `editorDirty()` EFTER save (checkar in bara om rent). **plan.js `editorDiscard`
+  MÅSTE `clearDraft()`** annars återuppstår förkastade ändringar. `holding=false` före navigering.
 - `modal-a11y.js` - tillgänglighet för alla `.help-modal`-overlayer (hjälp, hotspot,
   startscen, inställningar, mediebibliotek): sätter `role=dialog`/`aria-modal`, fokusfälla
   (Tab cyklar inuti) och fokusåterställning vid stängning. Aktiveras via en

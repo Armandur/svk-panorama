@@ -478,10 +478,11 @@
 	if (prevBtn) prevBtn.addEventListener("click", function () { step(-1); });
 	if (nextBtn) nextBtn.addEventListener("click", function () { step(1); });
 
-	saveBtn.addEventListener("click", function () {
+	// Returnerar HELA kedjan (inkl. setDirty) så check-in kan await:a den innan re-check.
+	function save() {
 		saveBtn.setAttribute("aria-busy", "true");
 		var brandingNow = currentBranding();
-		apiFetch("/projects/" + encodeURIComponent(slug) + "/tour-settings", {
+		return apiFetch("/projects/" + encodeURIComponent(slug) + "/tour-settings", {
 			method: "POST",
 			body: {
 				autoLoad: true,
@@ -505,9 +506,15 @@
 		}).catch(function (e) {
 			if (window.showToast) showToast(e.message, "error");
 		}).then(function () { saveBtn.removeAttribute("aria-busy"); });
-	});
+	}
+	saveBtn.addEventListener("click", save);
 
 	if (discardBtn) discardBtn.addEventListener("click", function () { window.location.reload(); });
+
+	// Check-in-kontrakt (editor-lock.js läser dessa före incheck). Ingen beforeunload här.
+	window.editorDirty = function () { return dirty; };
+	window.editorSave = save;
+	window.editorDiscard = function () { setDirty(false); };
 
 	// --- Mall-väljare (tema + branding) -------------------------------------
 	// Bläddra bland sparade mallar i den visuella väljar-modalen (preset-library.js)

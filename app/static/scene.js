@@ -1255,4 +1255,9 @@
 	window.addEventListener("beforeunload", function (e) {
 		if (state.dirty) { e.preventDefault(); e.returnValue = ""; }
 	});
+
+	// Check-in-kontrakt (editor-lock.js läser dessa före incheck).
+	window.editorDirty = function () { return state.dirty; };
+	window.editorSave = save;
+	window.editorDiscard = function () { setDirty(false); };
 })();

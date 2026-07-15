@@ -813,17 +813,19 @@ tenancy"). **Kvar:** egna domäner (4.3), per-team-slug + disk-namespace (4b). N
       döda lås: heartbeat medan man redigerar + timeout (auto-släpp efter inaktivitet), plus
       admin-tvingad incheck som säkerhetsventil. Gäller redigerings-routes (skriv-endpoints
       nekar om utcheckad av annan); /view + /s (visning) opåverkade. Störst värde för team.
-- [ ] **Check-in: fråga om spara/förkasta vid osparade ändringar (todo 2026-07-15).** Idag släpper
-      "Checka in"-knappen (editor-lock.js:53-55) bara låset och navigerar till /editor - den SPARAR
-      INTE, och `/checkin` (checkout.release) rör aldrig tour.json. Har man osparade ändringar i steget
-      (t.ex. plan.js DRAFT-utkast eller oskrivna scen-/hotspot-ändringar) förloras de utan tydlig fråga
-      (bara ev. generisk beforeunload i vissa steg). Önskat: vid check-in med osparade ändringar ->
-      confirmDialog "Spara innan incheck / Förkasta / Avbryt". KOMPLEXITET: "spara" beror på VILKET steg
-      man är på - varje steg (plan/scenes/preview/translate) har egen dirty-tracking + spar-funktion. Kräver
-      ett gemensamt klient-kontrakt (t.ex. `window.editorDirty()` + `window.editorSave()` som varje steg
-      registrerar) som editor-lock.js anropar före check-in. Samma kontrakt skulle förbättra heartbeat-
-      övertagande-varningen (editor-lock.js:79, redan "dina osparade ändringar kan inte sparas"). Medel-
-      prio: datförlust-risk i team-redigering, men mestadels mildrad av plan.js localStorage-utkast.
+- [x] **Check-in: fråga om spara/förkasta vid osparade ändringar KLAR (2026-07-15, advisor-granskad).**
+      "Checka in"-knappen (editor-lock.js) frågar nu vid osparade ändringar: **delad `window.confirmChoice`**
+      (3-vägs i confirm-modal.js, "confirm"/"alt"/"cancel", Escape/backdrop=cancel) -> "Spara och checka in"
+      / "Checka in utan att spara" / "Avbryt". **Klient-kontrakt per steg** (window): `editorDirty()`,
+      `editorSave()` (returnerar HELA save-kedjan inkl. setDirty), `editorDiscard()` (rensar dirty + ev.
+      utkast). Registrerat i plan.js/scene.js/tour-preview.js (translate/upload sparar direkt -> ingen
+      dirty -> checkar in utan fråga). Spara-vägen re-checkar `editorDirty()` EFTER save (uniformt över
+      alla steg - checkar bara in om det blev rent, annars kvar). Förkasta kör `editorDiscard`;
+      **plan.js editorDiscard rensar localStorage-UTKASTET** (annars återuppstår "förkastade" ändringar
+      vid nästa /plan - advisor-fälla, verifierad). `holding=false` FÖRE navigering (ingen dubbel-checkin
+      via pagehide). Browser-verifierat (dialog/avbryt/spara-navigering på /preview, editorDiscard rensar
+      utkast+dirty på /plan, kontrakt finns på alla steg). Ej gjort (senare): DRY:a plan.js egna
+      `showLeaveDialog` till `confirmChoice`; beforeunload på scen/preview vid hård navigering.
 - [x] **Team-livscykel + skyddsräcken KLAR (2026-07-15): (a) rename/radera + (b) sista-admin-skydd + lämna + (c) flytta enskild tur mellan ytor.** (a) **Byt teamnamn /
       radera team** (team-admin) - finns inte alls idag. Radera team: vad händer med teamets
       turer/media/presets? (arkivera/överför till en medlem, eller blockera om turer finns.)

@@ -839,6 +839,12 @@
 		render();
 	}
 
+	// Check-in-kontrakt (editor-lock.js läser dessa före incheck). editorDiscard rensar
+	// UTKASTET också, annars återuppstår de "förkastade" ändringarna vid nästa /plan-besök.
+	window.editorDirty = function () { return state.dirty; };
+	window.editorSave = saveMap;
+	window.editorDiscard = function () { clearDraft(); setDirty(false); };
+
 	if (img.complete && img.naturalWidth) init();
 	else img.addEventListener("load", init);
 })();
