@@ -1,0 +1,54 @@
+{% extends "admin_base.html" %}
+{% block title %}Team - Admin{% endblock %}
+{% block admin_content %}
+
+<hgroup>
+	<h1>Team</h1>
+	<p>Alla team i systemet. Team skapas normalt self-serve (skaparen blir team-admin) eller via inbjudan - här kan super-admin skapa ett tomt team och tilldela medlemmar via användarsidan, samt radera team.</p>
+</hgroup>
+{% if msg %}<p class="profile-ok" role="status">{{ msg }}</p>{% endif %}
+{% if error %}<p class="login-error" role="alert">{{ error }}</p>{% endif %}
+
+<article>
+	<h2>Skapa team</h2>
+	<form method="post" action="/admin/teams" class="invite-form">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+		<label>Teamnamn
+			<input type="text" name="name" required autocomplete="off" placeholder="T.ex. Härnösands stift">
+		</label>
+		<button type="submit">Skapa team</button>
+	</form>
+	<p><small>Ett tomt team skapas. Tilldela medlemmar och utse en team-admin via Användare -&gt; välj användare -&gt; Team.</small></p>
+</article>
+
+<article>
+	<h2>Alla team ({{ teams | length }})</h2>
+	{% if teams %}
+	<table>
+		<thead>
+			<tr><th scope="col">Team</th><th scope="col">Medlemmar</th><th scope="col">Turer</th><th scope="col">Storlek</th><th scope="col"></th></tr>
+		</thead>
+		<tbody>
+			{% for t in teams %}
+			<tr>
+				<td>{{ t.name }} <small><code>{{ t.slug }}</code></small></td>
+				<td>{{ t.members }}</td>
+				<td>{{ t.tours }}</td>
+				<td class="col-storage">{{ human_size(t.size) }}</td>
+				<td>
+					<form method="post" action="/admin/teams/{{ t.id }}/delete"
+						data-confirm="Radera teamet {{ t.name }}? Alla medlemmar blir team-lösa och teamets mediepool + mallar tas bort. Går bara om teamet inte äger några turer." data-confirm-danger data-confirm-ok="Radera team">
+						<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+						<button type="submit" class="secondary outline delete-btn">Radera</button>
+					</form>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	{% else %}
+	<p class="hint">Inga team ännu.</p>
+	{% endif %}
+</article>
+
+{% endblock %}

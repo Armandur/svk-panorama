@@ -495,14 +495,21 @@ exponeras som Jinja-global (`app/deps.py`). **TTL-cache:** `cached_dir_size`
 memoiserar per mapp i en in-process dict (`SVK_STORAGE_CACHE_TTL`, default 60 s,
 0=av) -> os.walk sker som mest en gång per TTL per mapp oavsett last (mätt ~600x
 snabbare cache-hit). `invalidate(path=None)` tömmer. Ytor:
-- **`/admin/storage`** (egen flik, `admin_storage.html`) - full drill-down:
-  totaler (disk/hos användare/ospårat), per användare ett `<details>` med turer
-  (störst först) + mediepool + total, och en **Ospårat**-sektion (mappar utan
-  matchande DB-rad, t.ex. rester efter borttagna konton). Knappen **Räkna om**
-  (`POST /admin/storage/refresh`) tömmer cachen.
-- `/admin/users` - Lagring-kolumn per användare (at-a-glance) + länk till fliken.
+- **`/admin/storage`** (egen flik, `admin_storage.html`) - grupperad per **team** (delade turer +
+  team-pool + #medlemmar) och per **solo-användare** (personliga turer + personlig pool), plus
+  **Ospårat**. Klassningen är en ren, enhetstestad funktion `storage.classify_storage(teams, users,
+  projects, member_counts, psizes, msizes)`: varje tur (team_id->team, annars owner->solo) och varje
+  pool (`team-<id>`->team, `<uid>`->solo) hamnar i EXAKT en grupp -> `tracked + untracked ==
+  disk_total`. **FÄLLA (advisor):** iterera Team-TABELLEN (inte härled team från users) så ett team
+  vars medlemmar alla lämnat men vars turer/pool finns kvar redovisas under teamet, INTE som Ospårat;
+  orphan-media mot `{team-<id> alla team} ∪ {str(uid) alla users}`. Knappen **Räkna om** tömmer cachen.
+- `/admin/users` - Lagring-kolumn = användarens SOLO-footprint (solo-turer + personlig pool `str(uid)`),
+  INTE team-delade resurser (de redovisas på /admin/teams) -> reconcilerar med storage-vyns solo-grupper.
 - `/admin/users/{id}` - nedbrytning per tur + mediepool + totalt.
-Fas 4: gruppera per team (owner_id -> team_id), samma skanning håller.
+- **`/admin/teams`** (egen flik, `admin_teams.html`, super-admin) - lista ALLA team (#medlemmar/#turer/
+  storlek) + skapa tomt team + radera (delad `teams.delete_team_by_id`, blockeras om turer finns).
+  **Team-tilldelning** på `/admin/users/{id}` (`POST .../team`): sätt team_id + roll; sista-admin-skyddet
+  (`_would_orphan_admin`) hedras vid utflytt/degradering (blockerar tyst föräldralöst team).
 
 ## Publik delning (public.py)
 

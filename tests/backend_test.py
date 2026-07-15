@@ -954,6 +954,43 @@ def test_move_workspace_media():
         config.MEDIA_DIR, config.PROJECTS_DIR = old_media, old_projects
 
 
+def test_classify_storage():
+    """Per-team-storage-klassning: varje tur/pool i exakt en grupp -> tracked+untracked==
+    disk_total. Diskriminerande fall (advisor): ett team vars medlemmar alla lämnat men vars
+    turer+pool finns kvar redovisas UNDER teamet, inte som 'Ospårat'."""
+    from types import SimpleNamespace as NS
+
+    from app.services.storage import classify_storage
+
+    teams = [NS(id=1, name="Alfa", slug="alfa")]
+    users = [NS(id=5, name="Solo", email="solo@x")]
+    projects = [
+        NS(slug="tour-team", name="Team-tur", team_id=1, owner_id=5),     # team A
+        NS(slug="tour-solo", name="Solo-tur", team_id=None, owner_id=5),  # solo user 5
+        NS(slug="tour-orph", name="Orphan", team_id=None, owner_id=999),  # ägare saknas -> ospårat
+    ]
+    member_counts = {}  # team A: 0 medlemmar (alla lämnade)
+    psizes = {"tour-team": 100, "tour-solo": 40, "tour-orph": 7, "ghost-tour": 3}
+    msizes = {"team-1": 20, "5": 10, "team-9": 5, "42": 2}  # team-9 + user 42 finns ej
+    d = classify_storage(teams, users, projects, member_counts, psizes, msizes)
+
+    ta = next(g for g in d["team_groups"] if g["id"] == 1)
+    check("team A total = tur 100 + pool 20", ta["total"] == 120)
+    check("team A 0 medlemmar men syns", ta["members"] == 0)
+    check("team-pool EJ i ospårat", all(o["owner_id"] != "team-1" for o in d["orphan_media"]))
+    su = next(g for g in d["solo_groups"] if g["id"] == 5)
+    check("solo total = tur 40 + pool 10", su["total"] == 50)
+    orph_slugs = {o["slug"] for o in d["orphan_tours"]}
+    check("ghost-tour ospårat", "ghost-tour" in orph_slugs)
+    check("tur utan ägare ospårat", "tour-orph" in orph_slugs)
+    check("team-tur EJ ospårat", "tour-team" not in orph_slugs)
+    orph_media = {o["owner_id"] for o in d["orphan_media"]}
+    check("okänd team-pool ospårad", "team-9" in orph_media)
+    check("okänd user-pool ospårad", "42" in orph_media)
+    check("INVARIANT tracked+untracked==disk", d["tracked"] + d["untracked"] == d["disk_total"])
+    check("disk_total = summa psizes+msizes", d["disk_total"] == 100 + 40 + 7 + 3 + 20 + 10 + 5 + 2)
+
+
 def main() -> int:
     for fn in (
         test_expected_tile_count,
@@ -974,6 +1011,7 @@ def main() -> int:
         test_backup_security,
         test_media_pool,
         test_move_workspace_media,
+        test_classify_storage,
         test_hex,
         test_slug_and_upload_safety,
         test_atomic_write,

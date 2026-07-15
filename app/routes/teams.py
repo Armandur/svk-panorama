@@ -366,6 +366,27 @@ async def leave_team(
     return RedirectResponse(url="/editor", status_code=303)
 
 
+def delete_team_by_id(db: Session, team_id: int) -> bool:
+    """Radera ett team: släpp alla medlemmar (team-lösa), radera teamets presets +
+    mediapool, ta bort team-raden. BLOCKERAS (returnerar False, inget raderat) om teamet
+    äger turer - vi tar aldrig bort turdata implicit. Delad av team-admins /team/delete och
+    super-admins /admin/teams/{id}/delete."""
+    from app.database import BrandingPreset, ThemePreset
+
+    if db.query(Project).filter(Project.team_id == team_id).count() > 0:
+        return False
+    db.query(User).filter(User.team_id == team_id).update(
+        {"team_id": None, "team_role": TEAM_ROLE_MEMBER}, synchronize_session=False)
+    db.query(ThemePreset).filter(ThemePreset.team_id == team_id).delete(synchronize_session=False)
+    db.query(BrandingPreset).filter(BrandingPreset.team_id == team_id).delete(synchronize_session=False)
+    team = db.get(Team, team_id)
+    if team:
+        db.delete(team)
+    db.commit()
+    shutil.rmtree(media_svc.owner_dir(f"team-{team_id}"), ignore_errors=True)
+    return True
+
+
 @router.post("/team/delete")
 async def delete_team(
     request: Request,
@@ -374,26 +395,11 @@ async def delete_team(
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:
     """Radera teamet (team-admin). BLOCKERAS om teamet äger turer (flytta/radera dem
-    först - vi tar aldrig bort turdata implicit). Annars: släpp alla medlemmar (team-
-    lösa), radera teamets presets + mediapool, ta bort team-raden."""
-    from app.database import BrandingPreset, ThemePreset
-
+    först). Släpper medlemmar, raderar presets + mediapool + team-raden."""
     if admin.team_id is None:
         raise HTTPException(status_code=400, detail="Du tillhör inget team")
-    tid = admin.team_id
-    if db.query(Project).filter(Project.team_id == tid).count() > 0:
+    if not delete_team_by_id(db, admin.team_id):
         return RedirectResponse(url="/team?err=har_turer", status_code=303)
-
-    db.query(User).filter(User.team_id == tid).update(
-        {"team_id": None, "team_role": TEAM_ROLE_MEMBER}, synchronize_session=False)
-    db.query(ThemePreset).filter(ThemePreset.team_id == tid).delete(synchronize_session=False)
-    db.query(BrandingPreset).filter(BrandingPreset.team_id == tid).delete(synchronize_session=False)
-    team = db.get(Team, tid)
-    if team:
-        db.delete(team)
-    db.commit()
-    shutil.rmtree(media_svc.owner_dir(f"team-{tid}"), ignore_errors=True)
-
     db.refresh(admin)  # bulk-update lämnade sessionsobjektet stale
     set_user_session(request, admin)
     return RedirectResponse(url="/editor", status_code=303)

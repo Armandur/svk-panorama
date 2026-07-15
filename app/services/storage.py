@@ -112,3 +112,69 @@ def media_sizes() -> dict[str, int]:
             if child.is_dir() and media.valid_owner_key(child.name):
                 out[child.name] = cached_dir_size(child)
     return out
+
+
+def classify_storage(teams, users, projects, member_counts, psizes, msizes) -> dict:
+    """Ren klassning för /admin/storage: fördela varje tur och mediepool i EXAKT en grupp
+    (team eller solo-användare) så `tracked + untracked == disk_total`. Tar redan hämtad
+    data (inga DB-/FS-anrop) -> deterministiskt testbar. `teams`/`users`/`projects` behöver
+    attributen (id/name/slug), (id/name/email), (slug/name/team_id/owner_id).
+
+    - Team-tur (team_id satt) -> teamet; solo-tur (team_id None, owner finns) -> ägaren.
+    - Team-pool `team-<id>` -> teamet; personlig pool `<user_id>` -> användaren.
+    - Ospårat = turmappar utan klassbar DB-rad + pooler utan matchande team/användare
+      (t.ex. ett team vars medlemmar alla lämnat räknas ändå under teamet, INTE ospårat).
+    Solo-grupper med noll footprint utelämnas ur listan (bidrar ändå 0 till tracked)."""
+    team_tours: dict[int, list] = {}
+    solo_tours: dict[int, list] = {}
+    for p in projects:
+        if p.team_id is not None:
+            team_tours.setdefault(p.team_id, []).append(p)
+        elif p.owner_id is not None:
+            solo_tours.setdefault(p.owner_id, []).append(p)
+
+    def _rows(plist):
+        rows = [{"slug": p.slug, "name": p.name, "bytes": psizes.get(p.slug, 0)} for p in plist]
+        rows.sort(key=lambda r: r["bytes"], reverse=True)
+        return rows
+
+    classified: set[str] = set()
+    team_groups = []
+    for t in teams:
+        rows = _rows(team_tours.get(t.id, []))
+        classified.update(r["slug"] for r in rows)
+        pool = msizes.get(f"team-{t.id}", 0)
+        team_groups.append({
+            "id": t.id, "name": t.name, "slug": t.slug, "members": member_counts.get(t.id, 0),
+            "tours": rows, "media": pool, "total": sum(r["bytes"] for r in rows) + pool,
+        })
+    team_groups.sort(key=lambda g: g["total"], reverse=True)
+
+    solo_groups = []
+    for u in users:
+        rows = _rows(solo_tours.get(u.id, []))
+        classified.update(r["slug"] for r in rows)  # klassa även 0-byte-turer (ej ospårat)
+        pool = msizes.get(str(u.id), 0)
+        total = sum(r["bytes"] for r in rows) + pool
+        if total == 0:
+            continue
+        solo_groups.append({
+            "id": u.id, "email": u.email, "name": u.name,
+            "tours": rows, "media": pool, "total": total,
+        })
+    solo_groups.sort(key=lambda g: g["total"], reverse=True)
+
+    valid_media = {f"team-{t.id}" for t in teams} | {str(u.id) for u in users}
+    orphan_tours = sorted(
+        [{"slug": s, "bytes": b} for s, b in psizes.items() if s not in classified],
+        key=lambda o: o["bytes"], reverse=True)
+    orphan_media = sorted(
+        [{"owner_id": k, "bytes": b} for k, b in msizes.items() if k not in valid_media],
+        key=lambda o: o["bytes"], reverse=True)
+    tracked = sum(g["total"] for g in team_groups) + sum(g["total"] for g in solo_groups)
+    disk_total = sum(psizes.values()) + sum(msizes.values())
+    return {
+        "team_groups": team_groups, "solo_groups": solo_groups,
+        "orphan_tours": orphan_tours, "orphan_media": orphan_media,
+        "tracked": tracked, "disk_total": disk_total, "untracked": max(0, disk_total - tracked),
+    }

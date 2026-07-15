@@ -710,15 +710,16 @@ caveat.
 
 ---
 
-**STATUS (2026-07-14): Fas 4.1 KLAR + team-admin (4.2 delvis).** Byggt + verifierat mot
-8005 (commits efter versionshistoriken): Team/User.team_id+team_role/Project.team_id
-(nullable), 3-vägs-gate (`user_can_access_project`), team-medvetna listningar
-(`visible_projects_clause`, None-guardad), session-sync, self-serve team + `/team`-sida,
-team-admin bjud in/promota/ta-bort medlemmar (`require_team_admin`), DELAD media- och
-preset-pool per team (`User.owner_key`=`team-<id>`, `presets._scope_clause`). Acceptanstest:
-noll team -> identiskt beteende. Detaljer i CLAUDE.md ("Team & multi-tenancy"). **Kvar:**
-super-admin team-lista + per-team-gruppering i /admin/storage (4.2), egna domäner (4.3),
-per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga speccen.
+**STATUS (2026-07-15): Fas 4.1 + 4.2 KLAR.** Byggt + verifierat mot 8005: Team/User.team_id+
+team_role/Project.team_id (nullable), 3-vägs-gate (`user_can_access_project`), team-medvetna
+listningar (`visible_projects_clause`, None-guardad), session-sync, self-serve team + `/team`-sida,
+team-admin bjud in/promota/ta-bort medlemmar (`require_team_admin`), DELAD media- och preset-pool per
+team (`User.owner_key`=`team-<id>`, `presets._scope_clause`). **Fas 4.2 (2026-07-15):** super-admin
+`/admin/teams` (lista alla + skapa + radera, delad `delete_team_by_id`-guard), team-tilldelning på
+`/admin/users/{id}` (sätt team_id/roll, sista-admin-skyddet hedrat), per-team-storage-gruppering
+(`storage.classify_storage`: team + solo-grupper, varje tur/pool en gång, tracked+untracked==disk;
+enhetstestat). Acceptanstest: noll team -> identiskt beteende. Detaljer i CLAUDE.md ("Team & multi-
+tenancy"). **Kvar:** egna domäner (4.3), per-team-slug + disk-namespace (4b). Nedan = ursprungsspecen.
 
 - [x] **Team-modell (nivå ovanpå User) - KLAR (4.1).** Ny `Team` (id, namn, slug, base_url,
       created_at). `User.team_id` (FK, **nullable**) + `User.team_role`
@@ -748,11 +749,12 @@ per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga 
       (`project_dir` m.fl.), jobb-dict-nycklar och `get_project_or_404` (team-gate).
       Stor refaktor - efter team-modellen. Låser upp "Redigera slug" ovan till att
       bli enklare (unikhet bara inom teamet för teamturer).
-- [ ] **Team-admin-UI.** Team-admin hanterar sitt teams användare (bjud in/skapa/
-      spärra/promota till team_admin - återanvänd Skiva 2-3-flödet men team-scopat),
-      ser teamets alla turer och sätter teamets `base_url`. Super-admin får team-lista
-      (skapa team, sätt/nolla domän, se alla). `require_team_admin`-gate analogt med
-      `require_admin`.
+- [x] **Team-admin-UI + super-admin team-lista KLAR (2026-07-15).** Team-admin hanterar sitt
+      teams användare via /team (bjud in/promota/ta-bort, `require_team_admin`). Super-admin får
+      `/admin/teams` (lista ALLA team med #medlemmar/#turer/storlek + skapa tomt team + radera,
+      delad `teams.delete_team_by_id`-guard) samt team-tilldelning på `/admin/users/{id}` (sätt
+      team_id + roll; sista-admin-skyddet `_would_orphan_admin` hedrat vid utflytt/degradering).
+      Domän-delen (`base_url`, sätt/nolla domän) = Fas 4.3.
 - [ ] **Multi-team-medlemskap (todo 2026-07-14, framtid - byggs EJ nu).** Idag tillhör en
       användare EXAKT ett team (`User.team_id`, en FK). Framtid: en användare kan tillhöra
       FLERA team. Kräver en **medlemskaps-tabell** (`team_members(user_id, team_id, role)`)

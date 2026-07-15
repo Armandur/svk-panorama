@@ -4,7 +4,7 @@
 
 <hgroup>
 	<h1>Lagring</h1>
-	<p>Diskanvändning per användare - turer (bilder, tiles, previews, karta, export/backup) och delad mediepool. Störst först. Fäll ut en användare för att borra ner till enskilda turer.</p>
+	<p>Diskanvändning grupperad per team (delade turer + team-pool) och per solo-användare (personliga turer + personlig pool). Turer omfattar bilder, tiles, previews, karta och export/backup. Störst först. Fäll ut en grupp för att borra ner till enskilda turer.</p>
 </hgroup>
 {% if msg %}<p class="profile-ok" role="status">{{ msg }}</p>{% endif %}
 
@@ -30,18 +30,18 @@
 	</form>
 </div>
 
-{% for u in user_rows %}
-<details class="storage-user"{% if loop.first and u.total %} open{% endif %}>
+{% if team_groups %}
+<h2 class="storage-section-h">Team</h2>
+{% for g in team_groups %}
+<details class="storage-user"{% if loop.first and g.total %} open{% endif %}>
 	<summary>
-		<span class="storage-user-name">{{ u.name or u.email }}</span>
-		<span class="storage-user-total">{{ human_size(u.total) }}</span>
+		<span class="storage-user-name">{{ g.name }} <small class="hint">{{ g.members }} medlem{{ 'mar' if g.members != 1 else '' }}</small></span>
+		<span class="storage-user-total">{{ human_size(g.total) }}</span>
 	</summary>
 	<table>
-		<thead>
-			<tr><th scope="col">Tur</th><th scope="col">Storlek</th></tr>
-		</thead>
+		<thead><tr><th scope="col">Tur</th><th scope="col">Storlek</th></tr></thead>
 		<tbody>
-			{% for t in u.tours %}
+			{% for t in g.tours %}
 			<tr>
 				<td><a href="/projects/{{ t.slug }}/preview">{{ t.name or t.slug }}</a></td>
 				<td class="col-storage">{{ human_size(t.bytes) }}</td>
@@ -49,23 +49,51 @@
 			{% else %}
 			<tr><td colspan="2" class="hint">Inga turer.</td></tr>
 			{% endfor %}
+			<tr><td>Mediepool (delad)</td><td class="col-storage">{{ human_size(g.media) }}</td></tr>
 			<tr>
-				<td>Mediepool (delad)</td>
-				<td class="col-storage">{{ human_size(u.media) }}</td>
-			</tr>
-			<tr>
-				<td><a href="/admin/users/{{ u.id }}">{{ u.email }} &rarr;</a></td>
-				<td class="col-storage"><strong>{{ human_size(u.total) }}</strong></td>
+				<td><a href="/admin/teams">{{ g.slug }} &rarr;</a></td>
+				<td class="col-storage"><strong>{{ human_size(g.total) }}</strong></td>
 			</tr>
 		</tbody>
 	</table>
 </details>
 {% endfor %}
+{% endif %}
+
+<h2 class="storage-section-h">Solo-användare</h2>
+{% for g in solo_groups %}
+<details class="storage-user"{% if loop.first and not team_groups and g.total %} open{% endif %}>
+	<summary>
+		<span class="storage-user-name">{{ g.name or g.email }}</span>
+		<span class="storage-user-total">{{ human_size(g.total) }}</span>
+	</summary>
+	<table>
+		<thead><tr><th scope="col">Tur</th><th scope="col">Storlek</th></tr></thead>
+		<tbody>
+			{% for t in g.tours %}
+			<tr>
+				<td><a href="/projects/{{ t.slug }}/preview">{{ t.name or t.slug }}</a></td>
+				<td class="col-storage">{{ human_size(t.bytes) }}</td>
+			</tr>
+			{% else %}
+			<tr><td colspan="2" class="hint">Inga personliga turer.</td></tr>
+			{% endfor %}
+			<tr><td>Personlig pool</td><td class="col-storage">{{ human_size(g.media) }}</td></tr>
+			<tr>
+				<td><a href="/admin/users/{{ g.id }}">{{ g.email }} &rarr;</a></td>
+				<td class="col-storage"><strong>{{ human_size(g.total) }}</strong></td>
+			</tr>
+		</tbody>
+	</table>
+</details>
+{% else %}
+<p class="hint">Ingen personlig lagring.</p>
+{% endfor %}
 
 {% if orphan_tours or orphan_media %}
 <article class="storage-orphans">
 	<h2>Ospårat</h2>
-	<p class="hint">Mappar på disk utan matchande användare i databasen (t.ex. rester efter borttagna konton). Städa manuellt vid behov.</p>
+	<p class="hint">Mappar på disk utan matchande team/användare i databasen (t.ex. rester efter borttagna konton eller team). Städa manuellt vid behov.</p>
 	<table>
 		<thead>
 			<tr><th scope="col">Mapp</th><th scope="col">Storlek</th></tr>

@@ -5,11 +5,12 @@ from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app import config
 from app.auth import hash_password, make_invite_token, password_error, require_admin
-from app.database import Project, Team, User, get_db
+from app.database import TEAM_ROLE_ADMIN, TEAM_ROLE_MEMBER, Project, Team, User, get_db
 from app.deps import (
     new_csrf_token,
     request_origin,
@@ -133,12 +134,15 @@ def users_page(
     # Full översikt med drill-down finns på /admin/storage.
     psizes = storage.project_sizes()
     msizes = storage.media_sizes()
-    slugs_by_owner: dict[int, list[str]] = {}
-    for p in db.query(Project).all():
-        slugs_by_owner.setdefault(p.owner_id, []).append(p.slug)
+    # Kolumnen visar användarens PERSONLIGA footprint (solo-turer + personlig pool) - team-
+    # delade resurser (team-turer + team-pool) hör till teamet och redovisas på /admin/teams
+    # och /admin/storage:s team-grupper, så inget dubbelräknas mellan vyerna.
+    solo_slugs_by_owner: dict[int, list[str]] = {}
+    for p in db.query(Project).filter(Project.team_id.is_(None)).all():
+        solo_slugs_by_owner.setdefault(p.owner_id, []).append(p.slug)
     rows = []
     for u in users:
-        used = sum(psizes.get(s, 0) for s in slugs_by_owner.get(u.id, [])) + msizes.get(u.owner_key, 0)
+        used = sum(psizes.get(s, 0) for s in solo_slugs_by_owner.get(u.id, [])) + msizes.get(str(u.id), 0)
         rows.append({
             "id": u.id,
             "email": u.email,
@@ -177,67 +181,28 @@ def storage_page(
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin),
 ) -> HTMLResponse:
-    """Dedikerad lagringsöversikt: per användare -> turer + mediepool, ospårade
-    mappar, och totaler. Störst först. Cachad (SVK_STORAGE_CACHE_TTL); knappen
-    'Räkna om' tömmer cachen. Fas 4: gruppera per team (owner_id -> team_id)."""
-    psizes = storage.project_sizes()
-    msizes = storage.media_sizes()
-    users = db.query(User).order_by(User.created_at.asc()).all()
-    projects_by_owner: dict[int, list[Project]] = {}
-    for p in db.query(Project).all():
-        projects_by_owner.setdefault(p.owner_id, []).append(p)
-
-    owned_slugs: set[str] = set()
-    # Mediepoolen nycklas på owner_key (team-<id> delas av flera medlemmar) - attribuera
-    # varje pool EN gång (första medlemmen) så team-poolen inte dubbelräknas och
-    # untracked inte blir negativ. Full per-team-gruppering: Fas 4.2.
-    seen_media: set[str] = set()
-    user_rows = []
-    for u in users:
-        tours = []
-        for p in projects_by_owner.get(u.id, []):
-            owned_slugs.add(p.slug)
-            tours.append({"slug": p.slug, "name": p.name, "bytes": psizes.get(p.slug, 0)})
-        tours.sort(key=lambda t: t["bytes"], reverse=True)
-        key = u.owner_key
-        media_bytes = 0 if key in seen_media else msizes.get(key, 0)
-        seen_media.add(key)
-        total = sum(t["bytes"] for t in tours) + media_bytes
-        user_rows.append({
-            "id": u.id, "email": u.email, "name": u.name,
-            "tours": tours, "media": media_bytes, "total": total,
-        })
-    user_rows.sort(key=lambda r: r["total"], reverse=True)
-
-    # Ospårat: mappar på disk utan matchande DB-rad (orphan-turer / -mediepooler).
-    owner_keys = {u.owner_key for u in users}
-    orphan_tours = sorted(
-        [{"slug": s, "bytes": b} for s, b in psizes.items() if s not in owned_slugs],
-        key=lambda o: o["bytes"], reverse=True,
+    """Dedikerad lagringsöversikt grupperad per TEAM (delade turer + team-pool) och per
+    SOLO-användare (personliga turer + personlig pool), plus ospårade mappar. Varje tur/
+    pool redovisas i EXAKT en grupp -> tracked + untracked == disk_total. Cachad
+    (SVK_STORAGE_CACHE_TTL); 'Räkna om' tömmer cachen."""
+    member_counts = dict(
+        db.query(User.team_id, func.count(User.id))
+        .filter(User.team_id.isnot(None)).group_by(User.team_id).all()
     )
-    orphan_media = sorted(
-        [{"owner_id": oid, "bytes": b} for oid, b in msizes.items() if oid not in owner_keys],
-        key=lambda o: o["bytes"], reverse=True,
+    data = storage.classify_storage(
+        teams=db.query(Team).order_by(Team.name).all(),
+        users=db.query(User).order_by(User.created_at.asc()).all(),
+        projects=db.query(Project).all(),
+        member_counts=member_counts,
+        psizes=storage.project_sizes(),
+        msizes=storage.media_sizes(),
     )
-    tracked = sum(r["total"] for r in user_rows)
-    disk_total = sum(psizes.values()) + sum(msizes.values())
-
     token = new_csrf_token()
     response = templates.TemplateResponse(
         request,
         "admin_storage.html",
-        {
-            "active": "storage",
-            "user_rows": user_rows,
-            "orphan_tours": orphan_tours,
-            "orphan_media": orphan_media,
-            "tracked": tracked,
-            "disk_total": disk_total,
-            "untracked": max(0, disk_total - tracked),
-            "cache_ttl": config.STORAGE_CACHE_TTL,
-            "csrf_token": token,
-            "msg": request.query_params.get("msg"),
-        },
+        {"active": "storage", **data, "cache_ttl": config.STORAGE_CACHE_TTL,
+         "csrf_token": token, "msg": request.query_params.get("msg")},
     )
     set_csrf_cookie(response, token)
     return response
@@ -252,6 +217,86 @@ def storage_refresh(
     """Töm diskanvändnings-cachen -> nästa laddning räknar om från disk."""
     storage.invalidate()
     return RedirectResponse(url="/admin/storage?msg=Räknade+om+diskanvändningen", status_code=302)
+
+
+@router.get("/admin/teams", response_class=HTMLResponse)
+def teams_page(
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+) -> HTMLResponse:
+    """Super-admin team-översikt: alla team (iterera Team-tabellen så noll-medlem-team
+    syns) med medlems-/turantal + storlek (turer + team-pool). Skapa/radera team."""
+    teams = db.query(Team).order_by(Team.name).all()
+    member_counts = dict(
+        db.query(User.team_id, func.count(User.id))
+        .filter(User.team_id.isnot(None)).group_by(User.team_id).all()
+    )
+    psizes = storage.project_sizes()
+    rows = []
+    for t in teams:
+        tours = db.query(Project).filter(Project.team_id == t.id).all()
+        size = sum(psizes.get(p.slug, 0) for p in tours) + storage.media_size(f"team-{t.id}")
+        rows.append({
+            "id": t.id, "name": t.name, "slug": t.slug,
+            "members": member_counts.get(t.id, 0), "tours": len(tours), "size": size,
+        })
+    rows.sort(key=lambda r: r["size"], reverse=True)
+    token = new_csrf_token()
+    response = templates.TemplateResponse(
+        request,
+        "admin_teams.html",
+        {
+            "active": "teams", "teams": rows, "csrf_token": token,
+            "msg": request.query_params.get("msg"),
+            "error": request.query_params.get("error"),
+        },
+    )
+    set_csrf_cookie(response, token)
+    return response
+
+
+@router.post("/admin/teams")
+async def create_team_admin(
+    request: Request,
+    db: Session = Depends(get_db),
+    name: str = Form(...),
+    admin: User = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Super-admin skapar ett (tomt) team. Medlemmar/admin tilldelas sedan via
+    /admin/users/{id}. Slug globalt unik (per-team-slug är Fas 4b)."""
+    from app.services.project_files import slugify
+
+    name = name.strip()
+    if not name:
+        return RedirectResponse(url="/admin/teams?error=Teamnamn+krävs", status_code=303)
+    base = slugify(name) or "team"
+    slug, i = base, 2
+    while db.query(Team).filter(Team.slug == slug).first() is not None:
+        slug, i = f"{base}-{i}", i + 1
+    db.add(Team(name=name, slug=slug))
+    db.commit()
+    return RedirectResponse(url="/admin/teams?msg=Team+skapat", status_code=303)
+
+
+@router.post("/admin/teams/{team_id}/delete")
+async def delete_team_admin(
+    request: Request,
+    team_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Super-admin raderar ett team. Blockeras om teamet äger turer (samma guard som
+    team-admins radering) - flytta/radera turerna först."""
+    from app.routes.teams import delete_team_by_id
+
+    if not delete_team_by_id(db, team_id):
+        return RedirectResponse(
+            url="/admin/teams?error=Teamet+äger+turer+-+flytta+eller+radera+dem+först",
+            status_code=303)
+    return RedirectResponse(url="/admin/teams?msg=Team+raderat", status_code=303)
 
 
 @router.get("/admin/users/{user_id}/projects", response_class=HTMLResponse)
@@ -311,6 +356,7 @@ def user_detail(
             "storage_rows": storage_rows,
             "storage_media": media_bytes,
             "storage_total": storage_total,
+            "all_teams": db.query(Team).order_by(Team.name).all(),
             "csrf_token": token,
             "msg": request.query_params.get("msg"),
             "error": request.query_params.get("error"),
@@ -437,6 +483,41 @@ async def admin_set_role(
     target.is_admin = want_admin
     db.commit()
     return _back(user_id, msg="Användaren är nu administratör." if want_admin else "Adminbehörighet borttagen.")
+
+
+@router.post("/admin/users/{user_id}/team")
+async def admin_set_team(
+    request: Request,
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+    team_id: str = Form(""),
+    team_role: str = Form(TEAM_ROLE_MEMBER),
+    _csrf: None = Depends(verify_csrf_form),
+):
+    """Super-admin tilldelar användaren ett team + roll (eller tar bort teamet, team_id
+    tomt). SISTA-ADMIN-SKYDD: om ändringen tar target UR sitt nuvarande team eller
+    degraderar target där, och target är den enda team-adminen medan andra medlemmar
+    finns -> blockera (utse ny admin först). Speglar target-sessionen om target = admin."""
+    from app.auth import set_user_session
+    from app.routes.teams import _ORPHAN_MSG, _would_orphan_admin
+
+    target = _target_or_404(db, user_id)
+    new_team_id = int(team_id) if team_id.strip().isdigit() else None
+    new_role = TEAM_ROLE_ADMIN if team_role == TEAM_ROLE_ADMIN else TEAM_ROLE_MEMBER
+    if new_team_id is not None and db.get(Team, new_team_id) is None:
+        return _back(user_id, error="Teamet finns inte.")
+    leaving = target.team_id is not None and new_team_id != target.team_id
+    demoting = (target.team_id is not None and new_team_id == target.team_id
+                and new_role != TEAM_ROLE_ADMIN)
+    if (leaving or demoting) and _would_orphan_admin(db, target.team_id, target):
+        return _back(user_id, error=_ORPHAN_MSG)
+    target.team_id = new_team_id
+    target.team_role = new_role if new_team_id is not None else TEAM_ROLE_MEMBER
+    db.commit()
+    if target.id == admin.id:
+        set_user_session(request, target)  # spegla eget team-byte i sessionen
+    return _back(user_id, msg="Team uppdaterat.")
 
 
 @router.post("/admin/users/batch")

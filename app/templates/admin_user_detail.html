@@ -96,6 +96,29 @@
 </article>
 
 <article>
+	<h2>Team</h2>
+	<form method="post" action="/admin/users/{{ target.id }}/team" class="team-assign">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+		<label>Team
+			<select name="team_id">
+				<option value="">(inget team - personlig)</option>
+				{% for t in all_teams %}
+				<option value="{{ t.id }}" {% if target.team_id == t.id %}selected{% endif %}>{{ t.name }}</option>
+				{% endfor %}
+			</select>
+		</label>
+		<label>Roll i teamet
+			<select name="team_role">
+				<option value="member" {% if target.team_role != 'team_admin' %}selected{% endif %}>Medlem</option>
+				<option value="team_admin" {% if target.team_role == 'team_admin' %}selected{% endif %}>Team-admin</option>
+			</select>
+		</label>
+		<button type="submit" class="secondary">Spara team</button>
+	</form>
+	<p><small>Rollen gäller bara om ett team är valt. Tar du bort en team-admin ur teamet medan andra medlemmar finns kvar måste du först utse en ny admin.</small></p>
+</article>
+
+<article>
 	<h2>Turer</h2>
 	<p><a href="/admin/users/{{ target.id }}/projects" role="button" class="secondary outline">Visa användarens turer ({{ owns }})</a></p>
 	{% if not is_self %}
