@@ -12,8 +12,9 @@ from sqlalchemy.orm import Session
 
 from app.auth import require_user
 from app.database import Project, User, get_db
-from app.deps import get_project_or_404, verify_csrf_header
-from app.services import backup
+from app.deps import QUOTA_MSG, get_project_or_404, team_over_quota, verify_csrf_header
+from app.services import backup, media, storage
+from app.services.project_files import project_dir
 
 router = APIRouter()
 
@@ -55,6 +56,11 @@ async def import_backup(
     _csrf: None = Depends(verify_csrf_header),
 ) -> JSONResponse:
     """Importera ett projektarkiv (zip) som ett nytt projekt ägt av användaren."""
+    # Import är den STÖRSTA enskilda skrivvägen (hela arkivet landar i importörens
+    # yta) -> grinda den mot kvoten som bild-/media-upload och tiling, annars kan ett
+    # team över kvot kringgå gränsen via import.
+    if team_over_quota(db, user.team_id):
+        raise HTTPException(status_code=409, detail=QUOTA_MSG)
     tmp = Path(tempfile.mkstemp(suffix=".zip")[1])
     try:
         cap = backup.MAX_BACKUP_MB * 1024 * 1024
@@ -69,6 +75,9 @@ async def import_backup(
             project = backup.import_project(tmp, user, db)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc))
+        # Kvot-cachen ser annars inte den nya turen/mediakopiorna förrän TTL löpt ut.
+        storage.invalidate(project_dir(project.slug))
+        storage.invalidate(media.owner_dir(user.owner_key))
         return JSONResponse({"slug": project.slug, "name": project.name})
     finally:
         tmp.unlink(missing_ok=True)
