@@ -2,6 +2,38 @@
 
 Nyast först. Varje fynd markerat åtgärdat/avfärdat med commit-ref.
 
+## 2026-07-15 - Granskning av team-/multi-tenancy-sessionen (30843fa..251b464)
+
+Sex parallella subagenter (Sonnet) per fokusområde + oberoende verifiering mot kod
+i huvudsessionen; advisor (Opus) konsulterad om angreppssätt, M3-avvägning och
+verifieringsnivå. Inga kritiska fynd. Alla 33 fynd åtgärdade. **Verifieringsnivå:**
+`backend_test.py` 291/291 (samma baslinje-svit -> "bröt inget befintligt", inte
+bevis att fixarna gör rätt) + app bootar + alla ändrade admin/editor-vyer renderar
+200 inloggat. Fix-grenarna (over-kvot-import, främmande-slug-skip, orphan-guards,
+move-approve-claim, L7:s ogiltig-mediamapp) är **logik-verifierade, inte körda** -
+en acceptabel nivå för ett 33-posters svep. Frontend (M8/M9) ej browser-testad.
+
+**Höga**
+- H1 Import kringgick kvot-grinden - åtgärdad, **commit bf5ea6a**.
+- H2 Demo-reset kunde wipe:a främmande turs filer vid slug-återanvändning - åtgärdad, **commit 4ee6de4**.
+
+**Medel**
+- M1 Sista-admin-skydd hedrades ej vid spärra/radera/batch - åtgärdad, **commit 3c1c738**.
+- M2 Flytt IN till team kringgick kvot-grinden - åtgärdad, **commit 5ec2b45**.
+- M3 `ensure_demo` kunde kapa konto med demo-e-post - åtgärdad, **commit 4ee6de4** + helt stängd (även team-löst konto) i **commit d174f27**.
+- M4 Demo-reset saknade `_job_running`-guard - åtgärdad, **commit 4ee6de4**.
+- M5 `tiling._run_job` bara delvis felskyddad - åtgärdad, **commit 587507b**.
+- M6 `upload_map_image` tog `get_project_or_404` - åtgärdad, **commit 4ec5890**.
+- M7 `_export`/`_backup`-zippar räknades mot kvoten - åtgärdad (+ `_history`), **commit 1301887**.
+- M8 `plan.js` "Lämna utan att spara" rensade ej utkastet - åtgärdad, **commit 49faf12**.
+- M9 Arbetsyte-flik utan turer kunde aldrig väljas - åtgärdad, **commit 49faf12**.
+
+**Låga** L1-L11 åtgärdade: L1/L8/L7 storage/kvot (**1301887**, **5ec2b45**, **bf5ea6a**),
+L2/L3/L10 demo (**4ee6de4**), L4/L5/L6/L11 tur-flytt (**5ec2b45**), L9 confirm-modal (**49faf12**).
+
+**Nit** N1-N11 åtgärdade: N1/N2 admin-kvot (**3c1c738**), N3/N4 demo (**4ee6de4**),
+N5/N6/N10/N11 (**af22c11**), N7 editor-lock (**49faf12**), N8/N9 tur-flytt/tiling (**5ec2b45**, **587507b**).
+
 ## 2026-07-13 - Granskning av flerspråkighets-epiken (i18n)
 
 Subagent-granskning (kördes som Sonnet pga env-pinning) av hela i18n-blocket
