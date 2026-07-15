@@ -85,13 +85,14 @@ def ensure_demo(db: Session) -> Team:
         if u is None:
             u = User(email=acc["email"])
             db.add(u)
-        elif u.team_id not in (None, tid):
-            # E-posten är redan upptagen av ett FRÄMMANDE konto (annat team). Kapa det
-            # aldrig - force-skrivningen (känt lösenord, is_admin strippad) vore en
-            # tyst övertagning. Abortera med tydligt fel (samma väg som andra guards).
+        elif u.team_id != tid:
+            # E-posten är redan upptagen av ett konto som INTE tillhör demo-teamet (annat
+            # team ELLER team-löst solo-konto). Kapa det aldrig - force-skrivningen (känt
+            # lösenord, is_admin strippad) vore en tyst övertagning. Abortera hellre; en
+            # admin får rensa/flytta kontot manuellt om det verkligen ska bli demo.
             raise ValueError(
-                f"Kontot {acc['email']!r} tillhör redan ett annat team - kan inte "
-                "initialisera demo-kontot. Byt e-post i DEMO_ACCOUNTS eller flytta kontot."
+                f"Kontot {acc['email']!r} tillhör inte demo-teamet - kan inte "
+                "initialisera demo-kontot. Byt e-post i DEMO_ACCOUNTS eller ta bort kontot först."
             )
         u.name = acc["name"]
         u.password_hash = hash_password(acc["password"])
