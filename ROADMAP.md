@@ -794,7 +794,7 @@ per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga 
       döda lås: heartbeat medan man redigerar + timeout (auto-släpp efter inaktivitet), plus
       admin-tvingad incheck som säkerhetsventil. Gäller redigerings-routes (skriv-endpoints
       nekar om utcheckad av annan); /view + /s (visning) opåverkade. Störst värde för team.
-- [ ] **Team-livscykel + skyddsräcken (todo 2026-07-14, Rasmus).** (a) **Byt teamnamn /
+- [~] **Team-livscykel + skyddsräcken (2026-07-15): (a) rename/radera + (b) sista-admin-skydd + lämna KLART. Kvar: (c) flytta enskild tur mellan ytor (media-kopiering).** (a) **Byt teamnamn /
       radera team** (team-admin) - finns inte alls idag. Radera team: vad händer med teamets
       turer/media/presets? (arkivera/överför till en medlem, eller blockera om turer finns.)
       (b) **Sista-admin-skydd + överlämning:** ett team får aldrig bli helt utan team-admin -
