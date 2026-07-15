@@ -800,6 +800,17 @@ per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga 
       döda lås: heartbeat medan man redigerar + timeout (auto-släpp efter inaktivitet), plus
       admin-tvingad incheck som säkerhetsventil. Gäller redigerings-routes (skriv-endpoints
       nekar om utcheckad av annan); /view + /s (visning) opåverkade. Störst värde för team.
+- [ ] **Check-in: fråga om spara/förkasta vid osparade ändringar (todo 2026-07-15).** Idag släpper
+      "Checka in"-knappen (editor-lock.js:53-55) bara låset och navigerar till /editor - den SPARAR
+      INTE, och `/checkin` (checkout.release) rör aldrig tour.json. Har man osparade ändringar i steget
+      (t.ex. plan.js DRAFT-utkast eller oskrivna scen-/hotspot-ändringar) förloras de utan tydlig fråga
+      (bara ev. generisk beforeunload i vissa steg). Önskat: vid check-in med osparade ändringar ->
+      confirmDialog "Spara innan incheck / Förkasta / Avbryt". KOMPLEXITET: "spara" beror på VILKET steg
+      man är på - varje steg (plan/scenes/preview/translate) har egen dirty-tracking + spar-funktion. Kräver
+      ett gemensamt klient-kontrakt (t.ex. `window.editorDirty()` + `window.editorSave()` som varje steg
+      registrerar) som editor-lock.js anropar före check-in. Samma kontrakt skulle förbättra heartbeat-
+      övertagande-varningen (editor-lock.js:79, redan "dina osparade ändringar kan inte sparas"). Medel-
+      prio: datförlust-risk i team-redigering, men mestadels mildrad av plan.js localStorage-utkast.
 - [x] **Team-livscykel + skyddsräcken KLAR (2026-07-15): (a) rename/radera + (b) sista-admin-skydd + lämna + (c) flytta enskild tur mellan ytor.** (a) **Byt teamnamn /
       radera team** (team-admin) - finns inte alls idag. Radera team: vad händer med teamets
       turer/media/presets? (arkivera/överför till en medlem, eller blockera om turer finns.)
