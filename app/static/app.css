@@ -223,7 +223,7 @@ body.editor-locked button[type="submit"] { opacity: .5; pointer-events: none; }
 }
 /* Utcheckad av NÅGON ANNAN -> dämpa tumnagel + namn så turen läses som "inte redigerbar nu"
    (badgen själv förblir skarp; egen utcheckning dämpas inte). */
-.lock-other .tour-name { opacity: .5; }
+.lock-other .tour-name,
 tr.lock-other td:first-child .tour-name { opacity: .5; }
 .lock-other .tour-card-thumb { opacity: .45; }
 .tour-card-body form { margin: 0; }

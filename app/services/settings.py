@@ -6,12 +6,15 @@ worker, single-container). Med `uvicorn --workers N` uppdaterar `_set` bara den
 anropande workerns `_cache` - övriga blir stale tills omstart. Inte ett problem idag."""
 from __future__ import annotations
 
+import threading
+
 from app import config
 from app.database import SessionLocal, Setting
 
 _SITE_NAME_KEY = "site_name"
 _WORKFLOW_KEY = "workflow_text"
 _cache: dict[str, str] = {}
+_cache_lock = threading.Lock()  # skyddar _cache (konsekvent med storage.py)
 
 # Justerbara heltalsinställningar utan omstart: key -> (config-default-attr, min, max).
 # `base_url` är MEDVETET utelämnad - den blir Fas 4.3:s per-team-seam (`team_origin`),
@@ -36,15 +39,17 @@ def _default_workflow() -> str:
 
 
 def _get(key: str, default: str) -> str:
-    if key in _cache:
-        return _cache[key]
+    with _cache_lock:
+        if key in _cache:
+            return _cache[key]
     db = SessionLocal()
     try:
         row = db.get(Setting, key)
         value = row.value if row else default
     finally:
         db.close()
-    _cache[key] = value
+    with _cache_lock:
+        _cache[key] = value
     return value
 
 
@@ -59,7 +64,8 @@ def _set(key: str, value: str) -> None:
         db.commit()
     finally:
         db.close()
-    _cache[key] = value
+    with _cache_lock:
+        _cache[key] = value
 
 
 def get_site_name() -> str:
@@ -88,7 +94,8 @@ def _delete(key: str) -> None:
             db.commit()
     finally:
         db.close()
-    _cache.pop(key, None)
+    with _cache_lock:
+        _cache.pop(key, None)
 
 
 def get_int(key: str) -> int:

@@ -14,6 +14,7 @@ from pathlib import Path
 from app.services.project_files import project_dir
 
 _lock = threading.Lock()
+_MAX_LINES = 500  # tak: äldsta rader trunkeras (loggen är error-only, låg volym)
 
 
 def _log_path(slug: str) -> Path:
@@ -22,7 +23,8 @@ def _log_path(slug: str) -> Path:
 
 def append(slug: str, kind: str, message: str, level: str = "fel") -> None:
     """Lägg till en rad i projektets jobblogg. Fält TAB-separerade (meddelandet sist,
-    ev. radbrytningar plattas till mellanslag) -> enkel att parsa i `read`."""
+    ev. radbrytningar plattas till mellanslag) -> enkel att parsa i `read`. Filen kapas
+    till de senaste `_MAX_LINES` raderna så den inte växer obegränsat."""
     ts = datetime.datetime.now().isoformat(timespec="seconds")
     msg = " ".join(str(message).split())  # platta ut radbrytningar/whitespace
     line = f"{ts}\t{kind}\t{level}\t{msg}\n"
@@ -31,6 +33,12 @@ def append(slug: str, kind: str, message: str, level: str = "fel") -> None:
         p.parent.mkdir(parents=True, exist_ok=True)
         with p.open("a", encoding="utf-8") as f:
             f.write(line)
+        try:
+            lines = p.read_text(encoding="utf-8").splitlines(keepends=True)
+        except OSError:
+            return
+        if len(lines) > _MAX_LINES:
+            p.write_text("".join(lines[-_MAX_LINES:]), encoding="utf-8")
 
 
 def read(slug: str, limit: int = 200) -> list[dict]:

@@ -342,6 +342,8 @@ async def rename_slug(
     forget_tile_job(slug)  # in-memory-status nycklad på gamla slugen
     forget_export_job(slug)
     forget_backup_job(slug)
+    storage.invalidate(project_dir(slug))      # gamla mappens stale cache-nyckel
+    storage.invalidate(project_dir(new_slug))  # nya mappens storlek räknas färskt
     return RedirectResponse(url=f"/projects/{new_slug}", status_code=303)
 
 
