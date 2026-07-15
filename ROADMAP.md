@@ -183,6 +183,17 @@ Luckor identifierade 2026-07-11 innan team-arbetet.
       hover-preview-mönstret från scen-/preview-vyn). Fallback-kedja: ingen firstScene ->
       visa **kartbilden** (`map.png`) som tumnagel; ingen karta heller -> tom yta. Tumnagel
       för scen kan återanvända previews-lagret (`previews/<id>.jpg`, lat genererat).
+- [ ] **Utcheckad-markering i /editor-listan (todo 2026-07-15).** Visa i /editor-listan (list-
+      OCH kort-vy) om en tur är UTCHECKAD/låst för redigering, och AV VEM. Datan finns redan på
+      turen: `Project.checked_out_by`/`checked_out_at` + `checkout.current_holder(db, project)`
+      (ger `{id, name}` för den som håller ett FÄRSKT lås, None om fritt/stale - respekterar alltså
+      stale-timeouten automatiskt). Bara TEAM-turer låses (solo-turer aldrig -> ingen badge där).
+      UI: en lås-ikon/badge "Utcheckad av X" per rad/kort (dölj "(du)" när det är en själv, eller
+      visa "utcheckad av dig"). Förvarnar innan man öppnar en tur någon annan redigerar (i stället
+      för att mötas av läsläge/409 först inne i steget). Litet, fristående, additivt - kompletterar
+      check-out-låset med synlighet på översiktsnivån. Naturligt att göra ihop med arbetsyte-
+      flikarna (samma /editor-lista-yta) eller som egen quick win. `editor_home` (projects.py)
+      renderar redan turerna; lägg holder-uppslaget där (en `current_holder` per team-tur).
 
 - [x] **Byt turens visningsnamn KLAR (2026-07-11).** `POST /projects/{slug}/rename`
       (gate + CSRF) uppdaterar `Project.name`. Fält i "Turinställningar"-sektionen på
