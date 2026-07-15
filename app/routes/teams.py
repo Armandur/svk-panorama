@@ -8,20 +8,25 @@ from __future__ import annotations
 import datetime
 import re
 import shutil
+from pathlib import Path
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.auth import make_invite_token, require_team_admin, require_user, set_user_session
 from app.database import TEAM_ROLE_ADMIN, TEAM_ROLE_MEMBER, Project, Team, User, get_db
 from app.deps import (
+    QUOTA_MSG,
     get_project_or_404,
     new_csrf_token,
     project_owner_key,
     request_origin,
     resolve_workspace,
     set_csrf_cookie,
+    team_over_quota,
     templates,
     user_may_use_workspace,
     verify_csrf_form,
@@ -30,6 +35,7 @@ from app.deps import (
 from app.services import checkout
 from app.services import history
 from app.services import media as media_svc
+from app.services import storage
 from app.services.project_files import (
     _atomic_write_text,
     last_modified,
@@ -95,16 +101,26 @@ def _copy_pool_media(old_key: str, new_key: str, names: set[str], uploader: dict
     src, dst = media_svc.owner_dir(old_key), media_svc.owner_dir(new_key)
     dst.mkdir(parents=True, exist_ok=True)
     thumb_src, thumb_dst = media_svc._thumb_dir(old_key), media_svc._thumb_dir(new_key)
-    for name in names:
-        s = src / name
-        if s.exists() and not (dst / name).exists():
-            shutil.copy2(str(s), str(dst / name))
-            if uploader and new_key.startswith("team-"):
-                media_svc._record_uploader(new_key, name, uploader)
-        ts = thumb_src / (name + ".jpg")
-        if ts.exists() and not (thumb_dst / (name + ".jpg")).exists():
-            thumb_dst.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(str(ts), str(thumb_dst / (name + ".jpg")))
+    # Städa det HÄR anropet hann kopiera om något fallerar mitt i - annars ligger
+    # halvkopierade, oreferrerade filer kvar i målpoolen + rått 500 till användaren.
+    copied: list[Path] = []
+    try:
+        for name in names:
+            s = src / name
+            if s.exists() and not (dst / name).exists():
+                shutil.copy2(str(s), str(dst / name))
+                copied.append(dst / name)
+                if uploader and new_key.startswith("team-"):
+                    media_svc._record_uploader(new_key, name, uploader)
+            ts = thumb_src / (name + ".jpg")
+            if ts.exists() and not (thumb_dst / (name + ".jpg")).exists():
+                thumb_dst.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(str(ts), str(thumb_dst / (name + ".jpg")))
+                copied.append(thumb_dst / (name + ".jpg"))
+    except OSError as exc:
+        for f in copied:
+            f.unlink(missing_ok=True)
+        raise ValueError("Kunde inte kopiera turens bilder till målytan - flytten avbröts.") from exc
 
 
 def _rewrite_tour_media_key(slug: str, old_key: str, new_key: str) -> None:
@@ -143,6 +159,9 @@ def _apply_move(
     project.checked_out_by = None  # turen byter yta -> gammalt lås irrelevant
     project.checked_out_at = None
     db.commit()
+    # Kvot-cachen ser annars inte de inkopierade poolbilderna förrän TTL löpt ut.
+    if old_key != new_key:
+        storage.invalidate(media_svc.owner_dir(new_key))
 
 
 def _team_project(db: Session, admin: User, slug: str) -> Project:
@@ -544,13 +563,24 @@ async def move_workspace(
             url=f"/projects/{slug}?move_error=V%C3%A4nta+tills+tiling%2Fexport+%C3%A4r+klar",
             status_code=303,
         )
-    # IN till team: direkt flytt (owner_id bevaras som skapad-av).
+    # IN till team: direkt flytt (owner_id bevaras som skapad-av). Adderar turens
+    # footprint + inkopierad media permanent till teamet -> grinda mot kvoten (M2).
     if project.team_id is None and target_team_id is not None:
-        _apply_move(db, project, target_team_id, None,
-                    {"by": user.id, "name": user.name or user.email})
+        if team_over_quota(db, target_team_id):
+            return RedirectResponse(url=f"/projects/{slug}?move_error={quote(QUOTA_MSG)}", status_code=303)
+        try:
+            _apply_move(db, project, target_team_id, None,
+                        {"by": user.id, "name": user.name or user.email})
+        except ValueError as exc:
+            return RedirectResponse(url=f"/projects/{slug}?move_error={quote(str(exc))}", status_code=303)
         return RedirectResponse(url=f"/projects/{slug}", status_code=303)
-    # UT ur team: skapa begäran (godkänns av team-admin).
+    # UT ur team: skapa begäran (godkänns av team-admin). En annan medlems väntande
+    # begäran får inte tyst skrivas över (L5).
     if project.team_id is not None and target_team_id is None:
+        if project.move_requested_by is not None and project.move_requested_by != user.id:
+            return RedirectResponse(
+                url=f"/projects/{slug}?move_error={quote('En annan medlems flyttbegäran väntar redan.')}",
+                status_code=303)
         project.move_requested_by = user.id
         project.move_requested_at = datetime.datetime.utcnow()
         db.commit()
@@ -570,15 +600,20 @@ async def move_approve(
     """Team-admin godkänner en utflytt (team -> begärarens personliga yta). Blockeras om
     någon ANNAN håller ett färskt redigeringslås (be hen checka in först). Begäraren blir
     ny ägare; media kopieras till hens personliga pool (copy-and-leave)."""
+    from app.routes.projects import _job_running
+
     project = _team_project(db, admin, slug)
     if project.move_requested_by is None:
         raise HTTPException(status_code=400, detail="Ingen väntande flyttbegäran")
     requester_id = project.move_requested_by
     requester = db.get(User, requester_id)
-    if requester is None or not user_may_use_workspace(db, requester, str(requester_id)):
+    # Begäraren måste kunna äga egna turer OCH vara aktiv (annars parkeras turen
+    # under ett spärrat konto) - annars avslå i stället (L6).
+    if (requester is None or not requester.active
+            or not user_may_use_workspace(db, requester, str(requester_id))):
         raise HTTPException(
             status_code=400,
-            detail="Begäraren kan inte längre ha egna turer - avslå begäran i stället.",
+            detail="Begäraren kan inte längre ta emot turen - avslå begäran i stället.",
         )
     holder = checkout.current_holder(db, project)
     if holder and holder["id"] != admin.id:
@@ -586,7 +621,28 @@ async def move_approve(
             status_code=409,
             detail=f"Turen är utcheckad av {holder['name']} - be hen checka in först.",
         )
-    _apply_move(db, project, None, requester_id, None)
+    # Godkännandet kan ske långt efter begäran -> kolla att inget tiling/export-jobb
+    # skriver just nu (media-/manifest-omskrivningen skulle annars race:a) (N8).
+    if _job_running(slug):
+        raise HTTPException(status_code=409, detail="Vänta tills tiling/export är klar innan du godkänner.")
+    # Atomiskt "hävda" begäran (villkorad UPDATE + rowcount) så en samtidig återkallelse
+    # inte kan slinka mellan läsning och godkännande (L4, som checkout.try_acquire).
+    claimed = db.execute(
+        update(Project).where(Project.id == project.id, Project.move_requested_by == requester_id)
+        .values(move_requested_by=None, move_requested_at=None)
+    ).rowcount
+    db.commit()
+    if not claimed:
+        raise HTTPException(status_code=409, detail="Flyttbegäran återkallades - inget att godkänna.")
+    try:
+        _apply_move(db, project, None, requester_id, None)
+    except ValueError as exc:
+        # Media-kopieringen fallerade och städade efter sig -> lägg tillbaka begäran
+        # så den är kvar att försöka igen, och visa felet.
+        project.move_requested_by = requester_id
+        project.move_requested_at = datetime.datetime.utcnow()
+        db.commit()
+        raise HTTPException(status_code=400, detail=str(exc))
     return RedirectResponse(url="/team", status_code=303)
 
 
