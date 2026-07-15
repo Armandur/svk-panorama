@@ -32,8 +32,9 @@ def start_tile_job(
     project: Project = Depends(get_project_or_404),
     _csrf: None = Depends(verify_csrf_header),
 ) -> dict[str, Any]:
-    # Tiling genererar kakel (växer lagringen) -> blockera team-turer över kvot.
-    if team_over_quota(db, project.team_id):
+    # Tiling genererar kakel (växer lagringen) -> blockera team-turer över kvot. Ett
+    # no-op-jobb (allt redan tilat) växer inget -> grinda inte det (N9).
+    if tiling.pending_scenes(slug) and team_over_quota(db, project.team_id):
         raise HTTPException(status_code=409, detail=QUOTA_MSG)
     tiling.start_job(slug)
     return _state(slug)

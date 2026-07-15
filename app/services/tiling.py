@@ -298,35 +298,47 @@ def _tile_one(slug: str, quality: int, scene_id: str, image_fs: Path, entry: dic
 
 
 def _run_job(slug: str, quality: int, scenes: list[tuple[str, Path]]) -> None:
-    job = _jobs[slug]
-    entries = {s["id"]: s for s in job["scenes"]}
-    errors: list[str] = []
-    # Läs vid jobbstart -> super-admins parallellitets-inställning (env-default +
-    # DB-override) gäller nästa jobb utan omstart.
-    from app.services import settings
-    workers = max(1, settings.get_int("tile_concurrency"))
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = {
-            pool.submit(_tile_one, slug, quality, sid, img, entries[sid], job): sid
-            for sid, img in scenes
-        }
-        for fut in as_completed(futures):
-            sid = futures[fut]
-            try:
-                fut.result()
-            except Exception as exc:  # noqa: BLE001 - visa felet i UI:t
-                entries[sid]["status"] = "error"
-                entries[sid]["stage"] = "fel"
-                detail = getattr(exc, "output", None) or exc
-                errors.append(f"scen {sid}: {detail}")
-    job["status"] = "error" if errors else "done"
-    if errors:
-        job["error"] = "; ".join(errors)
+    # HELA kroppen omsluten (symmetriskt med bundle/backup): även `_jobs[slug]`,
+    # settings.get_int, executor-konstruktionen och storage.invalidate kan kasta -
+    # annars dör tråden tyst och jobbet fastnar på "running" utan spår.
+    try:
+        job = _jobs[slug]
+        entries = {s["id"]: s for s in job["scenes"]}
+        errors: list[str] = []
+        # Läs vid jobbstart -> super-admins parallellitets-inställning (env-default +
+        # DB-override) gäller nästa jobb utan omstart.
+        from app.services import settings
+        workers = max(1, settings.get_int("tile_concurrency"))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = {
+                pool.submit(_tile_one, slug, quality, sid, img, entries[sid], job): sid
+                for sid, img in scenes
+            }
+            for fut in as_completed(futures):
+                sid = futures[fut]
+                try:
+                    fut.result()
+                except Exception as exc:  # noqa: BLE001 - visa felet i UI:t
+                    entries[sid]["status"] = "error"
+                    entries[sid]["stage"] = "fel"
+                    detail = getattr(exc, "output", None) or exc
+                    errors.append(f"scen {sid}: {detail}")
+        job["status"] = "error" if errors else "done"
+        if errors:
+            job["error"] = "; ".join(errors)
+            from app.services import joblog
+            joblog.append(slug, "tiling", job["error"])  # persistent så felet överlever omstart
+        # Kakel skrevs -> töm diskcachen så kvot-grinden ser den nya storleken direkt.
+        from app.services import storage
+        storage.invalidate(project_dir(slug))
+    except Exception as exc:  # noqa: BLE001 - jobbet får aldrig dö tyst
+        j = _jobs.get(slug)
+        if j is None:
+            return  # jobbet glömdes (turen raderas) -> inget att rapportera, rör inte disken
+        j["status"] = "error"
+        j["error"] = str(exc)
         from app.services import joblog
-        joblog.append(slug, "tiling", job["error"])  # persistent så felet överlever omstart
-    # Kakel skrevs -> töm diskcachen så kvot-grinden ser den nya storleken direkt.
-    from app.services import storage
-    storage.invalidate(project_dir(slug))
+        joblog.append(slug, "tiling", f"Tiling-jobbet kraschade: {exc}")
 
 
 def start_job(slug: str, quality: int | None = None) -> dict[str, Any]:
