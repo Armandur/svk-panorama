@@ -10,7 +10,6 @@ from app.database import Project, get_db
 from app.deps import (
     QUOTA_MSG,
     get_editor,
-    get_project_or_404,
     require_edit_access,
     team_over_quota,
     verify_csrf_form,
@@ -100,7 +99,7 @@ async def upload_map_image(
     slug: str,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    project: Project = Depends(get_project_or_404),
+    project: Project = Depends(require_edit_access),
     _csrf: None = Depends(verify_csrf_form),
 ):
     if team_over_quota(db, project.team_id):
