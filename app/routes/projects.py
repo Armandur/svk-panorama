@@ -99,7 +99,10 @@ def editor_home(
         ws_tabs.append({"key": w["key"], "label": w["label"], "team_id": w["team_id"]})
         seen_ws.add(w["key"])
     for p in projects:
-        key = f"team-{p.team_id}" if p.team_id is not None else "personal"
+        # Personlig yta nycklas på ägar-id (str(owner_id)) - SAMMA nyckel som user_workspaces
+        # (str(user.id)); annars blir det en dubblett "Personlig"-flik för can_personal-användare.
+        # Solo-turer man ser ägs alltid av en själv (visible_projects_clause) -> owner_id == user.id.
+        key = f"team-{p.team_id}" if p.team_id is not None else str(p.owner_id)
         if key not in seen_ws:
             ws_tabs.append({"key": key, "team_id": p.team_id,
                             "label": team_names.get(p.team_id, "Team") if p.team_id else "Personlig"})

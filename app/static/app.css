@@ -154,7 +154,7 @@ body.editor-locked button[type="submit"] { opacity: .5; pointer-events: none; }
 	font-size: .9rem;
 }
 .ws-empty { color: var(--pico-muted-color); padding: 1.5rem 0; text-align: center; }
-.ws-hidden { display: none; }
+.ws-hidden { display: none !important; }  /* slår .tour-card { display: flex } (samma specificitet, senare i filen) */
 @media (max-width: 720px) {
 	.editor-layout { flex-direction: column; }
 	.editor-side { width: 100%; }

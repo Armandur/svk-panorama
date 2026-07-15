@@ -53,7 +53,7 @@
 			{% for p in projects %}
 			{% set st = tile_states[p.slug] %}
 			{% set pm = project_meta[p.slug] %}
-			<tr data-ws="{% if p.team_id %}team-{{ p.team_id }}{% else %}personal{% endif %}" data-search="{{ (p.name ~ ' ' ~ p.slug) | lower }}"{% if pm.locked_by and not pm.locked_by_me %} class="lock-other"{% endif %}>
+			<tr data-ws="{% if p.team_id %}team-{{ p.team_id }}{% else %}{{ p.owner_id }}{% endif %}" data-search="{{ (p.name ~ ' ' ~ p.slug) | lower }}"{% if pm.locked_by and not pm.locked_by_me %} class="lock-other"{% endif %}>
 				<td><a href="/projects/{{ p.slug }}" class="tour-name">{{ p.name }}</a>
 						{%- if pm.locked_by %} <span class="lock-badge{% if pm.locked_by_me %} lock-mine{% endif %}" title="Utcheckad för redigering">{% if pm.locked_by_me %}Utcheckad av dig{% else %}Utcheckad av {{ pm.locked_by }}{% endif %}</span>{% endif -%}
 					</td>
@@ -86,7 +86,7 @@
 		{% for p in projects %}
 		{% set st = tile_states[p.slug] %}
 		{% set pm = project_meta[p.slug] %}
-		<article class="tour-card{% if pm.locked_by and not pm.locked_by_me %} lock-other{% endif %}" data-slug="{{ p.slug }}" data-ws="{% if p.team_id %}team-{{ p.team_id }}{% else %}personal{% endif %}" data-search="{{ (p.name ~ ' ' ~ p.slug) | lower }}"{% if pm.first_scene %} data-first-scene="{{ pm.first_scene }}"{% endif %}>
+		<article class="tour-card{% if pm.locked_by and not pm.locked_by_me %} lock-other{% endif %}" data-slug="{{ p.slug }}" data-ws="{% if p.team_id %}team-{{ p.team_id }}{% else %}{{ p.owner_id }}{% endif %}" data-search="{{ (p.name ~ ' ' ~ p.slug) | lower }}"{% if pm.first_scene %} data-first-scene="{{ pm.first_scene }}"{% endif %}>
 			<a href="/projects/{{ p.slug }}" class="tour-card-thumb">
 				{% if pm.thumb %}<img src="{{ pm.thumb }}" alt="" loading="lazy">{% else %}<span class="tour-card-empty">Ingen bild</span>{% endif %}
 			</a>
