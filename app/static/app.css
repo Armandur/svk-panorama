@@ -168,6 +168,17 @@ body.editor-locked button[type="submit"] { opacity: .5; pointer-events: none; }
 .tour-card-meta { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; font-size: .8rem; }
 .tour-card-ws { color: var(--pico-muted-color); }
 .tour-card-mod { color: var(--pico-muted-color); }
+/* Utcheckad/låst tur: liten pil-badge intill turnamn (list) resp. i kort-metan. */
+.lock-badge {
+	display: inline-block; font-size: .72rem; font-weight: 600; line-height: 1;
+	padding: .2rem .45rem; border-radius: .35rem; white-space: nowrap;
+	color: var(--svk-warn, #b5872b); background: color-mix(in srgb, var(--svk-warn, #b5872b) 14%, transparent);
+	border: 1px solid color-mix(in srgb, var(--svk-warn, #b5872b) 40%, transparent);
+}
+.lock-badge.lock-mine {
+	color: var(--pico-muted-color); background: var(--pico-muted-border-color);
+	border-color: var(--pico-muted-border-color);
+}
 .tour-card-body form { margin: 0; }
 .tour-card-body form button { margin: 0; width: 100%; }
 

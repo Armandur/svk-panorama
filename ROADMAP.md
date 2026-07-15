@@ -183,17 +183,12 @@ Luckor identifierade 2026-07-11 innan team-arbetet.
       hover-preview-mönstret från scen-/preview-vyn). Fallback-kedja: ingen firstScene ->
       visa **kartbilden** (`map.png`) som tumnagel; ingen karta heller -> tom yta. Tumnagel
       för scen kan återanvända previews-lagret (`previews/<id>.jpg`, lat genererat).
-- [ ] **Utcheckad-markering i /editor-listan (todo 2026-07-15).** Visa i /editor-listan (list-
-      OCH kort-vy) om en tur är UTCHECKAD/låst för redigering, och AV VEM. Datan finns redan på
-      turen: `Project.checked_out_by`/`checked_out_at` + `checkout.current_holder(db, project)`
-      (ger `{id, name}` för den som håller ett FÄRSKT lås, None om fritt/stale - respekterar alltså
-      stale-timeouten automatiskt). Bara TEAM-turer låses (solo-turer aldrig -> ingen badge där).
-      UI: en lås-ikon/badge "Utcheckad av X" per rad/kort (dölj "(du)" när det är en själv, eller
-      visa "utcheckad av dig"). Förvarnar innan man öppnar en tur någon annan redigerar (i stället
-      för att mötas av läsläge/409 först inne i steget). Litet, fristående, additivt - kompletterar
-      check-out-låset med synlighet på översiktsnivån. Naturligt att göra ihop med arbetsyte-
-      flikarna (samma /editor-lista-yta) eller som egen quick win. `editor_home` (projects.py)
-      renderar redan turerna; lägg holder-uppslaget där (en `current_holder` per team-tur).
+- [x] **Utcheckad-markering i /editor-listan KLAR (2026-07-15).** /editor-listan (list- OCH kort-vy)
+      visar en amber badge "Utcheckad av X" (eller "Utcheckad av dig", dämpad) när en team-tur har ett
+      FÄRSKT redigeringslås. `editor_home` slår upp `checkout.current_holder(db, p)` per team-tur ->
+      `project_meta[slug].locked_by`/`locked_by_me`; badge intill turnamnet (list) resp. i kort-metan.
+      Solo-turer låses aldrig (ingen badge). Stale-lås ger ingen badge (current_holder respekterar
+      timeouten). Browser-verifierat (list+kort: färskt lås visas, stale-lås döljs korrekt).
 
 - [x] **Byt turens visningsnamn KLAR (2026-07-11).** `POST /projects/{slug}/rename`
       (gate + CSRF) uppdaterar `Project.name`. Fält i "Turinställningar"-sektionen på
@@ -819,12 +814,13 @@ per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga 
       begäraren som ägare + rensar check-out; blockeras om annan håller ett färskt lås (409, som
       history-restore). `Project.move_requested_by/at`. Verifierat: enhetstest (copy-and-leave-
       invariant) + end-to-end (utflytt/godkännande/403-gate + direktinflytt) + 3 UI-shots.
-- [ ] **Attribution i delad kontext (todo 2026-07-14).** (a) Radera-varning KLAR (2026-07-15).
-      Kvar: (c) team-aktivitetslista. **Radera-varning för andras turer:** i ett team kan vem som helst radera en kollegas tur - bekräftelsen ska
-      säga "skapad av X" (owner_id finns redan). (b) **"Uppladdad av" i mediabiblioteket**
-      (delad pool -> vem la in vad; kräver att uppladdaren stämplas, ny metadata). (c) Ev.
-      enkel **team-aktivitetslista** ("senaste ändringar i teamet", härledd ur mtime +
-      historik-attribution).
+- [x] **Attribution i delad kontext KLAR (2026-07-15).** (a) Radera-varning + (b) "Uppladdad av" +
+      (c) team-aktivitetslista klara. **Radera-varning för andras turer:** i ett team kan vem som helst
+      radera en kollegas tur - bekräftelsen säger "skapad av X" (owner_id). (b) **"Uppladdad av" i
+      mediabiblioteket** (delad pool, `.uploaders.json`-stämpel). (c) **Team-aktivitetslista** KLAR
+      (2026-07-15): sektion "Senaste aktivitet" på /team (alla medlemmar) - teamets turer sorterade på
+      senast ändrad (`last_modified` mtime) med "Av" ur historik-attributionen (`history.pending_editor`),
+      topp 12. Browser-verifierat.
 - [x] **Team-UI-puts KLAR (2026-07-15) - switch + ⋯-meny.** `can_personal`-knappen ("Egna turer: på/av")
       som en riktig switch/toggle. Medlemsåtgärderna på /team (promota/egna turer/ta bort)
       samlade i en liten åtgärds-meny (⋯) per rad. (Gäst-/läsrätts-roll SLOPAD - Rasmus: i

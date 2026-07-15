@@ -27,8 +27,17 @@ from app.deps import (
     verify_csrf_form,
 )
 from app.services import checkout
+from app.services import history
 from app.services import media as media_svc
-from app.services.project_files import _atomic_write_text, read_tour, slugify, tour_json_path, tour_lock
+from app.services.project_files import (
+    _atomic_write_text,
+    last_modified,
+    project_dir,
+    read_tour,
+    slugify,
+    tour_json_path,
+    tour_lock,
+)
 from app.services.tiling import manifest_path
 
 router = APIRouter()
@@ -178,6 +187,23 @@ def team_page(
                 "slug": p.slug, "name": p.name,
                 "requester": (req.name or req.email) if req else "?",
             })
+    # Senaste aktivitet i teamet: turer sorterade på senast ändrad (mtime) + vem som
+    # gjorde ändringen (historik-attributionen). Enkel översikt för alla medlemmar.
+    activity = []
+    if user.team_id:
+        import datetime as _dt
+
+        rows = []
+        for p in db.query(Project).filter(Project.team_id == user.team_id).all():
+            mt = last_modified(p.slug)
+            ed = history.pending_editor(project_dir(p.slug))
+            rows.append({
+                "name": p.name, "slug": p.slug,
+                "modified": _dt.datetime.fromtimestamp(mt) if mt else None,
+                "editor": (ed or {}).get("name"),
+            })
+        rows.sort(key=lambda r: r["modified"] or _dt.datetime.min, reverse=True)
+        activity = rows[:12]
     token = new_csrf_token()
     response = templates.TemplateResponse(
         request,
@@ -186,7 +212,7 @@ def team_page(
             "team": team, "members": members, "current_user": user,
             "is_team_admin": is_team_admin, "invite_links": invite_links,
             "solo_count": solo_count, "csrf_token": token,
-            "pending_moves": pending_moves,
+            "pending_moves": pending_moves, "activity": activity,
         },
     )
     set_csrf_cookie(response, token)

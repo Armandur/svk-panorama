@@ -71,6 +71,24 @@
 		<p><small>Turer och mediepool delas mellan teamets medlemmar.</small></p>
 	</article>
 
+	{% if activity %}
+	<article>
+		<h3>Senaste aktivitet</h3>
+		<table>
+			<thead><tr><th scope="col">Tur</th><th scope="col">Senast ändrad</th><th scope="col">Av</th></tr></thead>
+			<tbody>
+				{% for a in activity %}
+				<tr>
+					<td><a href="/projects/{{ a.slug }}" class="tour-name">{{ a.name }}</a></td>
+					<td>{% if a.modified %}{{ a.modified.strftime("%Y-%m-%d %H:%M") }}{% else %}-{% endif %}</td>
+					<td>{{ a.editor or '-' }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</article>
+	{% endif %}
+
 	{% if is_team_admin and pending_moves %}
 	<article>
 		<h3>Väntande flyttbegäranden</h3>

@@ -429,6 +429,10 @@ Slug fortsatt globalt unik (per-team-slug + disk-namespace = Fas 4b).
 - **Team-livscykel:** self-serve `POST /teams` (skaparen blir team_admin). `/team`-sida:
   medlemslista + (team-admin) bjud in (`POST /team/invite` -> vilande konto med team_id satt,
   ärvs vid accept-invite), promota/degradera roll, ta bort medlem. `require_team_admin`-gate.
+  **"Senaste aktivitet"-sektion** (alla medlemmar): teamets turer sorterade på `last_modified`
+  (mtime) med "Av" ur `history.pending_editor` (topp 12). **Utcheckad-markering i /editor:**
+  `editor_home` slår upp `checkout.current_holder` per team-tur -> `project_meta[slug].locked_by`/
+  `locked_by_me`; amber "Utcheckad av X"-badge i list- + kort-vy (bara FÄRSKT lås, stale döljs).
 - **Arbetsyte-modell (personliga turer i ett team):** Personlig + varje team är likvärdiga
   "ytor". `User.can_personal` (bool, default True self-serve / False för konton team-admin
   bjuder in) styr rätten till egna icke-team-turer; team-admin togglar per medlem. Skapa-tur

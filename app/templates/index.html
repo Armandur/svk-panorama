@@ -38,8 +38,10 @@
 			{% set st = tile_states[p.slug] %}
 			{% set pm = project_meta[p.slug] %}
 			<tr>
-				<td><a href="/projects/{{ p.slug }}" class="tour-name">{{ p.name }}</a></td>
-				<td><code>{{ p.slug }}</code></td>
+				<td><a href="/projects/{{ p.slug }}" class="tour-name">{{ p.name }}</a>
+						{%- if pm.locked_by %} <span class="lock-badge{% if pm.locked_by_me %} lock-mine{% endif %}" title="Utcheckad för redigering">{% if pm.locked_by_me %}Utcheckad av dig{% else %}Utcheckad av {{ pm.locked_by }}{% endif %}</span>{% endif -%}
+					</td>
+					<td><code>{{ p.slug }}</code></td>
 				{% if team_name %}<td>{{ team_name if p.team_id else 'Personlig' }}</td>{% endif %}
 				<td>
 					<span class="tile-badge tile-{{ st.status }}" data-slug="{{ p.slug }}"
@@ -79,7 +81,8 @@
 					<span class="tile-badge tile-{{ st.status }}" data-slug="{{ p.slug }}"
 						{% if st.status == 'running' %}aria-busy="true"{% endif %}>{%- if st.status == 'running' -%}Genererar tiles {{ st.done }}/{{ st.total }}{%- elif st.status == 'done' -%}Tiles klara{%- elif st.status == 'partial' -%}{{ st.tiled }}/{{ st.tileable }} tilade{%- elif st.status == 'error' -%}Tiling-fel{%- endif -%}</span>
 				</div>
-				{% if pm.modified %}<small class="tour-card-mod">Ändrad {{ pm.modified.strftime("%Y-%m-%d %H:%M") }}{% if pm.editor %} av {{ pm.editor }}{% endif %}</small>{% endif %}
+				{% if pm.locked_by %}<span class="lock-badge{% if pm.locked_by_me %} lock-mine{% endif %}" title="Utcheckad för redigering">{% if pm.locked_by_me %}Utcheckad av dig{% else %}Utcheckad av {{ pm.locked_by }}{% endif %}</span>{% endif %}
+					{% if pm.modified %}<small class="tour-card-mod">Ändrad {{ pm.modified.strftime("%Y-%m-%d %H:%M") }}{% if pm.editor %} av {{ pm.editor }}{% endif %}</small>{% endif %}
 				<form method="post" action="/projects/{{ p.slug }}/delete"
 					data-confirm="Ta bort turen {{ p.name }}? Alla bilder, tiles och exporter raderas permanent och går inte att ångra." data-confirm-danger data-confirm-ok="Ta bort">
 					<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
