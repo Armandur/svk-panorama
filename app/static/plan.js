@@ -728,49 +728,22 @@
 
 	// --- Skydd mot att lämna med osparade ändringar ------------------------
 
-	function showLeaveDialog() {
-		return new Promise(function (resolve) {
-			const ov = document.createElement("div");
-			ov.className = "leave-overlay";
-			const art = document.createElement("article");
-			const h = document.createElement("h3");
-			h.textContent = "Osparade ändringar";
-			const p = document.createElement("p");
-			p.textContent = "Du har ändringar på kartan som inte är sparade. Vad vill du göra?";
-			const row = document.createElement("div");
-			row.className = "leave-actions";
-			function mk(label, val, cls) {
-				const b = document.createElement("button");
-				b.type = "button";
-				b.textContent = label;
-				if (cls) b.className = cls;
-				b.addEventListener("click", function () {
-					if (ov.parentNode) document.body.removeChild(ov);
-					resolve(val);
-				});
-				return b;
-			}
-			row.appendChild(mk("Spara och lämna", "save"));
-			row.appendChild(mk("Lämna utan att spara", "discard", "secondary"));
-			row.appendChild(mk("Avbryt", "cancel", "secondary outline"));
-			art.appendChild(h);
-			art.appendChild(p);
-			art.appendChild(row);
-			ov.appendChild(art);
-			document.body.appendChild(ov);
-		});
-	}
-
 	function guardLink(a) {
 		a.addEventListener("click", function (e) {
 			if (!state.dirty) return;
 			if (a.getAttribute("aria-disabled") === "true") return;
 			e.preventDefault();
 			const href = a.href;
-			showLeaveDialog().then(function (choice) {
+			// Delad 3-vägs-dialog (samma som check-in-flödet) i stället för egen overlay.
+			window.confirmChoice("Du har ändringar på kartan som inte är sparade. Vad vill du göra?", {
+				title: "Osparade ändringar",
+				confirmText: "Spara och lämna",
+				altText: "Lämna utan att spara",
+				cancelText: "Avbryt",
+			}).then(function (choice) {
 				if (choice === "cancel") return;
-				if (choice === "discard") { setDirty(false); window.location.href = href; return; }
-				if (choice === "save") saveMap().then(function (ok) { if (ok) window.location.href = href; });
+				if (choice === "alt") { setDirty(false); window.location.href = href; return; }
+				if (choice === "confirm") saveMap().then(function (ok) { if (ok) window.location.href = href; });
 			});
 		});
 	}

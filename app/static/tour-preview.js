@@ -511,7 +511,13 @@
 
 	if (discardBtn) discardBtn.addEventListener("click", function () { window.location.reload(); });
 
-	// Check-in-kontrakt (editor-lock.js läser dessa före incheck). Ingen beforeunload här.
+	// Skydda mot hård navigering bort (stäng flik/klicka länk) med osparade ändringar -
+	// samma browser-varning som plan.js/scene.js. Check-in-knappen har sitt eget flöde.
+	window.addEventListener("beforeunload", function (e) {
+		if (dirty) { e.preventDefault(); e.returnValue = ""; }
+	});
+
+	// Check-in-kontrakt (editor-lock.js läser dessa före incheck).
 	window.editorDirty = function () { return dirty; };
 	window.editorSave = save;
 	window.editorDiscard = function () { setDirty(false); };

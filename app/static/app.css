@@ -1227,25 +1227,6 @@ details.storage-user table { margin-bottom: 0.6rem; }
 	color: #1a1a1a;
 }
 
-/* Fråga vid navigering bort med osparade ändringar */
-.leave-overlay {
-	position: fixed;
-	inset: 0;
-	z-index: 4000;
-	background: rgba(0, 0, 0, 0.55);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 1rem;
-}
-.leave-overlay article { max-width: 26rem; width: 100%; margin: 0; }
-.leave-actions {
-	display: flex;
-	flex-direction: column;
-	gap: 0.5rem;
-	margin-top: 0.5rem;
-}
-.leave-actions button { margin: 0; }
 
 /* --- Beredskapskoll + autospar-utkast + teckenförklaring --- */
 .readiness { font-size: 0.85rem; margin: 0.4rem 0; }

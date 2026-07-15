@@ -75,8 +75,10 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
       aldrig sidladdning) + clamp vid write + tomt fält = radera override (återgå env-default, ej
       spara 0). UI: "Prestanda & gränser" på `/admin/settings`. Verifierat: enhetstest (defensiv
       parse + clamp) + live (max_map_mb 20->42->20 utan omstart via callable Jinja-global).
-- [ ] Ev. finare tiling-progress via filräkning (räkna face*.tif 0-6 under
-      nona-fasen + tile-jpg mot förväntat antal) i stället för bara faser.
+- [x] **Finare tiling-progress via filräkning KLAR** (commit ac17e78, redan gjort - stale punkt).
+      `_run_docker`s watcher-tråd härleder progress ur SKRIVNA filer: räknar `face*.tif` 0-6 under
+      nona-kubfasen + tile-jpg mot `_expected_tile_count` (replikerar generate.py:s cube/level-matte),
+      i stället för bara fas-etiketter.
 - [x] **Följ upp bakgrundsjobb-fel (tiling/export/backup) - visa + logga KLAR (2026-07-15).**
       (1) **Quick win:** `tile-status.js` visar nu `job.error`-detaljen (fanns i status-payloaden) i
       en röd `#tile-error`-ruta under "Tiling-fel"-badgen på projektsidan. (2) **Persistent logg:**
@@ -848,8 +850,10 @@ tenancy"). **Kvar:** egna domäner (4.3), per-team-slug + disk-namespace (4b). N
       **plan.js editorDiscard rensar localStorage-UTKASTET** (annars återuppstår "förkastade" ändringar
       vid nästa /plan - advisor-fälla, verifierad). `holding=false` FÖRE navigering (ingen dubbel-checkin
       via pagehide). Browser-verifierat (dialog/avbryt/spara-navigering på /preview, editorDiscard rensar
-      utkast+dirty på /plan, kontrakt finns på alla steg). Ej gjort (senare): DRY:a plan.js egna
-      `showLeaveDialog` till `confirmChoice`; beforeunload på scen/preview vid hård navigering.
+      utkast+dirty på /plan, kontrakt finns på alla steg). Uppföljningar KLARA (2026-07-15): plan.js
+      egna `showLeaveDialog` migrerad till delade `confirmChoice` (död `.leave-overlay`-CSS borttagen);
+      `beforeunload`-guard tillagd på tour-preview.js (scen/plan hade redan) -> alla dirty-steg skyddar
+      mot hård navigering.
 - [x] **Lås-baren täcker toppinnehåll FIXAT (2026-07-15).** `.editor-lock-banner` (fixed top:0) täckte
       stegens verktygsfält. editor-lock.js `reserveSpace()` mäter `banner.offsetHeight` när baren visas/
       döljs/resize:as och sätter `--lock-banner-h` + `body.has-lock-banner`. CSS: vanliga steg får
