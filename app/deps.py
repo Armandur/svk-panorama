@@ -122,6 +122,28 @@ def project_owner_key(project: Project) -> str:
     return f"team-{project.team_id}" if project.team_id is not None else str(project.owner_id)
 
 
+QUOTA_MSG = "Teamet är över sin lagringskvot. Ta bort material eller be en admin höja kvoten."
+
+
+def team_over_quota(db: Session, team_id: int | None) -> bool:
+    """Hård kvot-grind: True om teamet ligger ÖVER sin lagringskvot (blockerar content-
+    adderande åtgärder). None-team eller ingen kvot -> False. Läser SAMMA cachade skanning
+    som mätaren -> färsk inom `SVK_STORAGE_CACHE_TTL`; write-vägarna invaliderar cachen så
+    en radering frigör direkt. Grindar på TEAM (inte aktör) - även super-admins uppladdning
+    i en team-tur växer teamets footprint."""
+    if team_id is None:
+        return False
+    from app.database import Team
+    from app.services import storage
+
+    team = db.get(Team, team_id)
+    if team is None or not team.storage_quota_bytes:
+        return False
+    slugs = [p.slug for p in db.query(Project).filter(Project.team_id == team_id).all()]
+    usage = storage.team_usage_bytes(slugs, team_id, storage.project_sizes(), storage.media_sizes())
+    return usage > team.storage_quota_bytes
+
+
 def user_workspaces(db: Session, user: User) -> list[dict]:
     """Ytor användaren kan skapa turer i (och har egen mediapool för). Teamet först
     (=default vid skapande), sedan Personlig om tillåten. Single-team nu; listan

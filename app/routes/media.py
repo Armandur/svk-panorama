@@ -20,15 +20,18 @@ from app import config
 from app.auth import require_user
 from app.database import Project, User, get_db
 from app.deps import (
+    QUOTA_MSG,
     new_csrf_token,
     project_owner_key,
     set_csrf_cookie,
+    team_over_quota,
     templates,
     user_can_access_project,
     user_may_use_workspace,
     user_workspaces,
     verify_csrf_header,
 )
+from app.services import storage
 
 
 def _pool_owner(db: Session, user: User, slug: str | None, owner: str | None) -> str:
@@ -92,6 +95,9 @@ async def upload_media(
     _csrf: None = Depends(verify_csrf_header),
 ) -> JSONResponse:
     pool = _pool_owner(db, user, slug, owner)
+    # Hård kvot-grind: bara team-pooler har kvot (personliga pooler = obegränsat).
+    if pool.startswith("team-") and team_over_quota(db, int(pool[5:])):
+        raise HTTPException(status_code=409, detail=QUOTA_MSG)
     filename = file.filename or "bild"
     validate_extension(filename, config.ALLOWED_MAP_EXT)  # jpg/jpeg/png
     content = await file.read()
@@ -99,6 +105,7 @@ async def upload_media(
     validate_image_magic(content, filename)
     validate_image_dimensions(content, filename)
     name = media.store(pool, filename, content, uploader={"by": user.id, "name": user.name or user.email})
+    storage.invalidate(media.owner_dir(pool))  # kvot-grinden ska se poolens nya storlek direkt
     return JSONResponse({"url": media.media_url(pool, name), "name": name})
 
 
@@ -133,8 +140,10 @@ def delete_media(
     db: Session = Depends(get_db),
     _csrf: None = Depends(verify_csrf_header),
 ) -> JSONResponse:
-    if not media.delete(_pool_owner(db, user, slug, owner), name):
+    pool = _pool_owner(db, user, slug, owner)
+    if not media.delete(pool, name):
         raise HTTPException(status_code=404, detail="Filen hittades inte")
+    storage.invalidate(media.owner_dir(pool))  # frigör kvot-utrymme direkt
     return JSONResponse({"ok": True})
 
 
@@ -150,6 +159,8 @@ def batch_delete_media(
     """Radera flera poolbilder på en gång (yta-scopat via _pool_owner)."""
     pool = _pool_owner(db, user, slug, owner)
     deleted = sum(1 for name in payload.names if media.delete(pool, name))
+    if deleted:
+        storage.invalidate(media.owner_dir(pool))  # frigör kvot-utrymme direkt
     return JSONResponse({"deleted": deleted})
 
 

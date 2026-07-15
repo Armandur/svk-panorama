@@ -321,6 +321,9 @@ def _run_job(slug: str, quality: int, scenes: list[tuple[str, Path]]) -> None:
     job["status"] = "error" if errors else "done"
     if errors:
         job["error"] = "; ".join(errors)
+    # Kakel skrevs -> töm diskcachen så kvot-grinden ser den nya storleken direkt.
+    from app.services import storage
+    storage.invalidate(project_dir(slug))
 
 
 def start_job(slug: str, quality: int = 80) -> dict[str, Any]:

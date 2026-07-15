@@ -799,8 +799,18 @@ tenancy"). **Kvar:** egna domäner (4.3), per-team-slug + disk-namespace (4b). N
       kvot/%, röd + varning över kvot, ingen drill-down); (b) **team-admin** ser dessutom "Detalj per
       tur" på /team; (c) **super-admin** ser + sätter kvot per team på /admin/teams (kvot-kolumn med
       mätare). Usage = teamets turer + team-pool (`storage.team_usage_bytes`). Enhetstestat
-      (quota_status) + browser-verifierat (under/över + alla tre nivåer). Hård gräns (blockera upp/
-      tiling/export) = framtida tillägg: guard läser `quota_status(...).over` i uppladdnings-routes.
+      (quota_status) + browser-verifierat (under/över + alla tre nivåer).
+- [x] **Hård kvot-gräns KLAR (2026-07-15, advisor-granskad).** `deps.team_over_quota(db, team_id)`
+      (None/ingen kvot -> False, läser samma cachade skanning som mätaren) grindar de CONTENT-ADDERANDE
+      routes med 409 (`deps.QUOTA_MSG`): bild-upload + map-image (uploads.py), media-upload (media.py,
+      BARA team-pooler - personliga obegränsade), tile-job (tiling.py). Grindar på TEAM (inte aktör).
+      **Export/backup grindas EJ** (Rasmus: egress/transient - man vill kunna få ut data över kvot;
+      avviker medvetet från ROADMAP-formuleringen). **Cache-invalidering vid writes** (advisor-fälla:
+      TTL-cachen gjorde "currently-over" fördröjd åt båda håll): `storage.invalidate(<dir>)` efter
+      lyckad bild-/media-upload, tiling-klar (services/tiling.py), samt deletes (bild/tur/media) så
+      radering frigör DIREKT. Gräns är färsk inom TTL i övrigt. Aldrig deletes grindas. Diskriminerande
+      test (urllib-multipart): bild1 under->200, bild2 över->409 (bevisar upload-invalidering), radera->
+      200 direkt (delete-invalidering), solo-tur->200. upload.js visar 409-detaljen som felrad.
 
 - [x] **Check-out/check-in-redigeringslås KLAR (2026-07-15).** Samtidig
       redigering i team är idag sista-skrivning-vinner (tour_lock är atomiskt per spar men

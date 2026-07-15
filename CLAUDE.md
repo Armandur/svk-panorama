@@ -528,11 +528,17 @@ snabbare cache-hit). `invalidate(path=None)` tömmer. Ytor:
   **sätt lagringskvot** (`POST .../quota`, i GB -> `Team.storage_quota_bytes`; tom/0 = obegränsat).
   **Team-tilldelning** på `/admin/users/{id}` (`POST .../team`): sätt team_id + roll; sista-admin-skyddet
   (`_would_orphan_admin`) hedras vid utflytt/degradering (blockerar tyst föräldralöst team).
-- **Team-utrymmesgräns (MJUK, hård-hook förberedd):** `Team.storage_quota_bytes` (nullable=obegränsat).
-  Ren `storage.quota_status(usage, quota) -> {usage,quota,pct,over}` driver mätaren OCH är enda punkten
-  en framtida hård guard läser `.over` från. Usage = teamets turer + team-pool (`storage.team_usage_bytes`).
-  `/team` visar mätare för ALLA medlemmar (röd + varning över kvot) + "Detalj per tur" bara för team-admin;
-  `/admin/teams` har kvot-kolumn (mätare) + sätt-fält. Hård gräns (blockera upp/tiling/export) = framtida.
+- **Team-utrymmesgräns:** `Team.storage_quota_bytes` (nullable=obegränsat). Ren `storage.quota_status(
+  usage, quota) -> {usage,quota,pct,over}` driver mätaren. Usage = teamets turer + team-pool
+  (`storage.team_usage_bytes`). `/team` visar mätare för ALLA medlemmar (röd + varning över kvot) +
+  "Detalj per tur" bara för team-admin; `/admin/teams` har kvot-kolumn (mätare) + sätt-fält.
+- **HÅRD kvot-gräns:** `deps.team_over_quota(db, team_id)` (None/ingen kvot->False) grindar de CONTENT-
+  ADDERANDE routes med 409 (`deps.QUOTA_MSG`): bild-upload + map-image (uploads.py), media-upload
+  (media.py, BARA team-pooler), tile-job (tiling.py). Grindar på TEAM (inte aktör). **Export/backup
+  grindas EJ** (egress/transient). **Cache-invalidering vid writes** (KRITISK: TTL-cachen gör annars
+  "currently-over" fördröjd): `storage.invalidate(<dir>)` efter bild-/media-upload, tiling-klar och
+  deletes (bild/tur/media) -> grinden är färsk, radering frigör direkt. Aldrig deletes grindas.
+  Gränsen är annars accurate inom `SVK_STORAGE_CACHE_TTL`.
 
 ## Publik delning (public.py)
 

@@ -3,12 +3,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.auth import require_user
 from app.database import Project, User, get_db
-from app.deps import get_project_or_404, verify_csrf_header, visible_projects_clause
+from app.deps import QUOTA_MSG, get_project_or_404, team_over_quota, verify_csrf_header, visible_projects_clause
 from app.services import tiling
 
 router = APIRouter()
@@ -28,9 +28,13 @@ def _state(slug: str) -> dict[str, Any]:
 @router.post("/projects/{slug}/tile-job")
 def start_tile_job(
     slug: str,
+    db: Session = Depends(get_db),
     project: Project = Depends(get_project_or_404),
     _csrf: None = Depends(verify_csrf_header),
 ) -> dict[str, Any]:
+    # Tiling genererar kakel (växer lagringen) -> blockera team-turer över kvot.
+    if team_over_quota(db, project.team_id):
+        raise HTTPException(status_code=409, detail=QUOTA_MSG)
     tiling.start_job(slug)
     return _state(slug)
 

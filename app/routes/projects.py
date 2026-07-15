@@ -50,6 +50,7 @@ from app.services.project_files import (
 from app.services import checkout
 from app.services import history
 from app.services import settings as site_settings
+from app.services import storage
 from app.services.tiling import forget_job as forget_tile_job
 from app.services.tiling import job_status as tile_job_status
 from app.services.tiling import project_tile_state
@@ -233,6 +234,7 @@ async def delete_project(
     forget_export_job(slug)
     forget_backup_job(slug)
     delete_project_files(slug)
+    storage.invalidate(project_dir(slug))  # frigör kvot-utrymme direkt (cachen släppte annars i TTL)
 
     # Admin som raderar en annans tur -> tillbaka till den användarens turlista.
     dest = f"/admin/users/{owner_id}/projects" if acted_on_other else "/editor"
