@@ -120,6 +120,13 @@
 	display: flex; align-items: center; justify-content: center; gap: 1rem;
 	padding: .35rem .8rem; font-size: .85rem; color: #fff;
 }
+/* Reservera barens höjd (JS sätter --lock-banner-h) så den inte täcker verktygsfältet. */
+body.has-lock-banner { padding-top: var(--lock-banner-h, 0); }
+/* Plan är fullscreen (main.plan-app = 100vh, overflow hidden) -> padding funkar inte, krymp i stället. */
+body.plan-fullscreen.has-lock-banner { padding-top: 0; }
+body.plan-fullscreen.has-lock-banner main.plan-app {
+	margin-top: var(--lock-banner-h, 0); height: calc(100vh - var(--lock-banner-h, 0px));
+}
 .editor-lock-banner.lock-mine { background: rgba(47, 111, 79, .92); }      /* du redigerar */
 .editor-lock-banner.lock-other { background: rgba(181, 52, 47, .95); font-weight: 600; }  /* låst av annan */
 .editor-lock-banner .lock-btn {

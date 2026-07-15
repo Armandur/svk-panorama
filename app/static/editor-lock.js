@@ -46,6 +46,18 @@
 		return b;
 	}
 
+	// Baren är fixed (top:0) -> reservera dess höjd så den inte täcker stegens verktygsfält.
+	// Höjden mäts (text+knapp kan radbrytas på mobil); plan-fullscreen krymps via CSS på main.
+	function reserveSpace() {
+		if (banner && !banner.hidden) {
+			document.documentElement.style.setProperty("--lock-banner-h", banner.offsetHeight + "px");
+			document.body.classList.add("has-lock-banner");
+		} else {
+			document.body.classList.remove("has-lock-banner");
+			document.documentElement.style.removeProperty("--lock-banner-h");
+		}
+	}
+
 	// Släpp låset + gå till /editor. holding=false FÖRE navigering så pagehide-handlern
 	// inte skickar en andra checkin-beacon.
 	function doCheckin() {
@@ -89,6 +101,7 @@
 		btn.type = "button"; btn.className = "lock-btn"; btn.textContent = "Checka in";
 		btn.addEventListener("click", checkinFlow);
 		b.appendChild(btn);
+		reserveSpace();
 	}
 	function showReadonly(holder) {
 		document.body.classList.add("editor-locked");
@@ -99,10 +112,11 @@
 		btn.type = "button"; btn.className = "lock-btn"; btn.textContent = "Tvinga incheck";
 		btn.addEventListener("click", forceCheckin);
 		b.appendChild(btn);
+		reserveSpace();
 	}
 
 	function apply(res) {
-		if (!res || res.locking === false) { locking = false; if (banner) banner.hidden = true; document.body.classList.remove("editor-locked"); return; }
+		if (!res || res.locking === false) { locking = false; if (banner) banner.hidden = true; reserveSpace(); document.body.classList.remove("editor-locked"); return; }
 		locking = true;
 		if (res.acquired) {
 			holding = true; warned = false; showHolding();
@@ -135,6 +149,9 @@
 		apply(res);
 		if (locking) hbTimer = setInterval(heartbeat, HEARTBEAT_MS);
 	});
+
+	// Baren kan radbryta vid omritning -> mät om höjden.
+	window.addEventListener("resize", reserveSpace);
 
 	// Släpp låset när man lämnar sidan (best-effort; sendBeacon kan inte sätta
 	// header -> CSRF i FormData-body, checkin är form-CSRF-endpoint).
