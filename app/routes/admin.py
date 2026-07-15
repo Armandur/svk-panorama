@@ -20,6 +20,7 @@ from app.deps import (
     verify_csrf_header,
 )
 from app.routes.profile import _process_avatar
+from app.routes.teams import _ORPHAN_MSG, _would_orphan_admin
 from app.services import settings as site_settings
 from app.services import storage
 from app.services.project_files import validate_image_magic, validate_size
@@ -329,7 +330,8 @@ async def set_team_quota(
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:
     """Sätt (eller nolla) teamets lagringskvot. Fältet anges i GB; tomt/0 = ingen kvot
-    (obegränsat). Mjuk gräns - påverkar bara mätare/varning, blockerar inget än."""
+    (obegränsat). HÅRD gräns: team_over_quota grindar content-adderande åtgärder
+    (upload/media/tiling/import) med 409 när teamet ligger över."""
     team = db.get(Team, team_id)
     if team is None:
         raise HTTPException(status_code=404, detail="Teamet finns inte")
@@ -341,6 +343,8 @@ async def set_team_quota(
             gb = float(raw)
         except ValueError:
             return RedirectResponse(url="/admin/teams?error=Ogiltig+kvot", status_code=303)
+        if gb < 0:
+            return RedirectResponse(url="/admin/teams?error=Kvot+kan+inte+vara+negativ", status_code=303)
         team.storage_quota_bytes = int(gb * 1024**3) if gb > 0 else None
     db.commit()
     return RedirectResponse(url="/admin/teams?msg=Kvot+uppdaterad", status_code=303)
@@ -509,6 +513,10 @@ async def admin_set_active(
     want_active = active == "1"
     if not want_active and target.id == admin.id:
         return _back(user_id, error="Du kan inte spärra ditt eget konto.")
+    # Att spärra teamets enda team-admin lämnar teamet utan aktiv admin (samma
+    # orphaning-effekt som degradering/borttagning) - hedra sista-admin-skyddet.
+    if not want_active and target.team_id is not None and _would_orphan_admin(db, target.team_id, target):
+        return _back(user_id, error=_ORPHAN_MSG)
     target.active = want_active
     db.commit()
     return _back(user_id, msg="Kontot aktiverat." if want_active else "Kontot spärrat.")
@@ -547,7 +555,6 @@ async def admin_set_team(
     degraderar target där, och target är den enda team-adminen medan andra medlemmar
     finns -> blockera (utse ny admin först). Speglar target-sessionen om target = admin."""
     from app.auth import set_user_session
-    from app.routes.teams import _ORPHAN_MSG, _would_orphan_admin
 
     target = _target_or_404(db, user_id)
     new_team_id = int(team_id) if team_id.strip().isdigit() else None
@@ -593,6 +600,9 @@ async def batch_users(
             u.password_hash = None  # -> inbjuden igen, sätter nytt via länk
             done += 1
         elif action == "disable":
+            if u.team_id is not None and _would_orphan_admin(db, u.team_id, u):
+                skipped += 1  # sista team-admin -> orphaning-skyddet
+                continue
             u.active = False
             done += 1
         elif action == "enable":
@@ -601,6 +611,9 @@ async def batch_users(
         elif action == "delete":
             if db.query(Project).filter(Project.owner_id == u.id).count():
                 skipped += 1  # äger turer -> delete-guarden
+                continue
+            if u.team_id is not None and _would_orphan_admin(db, u.team_id, u):
+                skipped += 1  # sista team-admin -> orphaning-skyddet
                 continue
             db.delete(u)
             done += 1
@@ -614,7 +627,7 @@ async def batch_users(
     }
     msg = f"{done} {labels[action]}"
     if skipped:
-        msg += f", {skipped} hoppade (du själv eller ägare av turer)"
+        msg += f", {skipped} hoppade (du själv, ägare av turer eller sista team-admin)"
     return RedirectResponse(url=f"/admin/users?msg={quote(msg)}", status_code=303)
 
 
@@ -653,6 +666,8 @@ async def delete_user(
     owns = db.query(Project).filter(Project.owner_id == user_id).count()
     if owns:
         return RedirectResponse(url=f"/admin/users?error=Anv%C3%A4ndaren+%C3%A4ger+{owns}+turer", status_code=303)
+    if user.team_id is not None and _would_orphan_admin(db, user.team_id, user):
+        return RedirectResponse(url=f"/admin/users?error={quote(_ORPHAN_MSG)}", status_code=303)
     db.delete(user)
     db.commit()
     return RedirectResponse(url="/admin/users", status_code=303)
