@@ -31,3 +31,5 @@ __pycache__/
 app.log
 .secret_key_dev
 demo_seed/
+REVIEW-BRIEF.md
+REVIEW-FINDINGS.md
