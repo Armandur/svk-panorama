@@ -168,17 +168,28 @@ body.editor-locked button[type="submit"] { opacity: .5; pointer-events: none; }
 .tour-card-meta { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; font-size: .8rem; }
 .tour-card-ws { color: var(--pico-muted-color); }
 .tour-card-mod { color: var(--pico-muted-color); }
-/* Utcheckad/låst tur: liten pil-badge intill turnamn (list) resp. i kort-metan. */
+/* Utcheckad/låst tur: pil-badge med hänglås-ikon intill turnamn (list) resp. i kort-metan. */
 .lock-badge {
-	display: inline-block; font-size: .72rem; font-weight: 600; line-height: 1;
-	padding: .2rem .45rem; border-radius: .35rem; white-space: nowrap;
-	color: var(--svk-warn, #b5872b); background: color-mix(in srgb, var(--svk-warn, #b5872b) 14%, transparent);
-	border: 1px solid color-mix(in srgb, var(--svk-warn, #b5872b) 40%, transparent);
+	display: inline-flex; align-items: center; gap: .3em; font-size: .72rem; font-weight: 600;
+	line-height: 1; padding: .2rem .45rem; border-radius: .35rem; white-space: nowrap;
+	color: var(--svk-warn, #b5872b); background: color-mix(in srgb, var(--svk-warn, #b5872b) 18%, transparent);
+	border: 1px solid color-mix(in srgb, var(--svk-warn, #b5872b) 55%, transparent);
 }
+/* Hänglås-ikon i badge-färgen (mask -> ärver currentColor, funkar även för lock-mine). */
+.lock-badge::before {
+	content: ""; width: .9em; height: .9em; flex: none; background: currentColor;
+	-webkit-mask: var(--lock-svg) center/contain no-repeat; mask: var(--lock-svg) center/contain no-repeat;
+}
+:root { --lock-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9z'/%3E%3C/svg%3E"); }
 .lock-badge.lock-mine {
 	color: var(--pico-muted-color); background: var(--pico-muted-border-color);
 	border-color: var(--pico-muted-border-color);
 }
+/* Utcheckad av NÅGON ANNAN -> dämpa tumnagel + namn så turen läses som "inte redigerbar nu"
+   (badgen själv förblir skarp; egen utcheckning dämpas inte). */
+.lock-other .tour-name { opacity: .5; }
+tr.lock-other td:first-child .tour-name { opacity: .5; }
+.lock-other .tour-card-thumb { opacity: .45; }
 .tour-card-body form { margin: 0; }
 .tour-card-body form button { margin: 0; width: 100%; }
 

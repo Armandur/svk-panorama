@@ -189,6 +189,11 @@ Luckor identifierade 2026-07-11 innan team-arbetet.
       `project_meta[slug].locked_by`/`locked_by_me`; badge intill turnamnet (list) resp. i kort-metan.
       Solo-turer låses aldrig (ingen badge). Stale-lås ger ingen badge (current_holder respekterar
       timeouten). Browser-verifierat (list+kort: färskt lås visas, stale-lås döljs korrekt).
+- [x] **Utcheckad-badgen tydligare KLAR (2026-07-15).** Rasmus valde lås-ikon + dämpa kortet.
+      Badgen har nu en **hänglås-ikon** (`.lock-badge::before`, SVG-mask via `--lock-svg` -> ärver
+      currentColor, funkar även för `lock-mine`) + starkare bakgrund/kant. Turer utcheckade av NÅGON
+      ANNAN får `.lock-other` på `<tr>`/`.tour-card` -> **dämpad tumnagel + turnamn** (badgen själv
+      förblir skarp; egen utcheckning `lock-mine` dämpas ej). Browser-verifierat (list + kort).
 
 - [x] **Byt turens visningsnamn KLAR (2026-07-11).** `POST /projects/{slug}/rename`
       (gate + CSRF) uppdaterar `Project.name`. Fält i "Turinställningar"-sektionen på
