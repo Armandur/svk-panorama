@@ -242,7 +242,7 @@
 		var dims = (it.width && it.height) ? it.width + "×" + it.height + " px" : "";
 		var metaEl = document.createElement("div");
 		metaEl.className = "media-meta";
-		metaEl.textContent = [dims, fmtSize(it.size), fmtDate(it.mtime)].filter(Boolean).join(" · ");
+		metaEl.textContent = [dims, fmtSize(it.size), fmtDate(it.mtime), it.uploader ? "av " + it.uploader : ""].filter(Boolean).join(" · ");
 		cap.appendChild(metaEl);
 		cap.appendChild(buildUsage(it.usage));
 		fig.appendChild(cell); fig.appendChild(cap);

@@ -13,9 +13,11 @@ Ingen DB-tabell: metadata härleds ur filsystemet (stat + PIL) och användning
 skannas ur ägarens tur-JSON vid behov."""
 from __future__ import annotations
 
+import json
 import os
 import re
 import secrets
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -23,7 +25,7 @@ from PIL import Image
 
 from app import config
 from app.services.presets import i18n_text_values
-from app.services.project_files import read_tour
+from app.services.project_files import _atomic_write_text, read_tour
 
 # Filnamnstecken vi tillåter i en poolreferens (matchar hex-prefix + saniterat
 # basnamn). Används för usage-scan och bundle-relativisering.
@@ -64,12 +66,42 @@ def media_url(owner: str, name: str) -> str:
     return f"/media/{owner}/{name}"
 
 
-def store(owner: str, orig_name: str, content: bytes) -> str:
-    """Spara innehåll i ägarens pool, returnera det oigissbara filnamnet."""
+# Uppladdar-attribution: delade team-pooler har flera uppladdare -> stämpla vem som
+# la in varje fil i ett manifest (`.uploaders.json`) i poolen (DB-fritt, som .thumbs).
+# Bara team-pooler (personlig pool = alltid du själv). Manifestets RMW under lås.
+_uploaders_lock = threading.Lock()
+
+
+def _uploaders_path(owner: str) -> Path:
+    return owner_dir(owner) / ".uploaders.json"
+
+
+def _read_uploaders(owner: str) -> dict[str, Any]:
+    p = _uploaders_path(owner)
+    if not p.exists():
+        return {}
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def _record_uploader(owner: str, name: str, uploader: dict) -> None:
+    with _uploaders_lock:
+        data = _read_uploaders(owner)
+        data[name] = {"by": uploader.get("by"), "name": uploader.get("name")}
+        _atomic_write_text(_uploaders_path(owner), json.dumps(data, ensure_ascii=False))
+
+
+def store(owner: str, orig_name: str, content: bytes, uploader: dict | None = None) -> str:
+    """Spara innehåll i ägarens pool, returnera det oigissbara filnamnet. `uploader`
+    (=​{by,name}) stämplas för TEAM-pooler så biblioteket kan visa 'uppladdad av X'."""
     d = owner_dir(owner)
     d.mkdir(parents=True, exist_ok=True)
     name = secrets.token_hex(6) + "-" + _safe_suffix(orig_name)
     (d / name).write_bytes(content)
+    if uploader and owner.startswith("team-"):
+        _record_uploader(owner, name, uploader)
     return name
 
 
@@ -138,12 +170,14 @@ def ensure_thumb(owner: str, name: str) -> Path | None:
 
 
 def list_pool(owner: str) -> list[dict[str, Any]]:
-    """Ägarens poolbilder, nyast först, med metadata (pixlar/storlek/mtime)."""
+    """Ägarens poolbilder, nyast först, med metadata (pixlar/storlek/mtime + uppladdare
+    för team-pooler). Dotfiler (.thumbs/.uploaders.json) räknas inte som poolbilder."""
     d = owner_dir(owner)
+    uploaders = _read_uploaders(owner)
     items: list[dict[str, Any]] = []
     if d.exists():
         for f in sorted(d.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
-            if f.is_file():
+            if f.is_file() and not f.name.startswith("."):
                 st = f.stat()
                 w, h = _dimensions(f)
                 items.append({
@@ -155,6 +189,7 @@ def list_pool(owner: str) -> list[dict[str, Any]]:
                     "width": w,
                     "height": h,
                     "mtime": st.st_mtime,
+                    "uploader": (uploaders.get(f.name) or {}).get("name"),
                 })
     return items
 
@@ -170,6 +205,12 @@ def delete(owner: str, name: str) -> bool:
             thumb.unlink()
         except OSError:
             pass
+    # Städa uppladdar-manifestet (om posten finns).
+    with _uploaders_lock:
+        data = _read_uploaders(owner)
+        if name in data:
+            del data[name]
+            _atomic_write_text(_uploaders_path(owner), json.dumps(data, ensure_ascii=False))
     return True
 
 

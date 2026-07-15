@@ -98,7 +98,7 @@ async def upload_media(
     validate_size(content, filename, config.MAX_MAP_MB)
     validate_image_magic(content, filename)
     validate_image_dimensions(content, filename)
-    name = media.store(pool, filename, content)
+    name = media.store(pool, filename, content, uploader={"by": user.id, "name": user.name or user.email})
     return JSONResponse({"url": media.media_url(pool, name), "name": name})
 
 
