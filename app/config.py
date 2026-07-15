@@ -63,9 +63,12 @@ MAP_IMAGE_FILENAME = "map.png"
 PREVIEW_MAX_WIDTH = int(os.environ.get("SVK_PREVIEW_MAX_WIDTH", "2048"))
 PREVIEW_QUALITY = int(os.environ.get("SVK_PREVIEW_QUALITY", "82"))
 
-# Tiling: antal scener som tilas parallellt. Lågt default för delad VM;
-# tänkt att kunna justeras i ett kommande admin-gränssnitt (skriver env/config).
+# Tiling: antal scener som tilas parallellt. Lågt default för delad VM. Env-default;
+# super-admin kan override:a i DB (services/settings.py) utan omstart.
 TILE_CONCURRENCY = max(1, int(os.environ.get("SVK_TILE_CONCURRENCY", "2")))
+
+# Tiling: JPEG-kvalitet på kaklen (1-100). Env-default; admin-override utan omstart.
+TILE_QUALITY = int(os.environ.get("SVK_TILE_QUALITY", "80"))
 
 # Diskanvändnings-cache (admin-lagringsvyn): TTL i sekunder för memoiserad
 # mappstorlek. 0 = av (räkna om varje gång). Se app/services/storage.py.

@@ -1049,6 +1049,27 @@ def test_demo_guard():
     check("positivt id -> returneras", _require_positive_id(NS(id=7)) == 7)
 
 
+def test_settings_int():
+    """Justerbara heltalsinställningar: defensiv parse (trasigt cache-värde -> default,
+    ingen krasch) + clamp mot min/max. Testas via cachen (ingen DB behövs)."""
+    from app import config
+    from app.services import settings
+
+    key, (cfg_attr, lo, hi) = "tile_concurrency", settings._INT_SETTINGS["tile_concurrency"]
+    default = getattr(config, cfg_attr)
+    try:
+        settings._cache[key] = "inte-ett-tal"
+        check("garbage -> default (ingen krasch)", settings.get_int(key) == default)
+        settings._cache[key] = str(hi + 999)
+        check("clamp över max", settings.get_int(key) == hi)
+        settings._cache[key] = str(lo - 999)
+        check("clamp under min", settings.get_int(key) == lo)
+        settings._cache[key] = ""
+        check("tomt cache-värde -> default", settings.get_int(key) == default)
+    finally:
+        settings._cache.pop(key, None)
+
+
 def main() -> int:
     for fn in (
         test_expected_tile_count,
@@ -1073,6 +1094,7 @@ def main() -> int:
         test_quota_status,
         test_joblog,
         test_demo_guard,
+        test_settings_int,
         test_hex,
         test_slug_and_upload_safety,
         test_atomic_write,

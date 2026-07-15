@@ -301,9 +301,10 @@ def _run_job(slug: str, quality: int, scenes: list[tuple[str, Path]]) -> None:
     job = _jobs[slug]
     entries = {s["id"]: s for s in job["scenes"]}
     errors: list[str] = []
-    # Läs vid jobbstart -> ett kommande admin-UI kan ändra parallelliteten
-    # (config.TILE_CONCURRENCY) och nästa jobb använder det, utan omstart.
-    workers = max(1, config.TILE_CONCURRENCY)
+    # Läs vid jobbstart -> super-admins parallellitets-inställning (env-default +
+    # DB-override) gäller nästa jobb utan omstart.
+    from app.services import settings
+    workers = max(1, settings.get_int("tile_concurrency"))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {
             pool.submit(_tile_one, slug, quality, sid, img, entries[sid], job): sid
@@ -328,9 +329,13 @@ def _run_job(slug: str, quality: int, scenes: list[tuple[str, Path]]) -> None:
     storage.invalidate(project_dir(slug))
 
 
-def start_job(slug: str, quality: int = 80) -> dict[str, Any]:
+def start_job(slug: str, quality: int | None = None) -> dict[str, Any]:
     """Starta ett tiling-jobb för scener som saknar tiles. Redan tilade
-    scener hoppas över, så om-uppladdning av en scen inte re-tilar allt."""
+    scener hoppas över, så om-uppladdning av en scen inte re-tilar allt.
+    quality=None -> super-admins inställning (env-default + DB-override)."""
+    if quality is None:
+        from app.services import settings
+        quality = settings.get_int("tile_quality")
     with _start_lock:
         existing = _jobs.get(slug)
         if existing and existing["status"] == "running":

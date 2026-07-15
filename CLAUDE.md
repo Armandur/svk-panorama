@@ -575,8 +575,16 @@ Super-admin-konfig som DB-override ovanpå env-default (`Setting`-nyckel/värde-
 `Text`, in-process-cache). Tjänstenamnet (`SVK_SITE_NAME` default) exponeras som
 Jinja-globalen `site_name` (brand + titlar), redigeras på `/admin/settings`.
 Arbetsgångstexten (`workflow_text`, default = `WORKFLOW.md`) redigeras på
-`/admin/settings/texts` med EasyMDE. Mönster för framtida admin-override:bara
-inställningar (jfr `TILE_CONCURRENCY`/`BASE_URL`).
+`/admin/settings/texts` med EasyMDE.
+
+**Justerbara heltalsinställningar utan omstart** (`_INT_SETTINGS`-tabell med `(config-attr, min,
+max)`): `tile_concurrency`, `tile_quality`, `preview_max_width`, `preview_quality`, `max_panorama_mb`,
+`max_map_mb`. `get_int`/`set_int`/`all_int_settings` - konsumenter läser via `settings.get_int(...)`
+vid ANROP (tiling `_run_job`/`start_job`, preview-gen i project_files, upload-validering; `media_max_mb`
+är en callable Jinja-global så den inte fryser import-tid). **DEFENSIV parse** (trasigt/tomt DB-värde
+-> env-default, kraschar aldrig en sidladdning) + clamp vid write + tomt fält = radera override.
+`bas-URL` UTELÄMNAD (blir Fas 4.3:s per-team-seam - global override = multi-tenant foot-gun). Redigeras
+i "Prestanda & gränser" på `/admin/settings`. **Cache-caveat:** korrekt bara single-process (jfr Fas 3).
 
 ## Markdown (static/markdown.js + vendored libs)
 

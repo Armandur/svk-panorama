@@ -31,7 +31,7 @@ from app.deps import (
     user_workspaces,
     verify_csrf_header,
 )
-from app.services import storage
+from app.services import settings, storage
 
 
 def _pool_owner(db: Session, user: User, slug: str | None, owner: str | None) -> str:
@@ -101,7 +101,7 @@ async def upload_media(
     filename = file.filename or "bild"
     validate_extension(filename, config.ALLOWED_MAP_EXT)  # jpg/jpeg/png
     content = await file.read()
-    validate_size(content, filename, config.MAX_MAP_MB)
+    validate_size(content, filename, settings.get_int("max_map_mb"))
     validate_image_magic(content, filename)
     validate_image_dimensions(content, filename)
     name = media.store(pool, filename, content, uploader={"by": user.id, "name": user.name or user.email})

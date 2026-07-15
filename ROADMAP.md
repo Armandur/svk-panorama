@@ -64,12 +64,17 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
 
 ## Admin/inställningar (senare)
 
-- [ ] Admin-gränssnitt för att justera inställningar utan omstart. Mönster:
-      **env sätter default, admin-override vinner** (kräver en settings-store,
-      t.ex. DB-tabell/JSON). Inställningar: bas-URL (`SVK_BASE_URL`, redan
-      config-styrd - för export/delningslänkar), tiling-parallellitet
-      (`SVK_TILE_CONCURRENCY`), tile-kvalitet, uppladdnings-parallellitet,
-      previewstorlek m.m.
+- [x] **Admin-inställningar utan omstart KLAR (2026-07-15, advisor-granskad).** Utökar det befintliga
+      `services/settings.py`-mönstret (env-default + DB-override + in-process-cache) med typade
+      HELTALS-getters (`get_int`/`set_int`/`all_int_settings`, `_INT_SETTINGS`-tabell med min/max):
+      **tiling-parallellitet, tile-kvalitet, förhandsvisning max bredd + kvalitet, max panorama-MB,
+      max kart-/media-MB**. `bas-URL MEDVETET UTELÄMNAD** (advisor: blir Fas 4.3:s per-team-seam;
+      en global override vore en multi-tenant foot-gun). Konsumenter läser via settings vid ANROP
+      (tiling `_run_job`/`start_job`, preview-gen, upload-validering, `media_max_mb` callable Jinja-
+      global). ADVISOR-SÄKERHET: DEFENSIV parse i getter (trasigt/tomt DB-värde -> default, kraschar
+      aldrig sidladdning) + clamp vid write + tomt fält = radera override (återgå env-default, ej
+      spara 0). UI: "Prestanda & gränser" på `/admin/settings`. Verifierat: enhetstest (defensiv
+      parse + clamp) + live (max_map_mb 20->42->20 utan omstart via callable Jinja-global).
 - [ ] Ev. finare tiling-progress via filräkning (räkna face*.tif 0-6 under
       nona-fasen + tile-jpg mot förväntat antal) i stället för bara faser.
 - [x] **Följ upp bakgrundsjobb-fel (tiling/export/backup) - visa + logga KLAR (2026-07-15).**

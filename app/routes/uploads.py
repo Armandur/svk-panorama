@@ -15,7 +15,7 @@ from app.deps import (
     team_over_quota,
     verify_csrf_form,
 )
-from app.services import storage
+from app.services import settings, storage
 from app.services.project_files import (
     clear_preview,
     ensure_project_structure,
@@ -65,7 +65,7 @@ async def upload_images(
             raise HTTPException(status_code=400, detail=f"Ogiltigt filnamn: {filename}")
 
         content = await upload.read()
-        validate_size(content, filename, config.MAX_PANORAMA_MB)
+        validate_size(content, filename, settings.get_int("max_panorama_mb"))
         validate_image_magic(content, filename)
         validate_image_dimensions(content, filename)
 
@@ -108,7 +108,7 @@ async def upload_map_image(
     filename = file.filename or ""
     validate_extension(filename, config.ALLOWED_MAP_EXT)
     content = await file.read()
-    validate_size(content, filename, config.MAX_MAP_MB)
+    validate_size(content, filename, settings.get_int("max_map_mb"))
     validate_image_magic(content, filename)
     validate_image_dimensions(content, filename)
 

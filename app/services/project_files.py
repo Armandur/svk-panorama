@@ -204,14 +204,18 @@ def generate_preview(slug: str, scene_id: str) -> Path:
         raise HTTPException(status_code=404, detail=f"Scen {scene_id} saknar bild")
     from PIL import Image
 
+    from app.services import settings  # super-admins inställning (env-default + DB-override)
+    max_w = settings.get_int("preview_max_width")
+    quality = settings.get_int("preview_quality")
+
     previews_dir(slug).mkdir(parents=True, exist_ok=True)
     dst = preview_path(slug, scene_id)
     with Image.open(src) as im:
         im = im.convert("RGB")
-        if im.width > config.PREVIEW_MAX_WIDTH:
-            height = round(im.height * config.PREVIEW_MAX_WIDTH / im.width)
-            im = im.resize((config.PREVIEW_MAX_WIDTH, height), Image.LANCZOS)
-        im.save(dst, "JPEG", quality=config.PREVIEW_QUALITY)
+        if im.width > max_w:
+            height = round(im.height * max_w / im.width)
+            im = im.resize((max_w, height), Image.LANCZOS)
+        im.save(dst, "JPEG", quality=quality)
     return dst
 
 

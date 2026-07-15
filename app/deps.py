@@ -21,7 +21,8 @@ from app.services import settings as _settings  # noqa: E402 (undvik cirkel vid 
 
 templates.env.globals["site_name"] = _settings.get_site_name
 # Mediepoolens storleksgräns (MB) exponeras så UI:t kan visa den + förvalidera.
-templates.env.globals["media_max_mb"] = config.MAX_MAP_MB
+# Callable (inte fryst import-tid-värde) så super-admins DB-override syns direkt.
+templates.env.globals["media_max_mb"] = lambda: _settings.get_int("max_map_mb")
 # Läsbar byte-formattering (diskanvändning i admin-vyer).
 from app.services import storage as _storage  # noqa: E402
 

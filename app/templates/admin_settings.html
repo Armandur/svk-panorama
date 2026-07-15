@@ -9,15 +9,28 @@
 
 {% if msg %}<p class="profile-ok" role="status">{{ msg }}</p>{% endif %}
 
-<article>
-	<h2>Tjänstenamn</h2>
-	<p class="hint">Namnet som visas i sidhuvudet och webbläsarens flik. Standard sätts via env (<code>SVK_SITE_NAME</code>); värdet här vinner.</p>
-	<form method="post" action="/admin/settings">
-		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<form method="post" action="/admin/settings">
+	<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+	<article>
+		<h2>Tjänstenamn</h2>
+		<p class="hint">Namnet som visas i sidhuvudet och webbläsarens flik. Standard sätts via env (<code>SVK_SITE_NAME</code>); värdet här vinner.</p>
 		<label for="site_name">Namn</label>
 		<input type="text" id="site_name" name="site_name" value="{{ site_name_value }}" maxlength="200" required>
-		<button type="submit">Spara</button>
-	</form>
-</article>
+	</article>
+
+	<article>
+		<h2>Prestanda &amp; gränser</h2>
+		<p class="hint">Justeras utan omstart. Env sätter standard (<code>SVK_*</code>); värdet här vinner. Lämna ett fält tomt för att återgå till standardvärdet.</p>
+		{% for key, label, help in int_labels %}
+		{% set s = int_settings[key] %}
+		<label for="{{ key }}">{{ label }}</label>
+		<input type="number" id="{{ key }}" name="{{ key }}" value="{{ s.value }}" min="{{ s.min }}" max="{{ s.max }}" step="1" placeholder="standard {{ s.default }}">
+		<small class="hint">{{ help }} Standard {{ s.default }}, tillåtet {{ s.min }}-{{ s.max }}.</small>
+		{% endfor %}
+	</article>
+
+	<button type="submit">Spara alla inställningar</button>
+</form>
 
 {% endblock %}

@@ -65,6 +65,8 @@ def settings_page(
         {
             "active": "settings",
             "site_name_value": site_settings.get_site_name(),
+            "int_settings": site_settings.all_int_settings(),
+            "int_labels": _INT_SETTING_LABELS,
             "csrf_token": token,
             "msg": request.query_params.get("msg"),
         },
@@ -73,14 +75,27 @@ def settings_page(
     return response
 
 
+# Etiketter + hjälptext för prestanda/gräns-inställningarna (ordningen styr formuläret).
+_INT_SETTING_LABELS = [
+    ("tile_concurrency", "Tiling-parallellitet", "Scener som tilas samtidigt. Gäller nästa jobb."),
+    ("tile_quality", "Tile-kvalitet (JPEG)", "1-100. Gäller nästa tiling-jobb."),
+    ("preview_max_width", "Förhandsvisning: max bredd (px)", "Gäller NYA uppladdningar."),
+    ("preview_quality", "Förhandsvisning: JPEG-kvalitet", "10-100. Gäller NYA uppladdningar."),
+    ("max_panorama_mb", "Max panoramastorlek (MB)", "Gräns för uppladdade panoraman."),
+    ("max_map_mb", "Max kart-/mediastorlek (MB)", "Gräns för kartbild + mediepool."),
+]
+
+
 @router.post("/admin/settings")
 async def save_settings(
     request: Request,
     admin: User = Depends(require_admin),
-    site_name: str = Form(...),
     _csrf: None = Depends(verify_csrf_form),
 ):
-    site_settings.set_site_name(site_name)
+    form = await request.form()
+    site_settings.set_site_name(form.get("site_name", ""))
+    for key, *_ in _INT_SETTING_LABELS:
+        site_settings.set_int(key, form.get(key))
     return RedirectResponse(url="/admin/settings?msg=Sparat", status_code=303)
 
 
