@@ -141,7 +141,9 @@ def team_over_quota(db: Session, team_id: int | None) -> bool:
     if team is None or not team.storage_quota_bytes:
         return False
     slugs = [p.slug for p in db.query(Project).filter(Project.team_id == team_id).all()]
-    usage = storage.team_usage_bytes(slugs, team_id, storage.project_sizes(), storage.media_sizes())
+    # team_usage_direct summerar bara teamets egna mappar (per-mapp-cachade) i stället
+    # för att skanna hela serverns storlekskarta vid varje grind-anrop (L8).
+    usage = storage.team_usage_direct(slugs, team_id)
     return usage > team.storage_quota_bytes
 
 

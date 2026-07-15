@@ -231,7 +231,8 @@ TILL T (ersattes vid T); UI:t säger "Gällde till ..." (ärlig pre-overwrite-se
   vyn visar "Ändrad av X". Additivt - äldre versioner utan meta visar ingen attribution.
 - **Exkludering:** `_history/` ligger under gitignorade `projects/<slug>/`. backup.py
   (whitelist-enumerering) och bundle.py (`_collect`) globar inte brett -> följer inte med
-  i arkiv/export. storage.py `os.walk` räknar det mot projektstorlek (minor, ok).
+  i arkiv/export. storage.py `dir_size` EXKLUDERAR `_history` (+ `_export`/`_backup`) ur
+  lagringsberäkningen (`_EPHEMERAL_DIRS`) -> deriverade artefakter räknas inte mot kvot/översikt.
   `_pending.json` (fil, ej siffermapp) och `meta.json` (ej i `_FILES`) rörs inte av
   `_versions`/`read_version`/`_same_content`.
 

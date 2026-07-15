@@ -18,7 +18,6 @@ import time
 from pathlib import Path
 
 from app import config
-from app.services import media
 from app.services.media import owner_dir
 from app.services.project_files import project_dir
 
@@ -27,12 +26,22 @@ _cache: dict[str, tuple[float, int]] = {}
 _cache_lock = threading.Lock()
 
 
+# Efemära/deriverade mappar som INTE ska räknas mot lagringen: byggda zip-artefakter
+# (export/backup, egress/transient) + versionshistoriken. De ligger under projektroten
+# men motsvarar inte turens "riktiga" footprint -> exkludera dem så en export inte
+# dubblerar turen i kvoten (M7). Prunas per namn (de bor bara i projektroten).
+_EPHEMERAL_DIRS = {"_export", "_backup", "_history"}
+
+
 def dir_size(path: Path) -> int:
-    """Rekursiv byte-summa av en mapp. 0 om den saknas. Oachad (rå walk)."""
+    """Rekursiv byte-summa av en mapp. 0 om den saknas. Oachad (rå walk). Efemära
+    mappar (_export/_backup/_history) hoppas - de är deriverade artefakter, inte
+    lagringsanvändning."""
     if not path.exists():
         return 0
     total = 0
-    for root, _dirs, files in os.walk(path):
+    for root, dirs, files in os.walk(path):
+        dirs[:] = [d for d in dirs if d not in _EPHEMERAL_DIRS]
         for f in files:
             try:
                 total += os.stat(os.path.join(root, f)).st_size
@@ -104,12 +113,14 @@ def project_sizes() -> dict[str, int]:
 
 def media_sizes() -> dict[str, int]:
     """{ägar-nyckel: bytes} för varje poolmapp under MEDIA_DIR. Nyckeln är en sträng
-    (`<user_id>` eller `team-<id>`) som matchar User.owner_key."""
+    (`<user_id>` eller `team-<id>`) som matchar User.owner_key. Mappar med ogiltigt
+    namnformat tas MED (classify_storage klassar dem som ospårade) så disk_total inte
+    underrapporterar (L7)."""
     out: dict[str, int] = {}
     root = config.MEDIA_DIR
     if root.exists():
         for child in root.iterdir():
-            if child.is_dir() and media.valid_owner_key(child.name):
+            if child.is_dir():
                 out[child.name] = cached_dir_size(child)
     return out
 
@@ -117,6 +128,13 @@ def media_sizes() -> dict[str, int]:
 def team_usage_bytes(team_slugs, team_id: int, psizes: dict, msizes: dict) -> int:
     """Ett teams lagringsanvändning: dess turer + delade mediepool (`team-<id>`)."""
     return sum(psizes.get(s, 0) for s in team_slugs) + msizes.get(f"team-{team_id}", 0)
+
+
+def team_usage_direct(team_slugs, team_id: int) -> int:
+    """Som team_usage_bytes men summerar bara teamets egna mappar (per-mapp-cachad)
+    i stället för att bygga hela serverns storlekskarta. För kvot-grinden i request-
+    vägen (L8) - undviker att walka främmande teams data vid varje anrop."""
+    return sum(project_size(s) for s in team_slugs) + media_size(f"team-{team_id}")
 
 
 def quota_status(usage: int, quota: int | None) -> dict:
