@@ -39,7 +39,11 @@
 		var empty = document.querySelector(".ws-empty");
 		if (!rows.length && !cards.length) return;
 
+		// present byggs ur de server-renderade FLIKARNA (inte bara renderade rader/kort),
+		// annars kan en yta utan turer aldrig väljas (setWs faller till "all" och dess
+		// tomtillstånd nås aldrig).
 		var present = { all: 1 };
+		[].forEach.call(tabs, function (t) { present[t.dataset.ws] = 1; });
 		[].forEach.call(rows, function (r) { present[r.dataset.ws] = 1; });
 		[].forEach.call(cards, function (c) { present[c.dataset.ws] = 1; });
 

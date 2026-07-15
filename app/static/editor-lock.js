@@ -67,9 +67,12 @@
 	// "Checka in": har steget osparade ändringar (editorDirty) -> fråga spara/förkasta/avbryt.
 	// Spara: kör stegets editorSave, checka in bara om det faktiskt blev rent (annars stanna
 	// kvar - spara misslyckades). Förkasta: editorDiscard (rensar dirty + ev. utkast) + checka in.
+	var checkinBusy = false;  // guard mot dubbelklick: dubbel dialog/POST (N7)
 	function checkinFlow() {
+		if (checkinBusy) return;
+		checkinBusy = true;
 		if (!(window.editorDirty && window.editorDirty()) || !window.confirmChoice) {
-			doCheckin();
+			doCheckin();  // navigerar bort vid lyckad incheck -> lämna busy satt
 			return;
 		}
 		window.confirmChoice("Du har osparade ändringar i det här steget. Vad vill du göra?", {
@@ -78,10 +81,11 @@
 			altText: "Checka in utan att spara",
 			cancelText: "Avbryt",
 		}).then(function (choice) {
-			if (choice === "cancel") return;
+			if (choice === "cancel") { checkinBusy = false; return; }
 			if (choice === "confirm") {
 				Promise.resolve(window.editorSave && window.editorSave()).then(function () {
 					if (window.editorDirty && window.editorDirty()) {
+						checkinBusy = false;
 						if (window.showToast) showToast("Kunde inte spara - du är fortfarande utcheckad.", "error");
 					} else {
 						doCheckin();

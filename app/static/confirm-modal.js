@@ -50,9 +50,17 @@
 		if (r) r(result);
 	}
 
+	// Lös en redan väntande dialog som avbruten innan en ny öppnas ovanpå - annars
+	// skrivs resolver över och den första Promise-kedjan löses aldrig (L9). Måste köras
+	// FÖRE de nya utfallsvärdena sätts (cancelValue gäller då den föregående dialogen).
+	function settlePending() {
+		if (resolver) { var r = resolver; resolver = null; r(cancelValue); }
+	}
+
 	window.confirmDialog = function (message, opts) {
 		opts = opts || {};
 		if (!overlay) build();
+		settlePending();
 		lastFocus = document.activeElement;
 		okValue = true; cancelValue = false; altValue = null;
 		titleEl.textContent = opts.title || "Bekräfta";
@@ -70,6 +78,7 @@
 	window.confirmChoice = function (message, opts) {
 		opts = opts || {};
 		if (!overlay) build();
+		settlePending();
 		lastFocus = document.activeElement;
 		okValue = "confirm"; altValue = "alt"; cancelValue = "cancel";
 		titleEl.textContent = opts.title || "Bekräfta";

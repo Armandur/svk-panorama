@@ -742,7 +742,9 @@
 				cancelText: "Avbryt",
 			}).then(function (choice) {
 				if (choice === "cancel") return;
-				if (choice === "alt") { setDirty(false); window.location.href = href; return; }
+				// Förkasta: rensa dirty OCH localStorage-utkastet (som editorDiscard), annars
+				// erbjuds det uttryckligen förkastade utkastet igen vid nästa /plan-besök.
+				if (choice === "alt") { window.editorDiscard(); window.location.href = href; return; }
 				if (choice === "confirm") saveMap().then(function (ok) { if (ok) window.location.href = href; });
 			});
 		});
