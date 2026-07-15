@@ -45,6 +45,40 @@ Docker single-container, publiceras av GitHub Actions till
 `ghcr.io/armandur/svk-panorama`. Se **[DOCKER.md](DOCKER.md)** för Unraid-setup
 (env-variabler, port-/path-mappningar och tiling via docker-socket).
 
+## Demo-team
+
+Ett team folk kan testa editorn i utan att röra riktig data. Administreras på
+**Admin -> Demo** (`/admin/demo`):
+
+1. Klicka **Skapa / återställ demo-team** - skapar teamet `demo` + testkontona
+   (`demo`/`demo`, `demo2`/`demo`, medlemmar utan åtkomst till annan data).
+2. Logga in som ett demo-konto och bygg de demo-turer du vill visa.
+3. Klicka **Lås nuvarande innehåll** - sparar utgångsläget som en gitignorad
+   guld-seed (`SVK_DEMO_SEED_DIR`, default `demo_seed/`).
+4. **Reset** återställer teamet till det låsta läget (rensar allt testare skapat).
+   Manuellt via knappen, eller schemalagt nattligt.
+
+**Nattlig reset** via en token-autentiserad intern endpoint (in-process, så den
+rensar jobbstatus/cache korrekt). Sätt `SVK_DEMO_RESET_TOKEN` och schemalägg en
+timer som curlar den, t.ex. en systemd user-timer:
+
+```ini
+# ~/.config/systemd/user/svk-demo-reset.service
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/curl -fsS -X POST -H "X-Demo-Token: DIN_TOKEN" http://ubuntu-ai:8005/internal/demo-reset
+
+# ~/.config/systemd/user/svk-demo-reset.timer
+[Timer]
+OnCalendar=*-*-* 03:00:00
+Persistent=true
+[Install]
+WantedBy=timers.target
+```
+
+`systemctl --user enable --now svk-demo-reset.timer`. Är `SVK_DEMO_RESET_TOKEN`
+tom är den interna endpointen avstängd (bara manuell reset).
+
 ## Dokumentation
 
 - **[CLAUDE.md](CLAUDE.md)** - kodbasbeskrivning (stack, struktur, designbeslut).

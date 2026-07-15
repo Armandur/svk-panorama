@@ -30,3 +30,4 @@ __pycache__/
 *.pyc
 app.log
 .secret_key_dev
+demo_seed/

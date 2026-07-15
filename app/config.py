@@ -114,6 +114,14 @@ BASE_URL = os.environ.get("SVK_BASE_URL", "").rstrip("/")
 # app/services/settings.py och exponeras som Jinja-global `site_name`.
 SITE_NAME = os.environ.get("SVK_SITE_NAME", "SVK Panorama")
 
+# Demo-team: guld-seed-katalog (gitignorad, byggs vid "lås" och kopieras tillbaka
+# vid reset) + token som en schemalagd timer autentiserar reset-endpointen med
+# (in-process reset, super-admin sköter manuellt). Tom token -> bara manuell reset.
+_demo_seed_env = os.environ.get("SVK_DEMO_SEED_DIR", "demo_seed")
+_demo_seed_path = Path(_demo_seed_env)
+DEMO_SEED_DIR = _demo_seed_path if _demo_seed_path.is_absolute() else REPO_ROOT / _demo_seed_path
+DEMO_RESET_TOKEN = os.environ.get("SVK_DEMO_RESET_TOKEN", "").strip()
+
 # Bootstrap-admin: skapas vid uppstart om inga användare finns. Sluten inbjudan
 # -> ingen öppen registrering; admin bjuder in övriga.
 # PRE-PRODUKTION: default admin/admin. BYT (via env) innan produktion.

@@ -881,10 +881,18 @@ tenancy"). **Kvar:** egna domäner (4.3), per-team-slug + disk-namespace (4b). N
       kontot direkt och länken kopieras manuellt. När Lettermint SMTP implementeras: skicka
       inbjudningsmejl automatiskt + hantera väntande inbjudningar (återkalla/skicka om/se
       utgång). Förbered strukturen; själva utskicket väntar på Lettermint.
-- [ ] **Demo-team (todo 2026-07-14, Rasmus).** Ett demo-team med demo-användare (och ett par
-      demo-turer) som **resettas periodiskt** så folk kan testa editorn utan att röra riktig
-      data. Ersätter behovet av en gäst-roll. Reset = schemalagt skript som återställer teamets
-      turer/media/medlemslösenord till ett känt utgångsläge.
+- [x] **Demo-team KLAR (2026-07-15, advisor-granskad).** `services/demo.py` + `routes/demo.py` +
+      `/admin/demo`-sida. Team `demo` + medlemskonton (demo/demo, demo2/demo - members, `can_personal
+      =False`, aldrig team_admin). Flöde (Rasmus): bygg TOMT -> fyll manuellt som demo-konto -> "lås"
+      (`capture_seed` -> gitignorad `demo_seed/`: gold-filer utan `_history`/`_jobs.log` + media +
+      team-presets) -> `reset_demo` återställer till låst läge. **SÄKERHET (advisor):** bulk-radering
+      scopas på POSITIVT team-id (`_require_positive_id`, abort annars -> annars kan `team_id IS NULL`
+      radera alla team-lösa turer nattligt); reset IN-PROCESS (endpoint) så `forget_job`/`storage.
+      invalidate`/`tour_lock` funkar; wipe hela projektmappen (inget `_history`-läck) + `share_token`
+      nollas (döda /s-länkar); konton nycklas på FAST lista (force by email), ej current state.
+      Nattlig reset via token-autad `POST /internal/demo-reset` (`SVK_DEMO_RESET_TOKEN`, systemd-timer,
+      se README) + manuell. Verifierat: enhetstest (guard) + isolerad reset-cykel (16 checks: capture/
+      muta/reset -> extra bort, token död, historik rensad) + live (team+login).
 - [ ] **Egna domäner per team.** `Team.base_url` används för alla genererings-/
       delningslänkar (ersätter globala `SVK_BASE_URL`) - invite-länkar, export, /view.
       Host-baserad tenant-resolution: middleware slår upp request-Host -> team så

@@ -17,6 +17,7 @@ from app.routes import (
     auth,
     backup,
     checkout,
+    demo,
     export,
     history,
     media,
@@ -93,6 +94,7 @@ async def no_cache_static(request, call_next):
 
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(demo.router)
 app.include_router(profile.router)
 app.include_router(teams.router)
 app.include_router(projects.router)

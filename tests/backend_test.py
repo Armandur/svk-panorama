@@ -1029,6 +1029,26 @@ def test_joblog():
         config.PROJECTS_DIR = old
 
 
+def test_demo_guard():
+    """Demo-reset måste vägra bulkradera utan ett giltigt POSITIVT team-id (annars kan
+    en team_id IS NULL-fråga radera alla team-lösa turer i systemet)."""
+    from types import SimpleNamespace as NS
+
+    from app.services.demo import _require_positive_id
+
+    def raises(fn):
+        try:
+            fn()
+            return False
+        except ValueError:
+            return True
+
+    check("None -> ValueError", raises(lambda: _require_positive_id(None)))
+    check("id 0 -> ValueError", raises(lambda: _require_positive_id(NS(id=0))))
+    check("id None -> ValueError", raises(lambda: _require_positive_id(NS(id=None))))
+    check("positivt id -> returneras", _require_positive_id(NS(id=7)) == 7)
+
+
 def main() -> int:
     for fn in (
         test_expected_tile_count,
@@ -1052,6 +1072,7 @@ def main() -> int:
         test_classify_storage,
         test_quota_status,
         test_joblog,
+        test_demo_guard,
         test_hex,
         test_slug_and_upload_safety,
         test_atomic_write,

@@ -1,0 +1,63 @@
+{% extends "admin_base.html" %}
+{% block title %}Demo-team - Admin{% endblock %}
+{% block admin_content %}
+
+<hgroup>
+	<h1>Demo-team</h1>
+	<p>Ett team folk kan testa editorn i utan att röra riktig data. Fyll det med innehåll, "lås" ett känt utgångsläge, och låt det återställas periodiskt.</p>
+</hgroup>
+{% if msg %}<p class="profile-ok" role="status">{{ msg }}</p>{% endif %}
+{% if error %}<p class="login-error" role="alert">{{ error }}</p>{% endif %}
+
+<article>
+	<h2>Status</h2>
+	{% if team %}
+	<table>
+		<tbody>
+			<tr><td>Team</td><td>{{ team.name }} <small><code>{{ team.slug }}</code></small></td></tr>
+			<tr><td>Demo-turer</td><td>{{ tours }}</td></tr>
+			<tr><td>Demo-konton</td><td>{{ members }}</td></tr>
+			<tr><td>Låst seed</td><td>{% if has_seed %}Ja - reset återställer till den{% else %}Nej - reset ger tomt utgångsläge{% endif %}</td></tr>
+		</tbody>
+	</table>
+	{% else %}
+	<p class="hint">Demo-teamet är inte skapat ännu. Klicka "Skapa / återställ demo-team" nedan - det skapar teamet och demo-kontona.</p>
+	{% endif %}
+</article>
+
+<article>
+	<h2>Demo-konton</h2>
+	<p class="hint">Publika testkonton (medlemmar, kända lösenord). De ser bara demo-teamet och kan inte nå riktig data. Reset återställer deras lösenord.</p>
+	<table>
+		<thead><tr><th scope="col">Inloggning</th><th scope="col">Lösenord</th><th scope="col">Namn</th></tr></thead>
+		<tbody>
+			{% for a in accounts %}
+			<tr><td><code>{{ a.email }}</code></td><td><code>{{ a.password }}</code></td><td>{{ a.name }}</td></tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</article>
+
+<article>
+	<h2>Fyll på innehåll</h2>
+	<p class="hint">Logga in som ett demo-konto ovan och bygg de turer du vill ha i demot (de blir team-turer i demo-teamet). När du är nöjd, "lås" innehållet nedan - då blir det utgångsläget som reset återställer till.</p>
+</article>
+
+<article>
+	<h2>Åtgärder</h2>
+	<div class="demo-actions">
+		<form method="post" action="/admin/demo/capture"
+			data-confirm="Lås demo-teamets NUVARANDE innehåll som utgångsläge? Ersätter en ev. tidigare låst seed." data-confirm-ok="Lås seed">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<button type="submit" class="secondary">Lås nuvarande innehåll (seed)</button>
+		</form>
+		<form method="post" action="/admin/demo/reset"
+			data-confirm="Återställ demo-teamet nu? Allt som testats fram sedan senaste lås rensas och det låsta utgångsläget läggs tillbaka." data-confirm-danger data-confirm-ok="Återställ">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<button type="submit" class="secondary outline">{% if team %}Återställ demo nu{% else %}Skapa / återställ demo-team{% endif %}</button>
+		</form>
+	</div>
+	<p class="hint">Nattlig automatisk reset sker via en schemalagd timer (se README). Manuell reset här när som helst.</p>
+</article>
+
+{% endblock %}

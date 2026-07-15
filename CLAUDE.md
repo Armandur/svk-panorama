@@ -547,6 +547,16 @@ snabbare cache-hit). `invalidate(path=None)` tömmer. Ytor:
   deletes (bild/tur/media) -> grinden är färsk, radering frigör direkt. Aldrig deletes grindas.
   Gränsen är annars accurate inom `SVK_STORAGE_CACHE_TTL`.
 
+**Demo-team (`services/demo.py`, `routes/demo.py`, `/admin/demo`).** Team `demo` folk testar editorn i
+utan att röra riktig data. Konton (demo/demo, demo2/demo) = members, `can_personal=False`, aldrig
+team_admin. Flöde: bygg tomt -> fyll som demo-konto -> **lås** (`capture_seed` -> gitignorad
+`SVK_DEMO_SEED_DIR`: gold-filer utan `_history`/`_jobs.log` + media + presets + manifest) -> **reset**
+(`reset_demo`) återställer. **DESTRUKTIV RESET - safety:** `_require_positive_id` (abort om team-id ej
+positivt -> annars kan `team_id IS NULL`-delete radera alla team-lösa turer); reset körs IN-PROCESS
+(`forget_job`/`storage.invalidate`/`tour_lock`); wipe hela projektmappen + `share_token=None`; konton
+force:as by email (ej current state). Nattlig reset: token-autad `POST /internal/demo-reset`
+(`SVK_DEMO_RESET_TOKEN`, systemd-timer) + manuell super-admin-knapp. Seed = deploy-tid-bygg (gitignorad).
+
 ## Publik delning (public.py)
 
 Turer kan delas oautentiserat via en oigissbar `Project.share_token`. `/s/{token}`

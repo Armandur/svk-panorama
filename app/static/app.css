@@ -1056,6 +1056,9 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .storage-refresh { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 0 auto; }
 .storage-refresh button { margin: 0; width: auto; }
 .team-icon-row { display: flex; gap: 1rem; align-items: center; margin-bottom: 1.1rem; }
+.demo-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+.demo-actions form { margin: 0; }
+.demo-actions button { margin: 0; }
 /* Bakgrundsjobb: feldetalj + persistent logg. */
 .job-error {
 	color: var(--svk-danger, #b5342f); font-size: .85rem; margin: .3rem 0 .6rem;
