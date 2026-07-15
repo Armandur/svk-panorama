@@ -72,6 +72,17 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
       previewstorlek m.m.
 - [ ] Ev. finare tiling-progress via filräkning (räkna face*.tif 0-6 under
       nona-fasen + tile-jpg mot förväntat antal) i stället för bara faser.
+- [ ] **Följ upp bakgrundsjobb-fel (tiling m.fl.) - visa + logga (todo 2026-07-15).** Idag FÅNGAS
+      tiling-feldetaljerna (`tiling._run_job`: `entries[sid]["status"]="error"`, `job["error"]=
+      "scen X: <detalj>"`) och status-endpointen returnerar `job.error` - MEN UI:t visar bara en
+      generisk "Tiling-fel"-badge (index.js/tile-status.js), aldrig detaljen. Dessutom är felet BARA
+      in-memory (`_jobs`-dicten) -> försvinner vid omstart, kan inte inspekteras i efterhand.
+      **Staga:** (1) QUICK WIN - visa `job.error`-detaljen i UI:t (finns redan i status-payloaden):
+      expanderbar rad/tooltip under "Tiling-fel"-badgen på projektsidan (`tile-status.js`) + per-scen
+      `entry.stage="fel"`. Litet, mest värde. (2) PERSISTENS - skriv jobbfel till en logg
+      (`projects/<slug>/_jobs.log` med tidsstämpel + jobbtyp + fel) så det överlever omstart och kan
+      läsas senare; en liten "visa logg"-vy. Gäller även export/backup-jobb (samma in-memory-mönster).
+      Beslut: bara tiling först, eller generell jobb-logg för tiling/export/backup?
 
 ## Fas 3 - Multi-tenant self-host (single-host Docker)
 
