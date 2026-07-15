@@ -804,7 +804,7 @@ per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga 
       återanvänd `teams._bring_solo_to_team`-flyttlogiken per tur (idag bara allt-eller-inget
       vid team-skapande).
 - [ ] **Attribution i delad kontext (todo 2026-07-14).** (a) Radera-varning KLAR (2026-07-15).
-      Kvar: (b)+(c). **Radera-varning för andras turer:** i ett team kan vem som helst radera en kollegas tur - bekräftelsen ska
+      Kvar: (c) team-aktivitetslista. **Radera-varning för andras turer:** i ett team kan vem som helst radera en kollegas tur - bekräftelsen ska
       säga "skapad av X" (owner_id finns redan). (b) **"Uppladdad av" i mediabiblioteket**
       (delad pool -> vem la in vad; kräver att uppladdaren stämplas, ny metadata). (c) Ev.
       enkel **team-aktivitetslista** ("senaste ändringar i teamet", härledd ur mtime +
