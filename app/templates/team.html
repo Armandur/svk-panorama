@@ -28,23 +28,36 @@
 						{% if m.id in invite_links %}
 						<button type="button" class="secondary outline copy-invite" data-link="{{ invite_links[m.id] }}">Kopiera inbjudningslänk</button>
 						{% elif m.id != current_user.id %}
-						<div class="row-actions">
-							<form method="post" action="/team/members/{{ m.id }}/role">
-								<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-								<input type="hidden" name="role" value="{{ 'member' if m.team_role == 'team_admin' else 'team_admin' }}">
-								<button type="submit" class="secondary outline">{{ 'Gör till medlem' if m.team_role == 'team_admin' else 'Gör till team-admin' }}</button>
-							</form>
-							<form method="post" action="/team/members/{{ m.id }}/personal" title="Får äga egna turer utanför teamet">
-								<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-								<input type="hidden" name="allow" value="{{ '0' if m.can_personal else '1' }}">
-								<button type="submit" class="secondary outline">Egna turer: {{ 'på' if m.can_personal else 'av' }}</button>
-							</form>
-							<form method="post" action="/team/members/{{ m.id }}/remove"
-								data-confirm="Ta bort {{ m.name or m.email }} ur teamet? Personen blir en team-lös användare. Teamets turer påverkas inte." data-confirm-danger data-confirm-ok="Ta bort">
-								<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-								<button type="submit" class="secondary outline delete-btn">Ta bort</button>
-							</form>
-						</div>
+						<details class="dropdown member-actions">
+							<summary role="button" class="secondary outline" aria-label="Åtgärder">&#8943;</summary>
+							<ul>
+								<li>
+									<label class="member-switch" title="Får äga egna turer utanför teamet">
+										<input type="checkbox" role="switch" {% if m.can_personal %}checked{% endif %}
+											onchange="var f=this.closest('li').querySelector('form.personal-form');f.allow.value=this.checked?'1':'0';f.submit();">
+										Egna turer
+									</label>
+									<form method="post" action="/team/members/{{ m.id }}/personal" class="personal-form" hidden>
+										<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+										<input type="hidden" name="allow" value="{{ '1' if m.can_personal else '0' }}">
+									</form>
+								</li>
+								<li>
+									<form method="post" action="/team/members/{{ m.id }}/role">
+										<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+										<input type="hidden" name="role" value="{{ 'member' if m.team_role == 'team_admin' else 'team_admin' }}">
+										<button type="submit" class="member-menu-item">{{ 'Gör till medlem' if m.team_role == 'team_admin' else 'Gör till team-admin' }}</button>
+									</form>
+								</li>
+								<li>
+									<form method="post" action="/team/members/{{ m.id }}/remove"
+										data-confirm="Ta bort {{ m.name or m.email }} ur teamet? Personen blir en team-lös användare. Teamets turer påverkas inte." data-confirm-danger data-confirm-ok="Ta bort">
+										<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+										<button type="submit" class="member-menu-item danger">Ta bort ur teamet</button>
+									</form>
+								</li>
+							</ul>
+						</details>
 						{% endif %}
 					</td>
 					{% endif %}

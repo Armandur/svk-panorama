@@ -85,6 +85,12 @@ def editor_home(
     tile_states = {p.slug: project_tile_state(p.slug) for p in projects}
     # Per tur: senast ändrad (mtime) + ändrad av (team-turer, ur historik-attributionen).
     import datetime as _dt
+    # Skapar-namn för team-turer gjorda av NÅGON ANNAN (radera-varning "skapad av X").
+    other_owner_ids = {p.owner_id for p in projects if p.team_id is not None and p.owner_id != user.id}
+    owner_names = {}
+    if other_owner_ids:
+        owner_names = {u.id: (u.name or u.email)
+                       for u in db.query(User).filter(User.id.in_(other_owner_ids)).all()}
     meta = {}
     for p in projects:
         mt = last_modified(p.slug)
@@ -107,6 +113,7 @@ def editor_home(
             "editor": (editor or {}).get("name"),
             "first_scene": first_scene,
             "thumb": thumb,
+            "creator": owner_names.get(p.owner_id),  # bara andras team-turer
         }
     token = new_csrf_token()
     response = templates.TemplateResponse(

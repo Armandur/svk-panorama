@@ -99,6 +99,21 @@
 
 .notice { border-left: 4px solid var(--svk-warn); }
 
+/* --- Team: medlems-åtgärdsmeny (⋯) ----------------------------------- */
+.member-actions { margin: 0; }
+.member-actions > summary { width: auto; padding: .1rem .6rem; margin: 0; line-height: 1; }
+.member-actions ul { min-width: 190px; }
+.member-actions li { padding: 0; }
+.member-actions li form { margin: 0; }
+.member-actions li form button.member-menu-item {
+	display: block; width: 100%; text-align: left; margin: 0; border: 0; border-radius: 0;
+	background: transparent; color: inherit; padding: .4rem .8rem; cursor: pointer; font-size: inherit;
+}
+.member-actions li form button.member-menu-item:hover { background: var(--pico-dropdown-hover-background-color, rgba(0,0,0,.06)); }
+.member-actions li form button.member-menu-item.danger { color: var(--svk-danger, #b5342f); }
+.member-switch { display: flex; align-items: center; gap: .5rem; padding: .4rem .8rem; margin: 0; cursor: pointer; }
+.member-switch input { margin: 0; }
+
 /* --- Redigeringslås (check-out/check-in) ------------------------------ */
 .editor-lock-banner {
 	position: fixed; top: 0; left: 0; right: 0; z-index: 2000;
