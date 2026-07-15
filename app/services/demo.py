@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import threading
 from pathlib import Path
 
 from sqlalchemy.orm import Session
@@ -25,11 +26,11 @@ from sqlalchemy.orm import Session
 from app import config
 from app.auth import hash_password
 from app.database import TEAM_ROLE_MEMBER, BrandingPreset, Project, Team, ThemePreset, User
-from app.services import media, storage
+from app.services import joblog, media, storage
 from app.services.backup import forget_job as forget_backup
 from app.services.bundle import forget_job as forget_export
 from app.services.project_files import delete_project_files, project_dir, tour_lock
-from app.services.tiling import forget_job as forget_tile
+from app.services.tiling import forget_job as forget_tile, job_status as tile_status
 
 DEMO_TEAM_SLUG = "demo"
 DEMO_TEAM_NAME = "Demo"
@@ -41,6 +42,19 @@ DEMO_ACCOUNTS = [
 # Gold-filer per tur (regenererbart/efemärt utelämnas: previews, _history, _jobs.log, _export).
 _GOLD = ("tour.json", "map.json", "map.png")
 _GOLD_DIRS = ("images", "tiles")
+
+# Mutex mot samtidig manuell + schemalagd reset (annars kan de kollidera på
+# unik-constraint när båda återskapar samma slug). Non-blocking: en andra reset
+# medan en pågår avvisas i stället för att köas.
+_reset_lock = threading.Lock()
+
+
+def _tile_running(slug: str) -> bool:
+    """True om ett tiling-jobb pågår för slugen (dess tråd skriver alltjämt tiles +
+    manifest). reset/capture rör inte en sådan tur - annars spökskriver tråden i den
+    nyss återställda guld-mappen."""
+    job = tile_status(slug)
+    return bool(job and job.get("status") == "running")
 
 
 def demo_team(db: Session) -> Team | None:
@@ -71,6 +85,14 @@ def ensure_demo(db: Session) -> Team:
         if u is None:
             u = User(email=acc["email"])
             db.add(u)
+        elif u.team_id not in (None, tid):
+            # E-posten är redan upptagen av ett FRÄMMANDE konto (annat team). Kapa det
+            # aldrig - force-skrivningen (känt lösenord, is_admin strippad) vore en
+            # tyst övertagning. Abortera med tydligt fel (samma väg som andra guards).
+            raise ValueError(
+                f"Kontot {acc['email']!r} tillhör redan ett annat team - kan inte "
+                "initialisera demo-kontot. Byt e-post i DEMO_ACCOUNTS eller flytta kontot."
+            )
         u.name = acc["name"]
         u.password_hash = hash_password(acc["password"])
         u.team_id = tid
@@ -115,13 +137,16 @@ def _manifest_path() -> Path:
 
 
 def _read_manifest() -> dict:
+    """Läs seed-manifestet. Saknas -> {} (tomt utgångsläge, ok). FINNS men går inte att
+    läsa -> ValueError (abortera hellre än att tyst tömma demo-teamet och rapportera
+    had_seed=True för ett trasigt manifest)."""
     p = _manifest_path()
     if not p.exists():
         return {}
     try:
         return json.loads(p.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return {}
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"Seed-manifestet är skadat och kan inte läsas ({exc}). Lås om seeden.")
 
 
 def has_seed() -> bool:
@@ -140,7 +165,10 @@ def capture_seed(db: Session) -> int:
 
     tours = db.query(Project).filter(Project.team_id == tid).all()
     for p in tours:
-        _copy_gold(project_dir(p.slug), seed / "projects" / p.slug)
+        # Lås turen under kopieringen så en samtidig spar/tiling inte ger en
+        # inkonsekvent guld-seed (t.ex. tiles utan matchande manifest-rad).
+        with tour_lock:
+            _copy_gold(project_dir(p.slug), seed / "projects" / p.slug)
 
     src_media = media.owner_dir(f"team-{tid}")
     if src_media.exists():
@@ -165,25 +193,58 @@ def _delete_demo_tour(db: Session, p: Project) -> None:
 
 def reset_demo(db: Session) -> dict:
     """Återställ demo-teamet till den låsta seeden (idempotent, säker). Ingen seed ->
-    bara tomt utgångsläge (team + konton, inga turer). Returnerar en summering."""
+    bara tomt utgångsläge (team + konton, inga turer). Returnerar en summering.
+    Non-blocking mutex: en andra samtidig reset avvisas i stället för att köa (undviker
+    unik-constraint-krock när båda återskapar samma slug)."""
+    if not _reset_lock.acquire(blocking=False):
+        raise ValueError("En demo-återställning pågår redan - försök igen om en stund.")
+    try:
+        return _reset_demo_locked(db)
+    finally:
+        _reset_lock.release()
+
+
+def _reset_demo_locked(db: Session) -> dict:
     team = ensure_demo(db)
     tid = _require_positive_id(team)  # ALDRIG radera utan positivt id
-    manifest = _read_manifest()
-    owner_id = db.query(User).filter(User.email == DEMO_ACCOUNTS[0]["email"]).first().id
+    manifest = _read_manifest()  # ValueError om manifestet finns men är skadat
+    owner = db.query(User).filter(User.email == DEMO_ACCOUNTS[0]["email"]).first()
+    if owner is None:  # ensure_demo skapar det - skydd mot smal race mot user-delete
+        raise ValueError("Demo-kontot saknas efter initialisering - avbryter.")
+    owner_id = owner.id
+    skipped: list[str] = []
 
-    # 1. Radera ALLA turer i demo-teamet (scopat på positivt tid) - seed-turerna
-    #    kopieras tillbaka, resten (demo-användarnas skapelser) ska bort.
+    # 1. Radera turerna i demo-teamet (scopat på positivt tid) - seed-turerna kopieras
+    #    tillbaka, resten (demo-användarnas skapelser) ska bort. En tur med pågående
+    #    tiling hoppas (tråden skulle annars spökskriva i den återställda mappen).
     existing = db.query(Project).filter(Project.team_id == tid).all()
-    removed = len(existing)
+    removed = 0
     for p in existing:
+        if _tile_running(p.slug):
+            skipped.append(p.slug)
+            joblog.append(p.slug, "tiling", "Demo-reset hoppade turen: tiling pågick.", level="info")
+            continue
         with tour_lock:
             _delete_demo_tour(db, p)
+        removed += 1
     db.commit()
 
     # 2. Kopiera tillbaka seed-turerna (fast slug, team-ägd, share_token nollad).
     restored = 0
     for t in manifest.get("tours", []):
         slug = t["slug"]
+        if _tile_running(slug):
+            skipped.append(slug)
+            joblog.append(slug, "tiling", "Demo-reset hoppade återställning: tiling pågick.", level="info")
+            continue
+        row = db.query(Project).filter(Project.slug == slug).first()
+        if row is not None and row.team_id != tid:
+            # Slugen ägs numera av en FRÄMMANDE (icke-demo) tur - en riktig användare
+            # kan ha återanvänt en frigjord demo-slug. Rör ALDRIG dess filer.
+            skipped.append(slug)
+            joblog.append(slug, "tiling",
+                          "Demo-reset hoppade återställning: slugen ägs av en annan tur.", level="varning")
+            continue
         with tour_lock:
             delete_project_files(slug)  # ren mapp
             _copy_gold(config.DEMO_SEED_DIR / "projects" / slug, project_dir(slug))
@@ -204,4 +265,5 @@ def reset_demo(db: Session) -> dict:
     # 4. Team-presets: rensa + återställ.
     _restore_presets(db, tid, owner_id, manifest.get("presets", {}))
 
-    return {"team_id": tid, "removed": removed, "restored": restored, "had_seed": has_seed()}
+    return {"team_id": tid, "removed": removed, "restored": restored,
+            "skipped": skipped, "had_seed": has_seed()}

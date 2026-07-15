@@ -2,6 +2,7 @@
 timer återställer nattligt via en token-autentiserad intern endpoint (in-process)."""
 from __future__ import annotations
 
+import hmac
 from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
@@ -55,6 +56,8 @@ async def demo_reset(
     except ValueError as exc:
         return RedirectResponse(url=f"/admin/demo?error={quote(str(exc))}", status_code=303)
     msg = f"Demo återställd: {r['restored']} turer återlagda, {r['removed']} rensade."
+    if r.get("skipped"):
+        msg += f", {len(r['skipped'])} hoppade (tiling pågick eller sluggen ägs av annan tur)"
     return RedirectResponse(url=f"/admin/demo?msg={quote(msg)}", status_code=303)
 
 
@@ -80,6 +83,7 @@ async def demo_reset_internal(
 ) -> JSONResponse:
     """Token-autentiserad reset för den schemalagda timern (in-process, ingen session/CSRF).
     Avstängd om SVK_DEMO_RESET_TOKEN är tom -> bara manuell reset."""
-    if not config.DEMO_RESET_TOKEN or x_demo_token != config.DEMO_RESET_TOKEN:
+    # Tom token stänger endpointen (kortslutning). Annars konstant-tid-jämförelse.
+    if not config.DEMO_RESET_TOKEN or not hmac.compare_digest(x_demo_token or "", config.DEMO_RESET_TOKEN):
         raise HTTPException(status_code=403, detail="Ogiltig token")
     return JSONResponse(demo.reset_demo(db))
