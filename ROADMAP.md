@@ -826,6 +826,15 @@ tenancy"). **Kvar:** egna domäner (4.3), per-team-slug + disk-namespace (4b). N
       via pagehide). Browser-verifierat (dialog/avbryt/spara-navigering på /preview, editorDiscard rensar
       utkast+dirty på /plan, kontrakt finns på alla steg). Ej gjort (senare): DRY:a plan.js egna
       `showLeaveDialog` till `confirmChoice`; beforeunload på scen/preview vid hård navigering.
+- [ ] **Lås-baren täcker toppinnehåll (todo 2026-07-15).** `.editor-lock-banner` (grön "Du redigerar
+      ... / Checka in") är `position: fixed; top: 0` (overlay) -> den lägger sig OVANPÅ översta raden av
+      text/knappar i stegens verktygsfält i stället för att ta plats i höjd. Baren skapas dynamiskt av
+      editor-lock.js (bara team-turer när låst) -> statisk reserverad höjd blir fel när baren saknas.
+      **Rek:** JS mäter `banner.offsetHeight` när baren visas och sätter `body.style.paddingTop` (eller
+      en `--lock-banner-h`-var + `body.has-lock-banner{padding-top:var(...)}`), nollar vid dold bar.
+      Robust mot att text+knapp radbryts på mobil. FÄLLA: `/plan` är `body.plan-fullscreen` (egen
+      fixed-layout) -> padding-top på body träffar inte plan-vyn; den behöver egen offset (t.ex. skjut
+      ner `.planner-side`/`.map-stage`). Litet men två-stegs (vanliga steg + plan-fullscreen).
 - [x] **Team-livscykel + skyddsräcken KLAR (2026-07-15): (a) rename/radera + (b) sista-admin-skydd + lämna + (c) flytta enskild tur mellan ytor.** (a) **Byt teamnamn /
       radera team** (team-admin) - finns inte alls idag. Radera team: vad händer med teamets
       turer/media/presets? (arkivera/överför till en medlem, eller blockera om turer finns.)
