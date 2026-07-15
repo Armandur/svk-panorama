@@ -803,13 +803,13 @@ per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga 
       själv) + **flytta en ENSKILD tur mellan ytor** (Personlig <-> team, mellan team) efteråt -
       återanvänd `teams._bring_solo_to_team`-flyttlogiken per tur (idag bara allt-eller-inget
       vid team-skapande).
-- [ ] **Attribution i delad kontext (todo 2026-07-14, Rasmus).** (a) **Radera-varning för
-      andras turer:** i ett team kan vem som helst radera en kollegas tur - bekräftelsen ska
+- [ ] **Attribution i delad kontext (todo 2026-07-14).** (a) Radera-varning KLAR (2026-07-15).
+      Kvar: (b)+(c). **Radera-varning för andras turer:** i ett team kan vem som helst radera en kollegas tur - bekräftelsen ska
       säga "skapad av X" (owner_id finns redan). (b) **"Uppladdad av" i mediabiblioteket**
       (delad pool -> vem la in vad; kräver att uppladdaren stämplas, ny metadata). (c) Ev.
       enkel **team-aktivitetslista** ("senaste ändringar i teamet", härledd ur mtime +
       historik-attribution).
-- [ ] **Team-UI-puts (todo 2026-07-14, Rasmus).** `can_personal`-knappen ("Egna turer: på/av")
+- [x] **Team-UI-puts KLAR (2026-07-15) - switch + ⋯-meny.** `can_personal`-knappen ("Egna turer: på/av")
       som en riktig switch/toggle. Medlemsåtgärderna på /team (promota/egna turer/ta bort)
       samlade i en liten åtgärds-meny (⋯) per rad. (Gäst-/läsrätts-roll SLOPAD - Rasmus: i
       stället ett **demo-team med demo-användare som resettas periodiskt** för att testa, och
