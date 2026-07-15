@@ -71,6 +71,35 @@
 		<p><small>Turer och mediepool delas mellan teamets medlemmar.</small></p>
 	</article>
 
+	{% if is_team_admin and pending_moves %}
+	<article>
+		<h3>Väntande flyttbegäranden</h3>
+		<p><small>En medlem har begärt att flytta en tur ut ur teamet till sin personliga yta. Godkänner du tar turen ur teamet och medlemmen blir ägare.</small></p>
+		<table>
+			<thead><tr><th scope="col">Tur</th><th scope="col">Begärd av</th><th scope="col"></th></tr></thead>
+			<tbody>
+				{% for pm in pending_moves %}
+				<tr>
+					<td>{{ pm.name }} <small><code>{{ pm.slug }}</code></small></td>
+					<td>{{ pm.requester }}</td>
+					<td class="move-actions">
+						<form method="post" action="/projects/{{ pm.slug }}/move-approve"
+							data-confirm="Godkänn flytt av {{ pm.name }} ut ur teamet? {{ pm.requester }} blir ägare och övriga medlemmar tappar åtkomst." data-confirm-ok="Godkänn">
+							<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+							<button type="submit" class="secondary">Godkänn</button>
+						</form>
+						<form method="post" action="/projects/{{ pm.slug }}/move-reject">
+							<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+							<button type="submit" class="secondary outline">Avslå</button>
+						</form>
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</article>
+	{% endif %}
+
 	{% if is_team_admin %}
 	<article>
 		<h3>Bjud in medlem</h3>

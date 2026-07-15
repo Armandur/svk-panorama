@@ -895,6 +895,65 @@ def test_history_diff():
     check("diff: saknad map ok", isinstance(hd.diff({"tour.json": old["tour.json"]}, {"tour.json": new["tour.json"]}), list))
 
 
+def test_move_workspace_media():
+    """Yt-flytt: copy-and-leave-invarianten. Refererade poolbilder KOPIERAS till målytan
+    (källan orörd så delade turer + historik + /s-länkar överlever), refs skrivs om bara
+    i den flyttade turen, och en round-trip tillbaka kraschar inte på befintliga filer."""
+    import io
+
+    from app import config
+    from app.routes.teams import _copy_pool_media, _rewrite_tour_media_key, _tour_media_names
+    from app.services import media, project_files
+
+    tmp = Path(tempfile.mkdtemp())
+    old_media, old_projects = config.MEDIA_DIR, config.PROJECTS_DIR
+    config.MEDIA_DIR = tmp / "media"
+    config.PROJECTS_DIR = tmp / "projects"
+    try:
+        buf = io.BytesIO()
+        Image.new("RGB", (40, 30), (2, 2, 2)).save(buf, "JPEG")
+        # Personlig pool "7": en bild delad med en annan tur, en bara i den flyttade turen.
+        shared = media.store("7", "delad.jpg", buf.getvalue())
+        only = media.store("7", "bara.jpg", buf.getvalue())
+        media.ensure_thumb("7", only)  # tumnagel finns -> ska följa med
+
+        (config.PROJECTS_DIR / "kyrka").mkdir(parents=True)
+        project_files.write_tour("kyrka", {"scenes": {"1": {"hotSpots": [
+            {"type": "info", "text": f"![](/media/7/{shared})", "body": f"/media/7/{only}"}]}}})
+        (config.PROJECTS_DIR / "annan").mkdir(parents=True)
+        project_files.write_tour("annan", {"scenes": {"1": {"hotSpots": [
+            {"type": "info", "text": f"/media/7/{shared}"}]}}})
+
+        # Flytta "kyrka": personlig(7) -> team-3.
+        names = _tour_media_names("kyrka", "7")
+        check("media_names hittar båda", names == {shared, only})
+        _copy_pool_media("7", "team-3", names, {"by": 7, "name": "Tester"})
+        _rewrite_tour_media_key("kyrka", "7", "team-3")
+
+        check("kopierad delad i team-pool", media.resolve("team-3", shared) is not None)
+        check("kopierad bara i team-pool", media.resolve("team-3", only) is not None)
+        check("källa delad orörd", media.resolve("7", shared) is not None)
+        check("källa bara orörd", media.resolve("7", only) is not None)
+        check("tumnagel kopierad", (media._thumb_dir("team-3") / (only + ".jpg")).is_file())
+        check("uploader stämplad (team-mål)",
+              media._read_uploaders("team-3").get(only, {}).get("name") == "Tester")
+
+        moved = project_files.tour_json_path("kyrka").read_text(encoding="utf-8")
+        check("kyrka refs -> team-3", "/media/team-3/" in moved and "/media/7/" not in moved)
+        other = project_files.tour_json_path("annan").read_text(encoding="utf-8")
+        check("annan tur orörd", "/media/7/" in other and "/media/team-3/" not in other)
+
+        # Round-trip team-3 -> personlig(7): filer finns redan -> ingen krasch, refs tillbaka.
+        names2 = _tour_media_names("kyrka", "team-3")
+        check("media_names efter flytt", names2 == {shared, only})
+        _copy_pool_media("team-3", "7", names2, None)
+        _rewrite_tour_media_key("kyrka", "team-3", "7")
+        back = project_files.tour_json_path("kyrka").read_text(encoding="utf-8")
+        check("kyrka refs tillbaka -> 7", "/media/7/" in back and "/media/team-3/" not in back)
+    finally:
+        config.MEDIA_DIR, config.PROJECTS_DIR = old_media, old_projects
+
+
 def main() -> int:
     for fn in (
         test_expected_tile_count,
@@ -914,6 +973,7 @@ def main() -> int:
         test_image_dimension_guard,
         test_backup_security,
         test_media_pool,
+        test_move_workspace_media,
         test_hex,
         test_slug_and_upload_safety,
         test_atomic_write,

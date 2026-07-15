@@ -15,6 +15,7 @@ from app.deps import (
     get_editor,
     get_project_or_404,
     new_csrf_token,
+    project_owner_key,
     request_origin,
     require_edit_access,
     resolve_workspace,
@@ -317,12 +318,18 @@ async def rename_slug(
 def project_home(
     request: Request,
     slug: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
     project: Project = Depends(get_project_or_404),
 ) -> HTMLResponse:
     """Steg 1: ladda upp bilder + karta och hantera scenlistan."""
     scenes = list_scenes(slug)
     tour = read_tour(slug)
     token = new_csrf_token()
+    # Flytt mellan ytor: dropdown över användarens ytor (bara vid >1), samt status för
+    # en ev. väntande utflytts-begäran (team -> personlig, godkänns av team-admin).
+    workspaces = user_workspaces(db, user)
+    move_requester = db.get(User, project.move_requested_by) if project.move_requested_by else None
     response = templates.TemplateResponse(
         request,
         "upload.html",
@@ -332,8 +339,13 @@ def project_home(
             "has_map_image": map_image_path(slug).exists(),
             "csrf_token": token,
             "slug_error": request.query_params.get("slug_error"),
+            "move_error": request.query_params.get("move_error"),
             "languages": tour.get("default", {}).get("languages") or ["sv"],
             "is_multilingual": len(tour.get("default", {}).get("languages") or []) > 1,
+            "workspaces": workspaces,
+            "current_ws_key": project_owner_key(project),
+            "move_requester": move_requester,
+            "move_is_mine": project.move_requested_by == user.id,
         },
     )
     set_csrf_cookie(response, token)

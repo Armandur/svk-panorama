@@ -5,6 +5,7 @@ helst kan skapa ett team (blir team_admin). En användare tillhör ett team (enk
 FK). Team-scopad användarhantering (bjuda in fler m.m.) ligger i team-admin-UI:t."""
 from __future__ import annotations
 
+import datetime
 import re
 import shutil
 
@@ -14,9 +15,20 @@ from sqlalchemy.orm import Session
 
 from app.auth import make_invite_token, require_team_admin, require_user, set_user_session
 from app.database import TEAM_ROLE_ADMIN, TEAM_ROLE_MEMBER, Project, Team, User, get_db
-from app.deps import new_csrf_token, request_origin, set_csrf_cookie, templates, verify_csrf_form
+from app.deps import (
+    get_project_or_404,
+    new_csrf_token,
+    project_owner_key,
+    request_origin,
+    resolve_workspace,
+    set_csrf_cookie,
+    templates,
+    user_may_use_workspace,
+    verify_csrf_form,
+)
+from app.services import checkout
 from app.services import media as media_svc
-from app.services.project_files import _atomic_write_text, slugify, tour_json_path
+from app.services.project_files import _atomic_write_text, read_tour, slugify, tour_json_path, tour_lock
 from app.services.tiling import manifest_path
 
 router = APIRouter()
@@ -54,6 +66,83 @@ def _bring_solo_to_team(db: Session, user: User, team: Team) -> int:
     return len(solo)
 
 
+def _tour_media_names(slug: str, owner_key: str) -> set[str]:
+    """Namn på poolbilder i `owner_key`-poolen som turens tour.json refererar (alla
+    språkvarianter av hotspot-text/body + branding). Använder bundle-referens-regexen."""
+    from app.services.bundle import _media_refs  # lokal import: bundle drar tunga beroenden
+
+    tour = read_tour(slug)
+    return {name for owner, name in _media_refs(tour) if owner == owner_key}
+
+
+def _copy_pool_media(old_key: str, new_key: str, names: set[str], uploader: dict | None) -> None:
+    """Kopiera namngivna poolbilder (+ ev. tumnagel) old_key -> new_key om de saknas i
+    målet. COPY-AND-LEAVE: källpoolen lämnas orörd - den kan delas av andra turer, och
+    historik-snapshots + publika /s-länkar refererar fortfarande den gamla nyckeln.
+    Team-mål -> stämpla uploadern så biblioteket kan visa 'uppladdad av'."""
+    if old_key == new_key or not names:
+        return
+    src, dst = media_svc.owner_dir(old_key), media_svc.owner_dir(new_key)
+    dst.mkdir(parents=True, exist_ok=True)
+    thumb_src, thumb_dst = media_svc._thumb_dir(old_key), media_svc._thumb_dir(new_key)
+    for name in names:
+        s = src / name
+        if s.exists() and not (dst / name).exists():
+            shutil.copy2(str(s), str(dst / name))
+            if uploader and new_key.startswith("team-"):
+                media_svc._record_uploader(new_key, name, uploader)
+        ts = thumb_src / (name + ".jpg")
+        if ts.exists() and not (thumb_dst / (name + ".jpg")).exists():
+            thumb_dst.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(str(ts), str(thumb_dst / (name + ".jpg")))
+
+
+def _rewrite_tour_media_key(slug: str, old_key: str, new_key: str) -> None:
+    """Skriv om /media/<old_key>/ -> /media/<new_key>/ i tour.json (under tour_lock) +
+    tiles-manifest (troligen no-op - manifestet bär tile-paths, inte media). Rå textsub
+    som _bring_solo_to_team; snapshottar INTE (flytt är en ägarskaps-op, ej redigering).
+    `/`-gränsen hindrar att /media/1/ råkar träffa /media/10/."""
+    ref_re = re.compile(r"/media/" + re.escape(old_key) + "/")
+    with tour_lock:
+        for path in (tour_json_path(slug), manifest_path(slug)):
+            if path.exists():
+                txt = path.read_text(encoding="utf-8")
+                new = ref_re.sub(f"/media/{new_key}/", txt)
+                if new != txt:
+                    _atomic_write_text(path, new)
+
+
+def _apply_move(
+    db: Session, project: Project, new_team_id: int | None, new_owner_id: int | None,
+    uploader: dict | None,
+) -> None:
+    """Utför en yt-flytt: kopiera turens media till målytans pool, skriv om refs, sätt
+    ägarskap och rensa flyttbegäran + redigeringslås. `new_owner_id` sätts bara vid
+    flytt UT till en personlig yta (annars bevaras owner_id = skapad-av). Media kopieras
+    FÖRE tour_lock (oberoende I/O); bara ref-omskrivningen är låst."""
+    old_key = project_owner_key(project)
+    new_key = f"team-{new_team_id}" if new_team_id is not None else str(new_owner_id or project.owner_id)
+    if old_key != new_key:
+        _copy_pool_media(old_key, new_key, _tour_media_names(project.slug, old_key), uploader)
+        _rewrite_tour_media_key(project.slug, old_key, new_key)
+    project.team_id = new_team_id
+    if new_owner_id is not None:
+        project.owner_id = new_owner_id
+    project.move_requested_by = None
+    project.move_requested_at = None
+    project.checked_out_by = None  # turen byter yta -> gammalt lås irrelevant
+    project.checked_out_at = None
+    db.commit()
+
+
+def _team_project(db: Session, admin: User, slug: str) -> Project:
+    """Hämta en tur i admins EGET team (annars 404). Super-admin når alla."""
+    p = db.query(Project).filter(Project.slug == slug).first()
+    if p is None or (not admin.is_admin and p.team_id != admin.team_id):
+        raise HTTPException(status_code=404, detail="Projektet hittades inte")
+    return p
+
+
 @router.get("/team", response_class=HTMLResponse)
 def team_page(
     request: Request,
@@ -72,11 +161,23 @@ def team_page(
     # Inbjudningslänk per ännu ej aktiverad medlem (password_hash None) - stateless
     # token, härledd ur user-id, så team-admin kan kopiera länken när som helst.
     invite_links = {}
+    pending_moves = []
     if is_team_admin:
         origin = request_origin(request)
         for m in members:
             if m.password_hash is None:
                 invite_links[m.id] = f"{origin}/accept-invite?token={make_invite_token(m.id)}"
+    # Väntande utflytts-begäranden i teamet (team-admin godkänner/avslår).
+    if is_team_admin and user.team_id:
+        rows = db.query(Project).filter(
+            Project.team_id == user.team_id, Project.move_requested_by.isnot(None)
+        ).order_by(Project.move_requested_at).all()
+        for p in rows:
+            req = db.get(User, p.move_requested_by)
+            pending_moves.append({
+                "slug": p.slug, "name": p.name,
+                "requester": (req.name or req.email) if req else "?",
+            })
     token = new_csrf_token()
     response = templates.TemplateResponse(
         request,
@@ -85,6 +186,7 @@ def team_page(
             "team": team, "members": members, "current_user": user,
             "is_team_admin": is_team_admin, "invite_links": invite_links,
             "solo_count": solo_count, "csrf_token": token,
+            "pending_moves": pending_moves,
         },
     )
     set_csrf_cookie(response, token)
@@ -311,3 +413,108 @@ async def create_team(
     set_user_session(request, user)  # spegla nya team-scopet i sessionen direkt
 
     return RedirectResponse(url="/team", status_code=303)
+
+
+@router.post("/projects/{slug}/move-workspace")
+async def move_workspace(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+    project: Project = Depends(get_project_or_404),  # gate: ägare/team eller admin
+    workspace: str = Form(...),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Initiera en yt-flytt. IN till ett team (personlig -> team) körs DIREKT. UT ur ett
+    team (team -> personlig) skapar en BEGÄRAN som team-admin godkänner - även om
+    initieraren själv är team-admin (enhetligt; admin godkänner sin egen på /team)."""
+    from app.routes.projects import _job_running
+
+    target_team_id, ok = resolve_workspace(db, user, workspace)
+    if not ok:
+        raise HTTPException(status_code=400, detail="Ogiltig arbetsyta")
+    if target_team_id == project.team_id:
+        return RedirectResponse(url=f"/projects/{slug}", status_code=303)  # no-op
+    if _job_running(slug):
+        return RedirectResponse(
+            url=f"/projects/{slug}?move_error=V%C3%A4nta+tills+tiling%2Fexport+%C3%A4r+klar",
+            status_code=303,
+        )
+    # IN till team: direkt flytt (owner_id bevaras som skapad-av).
+    if project.team_id is None and target_team_id is not None:
+        _apply_move(db, project, target_team_id, None,
+                    {"by": user.id, "name": user.name or user.email})
+        return RedirectResponse(url=f"/projects/{slug}", status_code=303)
+    # UT ur team: skapa begäran (godkänns av team-admin).
+    if project.team_id is not None and target_team_id is None:
+        project.move_requested_by = user.id
+        project.move_requested_at = datetime.datetime.utcnow()
+        db.commit()
+        return RedirectResponse(url=f"/projects/{slug}?move=requested", status_code=303)
+    # Mellan team är inte möjligt med single-team (användaren tillhör ett team).
+    raise HTTPException(status_code=400, detail="Flytt mellan team stöds inte")
+
+
+@router.post("/projects/{slug}/move-approve")
+async def move_approve(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_team_admin),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Team-admin godkänner en utflytt (team -> begärarens personliga yta). Blockeras om
+    någon ANNAN håller ett färskt redigeringslås (be hen checka in först). Begäraren blir
+    ny ägare; media kopieras till hens personliga pool (copy-and-leave)."""
+    project = _team_project(db, admin, slug)
+    if project.move_requested_by is None:
+        raise HTTPException(status_code=400, detail="Ingen väntande flyttbegäran")
+    requester_id = project.move_requested_by
+    requester = db.get(User, requester_id)
+    if requester is None or not user_may_use_workspace(db, requester, str(requester_id)):
+        raise HTTPException(
+            status_code=400,
+            detail="Begäraren kan inte längre ha egna turer - avslå begäran i stället.",
+        )
+    holder = checkout.current_holder(db, project)
+    if holder and holder["id"] != admin.id:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Turen är utcheckad av {holder['name']} - be hen checka in först.",
+        )
+    _apply_move(db, project, None, requester_id, None)
+    return RedirectResponse(url="/team", status_code=303)
+
+
+@router.post("/projects/{slug}/move-reject")
+async def move_reject(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_team_admin),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Team-admin avslår en flyttbegäran (turen stannar i teamet)."""
+    project = _team_project(db, admin, slug)
+    project.move_requested_by = None
+    project.move_requested_at = None
+    db.commit()
+    return RedirectResponse(url="/team", status_code=303)
+
+
+@router.post("/projects/{slug}/move-cancel")
+async def move_cancel(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+    project: Project = Depends(get_project_or_404),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Begäraren återkallar sin egen flyttbegäran."""
+    if project.move_requested_by != user.id:
+        raise HTTPException(status_code=403, detail="Bara begäraren kan återkalla")
+    project.move_requested_by = None
+    project.move_requested_at = None
+    db.commit()
+    return RedirectResponse(url=f"/projects/{slug}", status_code=303)

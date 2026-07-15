@@ -794,15 +794,20 @@ per-team-slug + disk-namespace (4b). Nedanstående punkter är den ursprungliga 
       döda lås: heartbeat medan man redigerar + timeout (auto-släpp efter inaktivitet), plus
       admin-tvingad incheck som säkerhetsventil. Gäller redigerings-routes (skriv-endpoints
       nekar om utcheckad av annan); /view + /s (visning) opåverkade. Störst värde för team.
-- [~] **Team-livscykel + skyddsräcken (2026-07-15): (a) rename/radera + (b) sista-admin-skydd + lämna KLART. Kvar: (c) flytta enskild tur mellan ytor (media-kopiering).** (a) **Byt teamnamn /
+- [x] **Team-livscykel + skyddsräcken KLAR (2026-07-15): (a) rename/radera + (b) sista-admin-skydd + lämna + (c) flytta enskild tur mellan ytor.** (a) **Byt teamnamn /
       radera team** (team-admin) - finns inte alls idag. Radera team: vad händer med teamets
       turer/media/presets? (arkivera/överför till en medlem, eller blockera om turer finns.)
       (b) **Sista-admin-skydd + överlämning:** ett team får aldrig bli helt utan team-admin -
       kräv att man utser en ny admin innan den sista lämnar/degraderas/raderas (idag kan
-      super-admins radering av enda admin lämna teamet admin-löst). (c) **Lämna team** (medlem
-      själv) + **flytta en ENSKILD tur mellan ytor** (Personlig <-> team, mellan team) efteråt -
-      återanvänd `teams._bring_solo_to_team`-flyttlogiken per tur (idag bara allt-eller-inget
-      vid team-skapande).
+      super-admins radering av enda admin lämna teamet admin-löst). (c) **Flytta en ENSKILD tur
+      mellan ytor** (Personlig <-> team) KLAR (2026-07-15): dropdown på uppladdningssteget. IN till
+      team körs direkt; UT ur team skapar en BEGÄRAN (Rasmus: "alla går via godkännande") som
+      team-admin godkänner/avslår på /team (begäraren kan återkalla). Media **copy-and-leave**
+      (kopieras till målytan, källpoolen orörd -> historik-snapshots + publika /s-länkar överlever;
+      `_copy_pool_media`/`_rewrite_tour_media_key`/`_apply_move` i teams.py). UT-godkännande sätter
+      begäraren som ägare + rensar check-out; blockeras om annan håller ett färskt lås (409, som
+      history-restore). `Project.move_requested_by/at`. Verifierat: enhetstest (copy-and-leave-
+      invariant) + end-to-end (utflytt/godkännande/403-gate + direktinflytt) + 3 UI-shots.
 - [ ] **Attribution i delad kontext (todo 2026-07-14).** (a) Radera-varning KLAR (2026-07-15).
       Kvar: (c) team-aktivitetslista. **Radera-varning för andras turer:** i ett team kan vem som helst radera en kollegas tur - bekräftelsen ska
       säga "skapad av X" (owner_id finns redan). (b) **"Uppladdad av" i mediabiblioteket**

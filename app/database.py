@@ -83,6 +83,13 @@ class Project(Base):
     # redigering + när (för stale-timeout). None = incheckad. Se services/checkout.py.
     checked_out_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     checked_out_at: Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
+    # Flyttbegäran (team -> personlig): en medlem begär att ta en teamtur UR teamet;
+    # team-admin godkänner/avslår. `by` = begäraren (blir ny ägare vid godkännande),
+    # `at` = när. Målet är implicit begärarens personliga yta (single-team). None =
+    # ingen väntande begäran. Se routes/teams.py. Flytt IN till team kräver ingen
+    # begäran (körs direkt) -> lagras aldrig här.
+    move_requested_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    move_requested_at: Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
     # Oigissbar token för publik delning (/s/{token}). None = inte delad.
     share_token: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True, index=True)
     created_at: Mapped[datetime.datetime] = mapped_column(

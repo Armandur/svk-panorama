@@ -13,6 +13,7 @@
 </hgroup>
 
 {% if slug_error %}<p class="login-error" role="alert">{{ slug_error }}</p>{% endif %}
+{% if move_error %}<p class="login-error" role="alert">{{ move_error }}</p>{% endif %}
 
 <details class="slug-settings">
 	<summary>Turinställningar - namn &amp; adress</summary>
@@ -31,6 +32,33 @@
 		<p class="hint">Ändrar turens adress (URL) och mappnamn. Bara a-z, 0-9 och bindestreck. Bokmärkta <code>/view</code>-länkar och redan byggda bundlar slutar fungera.</p>
 		<button type="submit" class="secondary">Byt slug</button>
 	</form>
+	{% if move_requester %}
+	<div class="move-workspace">
+		<label>Arbetsyta</label>
+		{% if move_is_mine %}
+		<p class="hint">Du har begärt att flytta den här turen ut ur teamet till din personliga yta. Väntar på en team-admins godkännande.</p>
+		<form method="post" action="/projects/{{ project.slug }}/move-cancel" class="slug-form">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<button type="submit" class="secondary outline">Återkalla begäran</button>
+		</form>
+		{% else %}
+		<p class="hint">{{ move_requester.name or move_requester.email }} har begärt att flytta den här turen ut ur teamet. Väntar på en team-admins godkännande.</p>
+		{% endif %}
+	</div>
+	{% elif workspaces | length > 1 %}
+	<form method="post" action="/projects/{{ project.slug }}/move-workspace" class="slug-form move-workspace"
+		data-confirm="Flytta turen till en annan arbetsyta? Turens bilder kopieras till målytans mediapool. Att flytta UT ur ett team skapar en begäran som en team-admin måste godkänna." data-confirm-ok="Flytta">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+		<label for="move-workspace">Arbetsyta</label>
+		<select id="move-workspace" name="workspace">
+			{% for w in workspaces %}
+			<option value="{{ w.key }}" {% if w.key == current_ws_key %}selected{% endif %}>{{ w.label }}{% if w.key == current_ws_key %} (nuvarande){% endif %}</option>
+			{% endfor %}
+		</select>
+		<p class="hint">Flytta turen mellan din personliga yta och teamet. Media följer med (kopieras). Flytt ut ur ett team kräver team-admins godkännande.</p>
+		<button type="submit" class="secondary">Flytta tur</button>
+	</form>
+	{% endif %}
 </details>
 
 <section class="lang-picker-section">

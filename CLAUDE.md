@@ -444,6 +444,19 @@ Slug fortsatt globalt unik (per-team-slug + disk-namespace = Fas 4b).
   Presets ärvs fortfarande per ANVÄNDARE (user.team_id), inte per turens yta - medveten asymmetri.
 - **Solo→team opt-in:** kryssruta "ta med mina turer" vid skapa-team -> `teams._bring_solo_to_team`
   flyttar solo-turer (team_id), personliga poolen -> team-poolen, skriver om `/media/<id>/`-refs.
+- **Flytta ENSKILD tur mellan ytor (Personlig <-> team, `routes/teams.py`):** dropdown i Turinställningar
+  på uppladdningssteget (bara vid >1 yta, `user_workspaces`). **IN till team** (`move-workspace`,
+  personlig->team) körs DIREKT; **UT ur team** skapar en BEGÄRAN (`Project.move_requested_by/at`) som
+  team-admin godkänner (`move-approve`) / avslår (`move-reject`) på /team, begäraren återkallar
+  (`move-cancel`) - "alla går via godkännande" (även team-admins egen utflytt). Godkännande sätter
+  begäraren som ägare + rensar check-out; blockeras om NÅGON ANNAN håller ett färskt lås (409, som
+  history-restore). **Media = COPY-AND-LEAVE** (skilt från `_bring_solo_to_team`s move): `_apply_move`
+  ->  `_copy_pool_media` KOPIERAR turens refererade poolbilder (+ tumnaglar, + uploaders-stämpel för
+  team-mål) till målytan om de saknas, `_rewrite_tour_media_key` skriver om `/media/<källa>/` ->
+  `/media/<mål>/` i tour.json (under `tour_lock`, snapshottar EJ - ägarskaps-op) + manifest. Källpoolen
+  lämnas ORÖRD -> delade turer, historik-snapshots (frusna tour.json) och publika /s-länkar refererar
+  fortsatt gamla nyckeln och överlever. Flytt TILL personlig sätter `owner_id = flyttaren` (annars låser
+  gaten ut en icke-skapare + media i fel pool). `_job_running`-guard (som rename-slug).
 - **Redigeringslås (check-out/check-in, `services/checkout.py` + `routes/checkout.py`):** skydd mot
   att två teammedlemmar skriver över varandra. En TEAM-tur checkas ut när man öppnar ett redigerings-
   steg (`editor-lock.js` på upload/plan/scenes/preview/translate) -> andra ser läsläge. Solo-turer
