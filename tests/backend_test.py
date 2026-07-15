@@ -991,6 +991,20 @@ def test_classify_storage():
     check("disk_total = summa psizes+msizes", d["disk_total"] == 100 + 40 + 7 + 3 + 20 + 10 + 5 + 2)
 
 
+def test_quota_status():
+    """Kvot-status driver mätaren OCH en framtida hård guard (over)."""
+    from app.services.storage import quota_status
+
+    check("ingen kvot -> obegränsat, ej over",
+          quota_status(500, None) == {"usage": 500, "quota": None, "pct": None, "over": False})
+    check("kvot 0 -> obegränsat", quota_status(500, 0)["quota"] is None and quota_status(500, 0)["over"] is False)
+    under = quota_status(50, 100)
+    check("under kvot: 50% ej over", under["pct"] == 50 and under["over"] is False)
+    check("exakt kvot: 100% ej over", quota_status(100, 100)["over"] is False)
+    over = quota_status(150, 100)
+    check("över kvot: 150% over", over["pct"] == 150 and over["over"] is True)
+
+
 def main() -> int:
     for fn in (
         test_expected_tile_count,
@@ -1012,6 +1026,7 @@ def main() -> int:
         test_media_pool,
         test_move_workspace_media,
         test_classify_storage,
+        test_quota_status,
         test_hex,
         test_slug_and_upload_safety,
         test_atomic_write,

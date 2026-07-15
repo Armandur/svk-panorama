@@ -114,6 +114,19 @@ def media_sizes() -> dict[str, int]:
     return out
 
 
+def team_usage_bytes(team_slugs, team_id: int, psizes: dict, msizes: dict) -> int:
+    """Ett teams lagringsanvändning: dess turer + delade mediepool (`team-<id>`)."""
+    return sum(psizes.get(s, 0) for s in team_slugs) + msizes.get(f"team-{team_id}", 0)
+
+
+def quota_status(usage: int, quota: int | None) -> dict:
+    """Kvot-status för mätare OCH en framtida hård guard. `quota` None/0 = obegränsat
+    (over alltid False). `over` = usage > quota. `pct` = heltalsprocent (kan bli >100)."""
+    if not quota:
+        return {"usage": usage, "quota": None, "pct": None, "over": False}
+    return {"usage": usage, "quota": quota, "pct": round(usage / quota * 100), "over": usage > quota}
+
+
 def classify_storage(teams, users, projects, member_counts, psizes, msizes) -> dict:
     """Ren klassning för /admin/storage: fördela varje tur och mediepool i EXAKT en grupp
     (team eller solo-användare) så `tracked + untracked == disk_total`. Tar redan hämtad

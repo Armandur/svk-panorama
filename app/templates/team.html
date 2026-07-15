@@ -71,6 +71,34 @@
 		<p><small>Turer och mediepool delas mellan teamets medlemmar.</small></p>
 	</article>
 
+	{% if storage_info %}
+	<article>
+		<h3>Lagring</h3>
+		{% if storage_info.quota %}
+		<div class="quota-bar quota-bar-lg"><span class="quota-fill{% if storage_info.over %} quota-over{% endif %}" style="width: {{ storage_info.pct_bar }}%"></span></div>
+		<p class="{% if storage_info.over %}login-error{% else %}hint{% endif %}">Använt {{ human_size(storage_info.usage) }} av {{ human_size(storage_info.quota) }} ({{ storage_info.pct }}%){% if storage_info.over %} - teamet är över sin lagringskvot. Kontakta administratören.{% endif %}</p>
+		{% else %}
+		<p class="hint">Använt {{ human_size(storage_info.usage) }}. Ingen lagringskvot satt.</p>
+		{% endif %}
+		{% if is_team_admin %}
+		<details class="storage-detail">
+			<summary>Detalj per tur</summary>
+			<table>
+				<thead><tr><th scope="col">Tur</th><th scope="col">Storlek</th></tr></thead>
+				<tbody>
+					{% for t in storage_info.tours %}
+					<tr><td><a href="/projects/{{ t.slug }}/preview">{{ t.name or t.slug }}</a></td><td class="col-storage">{{ human_size(t.bytes) }}</td></tr>
+					{% else %}
+					<tr><td colspan="2" class="hint">Inga turer.</td></tr>
+					{% endfor %}
+					<tr><td>Mediepool (delad)</td><td class="col-storage">{{ human_size(storage_info.pool) }}</td></tr>
+				</tbody>
+			</table>
+		</details>
+		{% endif %}
+	</article>
+	{% endif %}
+
 	{% if activity %}
 	<article>
 		<h3>Senaste aktivitet</h3>

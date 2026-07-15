@@ -1009,6 +1009,17 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .storage-refresh { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 0 auto; }
 .storage-refresh button { margin: 0; width: auto; }
 .storage-section-h { font-size: 1.05rem; margin: 1.2rem 0 0.5rem; color: var(--pico-muted-color); }
+/* Lagringskvot-mätare (team). */
+.quota-bar { height: 8px; border-radius: 4px; background: var(--pico-muted-border-color); overflow: hidden; margin-bottom: 0.25rem; max-width: 14rem; }
+.quota-fill { display: block; height: 100%; background: var(--pico-primary, #3b6ea5); border-radius: 4px; }
+.quota-fill.quota-over { background: var(--svk-danger, #b5342f); }
+.col-quota { min-width: 12rem; }
+.quota-bar-lg { height: 12px; max-width: 100%; margin-bottom: 0.4rem; }
+.storage-detail { margin-top: 0.6rem; }
+.storage-detail > summary { cursor: pointer; }
+.quota-form { display: flex; gap: 0.4rem; margin: 0; align-items: center; }
+.quota-form input { width: 7rem; margin: 0; }
+.quota-form button { margin: 0; white-space: nowrap; }
 details.storage-user { border: 1px solid var(--pico-muted-border-color); border-radius: 0.4rem; margin-bottom: 0.5rem; padding: 0 0.9rem; }
 details.storage-user > summary { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.7rem 0; cursor: pointer; font-weight: 600; }
 .storage-user-total { font-variant-numeric: tabular-nums; white-space: nowrap; }

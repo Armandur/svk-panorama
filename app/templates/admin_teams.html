@@ -26,7 +26,7 @@
 	{% if teams %}
 	<table>
 		<thead>
-			<tr><th scope="col">Team</th><th scope="col">Medlemmar</th><th scope="col">Turer</th><th scope="col">Storlek</th><th scope="col"></th></tr>
+			<tr><th scope="col">Team</th><th scope="col">Medlemmar</th><th scope="col">Turer</th><th scope="col">Lagring / kvot</th><th scope="col">Kvot (GB)</th><th scope="col"></th></tr>
 		</thead>
 		<tbody>
 			{% for t in teams %}
@@ -34,7 +34,21 @@
 				<td>{{ t.name }} <small><code>{{ t.slug }}</code></small></td>
 				<td>{{ t.members }}</td>
 				<td>{{ t.tours }}</td>
-				<td class="col-storage">{{ human_size(t.size) }}</td>
+				<td class="col-quota">
+					{% if t.quota %}
+					<div class="quota-bar" title="{{ t.pct }}%"><span class="quota-fill{% if t.over %} quota-over{% endif %}" style="width: {{ [t.pct, 100] | min }}%"></span></div>
+					<small class="{% if t.over %}login-error{% else %}hint{% endif %}">{{ human_size(t.size) }} / {{ human_size(t.quota) }} ({{ t.pct }}%){% if t.over %} - över kvot{% endif %}</small>
+					{% else %}
+					<small class="hint">{{ human_size(t.size) }} / obegränsat</small>
+					{% endif %}
+				</td>
+				<td>
+					<form method="post" action="/admin/teams/{{ t.id }}/quota" class="quota-form">
+						<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+						<input type="number" name="quota_gb" step="0.1" min="0" value="{{ t.quota_gb }}" placeholder="obegränsat" aria-label="Kvot i GB">
+						<button type="submit" class="secondary outline">Spara</button>
+					</form>
+				</td>
 				<td>
 					<form method="post" action="/admin/teams/{{ t.id }}/delete"
 						data-confirm="Radera teamet {{ t.name }}? Alla medlemmar blir team-lösa och teamets mediepool + mallar tas bort. Går bara om teamet inte äger några turer." data-confirm-danger data-confirm-ok="Radera team">

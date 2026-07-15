@@ -780,16 +780,16 @@ tenancy"). **Kvar:** egna domäner (4.3), per-team-slug + disk-namespace (4b). N
       användarlista ska visa vilket/vilka team varje användare tillhör (kolumn), och
       super-admin ska kunna FILTRERA listan på team. (Multi-team: "vilka team" - blir en
       lista när join-tabellen finns; single-team nu: ett team.)
-- [ ] **Team-utrymmesgräns + användningsvyer (todo 2026-07-14).** Varje team kan ha en
-      satt lagringskvot (`Team.storage_quota_bytes`, super-admin sätter; ev. team-default).
-      TRE synlighetsnivåer: (a) **medlem** ser teamets ÖVERGRIPANDE användning mot gränsen
-      (summa + procent/mätare, ingen drill-down); (b) **team-admin** ser det i DETALJ likt
-      super-admin - per användare och per tur (återanvänd `/admin/storage`-drill-downen men
-      team-scopad, inte global); (c) **super-admin** ser alla team. Bygger på 4.2:s per-team-
-      gruppering i storage-vyn (redan flaggad) - kvot är ett tak ovanpå den skanningen
-      (`storage.project_sizes`/`media_sizes` + `cached_dir_size` håller). Beslut kvar: hård
-      gräns (blockera uppladdning/tiling/export över kvot) vs mjuk (bara varning). Media-
-      poolen (`team-<id>`) + teamets turer räknas mot kvoten.
+- [x] **Team-utrymmesgräns + användningsvyer KLAR (2026-07-15).** `Team.storage_quota_bytes`
+      (nullable = obegränsat), super-admin sätter i GB på `/admin/teams` (`POST .../quota`). Rasmus
+      valde **MJUK gräns nu, hård-hook förberedd**: ren `storage.quota_status(usage, quota)` ->
+      `{usage,quota,pct,over}` driver mätaren OCH är den enda punkt en framtida hård guard läser
+      `.over` från (ingen död kod). TRE synlighetsnivåer: (a) **medlem** ser mätare på /team (använt/
+      kvot/%, röd + varning över kvot, ingen drill-down); (b) **team-admin** ser dessutom "Detalj per
+      tur" på /team; (c) **super-admin** ser + sätter kvot per team på /admin/teams (kvot-kolumn med
+      mätare). Usage = teamets turer + team-pool (`storage.team_usage_bytes`). Enhetstestat
+      (quota_status) + browser-verifierat (under/över + alla tre nivåer). Hård gräns (blockera upp/
+      tiling/export) = framtida tillägg: guard läser `quota_status(...).over` i uppladdnings-routes.
 
 - [x] **Check-out/check-in-redigeringslås KLAR (2026-07-15).** Samtidig
       redigering i team är idag sista-skrivning-vinner (tour_lock är atomiskt per spar men

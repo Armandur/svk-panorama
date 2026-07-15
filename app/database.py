@@ -29,6 +29,9 @@ class Team(Base):
     name: Mapped[str] = mapped_column(String(200))
     slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
     base_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Lagringskvot i byte (super-admin sätter). None = obegränsat. Mjuk gräns idag
+    # (mätare + varning); en framtida hård guard läser samma storage.quota_status().
+    storage_quota_bytes: Mapped[int | None] = mapped_column(nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow
     )

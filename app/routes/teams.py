@@ -204,6 +204,21 @@ def team_page(
             })
         rows.sort(key=lambda r: r["modified"] or _dt.datetime.min, reverse=True)
         activity = rows[:12]
+    # Lagringsanvändning mot kvot: mätare för alla medlemmar (a) + per-tur-detalj för
+    # team-admin (b). Delar samma skanning som /admin/storage.
+    storage_info = None
+    if team:
+        from app.services import storage as storage_svc
+
+        psizes, msizes = storage_svc.project_sizes(), storage_svc.media_sizes()
+        team_projects = db.query(Project).filter(Project.team_id == team.id).all()
+        usage = storage_svc.team_usage_bytes([p.slug for p in team_projects], team.id, psizes, msizes)
+        q = storage_svc.quota_status(usage, team.storage_quota_bytes)
+        tours_detail = sorted(
+            [{"name": p.name, "slug": p.slug, "bytes": psizes.get(p.slug, 0)} for p in team_projects],
+            key=lambda r: r["bytes"], reverse=True)
+        storage_info = {**q, "tours": tours_detail, "pool": msizes.get(f"team-{team.id}", 0),
+                        "pct_bar": min(q["pct"], 100) if q["pct"] is not None else None}
     token = new_csrf_token()
     response = templates.TemplateResponse(
         request,
@@ -213,6 +228,7 @@ def team_page(
             "is_team_admin": is_team_admin, "invite_links": invite_links,
             "solo_count": solo_count, "csrf_token": token,
             "pending_moves": pending_moves, "activity": activity,
+            "storage_info": storage_info,
         },
     )
     set_csrf_cookie(response, token)

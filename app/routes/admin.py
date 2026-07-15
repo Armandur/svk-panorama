@@ -233,13 +233,18 @@ def teams_page(
         .filter(User.team_id.isnot(None)).group_by(User.team_id).all()
     )
     psizes = storage.project_sizes()
+    msizes = storage.media_sizes()
     rows = []
     for t in teams:
         tours = db.query(Project).filter(Project.team_id == t.id).all()
-        size = sum(psizes.get(p.slug, 0) for p in tours) + storage.media_size(f"team-{t.id}")
+        size = storage.team_usage_bytes([p.slug for p in tours], t.id, psizes, msizes)
+        q = storage.quota_status(size, t.storage_quota_bytes)
         rows.append({
             "id": t.id, "name": t.name, "slug": t.slug,
             "members": member_counts.get(t.id, 0), "tours": len(tours), "size": size,
+            "quota": t.storage_quota_bytes,
+            "quota_gb": round(t.storage_quota_bytes / 1024**3, 2) if t.storage_quota_bytes else "",
+            "pct": q["pct"], "over": q["over"],
         })
     rows.sort(key=lambda r: r["size"], reverse=True)
     token = new_csrf_token()
@@ -297,6 +302,33 @@ async def delete_team_admin(
             url="/admin/teams?error=Teamet+äger+turer+-+flytta+eller+radera+dem+först",
             status_code=303)
     return RedirectResponse(url="/admin/teams?msg=Team+raderat", status_code=303)
+
+
+@router.post("/admin/teams/{team_id}/quota")
+async def set_team_quota(
+    request: Request,
+    team_id: int,
+    db: Session = Depends(get_db),
+    quota_gb: str = Form(""),
+    admin: User = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Sätt (eller nolla) teamets lagringskvot. Fältet anges i GB; tomt/0 = ingen kvot
+    (obegränsat). Mjuk gräns - påverkar bara mätare/varning, blockerar inget än."""
+    team = db.get(Team, team_id)
+    if team is None:
+        raise HTTPException(status_code=404, detail="Teamet finns inte")
+    raw = quota_gb.strip().replace(",", ".")
+    if not raw:
+        team.storage_quota_bytes = None
+    else:
+        try:
+            gb = float(raw)
+        except ValueError:
+            return RedirectResponse(url="/admin/teams?error=Ogiltig+kvot", status_code=303)
+        team.storage_quota_bytes = int(gb * 1024**3) if gb > 0 else None
+    db.commit()
+    return RedirectResponse(url="/admin/teams?msg=Kvot+uppdaterad", status_code=303)
 
 
 @router.get("/admin/users/{user_id}/projects", response_class=HTMLResponse)

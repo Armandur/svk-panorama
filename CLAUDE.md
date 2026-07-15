@@ -507,9 +507,15 @@ snabbare cache-hit). `invalidate(path=None)` tömmer. Ytor:
   INTE team-delade resurser (de redovisas på /admin/teams) -> reconcilerar med storage-vyns solo-grupper.
 - `/admin/users/{id}` - nedbrytning per tur + mediepool + totalt.
 - **`/admin/teams`** (egen flik, `admin_teams.html`, super-admin) - lista ALLA team (#medlemmar/#turer/
-  storlek) + skapa tomt team + radera (delad `teams.delete_team_by_id`, blockeras om turer finns).
+  storlek) + skapa tomt team + radera (delad `teams.delete_team_by_id`, blockeras om turer finns) +
+  **sätt lagringskvot** (`POST .../quota`, i GB -> `Team.storage_quota_bytes`; tom/0 = obegränsat).
   **Team-tilldelning** på `/admin/users/{id}` (`POST .../team`): sätt team_id + roll; sista-admin-skyddet
   (`_would_orphan_admin`) hedras vid utflytt/degradering (blockerar tyst föräldralöst team).
+- **Team-utrymmesgräns (MJUK, hård-hook förberedd):** `Team.storage_quota_bytes` (nullable=obegränsat).
+  Ren `storage.quota_status(usage, quota) -> {usage,quota,pct,over}` driver mätaren OCH är enda punkten
+  en framtida hård guard läser `.over` från. Usage = teamets turer + team-pool (`storage.team_usage_bytes`).
+  `/team` visar mätare för ALLA medlemmar (röd + varning över kvot) + "Detalj per tur" bara för team-admin;
+  `/admin/teams` har kvot-kolumn (mätare) + sätt-fält. Hård gräns (blockera upp/tiling/export) = framtida.
 
 ## Publik delning (public.py)
 
