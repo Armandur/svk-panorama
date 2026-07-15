@@ -321,6 +321,8 @@ def _run_job(slug: str, quality: int, scenes: list[tuple[str, Path]]) -> None:
     job["status"] = "error" if errors else "done"
     if errors:
         job["error"] = "; ".join(errors)
+        from app.services import joblog
+        joblog.append(slug, "tiling", job["error"])  # persistent så felet överlever omstart
     # Kakel skrevs -> töm diskcachen så kvot-grinden ser den nya storleken direkt.
     from app.services import storage
     storage.invalidate(project_dir(slug))

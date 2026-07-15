@@ -72,17 +72,15 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
       previewstorlek m.m.
 - [ ] Ev. finare tiling-progress via filräkning (räkna face*.tif 0-6 under
       nona-fasen + tile-jpg mot förväntat antal) i stället för bara faser.
-- [ ] **Följ upp bakgrundsjobb-fel (tiling m.fl.) - visa + logga (todo 2026-07-15).** Idag FÅNGAS
-      tiling-feldetaljerna (`tiling._run_job`: `entries[sid]["status"]="error"`, `job["error"]=
-      "scen X: <detalj>"`) och status-endpointen returnerar `job.error` - MEN UI:t visar bara en
-      generisk "Tiling-fel"-badge (index.js/tile-status.js), aldrig detaljen. Dessutom är felet BARA
-      in-memory (`_jobs`-dicten) -> försvinner vid omstart, kan inte inspekteras i efterhand.
-      **Staga:** (1) QUICK WIN - visa `job.error`-detaljen i UI:t (finns redan i status-payloaden):
-      expanderbar rad/tooltip under "Tiling-fel"-badgen på projektsidan (`tile-status.js`) + per-scen
-      `entry.stage="fel"`. Litet, mest värde. (2) PERSISTENS - skriv jobbfel till en logg
-      (`projects/<slug>/_jobs.log` med tidsstämpel + jobbtyp + fel) så det överlever omstart och kan
-      läsas senare; en liten "visa logg"-vy. Gäller även export/backup-jobb (samma in-memory-mönster).
-      Beslut: bara tiling först, eller generell jobb-logg för tiling/export/backup?
+- [x] **Följ upp bakgrundsjobb-fel (tiling/export/backup) - visa + logga KLAR (2026-07-15).**
+      (1) **Quick win:** `tile-status.js` visar nu `job.error`-detaljen (fanns i status-payloaden) i
+      en röd `#tile-error`-ruta under "Tiling-fel"-badgen på projektsidan. (2) **Persistent logg:**
+      `services/joblog.py` (`append`/`read`, TAB-separerad `projects/<slug>/_jobs.log`, nyast först,
+      radbrytningar plattade) - hookad vid fel i `tiling._run_job`, `bundle._build`, `backup._build`.
+      Route `GET /projects/{slug}/job-log`; UI = `<details id="job-log">` på projektsidan som lat-
+      laddar + renderar tid/jobbtyp/meddelande. `_jobs.log` ligger i projektroten under `_`-prefix ->
+      exkluderad ur backup/bundle (whitelist rglobar bara images/tiles), som `_history`. Verifierat:
+      backend-test (round-trip), route, log-vy-shot, quick-win-banderoll (Playwright route-stub).
 
 ## Fas 3 - Multi-tenant self-host (single-host Docker)
 

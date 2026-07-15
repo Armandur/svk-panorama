@@ -134,8 +134,14 @@
 			<span id="tile-overall" class="tile-badge"></span>
 		</div>
 		<p class="hint">Multires-tiles gör att publicerade turer laddar snabbt. Genereras automatiskt efter uppladdning och körs i bakgrunden - du kan lämna sidan; statusen syns även på huvudmenyn. Kör om efter att du bytt bilder.</p>
+		<p id="tile-error" class="job-error" hidden></p>
 		<ul id="tile-rows" class="upload-filelist"></ul>
 		<button id="tile-generate" type="button" class="secondary" hidden>Generera tiles</button>
+		<details id="job-log" class="job-log">
+			<summary>Jobblogg</summary>
+			<p class="hint">Fel vid tiling, export och backup - sparas så du kan följa upp i efterhand.</p>
+			<ul id="job-log-list" class="job-log-list"><li class="hint">Laddar...</li></ul>
+		</details>
 	</article>
 </section>
 

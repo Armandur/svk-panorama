@@ -12,6 +12,7 @@
 	var overall = document.getElementById("tile-overall");
 	var rowsEl = document.getElementById("tile-rows");
 	var genBtn = document.getElementById("tile-generate");
+	var errEl = document.getElementById("tile-error");
 	var rows = {};
 	var timer = null;
 
@@ -73,9 +74,15 @@
 
 		rowsEl.textContent = "";
 		rows = {};
-		if (job && job.status === "error") setOverall("error", false, "Tiling-fel");
-		else if (state.tiled >= state.tileable && state.tileable > 0) setOverall("done", false, "Tiles klara (" + state.tiled + "/" + state.tileable + ")");
-		else setOverall("partial", false, state.tiled + "/" + state.tileable + " tilade");
+		if (job && job.status === "error") {
+			setOverall("error", false, "Tiling-fel");
+			// Quick win: visa den faktiska feldetaljen (fanns redan i payloaden).
+			if (errEl) { errEl.textContent = job.error || "Tiling misslyckades."; errEl.hidden = false; }
+		} else {
+			if (errEl) errEl.hidden = true;
+			if (state.tiled >= state.tileable && state.tileable > 0) setOverall("done", false, "Tiles klara (" + state.tiled + "/" + state.tileable + ")");
+			else setOverall("partial", false, state.tiled + "/" + state.tileable + " tilade");
+		}
 		genBtn.hidden = state.tiled >= state.tileable;
 	}
 
@@ -102,6 +109,30 @@
 		})
 			.then(function () { poll(); })
 			.catch(function () { if (window.showToast) showToast("Kunde inte starta tiling", "error"); });
+	});
+
+	// Persistent jobblogg (tiling/export/backup-fel) - lat-laddas när <details> öppnas.
+	var logDetails = document.getElementById("job-log");
+	var logList = document.getElementById("job-log-list");
+	function renderLog(lines) {
+		logList.textContent = "";
+		if (!lines.length) { logList.innerHTML = '<li class="hint">Inga fel loggade.</li>'; return; }
+		lines.forEach(function (e) {
+			var li = document.createElement("li");
+			li.className = "job-log-item";
+			var t = document.createElement("span"); t.className = "job-log-time"; t.textContent = e.time.replace("T", " ");
+			var k = document.createElement("span"); k.className = "job-log-kind"; k.textContent = e.kind;
+			var m = document.createElement("span"); m.className = "job-log-msg"; m.textContent = e.message;
+			li.appendChild(t); li.appendChild(k); li.appendChild(m);
+			logList.appendChild(li);
+		});
+	}
+	if (logDetails) logDetails.addEventListener("toggle", function () {
+		if (!logDetails.open) return;
+		fetch("/projects/" + encodeURIComponent(slug) + "/job-log")
+			.then(function (r) { return r.json(); })
+			.then(function (d) { renderLog(d.lines || []); })
+			.catch(function () { logList.innerHTML = '<li class="hint">Kunde inte läsa loggen.</li>'; });
 	});
 
 	poll();

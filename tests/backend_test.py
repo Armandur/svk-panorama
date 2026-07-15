@@ -1005,6 +1005,30 @@ def test_quota_status():
     check("över kvot: 150% over", over["pct"] == 150 and over["over"] is True)
 
 
+def test_joblog():
+    """Persistent jobblogg: append -> read round-trip, nyast först, radbrytningar plattas."""
+    from app import config
+    from app.services import joblog, project_files
+
+    tmp = Path(tempfile.mkdtemp())
+    old = config.PROJECTS_DIR
+    config.PROJECTS_DIR = tmp / "projects"
+    try:
+        (config.PROJECTS_DIR / "t").mkdir(parents=True)
+        check("tom logg -> []", joblog.read("t") == [])
+        joblog.append("t", "tiling", "scen 3: docker\nkraschade")
+        joblog.append("t", "export", "diskfel")
+        rows = joblog.read("t")
+        check("två rader", len(rows) == 2)
+        check("nyast först (export)", rows[0]["kind"] == "export" and rows[0]["message"] == "diskfel")
+        check("radbrytning plattad", rows[1]["message"] == "scen 3: docker kraschade")
+        check("fält", set(rows[0]) == {"time", "kind", "level", "message"})
+        check("loggfil under _-prefix (exkluderas ur backup/bundle)",
+              (config.PROJECTS_DIR / "t" / "_jobs.log").exists())
+    finally:
+        config.PROJECTS_DIR = old
+
+
 def main() -> int:
     for fn in (
         test_expected_tile_count,
@@ -1027,6 +1051,7 @@ def main() -> int:
         test_move_workspace_media,
         test_classify_storage,
         test_quota_status,
+        test_joblog,
         test_hex,
         test_slug_and_upload_safety,
         test_atomic_write,

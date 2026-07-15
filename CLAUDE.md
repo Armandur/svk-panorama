@@ -125,6 +125,13 @@ default 2, nona är enkeltrådat), progress härledd ur **skrivna filer** (räkn
 cube/level-matte). Manifest-skrivning under `_manifest_lock`. Export:
 `services/bundle.py`, progress = filer/totalt.
 
+**Jobbfel-uppföljning (`services/joblog.py`):** in-memory `job["error"]` försvinner vid omstart ->
+`joblog.append(slug, kind, msg)` bevarar fel i `projects/<slug>/_jobs.log` (TAB-separerad, nyast
+först), hookad vid fel i `tiling._run_job`/`bundle._build`/`backup._build`. `job.error`-detaljen
+visas live i `#tile-error` (tile-status.js) under "Tiling-fel"-badgen; `GET /projects/{slug}/job-log`
++ `<details id="job-log">` på projektsidan visar den persistenta loggen. `_jobs.log` (`_`-prefix i
+projektroten) exkluderas naturligt ur backup/bundle (whitelist rglobar bara images/tiles), som `_history`.
+
 ## Bundle-export (self-host-produkten)
 
 `bundle.py` bygger en zip med `index.html` (mallen `bundle_index.html`) +

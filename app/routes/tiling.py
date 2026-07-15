@@ -47,6 +47,18 @@ def tile_job_status(
     return _state(slug)
 
 
+@router.get("/projects/{slug}/job-log")
+def job_log(
+    slug: str,
+    project: Project = Depends(get_project_or_404),
+) -> dict[str, Any]:
+    """Persistent bakgrundsjobb-fellogg (tiling/export/backup) - överlever omstart,
+    så användaren kan följa upp vad som gick snett i efterhand."""
+    from app.services import joblog
+
+    return {"lines": joblog.read(slug)}
+
+
 @router.get("/tile-jobs")
 def tile_jobs(
     db: Session = Depends(get_db),

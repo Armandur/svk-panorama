@@ -262,6 +262,8 @@ def _build(slug: str, project_name: str, include_originals: bool = False) -> Non
     except Exception as exc:  # noqa: BLE001 - visa felet i UI:t
         job["status"] = "error"
         job["error"] = str(exc)
+        from app.services import joblog
+        joblog.append(slug, "export", str(exc))
 
 
 def start_job(slug: str, project_name: str, include_originals: bool = False) -> dict[str, Any]:
