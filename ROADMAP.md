@@ -88,6 +88,22 @@ senare fas ovanpå samma kärna. Kartan är enda sanningskällan för geometri.
       laddar + renderar tid/jobbtyp/meddelande. `_jobs.log` ligger i projektroten under `_`-prefix ->
       exkluderad ur backup/bundle (whitelist rglobar bara images/tiles), som `_history`. Verifierat:
       backend-test (round-trip), route, log-vy-shot, quick-win-banderoll (Playwright route-stub).
+- [ ] **Central jobbhantering / global tiling-samtidighet (Rasmus 2026-07-16).** IDAG finns ingen
+      global gräns över turer: `tiling.start_job(slug)` startar en EGEN daemon-tråd per tur och
+      skyddar bara mot att SAMMA slug tilas två gånger; `TILE_CONCURRENCY` (default 2) begränsar
+      bara scener INOM en tur (`ThreadPoolExecutor` per jobb). Startar man tiling på M turer ->
+      M × TILE_CONCURRENCY samtidiga Docker-processer (nona/generate.py på 20-25 MB-bilder) ->
+      kan dränka värden (CPU/RAM/disk-I/O). Export (`bundle._build`) och backup (`backup._build`)
+      är också fristående trådar utan koordination med tiling eller varandra. Blir mer relevant
+      med bulk (t.ex. 12 importerade turer) och i Fas 4 (flera team triggar jobb samtidigt).
+      **Förslag:** en central jobbmanager - antingen (a) en GLOBAL bounded slot-pool/semafor som
+      ALLA tunga jobb (tile-per-scen + export + backup) tar en slot ur före varje Docker-process
+      (totalt samtidigt <= `SVK_GLOBAL_TILE_SLOTS`, oberoende av hur många turer som startats), eller
+      (b) en riktig FIFO-jobbkö med N workers + samlad status-vy (alla körande/köade jobb på ett
+      ställe). Komponerar med per-tur-`TILE_CONCURRENCY`. NB: ROADMAP:ens Fas 3-not "ingen jobbkö
+      (in-process räcker)" gäller MULTI-INSTANS-kö; detta är en in-process GLOBAL gräns, fortfarande
+      single-instans. **Tills dess:** tila turerna sekventiellt (en i taget) eller i liten kontrollerad
+      batch, inte alla på en gång.
 
 ## Fas 3 - Multi-tenant self-host (single-host Docker)
 
