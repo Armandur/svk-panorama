@@ -31,7 +31,7 @@
 			{% elif s.enabled %}
 			<a href="{{ s.url }}" class="step-menu-item">{{ s.title }}</a>
 			{% else %}
-			<span class="step-menu-item disabled" title="Inte tillgängligt än - ladda upp scener{% if s.key == 'plan' %} och karta{% endif %} först">{{ s.title }}</span>
+			<span class="step-menu-item disabled" title="{% if s.key == 'plan' %}Kräver scener och en uppladdad kartbild (kartan är valfri för turen){% else %}Ladda upp minst en scen först{% endif %}">{{ s.title }}</span>
 			{% endif %}
 			{% endfor %}
 		</div>

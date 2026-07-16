@@ -148,10 +148,13 @@
 <section class="step-nav">
 	{% if has_map_image and scenes %}
 	<a href="/projects/{{ project.slug }}/plan" role="button">Nästa: placera på kartan -&gt;</a>
+	{% elif scenes %}
+	<a href="/projects/{{ project.slug }}/scenes" role="button">Nästa: scenhantering -&gt;</a>
+	<p class="hint">En kartbild är valfri - utan den navigerar besökaren via hotspots. Ladda upp en karta ovan om du vill kunna placera scenerna på ett översiktskort.</p>
 	{% else %}
 	<a href="#" role="button" aria-disabled="true"
-		title="Ladda upp minst en scen och en kartbild först">Nästa: placera på kartan -&gt;</a>
-	<p class="hint">Ladda upp minst en scen och en kartbild för att gå vidare.</p>
+		title="Ladda upp minst en scen först">Nästa -&gt;</a>
+	<p class="hint">Ladda upp minst en scen för att gå vidare.</p>
 	{% endif %}
 </section>
 

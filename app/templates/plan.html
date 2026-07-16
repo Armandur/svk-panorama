@@ -7,7 +7,7 @@
 
 {% if not has_map_image %}
 <article class="notice">
-	<p>Ingen kartbild uppladdad ännu. <a href="/projects/{{ project.slug }}">Gå tillbaka till uppladdning</a> och ladda upp en karta.</p>
+	<p>Den här turen har ingen kartbild. En karta är <strong>valfri</strong> - utan den navigerar besökaren mellan scener via hotspots, och du kan gå direkt till <a href="/projects/{{ project.slug }}/scenes">scenhanteringen</a>. Vill du ha ett översiktskort att placera scenerna på, <a href="/projects/{{ project.slug }}">ladda upp en karta på uppladdningssteget</a>.</p>
 </article>
 {% else %}
 <aside class="planner-side">

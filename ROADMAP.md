@@ -304,7 +304,7 @@ Upptäckt 2026-07-16 (Rasmus, vid granskning av legacy-import-piloten):
       (createTooltipFunc i markdown.js: dölj tills pannellum satt en icke-noll-position, eller
       lyssna på scen-render/`mouseup`). Gäller viewer + preview, syns på alla turer med
       scen-hotspots.
-- [ ] **Kartlös tur ramas in som "ofärdig" i stället för ett giltigt val.** Editorn STÖDJER
+- [x] **Kartlös tur ramas in som "ofärdig" i stället för ett giltigt val - FIXAT (2026-07-16).** Editorn STÖDJER
       kartlösa turer (verifierat 2026-07-16: scener/preview/export funkar, plan-steget korrekt
       inaktiverat, viewer/bundle utelämnar kartan) - men plan-stegets inaktiverade titel
       ("ladda upp scener och karta först") och plan-sidans notis ("Ingen kartbild uppladdad
