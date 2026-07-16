@@ -292,6 +292,13 @@ Upptäckt 2026-07-16 (Rasmus, vid granskning av legacy-import-piloten):
       ännu. ...ladda upp en karta.") ramar in kartlöst som ofärdigt. Låg prio: mjuka upp
       texten för medvetet kartlösa turer (t.ex. "Den här turen har ingen karta - navigering
       sker via hotspots"). Ingen funktionell ändring behövs.
+- [ ] **Preview visar "Scen N"-titelruta för namnlösa scener (inkonsekvent med runtime).**
+      `tour-preview.js` (~745) skriver ALLTID in `resolvedTitle(id) || "Scen "+id` i
+      `tour.scenes[id].title` -> pannellums inbyggda titel-ruta (nere till vänster) visas
+      även utan satt scennamn. `viewer.js` (~117) gör rätt: `if (resolved) ...title =
+      resolved`. Fix: spegla viewern - behåll "Scen N"-fallbacken för `sceneNames`
+      (hotspot-etiketter) men sätt pannellum-titeln bara när en riktig titel finns (annars
+      `delete tour.scenes[id].title`). Liten, säker en-radare; recommenderad direkt.
 
 ## Rich text & markdown (info-hotspots + redigerbara texter)
 
