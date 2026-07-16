@@ -501,6 +501,7 @@
 				sceneFadeDuration: Math.round((parseFloat(fade.value) || 0) * 1000),
 				firstScene: firstScene,
 				mapSize: mapSizeVal(),
+				showMap: showMapCb ? showMapCb.checked : true,
 				themeFont: themeFont.value,
 				themeDotColor: themeDot.value,
 				themeCurrentColor: themeCurrent.value,
@@ -543,6 +544,7 @@
 				autoRotateInactivityDelay: Math.round((parseFloat(arDelay.value) || 0) * 1000),
 				sceneFadeDuration: Math.round((parseFloat(fade.value) || 0) * 1000),
 				mapSize: mapSizeVal(),
+				showMap: showMapCb ? showMapCb.checked : true,
 				theme: { font: themeFont.value, dotColor: themeDot.value, currentColor: themeCurrent.value },
 			};
 		}
@@ -701,6 +703,19 @@
 	if (previewMapClose && previewMap) {
 		previewMapClose.addEventListener("click", function () { previewMap.hidden = true; if (previewMapToggle) previewMapToggle.hidden = false; setBrandingForMap(false); });
 	}
+	// "Visa kartan i turen": av -> göm Karta-knappen + fäll in kartan (kartan finns kvar
+	// för redigering, den försvinner bara ur den publicerade turen/förhandsvisningen).
+	const showMapCb = document.getElementById("show-map");
+	function applyShowMap() {
+		var show = !showMapCb || showMapCb.checked;
+		if (!show && previewMap) { previewMap.hidden = true; setBrandingForMap(false); }
+		if (previewMapToggle) previewMapToggle.hidden = !show || (previewMap && !previewMap.hidden);
+	}
+	if (showMapCb) {
+		showMapCb.checked = (d.showMap !== false);
+		showMapCb.addEventListener("change", function () { applyShowMap(); onSettingChange(false); });
+	}
+	applyShowMap();
 
 	// --- Flagg-overlay på panoramat för förhandsvisningsspråk (turens språk är
 	// read-only här - satta på uppladdningssteget, se lang-picker.js). ---

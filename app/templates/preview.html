@@ -70,6 +70,10 @@
 					<label><input type="radio" name="map-size" value="medium" checked> Mellan</label>
 					<label><input type="radio" name="map-size" value="large"> Stor</label>
 				</fieldset>
+				{% if has_map_image %}
+				<label class="show-map-toggle"><input type="checkbox" id="show-map" checked> Visa kartan i turen</label>
+				<p class="hint">Avmarkera för att använda kartan enbart för att placera scener och kalibrera - då visas ingen karta för besökaren (den finns kvar för redigering).</p>
+				{% endif %}
 			</article>
 		</div>
 	</details>

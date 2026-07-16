@@ -248,7 +248,14 @@
 	// sak som vid vanlig scenladdning, inget vi behöver återställa manuellt.
 
 	// --- Kartöverlägg (element + hjälpare) ----------------------------------
-	const container = document.getElementById("map-container");
+	// showMap === false -> turen visar ingen karta (kartan finns kvar för redigering):
+	// ta bort Karta-knappen + containern så inget kartöverlägg går att öppna.
+	const mapHidden = !!(tour.default && tour.default.showMap === false);
+	if (mapHidden) {
+		var _sb = document.getElementById("show-map-btn"); if (_sb) _sb.remove();
+		var _mc = document.getElementById("map-container"); if (_mc) _mc.remove();
+	}
+	const container = mapHidden ? null : document.getElementById("map-container");
 	const mapImg = container ? document.getElementById("map-img") : null;
 	const dotsLayer = container ? document.getElementById("map-dots") : null;
 	const showBtn = container ? document.getElementById("show-map-btn") : null;

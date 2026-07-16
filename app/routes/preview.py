@@ -34,6 +34,7 @@ class TourSettings(BaseModel):
     sceneFadeDuration: int = 1500          # ms crossfade vid scenbyte
     firstScene: str = ""
     mapSize: str = "medium"                # small | medium | large
+    showMap: bool = True                   # visa kartöverlägget i turen (kartan finns kvar för redigering)
     themeFont: str = "sans"                # sans | serif | mono | humanist
     themeDotColor: str = "#666666"
     themeCurrentColor: str = "#8b0000"
@@ -97,6 +98,7 @@ def save_tour_settings(
         if payload.firstScene and payload.firstScene in tour.get("scenes", {}):
             default["firstScene"] = payload.firstScene
         default["mapSize"] = payload.mapSize if payload.mapSize in ("small", "medium", "large") else "medium"
+        default["showMap"] = bool(payload.showMap)
         default["theme"] = {
             "font": payload.themeFont if payload.themeFont in FONT_KEYS else "sans",
             "dotColor": _hex(payload.themeDotColor, "#666666"),

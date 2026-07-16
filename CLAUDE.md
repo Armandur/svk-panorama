@@ -99,7 +99,10 @@ efter uppladdning och spåras per tour på huvudmenyn (`/`) och uppladdningssida
 
 - **`tour.json`** (per projekt) är ren **equirektangulär sanningskälla** -
   scener, hotspots, `default`-block (autoRotate, sceneFadeDuration, firstScene,
-  mapSize, theme). Samma format som Pannellum konsumerar.
+  mapSize, showMap, theme). Samma format som Pannellum konsumerar. `showMap`
+  (bool, default true, additivt): false -> viewern/bundlen tar bort Karta-knappen +
+  kartöverlägget helt (kartan finns kvar för redigering/kalibrering i /plan). Sätts
+  via kryssrutan "Visa kartan i turen" på preview-steget.
 - **`map.json`** - `scenes[].position{x,y}` (naturliga kartpixlar) + `edges`.
 - **Multires läggs på FÖRST vid visning/export** via `apply_multires()` (mergar
   `tiles/manifest.json` in i turen). Så hotspot-ändringar kräver aldrig om-tiling.
