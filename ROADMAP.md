@@ -328,7 +328,7 @@ Upptäckt 2026-07-16 (Rasmus, vid granskning av legacy-import-piloten):
       redan är där), anropad från BÅDA ändringsvägarna. Trivial + säker (samma loadScene-mönster som
       kartprick-klick rad 391 och nästa/föreg rad 425); rekommenderad direkt.
 
-- [ ] **Länklinjerna i /plan blir hårfina på stora kartor (Rasmus 2026-07-16).** Bekräftat: det
+- [x] **Länklinjerna i /plan blir hårfina på stora kartor - FIXAT (2026-07-16).** Bekräftat: det
       ÄR kartstorleken. `#map-content` skalas med en ancestor CSS-transform (t.ex. scale 0.18 för
       hogsjo-kyrkogards 5925x3807px-karta); `vector-effect: non-scaling-stroke` på `.graph-edge`
       motverkar SVG-interna transformer men INTE en ancestor CSS-transform i Chromium -> 3px-strecket

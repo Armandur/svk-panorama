@@ -158,6 +158,10 @@
 
 	function applyTransform() {
 		mapContent.style.transform = "translate(" + view.tx + "px," + view.ty + "px) scale(" + view.scale + ")";
+		// Länklinjerna ligger i det transformerade lagret -> kompensera stroke-width mot
+		// skalan så de blir konstant ~3px på skärmen oavsett kartstorlek/zoom (samma
+		// teknik som pilspetsarna; non-scaling-stroke biter inte på ancestor CSS-transform).
+		if (svg) svg.style.setProperty("--edge-sw", (3 / view.scale));
 		updateMarkerPositions();
 	}
 
