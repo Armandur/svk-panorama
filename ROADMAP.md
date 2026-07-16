@@ -320,7 +320,7 @@ Upptäckt 2026-07-16 (Rasmus, vid granskning av legacy-import-piloten):
       (hotspot-etiketter) men sätt pannellum-titeln bara när en riktig titel finns (annars
       `delete tour.scenes[id].title`). Liten, säker en-radare; recommenderad direkt.
 
-- [ ] **Startscen-byte uppdaterar inte visaren live i /preview (Rasmus 2026-07-16).** Byter man
+- [x] **Startscen-byte uppdaterar inte visaren live i /preview - FIXAT (2026-07-16).** Byter man
       startscen (dropdown `#first-scene` ~rad 452, eller kartmodalens prick ~rad 648) sätts bara
       `firstScene`-variabeln + `setDirty` via `onSettingChange(false)` - visaren stannar på nuvarande
       scen tills man sparar OCH laddar om. Fix: en liten `gotoFirstScene()`-hjälpare som gör

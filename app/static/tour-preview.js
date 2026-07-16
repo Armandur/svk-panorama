@@ -438,6 +438,14 @@
 		if (rebuild) scheduleRebuild();
 	}
 
+	// Byt visaren live till startscenen så förhandsvisningen följer valet direkt
+	// (annars måste man spara + ladda om). Samma loadScene-mönster som kartprick/nästa-föreg.
+	function gotoFirstScene() {
+		if (viewer && firstScene && viewer.getScene() !== firstScene) {
+			viewer.loadScene(firstScene, scenePitch(firstScene), sceneYaw(firstScene));
+		}
+	}
+
 	// --- Wiring ---
 	function linkPair(range, num, onChange) {
 		range.addEventListener("input", function () { num.value = range.value; onChange(); });
@@ -449,7 +457,7 @@
 	arDirToggle.addEventListener("change", function () { updateArDirLabels(); applyAutoRotate(); onSettingChange(false); });
 	linkPair(arDelay, arDelayNum, function () { onSettingChange(true); });
 	linkPair(fade, fadeNum, function () { onSettingChange(true); });
-	if (firstSceneSel) firstSceneSel.addEventListener("change", function () { firstScene = firstSceneSel.value; onSettingChange(false); });
+	if (firstSceneSel) firstSceneSel.addEventListener("change", function () { firstScene = firstSceneSel.value; gotoFirstScene(); onSettingChange(false); });
 	document.querySelectorAll('input[name="map-size"]').forEach(function (r) {
 		r.addEventListener("change", function () {
 			if (previewMap) previewMap.dataset.size = mapSizeVal();
@@ -649,6 +657,7 @@
 				firstScene = s.id;
 				updateFirstSceneBtn();
 				markStartCurrent();
+				gotoFirstScene();
 				onSettingChange(false);
 				closeStartModal();
 			});
