@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import shutil
@@ -82,6 +83,75 @@ def discover() -> list[dict]:
             "title": (title_m.group(1).strip() if title_m else Path(tj).stem),
         })
     return tours
+
+
+# --- Kalibrering (nordoffset) ---------------------------------------------
+# Replikerar js/geo.js. Legacy-turerna är manuellt gjorda -> varje scen-hotspots
+# `yaw` (panorama-riktning mot grannen) + kartbäringen ger en RIKTIG, konsekvent
+# nordoffset, så scenerna kan anses kalibrerade (som om man kalibrerat i editorn).
+# mapHeading är skal-invariant -> funkar oavsett kartskalning.
+def _norm_deg(a: float) -> float:
+    while a > 180:
+        a -= 360
+    while a <= -180:
+        a += 360
+    return a
+
+
+def _map_heading(a: dict, b: dict) -> float:
+    return _norm_deg(math.degrees(math.atan2(b["x"] - a["x"], -(b["y"] - a["y"]))))
+
+
+def _derive_offset(scene_pos: dict, neighbor_pos: dict, ref_yaw: float) -> float:
+    return _norm_deg(_map_heading(scene_pos, neighbor_pos) - ref_yaw)
+
+
+def _circular_mean(degs: list[float]) -> float:
+    """Medelvinkel (cirkulärt) -> bäst-anpassad offset när scenen har flera länkar,
+    i stället för att låta en enda (ev. avvikande) hotspot bestämma."""
+    sx = sum(math.sin(math.radians(d)) for d in degs)
+    sy = sum(math.cos(math.radians(d)) for d in degs)
+    return _norm_deg(math.degrees(math.atan2(sx, sy)))
+
+
+def _positions_from_map(mp: dict) -> dict:
+    out = {}
+    for s in mp.get("scenes", []):
+        pos = s.get("position") or {}
+        if pos.get("x") is not None and pos.get("y") is not None:
+            out[str(s.get("id"))] = {"x": pos["x"], "y": pos["y"]}
+    return out
+
+
+def _apply_north_offsets(tour: dict, positions: dict) -> tuple[int, int]:
+    """Sätt `northOffset` (+ `calibRef`) per scen ur en intern scen-hotspot mot en
+    placerad granne (geo.deriveOffset). Rör inte redan kalibrerade scener. Returnerar
+    (kalibrerade, totalt)."""
+    scenes = tour.get("scenes", {})
+    cal = 0
+    for sid, s in scenes.items():
+        if s.get("northOffset") is not None:
+            cal += 1
+            continue
+        spos = positions.get(str(sid))
+        if not spos:
+            continue
+        offs, ref = [], None
+        for h in s.get("hotSpots", []):
+            if h.get("type") != "scene" or h.get("URL") or h.get("yaw") is None:
+                continue  # bara interna scen-hotspots med en yaw
+            npos = positions.get(str(h.get("sceneId")))
+            if not npos:
+                continue
+            offs.append(_derive_offset(spos, npos, float(h["yaw"])))
+            if ref is None:
+                ref = str(h.get("sceneId"))
+        if not offs:
+            continue
+        s["northOffset"] = round(_circular_mean(offs), 2)
+        s["calibRef"] = ref
+        cal += 1
+    return cal, len(scenes)
 
 
 def _unique_slug(db, base: str) -> str:
@@ -177,6 +247,7 @@ def import_one(db, admin: User, legacy: dict, force: bool) -> str:
 
     tour, copies = _build_tour(legacy, slug)
     mp = _build_map(legacy, tour)
+    cal, tot = _apply_north_offsets(tour, _positions_from_map(mp))
 
     if existing is None:
         db.add(Project(slug=slug, name=legacy["title"], owner_id=admin.id, team_id=None))
@@ -203,7 +274,27 @@ def import_one(db, admin: User, legacy: dict, force: bool) -> str:
     write_map(slug, mp, editor=editor)
 
     warn = f" [VARNING: {missing} saknade bilder]" if missing else ""
-    return f"OK   {legacy['dir']:14} -> {slug:28} ({len(tour['scenes'])} scener, {map_note}){warn}"
+    return f"OK   {legacy['dir']:14} -> {slug:28} ({len(tour['scenes'])} scener, {map_note}, kalibrerade {cal}/{tot}){warn}"
+
+
+def _recalibrate_existing(only: str | None) -> int:
+    """Backfill: härled northOffset ur befintliga projekts tour.json + map.json (in-place).
+    För turer som redan finns (t.ex. tidigare importerade) så de anses kalibrerade."""
+    root = config.PROJECTS_DIR
+    if not root.exists():
+        print("Ingen projects-katalog."); return 1
+    for pd in sorted(root.iterdir()):
+        if not pd.is_dir() or (only and only not in pd.name):
+            continue
+        tj, mj = pd / "tour.json", pd / "map.json"
+        if not tj.exists():
+            continue
+        tour = json.loads(tj.read_text(encoding="utf-8"))
+        mp = json.loads(mj.read_text(encoding="utf-8")) if mj.exists() else {"scenes": []}
+        cal, tot = _apply_north_offsets(tour, _positions_from_map(mp))
+        tj.write_text(json.dumps(tour, indent="\t", ensure_ascii=False), encoding="utf-8")
+        print(f"{pd.name:28} kalibrerade {cal}/{tot}")
+    return 0
 
 
 def main() -> int:
@@ -211,7 +302,12 @@ def main() -> int:
     ap.add_argument("--only", help="legacy-dir (ho/hoga) eller slug-fragment")
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--recalibrate", action="store_true",
+                    help="backfill: härled northOffset för REDAN importerade projekt (rör ej legacy)")
     args = ap.parse_args()
+
+    if args.recalibrate:
+        return _recalibrate_existing(args.only)
 
     tours = discover()
     if args.only:
