@@ -576,11 +576,12 @@
 	function cloneHs(list) {
 		// KLONER till pannellum (tour-datan lämnas orörd). Scen-hotspotens text
 		// bevaras nu som teaser; attachHsTooltips lägger MD-teaser ovanför + scen-
-		// etikett nedanför (samma som i preview/publicerad tur). Renderas på
+		// etikett nedanför. `sceneLabel: true` -> BARA scen-editorn visar "→ leder till"-
+		// etiketten (bygghjälp); preview/publicerad tur utelämnar den. Renderas på
 		// sceneLang (flagg-overlayn) så man kan förhandsvisa varje språk i editorn.
 		// (Filtrerar INTE språk-specifika hotspots här - alla ska gå att redigera.)
 		const cloned = (list || []).map(function (h) { return Object.assign({}, h); });
-		if (window.attachHsTooltips) window.attachHsTooltips(cloned, sceneNamesMap(), sceneLang, langs);
+		if (window.attachHsTooltips) window.attachHsTooltips(cloned, sceneNamesMap(), sceneLang, langs, { sceneLabel: true });
 		return cloned;
 	}
 

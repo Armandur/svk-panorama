@@ -189,8 +189,13 @@
 	// etikett (kallaren resolverar titeln för aktuellt språk). lang/langs styr
 	// vilket språk hotspot-text/body/body-knapp visas på. Text-fält kan vara ren
 	// sträng (monospråkigt) eller {sv,en,...} (resolveText väljer).
-	window.attachHsTooltips = function (hotSpots, sceneNames, lang, langs) {
+	// opts.sceneLabel: visa scen-hotspotarnas "→ leder till"-etikett NEDANFÖR. Det är en
+	// BYGGHJÄLP - bara scen-editorn (scene.js) skickar true. I preview och färdiga turer
+	// (viewer/bundle/translate) utelämnas den, och en scen-hotspot utan teaser får då
+	// ingen tooltip alls (bara pilen).
+	window.attachHsTooltips = function (hotSpots, sceneNames, lang, langs, opts) {
 		sceneNames = sceneNames || {};
+		var showSceneLabel = !!(opts && opts.sceneLabel);
 		var readMore = window.uiStr("readMore", lang);
 		(hotSpots || []).forEach(function (h) {
 			if (!h) return;
@@ -208,10 +213,16 @@
 					h.clickHandlerArgs = body;
 				}
 			} else if (h.type === "scene") {
-				// Scen-hotspot: ev. teaser (MD) ovanför + "-> leder till"-etikett nedanför.
-				var target = sceneNames[h.sceneId] || (window.uiStr("scene", lang) + " " + h.sceneId);
-				h.createTooltipFunc = window.mdHotspotTooltip;
-				h.createTooltipArgs = { text: text, width: h.tooltipWidth || null, belowLabel: "→ " + target };
+				// Scen-hotspot. Editor: teaser (MD) ovanför + "-> leder till"-etikett nedanför.
+				// Preview/runtime: bara teaser om den finns, ALDRIG etiketten (bygghjälp).
+				if (showSceneLabel) {
+					var target = sceneNames[h.sceneId] || (window.uiStr("scene", lang) + " " + h.sceneId);
+					h.createTooltipFunc = window.mdHotspotTooltip;
+					h.createTooltipArgs = { text: text, width: h.tooltipWidth || null, belowLabel: "→ " + target };
+				} else if (text) {
+					h.createTooltipFunc = window.mdHotspotTooltip;
+					h.createTooltipArgs = { text: text, width: h.tooltipWidth || null };
+				}
 			} else if (h.URL && text) {
 				// URL-hotspot: rendera texten som MD-teaser (samma väg, inget ark).
 				h.createTooltipFunc = window.mdHotspotTooltip;
