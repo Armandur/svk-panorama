@@ -271,11 +271,14 @@ Upptäckt 2026-07-11 under genomgång.
 
 Upptäckt 2026-07-16 (Rasmus, vid granskning av legacy-import-piloten):
 
-- [ ] **Coloris-färgfältet: färgrutan täcker hex-koden.** I tema-panelen (preview-steget,
+- [x] **Coloris-färgfältet: färgrutan täcker hex-koden - FIXAT (2026-07-16).** padding-right
+      för swatchen (30px) på `.theme-colors .coloris-input` + swatchen som prydlig fyrkant. I tema-panelen (preview-steget,
       `#theme-dot`/`#theme-current`, "Kartprickar"/"Aktiv kartprick") ligger färg-swatchen
       ovanpå/klipper hex-texten (`#66666[6]`, `#8b000[0]` syns avklippt). Justera Coloris-
       fältets padding/swatch-position (app.css) så hela hex-värdet syns.
-- [ ] **Hamburgermeny-ikonens streck matchar inte ljust tema.** Viewer/preview topp-vänster
+- [x] **Hamburgermeny-ikonens streck matchar inte ljust tema - FIXAT (2026-07-16).** Pico:s
+      `details summary:not([role])` (0,1,2) slog gruppregelns vita text -> ☰ mörk-på-slate.
+      `details.step-menu > summary.step-menu-btn { color: var(--pico-secondary-inverse) }`. Viewer/preview topp-vänster
       ☰-knapp: strecken har fast (mörk-avsedd) färg och ser fel ut i `prefers-color-scheme:
       light`. Låt ikonfärgen följa temat (currentColor / tema-token).
 - [ ] **Scen-hotspot-popup/etikett renderas uppe till vänster innan hotspoten är i bild.**
@@ -292,7 +295,8 @@ Upptäckt 2026-07-16 (Rasmus, vid granskning av legacy-import-piloten):
       ännu. ...ladda upp en karta.") ramar in kartlöst som ofärdigt. Låg prio: mjuka upp
       texten för medvetet kartlösa turer (t.ex. "Den här turen har ingen karta - navigering
       sker via hotspots"). Ingen funktionell ändring behövs.
-- [ ] **Preview visar "Scen N"-titelruta för namnlösa scener (inkonsekvent med runtime).**
+- [x] **Preview visar "Scen N"-titelruta för namnlösa scener - FIXAT (2026-07-16).** tour-preview.js
+      sätter pannellum-titeln bara vid riktig titel (annars delete), speglar viewer.js.
       `tour-preview.js` (~745) skriver ALLTID in `resolvedTitle(id) || "Scen "+id` i
       `tour.scenes[id].title` -> pannellums inbyggda titel-ruta (nere till vänster) visas
       även utan satt scennamn. `viewer.js` (~117) gör rätt: `if (resolved) ...title =

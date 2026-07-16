@@ -742,9 +742,13 @@
 	function applyHotspotLanguage() {
 		var sceneNames = {};
 		sceneIds().forEach(function (id) {
-			var t = resolvedTitle(id) || ("Scen " + id);
-			sceneNames[id] = t;
-			tour.scenes[id].title = t;
+			var resolved = resolvedTitle(id);
+			// sceneNames (hotspot-etiketter) behåller "Scen N"-fallbacken, men pannellums
+			// inbyggda titel-ruta sätts BARA vid en riktig titel (annars döljs den) -
+			// speglar viewer.js så namnlösa scener inte visar en "Scen N"-ruta i preview.
+			sceneNames[id] = resolved || ("Scen " + id);
+			if (resolved) tour.scenes[id].title = resolved;
+			else delete tour.scenes[id].title;
 			// Filtrera FÖRE attachHsTooltips - se origHotSpots-kommentaren ovan.
 			// Bara vid flerspråkig tur (annars visas alla, jfr viewer.js).
 			tour.scenes[id].hotSpots = (selectedLangs.length > 1)

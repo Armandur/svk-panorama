@@ -882,8 +882,11 @@ tr[data-preview-scene] { cursor: help; }
 .theme-colors label { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; margin: 0; }
 .theme-colors input[type="color"] { width: 3rem; height: 1.6rem; padding: 0; margin: 0; }
 /* Coloris-fält (ersätter native färgväljare) - håll dem smala i den täta tema-raden. */
-.theme-colors .clr-field { width: 7rem; }
-.theme-colors .coloris-input { width: 7rem; margin: 0; padding: 0.15rem 0.4rem 0.15rem 2rem; height: 1.9rem; font-size: 0.8rem; }
+.theme-colors .clr-field { width: 7.5rem; }
+/* Coloris-swatchen ligger 30px till HÖGER -> pad texten åt höger så hela hex-koden
+   syns (annars täcks sista siffran). Swatchen görs till en prydlig fyrkant. */
+.theme-colors .coloris-input { width: 7.5rem; margin: 0; padding: 0.15rem 2.2rem 0.15rem 0.5rem; height: 1.9rem; font-size: 0.8rem; }
+.theme-colors .clr-field button { width: auto; aspect-ratio: 1; right: 2px; height: calc(100% - 4px); top: 2px; transform: none; border-radius: 3px; }
 
 /* Flerspråkighet: kryssrutor för turens språk (ordning = kryssordning) + en
    liten badge som visar plats/standard. Förhandsvisningsspråk-väljaren. */
@@ -991,6 +994,10 @@ tr[data-preview-scene] { cursor: help; }
 .plan-topnav a.step-arrow, .plan-topnav a.step-action { display: inline-flex; align-items: center; justify-content: center; }
 .step-menu-btn:hover, .step-arrow:hover, .step-action:hover { background: var(--pico-secondary-hover-background); color: var(--pico-secondary-inverse); }
 details.step-menu > summary { list-style: none; }
+/* Pico ger `details summary:not([role])` en mörk accordion-färg (0,1,2) som slår
+   gruppregelns vita text -> ☰-glyfen blir mörk-på-slate i ljust läge. Högre
+   specificitet återställer den vita färgen (som pilarna). */
+details.step-menu > summary.step-menu-btn { color: var(--pico-secondary-inverse); }
 details.step-menu > summary::-webkit-details-marker { display: none; }
 details.step-menu > summary::marker { content: none; }
 /* Pico lägger en chevron via summary::after - göm den (vi vill bara hamburgern). */
