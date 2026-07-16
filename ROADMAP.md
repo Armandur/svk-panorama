@@ -269,6 +269,30 @@ Upptäckt 2026-07-11 under genomgång.
       containern; tooltips ärver. (För att SE det i previewen krävs synlig pannellum-
       text, dvs. hotspot-tooltip vid hover eller en titel.)
 
+Upptäckt 2026-07-16 (Rasmus, vid granskning av legacy-import-piloten):
+
+- [ ] **Coloris-färgfältet: färgrutan täcker hex-koden.** I tema-panelen (preview-steget,
+      `#theme-dot`/`#theme-current`, "Kartprickar"/"Aktiv kartprick") ligger färg-swatchen
+      ovanpå/klipper hex-texten (`#66666[6]`, `#8b000[0]` syns avklippt). Justera Coloris-
+      fältets padding/swatch-position (app.css) så hela hex-värdet syns.
+- [ ] **Hamburgermeny-ikonens streck matchar inte ljust tema.** Viewer/preview topp-vänster
+      ☰-knapp: strecken har fast (mörk-avsedd) färg och ser fel ut i `prefers-color-scheme:
+      light`. Låt ikonfärgen följa temat (currentColor / tema-token).
+- [ ] **Scen-hotspot-popup/etikett renderas uppe till vänster innan hotspoten är i bild.**
+      När panoramat laddar / när en scen-hotspot är bakom kameran placerar pannellum dess
+      tooltip-etikett ("→ Scen 4") i (0,0) uppe till vänster tills positionen hunnit räknas
+      ut. Göm/placera scen-hotspot-etiketten först när hotspoten faktiskt projiceras i vy
+      (createTooltipFunc i markdown.js: dölj tills pannellum satt en icke-noll-position, eller
+      lyssna på scen-render/`mouseup`). Gäller viewer + preview, syns på alla turer med
+      scen-hotspots.
+- [ ] **Kartlös tur ramas in som "ofärdig" i stället för ett giltigt val.** Editorn STÖDJER
+      kartlösa turer (verifierat 2026-07-16: scener/preview/export funkar, plan-steget korrekt
+      inaktiverat, viewer/bundle utelämnar kartan) - men plan-stegets inaktiverade titel
+      ("ladda upp scener och karta först") och plan-sidans notis ("Ingen kartbild uppladdad
+      ännu. ...ladda upp en karta.") ramar in kartlöst som ofärdigt. Låg prio: mjuka upp
+      texten för medvetet kartlösa turer (t.ex. "Den här turen har ingen karta - navigering
+      sker via hotspots"). Ingen funktionell ändring behövs.
+
 ## Rich text & markdown (info-hotspots + redigerbara texter)
 
 Beslutat 2026-07-11 (UX-genomgång). Mål: rikare formattering på info-hotspots och
