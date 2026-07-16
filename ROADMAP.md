@@ -328,6 +328,17 @@ Upptäckt 2026-07-16 (Rasmus, vid granskning av legacy-import-piloten):
       redan är där), anropad från BÅDA ändringsvägarna. Trivial + säker (samma loadScene-mönster som
       kartprick-klick rad 391 och nästa/föreg rad 425); rekommenderad direkt.
 
+- [ ] **Länklinjerna i /plan blir hårfina på stora kartor (Rasmus 2026-07-16).** Bekräftat: det
+      ÄR kartstorleken. `#map-content` skalas med en ancestor CSS-transform (t.ex. scale 0.18 för
+      hogsjo-kyrkogards 5925x3807px-karta); `vector-effect: non-scaling-stroke` på `.graph-edge`
+      motverkar SVG-interna transformer men INTE en ancestor CSS-transform i Chromium -> 3px-strecket
+      renderas som ~0.5px. Pilspetsarna (`drawArrowhead`) har INTE problemet - de dimensioneras redan
+      i user-units × skärm-px (`upp = naturalWidth/renderedWidth`). Fix: gör samma för linjerna -
+      sätt `stroke-width` dynamiskt = `3 / view.scale` user-units (via en CSS-variabel på `#edges-layer`
+      i `applyTransform`, som redan körs vid varje zoom/pan) och ta bort den verkningslösa
+      `non-scaling-stroke`. Ger konstant ~3px skärmtjocklek på ALLA kartstorlekar och zoomnivåer.
+      Gäller även `.rubber` (drag-linjen). Liten + säker; rekommenderad direkt.
+
 ## Cross-tour-hotspots (länka till en ANNAN tur) - ny funktion
 
 Behov (Rasmus 2026-07-16): en hotspot som SER UT som en scen-hotspot (pil) men tar
