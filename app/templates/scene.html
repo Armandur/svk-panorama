@@ -132,6 +132,12 @@
 			<label>Visa på språk</label>
 			<div id="hs-langs-boxes" class="hs-langs-boxes"></div>
 		</div>
+		<div id="hs-field-scene-mode">
+			<fieldset>
+				<label><input type="radio" name="hs-scene-mode" value="internal" checked> Målscen i den här turen</label>
+				<label><input type="radio" name="hs-scene-mode" value="external"> Länka till en annan tur</label>
+			</fieldset>
+		</div>
 		<div id="hs-field-scene-top">
 			<div id="hs-scene-preview" class="hs-scene-preview"></div>
 			<label for="hs-scene">Målscen</label>
@@ -162,6 +168,10 @@
 		<div id="hs-field-url">
 			<label for="hs-url">URL</label>
 			<input type="text" id="hs-url" placeholder="https://...">
+		</div>
+		<div id="hs-field-newtab" hidden>
+			<label><input type="checkbox" id="hs-newtab"> Öppna i ny flik</label>
+			<p class="hint">Klistra in adressen till målturen (delnings- eller /view-länk). Lägg till <code>?scene=ID</code> i URL:en för att hoppa direkt till en viss scen. Hotspoten ser ut som en scen-pil men tar besökaren till den andra turen.</p>
 		</div>
 		<div id="hs-field-scene-dir">
 			<fieldset>

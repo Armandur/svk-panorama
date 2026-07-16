@@ -580,7 +580,14 @@
 		// etiketten (bygghjälp); preview/publicerad tur utelämnar den. Renderas på
 		// sceneLang (flagg-overlayn) så man kan förhandsvisa varje språk i editorn.
 		// (Filtrerar INTE språk-specifika hotspots här - alla ska gå att redigera.)
-		const cloned = (list || []).map(function (h) { return Object.assign({}, h); });
+		const cloned = (list || []).map(function (h) {
+			const c = Object.assign({}, h);
+			// Extern scen-hotspot (URL): stripa URL i EDITORNS klon så pannellum inte gör
+			// den till en <a> som navigerar bort vid klick i editorn. `_external` låter
+			// attachHsTooltips sätta en "→ annan tur"-etikett i stället för en scentitel.
+			if (c.type === "scene" && c.URL) { c._external = true; delete c.URL; delete c.attributes; }
+			return c;
+		});
 		if (window.attachHsTooltips) window.attachHsTooltips(cloned, sceneNamesMap(), sceneLang, langs, { sceneLabel: true });
 		return cloned;
 	}
@@ -621,6 +628,9 @@
 	const hsModal = document.getElementById("hs-modal");
 	const hsFieldText = document.getElementById("hs-field-text");
 	const hsFieldUrl = document.getElementById("hs-field-url");
+	const hsFieldSceneMode = document.getElementById("hs-field-scene-mode");
+	const hsFieldNewtab = document.getElementById("hs-field-newtab");
+	const hsNewtab = document.getElementById("hs-newtab");
 	const hsFieldSceneTop = document.getElementById("hs-field-scene-top");
 	const hsFieldSceneDir = document.getElementById("hs-field-scene-dir");
 	const hsText = document.getElementById("hs-text");
@@ -790,6 +800,14 @@
 	}
 	function setTyaw(v) { v = (v == null) ? 0 : Math.round(v); hsTyaw.value = v; hsTyawNum.value = v; }
 	function tyawNote(cur) { hsTyawNote.textContent = (computeTargetYaw(cur, hsSceneSel.value) == null) ? "Auto-beräknas när båda scenerna är kalibrerade." : ""; }
+	// Scen-hotspotens läge: intern målscen (sceneId) eller extern länk till annan tur (URL).
+	function applySceneMode(mode) {
+		const ext = mode === "external";
+		hsFieldSceneTop.hidden = ext;   // målscen-väljare + preview bara internt
+		hsFieldSceneDir.hidden = ext;   // riktning/dubbelriktning bara internt
+		hsFieldUrl.hidden = !ext;       // återanvänder URL-fältet för den externa länken
+		hsFieldNewtab.hidden = !ext;
+	}
 
 	function openHsModal(ctx) {
 		hsCtx = ctx;
@@ -797,6 +815,8 @@
 			(ctx.mode === "edit" ? "Redigera " : "Ny ") + ({ info: "info-hotspot", url: "URL-hotspot", scene: "scen-hotspot" }[ctx.type]);
 		hsFieldText.hidden = false; // text (tooltip) valfri för alla typer
 		hsFieldUrl.hidden = ctx.type !== "url";
+		hsFieldSceneMode.hidden = ctx.type !== "scene";
+		hsFieldNewtab.hidden = true;
 		hsFieldSceneTop.hidden = ctx.type !== "scene";
 		hsFieldSceneDir.hidden = ctx.type !== "scene";
 		// Per-språk-state (dict {kod:text}) ur befintlig text/body (ren sträng ->
@@ -813,6 +833,12 @@
 		showTab("teaser");
 		hsUrl.value = (ctx.hs && ctx.hs.URL) || "";
 		if (ctx.type === "scene") {
+			// En scen-hotspot kan antingen peka på en scen i turen (sceneId) ELLER
+			// länka externt (URL, ser ut som en scen-pil men tar användaren till en annan tur).
+			const external = !!(ctx.hs && ctx.hs.URL);
+			document.querySelector('input[name="hs-scene-mode"][value="' + (external ? "external" : "internal") + '"]').checked = true;
+			hsNewtab.checked = !!(ctx.hs && ctx.hs.attributes && ctx.hs.attributes.target === "_blank");
+			// Målscen/riktning fylls alltid (för internt läge + om man växlar tillbaka).
 			const target = (ctx.hs && ctx.hs.sceneId) || sceneIds().filter(function (id) { return id !== ctx.cur; })[0];
 			hsCtx.target = target;
 			fillSceneSelect(ctx.cur, target);
@@ -820,15 +846,18 @@
 			document.querySelector('input[name="hs-dir"][value="' + (two ? "two" : "one") + '"]').checked = true;
 			setTyaw(ctx.hs && ctx.hs.targetYaw != null ? ctx.hs.targetYaw : computeTargetYaw(ctx.cur, target));
 			tyawNote(ctx.cur);
+			applySceneMode(external ? "external" : "internal");
 		}
 		hsModal.hidden = false;
 		// EasyMDE/CodeMirror renderar 0-höjd om den initierats dold -> refresh när
 		// modalen visas, sedan fokus.
 		if (hsTextEditor) hsTextEditor.codemirror.refresh();
-		if (ctx.type === "scene") hsSceneSel.focus();
+		const sceneExternal = ctx.type === "scene" && document.querySelector('input[name="hs-scene-mode"]:checked').value === "external";
+		if (ctx.type === "scene" && !sceneExternal) hsSceneSel.focus();
+		else if (sceneExternal) hsUrl.focus();
 		else if (hsTextEditor) hsTextEditor.codemirror.focus();
 		else hsText.focus();
-		if (ctx.type === "scene") showHsPreview(hsCtx.target);
+		if (ctx.type === "scene" && !sceneExternal) showHsPreview(hsCtx.target);
 	}
 	function closeHsModal() { hsModal.hidden = true; hsCtx = null; hsState = null; destroyHsPreview(); }
 
@@ -902,20 +931,34 @@
 			if (hsTooltipWidth && hsTooltipWidth.value) hs.tooltipWidth = hsTooltipWidth.value;
 			else delete hs.tooltipWidth;
 		} else { // scene
-			const target = hsSceneSel.value;
-			if (!target) { alert("Välj en målscen."); return; }
-			hs.type = "scene"; hs.sceneId = target; hs.targetPitch = 0;
-			hs.targetYaw = parseFloat(hsTyaw.value) || 0;
-			if (teaserI18n) hs.text = teaserI18n; else delete hs.text;
-			if (hsTooltipWidth && hsTooltipWidth.value) hs.tooltipWidth = hsTooltipWidth.value;
-			else delete hs.tooltipWidth;
-			delete hs.URL;
-			const two = document.querySelector('input[name="hs-dir"]:checked').value === "two";
-			hs.twoway = two;
-			// Tvåväg: säkerställ en retur-hotspot. Enkelriktad: lämna ev. befintlig
-			// omvänd länk IFRED (den kan vara en egen enkelriktad hotspot) - radera
-			// aldrig automatiskt, det är destruktivt och oväntat.
-			if (two) ensureReciprocal(cur, target);
+			const mode = document.querySelector('input[name="hs-scene-mode"]:checked').value;
+			if (mode === "external") {
+				const url = hsUrl.value.trim();
+				if (!url) { alert("URL till målturen krävs."); return; }
+				// Extern scen-hotspot: pannellum-nativt (URL + attributes.target). Ser ut
+				// som en scen-pil men navigerar till en annan tur. Inga interna scen-fält.
+				hs.type = "scene"; hs.URL = url;
+				hs.attributes = { target: hsNewtab.checked ? "_blank" : "_self" };
+				if (teaserI18n) hs.text = teaserI18n; else delete hs.text;
+				if (hsTooltipWidth && hsTooltipWidth.value) hs.tooltipWidth = hsTooltipWidth.value;
+				else delete hs.tooltipWidth;
+				delete hs.sceneId; delete hs.targetPitch; delete hs.targetYaw; delete hs.twoway;
+			} else {
+				const target = hsSceneSel.value;
+				if (!target) { alert("Välj en målscen."); return; }
+				hs.type = "scene"; hs.sceneId = target; hs.targetPitch = 0;
+				hs.targetYaw = parseFloat(hsTyaw.value) || 0;
+				if (teaserI18n) hs.text = teaserI18n; else delete hs.text;
+				if (hsTooltipWidth && hsTooltipWidth.value) hs.tooltipWidth = hsTooltipWidth.value;
+				else delete hs.tooltipWidth;
+				delete hs.URL; delete hs.attributes;
+				const two = document.querySelector('input[name="hs-dir"]:checked').value === "two";
+				hs.twoway = two;
+				// Tvåväg: säkerställ en retur-hotspot. Enkelriktad: lämna ev. befintlig
+				// omvänd länk IFRED (den kan vara en egen enkelriktad hotspot) - radera
+				// aldrig automatiskt, det är destruktivt och oväntat.
+				if (two) ensureReciprocal(cur, target);
+			}
 		}
 		const hsLangs = readHsLangs();
 		if (hsLangs) hs.langs = hsLangs; else delete hs.langs;
@@ -938,6 +981,14 @@
 		const ty = computeTargetYaw(hsCtx.cur, hsSceneSel.value);
 		if (ty == null) { alert("Kan inte beräkna - kalibrera målscenen först."); return; }
 		setTyaw(ty);
+	});
+	Array.prototype.forEach.call(document.querySelectorAll('input[name="hs-scene-mode"]'), function (r) {
+		r.addEventListener("change", function () {
+			if (!hsCtx || hsCtx.type !== "scene") return;
+			applySceneMode(r.value);
+			if (r.value === "external") { destroyHsPreview(); hsUrl.focus(); }
+			else { showHsPreview(hsCtx.target); hsSceneSel.focus(); }
+		});
 	});
 	if (hsSceneSel) hsSceneSel.addEventListener("change", function () {
 		if (!hsCtx) return;

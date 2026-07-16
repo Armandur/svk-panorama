@@ -216,7 +216,9 @@
 				// Scen-hotspot. Editor: teaser (MD) ovanför + "-> leder till"-etikett nedanför.
 				// Preview/runtime: bara teaser om den finns, ALDRIG etiketten (bygghjälp).
 				if (showSceneLabel) {
-					var target = sceneNames[h.sceneId] || (window.uiStr("scene", lang) + " " + h.sceneId);
+					// Extern (URL/_external) scen-hotspot -> "annan tur"; annars målscenens titel.
+					var target = (h._external || h.URL) ? "annan tur"
+						: (sceneNames[h.sceneId] || (window.uiStr("scene", lang) + " " + h.sceneId));
 					h.createTooltipFunc = window.mdHotspotTooltip;
 					h.createTooltipArgs = { text: text, width: h.tooltipWidth || null, belowLabel: "→ " + target };
 				} else if (text) {

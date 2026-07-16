@@ -312,21 +312,26 @@ hokg→hony/hoka, hony→hokg, vifg↔vikg) samt två till externa svenskakyrkan
 (`_self`/`_blank`). Klick navigerar webbläsaren till URL:en i stället för att byta scen;
 `?scene=N` deep-länkar en scen i målturen. Ser ut som en scen-hotspot, länkar externt.
 
-**Förslag (additivt, ingen SCHEMA_VERSION-bump):**
-- MVP - **extern-URL-scen-hotspot**: en scen-hotspot får ett valfritt `url`-fält (+ ev.
-  `newTab`) i stället för `sceneId`. Viewer/preview: scen-pil-utseende + `clickHandlerFunc`
-  som navigerar (`location`/`window.open`). Editor: hotspot-modalen får läget "Länka till
-  annan tur" med en URL-ruta (klistra in målturens adress, precis som legacy). Matchar
-  legacy 1:1 -> importen kan behålla `URL` rakt av. Deep-link `?scene=`/`#scene=` funkar
-  redan i viewern.
-- Senare - **in-tool tur-väljare**: välj en annan av dina/teamets turer ur en dropdown +
-  ev. målscen; verktyget lagrar en tur-referens (slug) och RESOLVERAR URL:en per kontext
-  (editor `/view?slug=`, delning `/s/<token>` för målturen, bundle = relativ mapp/konfig-bas).
-  Kräver en URL-strategi per deploy-kontext (som bundle-relativiseringen) -> designbeslut.
-- Import: `import_legacy.py` bör mappa legacy `type:scene + URL + saknar sceneId` -> extern-
-  URL-scen-hotspoten (annars importeras de som TRASIGA scen-hotspots utan mål). URL:erna
-  pekar på gamla domänen -> skriv om till nya turernas adresser när de finns, annars behåll
-  absolut URL. **Nuläge: dessa hotspots importeras trasiga tills funktionen finns.**
+**MVP - extern-URL-scen-hotspot: KLART (2026-07-16).** Visade sig att pannellum stödjer
+`URL` + `attributes.target` NATIVT (skapar en `<a href>`, sanerar mot javascript:/vbscript:,
+kollas före `sceneId`) -> ingen viewer/runtime-kod behövdes. En scen-hotspot får `URL` +
+`attributes.target` (`_blank`/`_self`) i stället för `sceneId`; renderas som scen-pil men
+navigerar till URL:en. Deep-link `?scene=`/`#scene=` funkar redan. Editor: scen-hotspot-modalen
+har en läge-växel "Målscen i den här turen" / "Länka till en annan tur" (URL-ruta + "öppna i
+ny flik"). I EDITORNS pannellum strippas URL:en i klonen (cloneHs) så klick inte navigerar
+bort; belowLabel visar "→ annan tur". Verifierat E2E (modal 5/5, rendering 3/3): preview/runtime
+`<a>`-scenpil, editor navigerar ej. Importen behåller legacy `URL` rakt av -> fungerar (min
+tidigare "trasig"-gissning var FEL, verifierat på hoga scen 8).
+
+- [ ] **Senare (todo) - in-tool tur-väljare**: välj en annan av dina/teamets turer ur en
+  dropdown + ev. målscen i STÄLLET för att klistra in en rå URL; verktyget lagrar en tur-
+  referens (slug) och RESOLVERAR URL:en per kontext (editor `/view?slug=`, delning `/s/<token>`
+  för målturen, bundle = relativ mapp/konfig-bas). Kräver en URL-strategi per deploy-kontext
+  (som bundle-relativiseringen) -> designbeslut. MVP:ns råa URL-fält täcker behovet tills dess.
+- [ ] **Import-todo**: legacy cross-tour-URL:erna pekar på gamla domänen
+  (`panorama.svenskakyrkanharnosand.se/ho/hokg.html?scene=1`). När alla turer importerats,
+  skriv om dem till de nya turernas adresser (mappa gammal `<xx>/<namn>.html` -> ny slug).
+  Tills dess pekar de på den gamla sajten (fungerar, men inte på den nya).
 
 ## Rich text & markdown (info-hotspots + redigerbara texter)
 
