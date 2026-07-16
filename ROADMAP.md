@@ -300,6 +300,34 @@ Upptäckt 2026-07-16 (Rasmus, vid granskning av legacy-import-piloten):
       (hotspot-etiketter) men sätt pannellum-titeln bara när en riktig titel finns (annars
       `delete tour.scenes[id].title`). Liten, säker en-radare; recommenderad direkt.
 
+## Cross-tour-hotspots (länka till en ANNAN tur) - ny funktion
+
+Behov (Rasmus 2026-07-16): en hotspot som SER UT som en scen-hotspot (pil) men tar
+användaren till en HELT ANNAN tur, inte en scen i nuvarande. Vanligt i legacy: 11
+scen-hotspots + 2 info länkar korsar mellan ho/*- och vi/*-turerna (hoga↔hokg, hoka→hokg,
+hokg→hony/hoka, hony→hokg, vifg↔vikg) samt två till externa svenskakyrkan.se-sidor.
+
+**Legacy-mekanism** (js/app.js): hotspoten är `type:"scene"` MEN har `URL`
+(t.ex. `.../ho/hokg.html?scene=1`) och SAKNAR `sceneId` + `attributes.target`
+(`_self`/`_blank`). Klick navigerar webbläsaren till URL:en i stället för att byta scen;
+`?scene=N` deep-länkar en scen i målturen. Ser ut som en scen-hotspot, länkar externt.
+
+**Förslag (additivt, ingen SCHEMA_VERSION-bump):**
+- MVP - **extern-URL-scen-hotspot**: en scen-hotspot får ett valfritt `url`-fält (+ ev.
+  `newTab`) i stället för `sceneId`. Viewer/preview: scen-pil-utseende + `clickHandlerFunc`
+  som navigerar (`location`/`window.open`). Editor: hotspot-modalen får läget "Länka till
+  annan tur" med en URL-ruta (klistra in målturens adress, precis som legacy). Matchar
+  legacy 1:1 -> importen kan behålla `URL` rakt av. Deep-link `?scene=`/`#scene=` funkar
+  redan i viewern.
+- Senare - **in-tool tur-väljare**: välj en annan av dina/teamets turer ur en dropdown +
+  ev. målscen; verktyget lagrar en tur-referens (slug) och RESOLVERAR URL:en per kontext
+  (editor `/view?slug=`, delning `/s/<token>` för målturen, bundle = relativ mapp/konfig-bas).
+  Kräver en URL-strategi per deploy-kontext (som bundle-relativiseringen) -> designbeslut.
+- Import: `import_legacy.py` bör mappa legacy `type:scene + URL + saknar sceneId` -> extern-
+  URL-scen-hotspoten (annars importeras de som TRASIGA scen-hotspots utan mål). URL:erna
+  pekar på gamla domänen -> skriv om till nya turernas adresser när de finns, annars behåll
+  absolut URL. **Nuläge: dessa hotspots importeras trasiga tills funktionen finns.**
+
 ## Rich text & markdown (info-hotspots + redigerbara texter)
 
 Beslutat 2026-07-11 (UX-genomgång). Mål: rikare formattering på info-hotspots och
