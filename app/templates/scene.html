@@ -5,11 +5,8 @@
 {% block main_attrs %} class="plan-app"{% endblock %}
 {% block content %}
 
-{% if not has_map_image %}
-<article class="notice">
-	<p>Ingen kartbild uppladdad ännu. <a href="/projects/{{ project.slug }}">Gå tillbaka till uppladdning</a> först.</p>
-</article>
-{% else %}
+{# Scenhantering funkar utan karta (hotspots + startriktning). Kalibrering och
+   minikartan kräver dock kartpositioner -> de gömts när ingen kartbild finns. #}
 <aside class="planner-side">
 	{% set current_step = 'scenes' %}{% set has_scenes = (tour.scenes | length) > 0 %}
 	{% include "_step_nav.html" %}
@@ -54,6 +51,7 @@
 		<p id="default-yaw-state" class="hint" aria-live="polite"></p>
 	</article>
 
+	{% if has_map_image %}
 	<article>
 		<h3>Kalibrera</h3>
 		<p id="calib-state" class="readiness" aria-live="polite"></p>
@@ -62,6 +60,7 @@
 		<p id="scene-readiness" class="readiness" aria-live="polite"></p>
 		<button id="generate-btn" type="button">Auto-generera hotspots</button>
 	</article>
+	{% endif %}
 
 	<article>
 		<h3>Hotspots</h3>
@@ -98,11 +97,13 @@
 	</div>
 	<div id="hs-pending" class="hs-pending" hidden aria-hidden="true"></div>
 	<div id="scene-title-label" class="scene-title-label"></div>
+		{% if has_map_image %}
 	<div id="scene-map" class="scene-map">
 		<img id="scene-map-img" src="/projects/{{ project.slug }}/map.png" alt="Översiktskarta">
 		<div id="scene-map-dots"></div>
 		<div id="scene-map-resize" class="scene-map-resize" title="Dra för att ändra kartstorlek" aria-hidden="true"></div>
 	</div>
+		{% endif %}
 </div>
 
 <div id="help-modal" class="help-modal" hidden>
@@ -192,7 +193,6 @@
 		</div>
 	</article>
 </div>
-{% endif %}
 
 <script id="tour-data" type="application/json">{{ tour | tojson }}</script>
 <script id="map-data" type="application/json">{{ map_data | tojson }}</script>
