@@ -32,6 +32,7 @@ from app.services.presets import default_config as default_preset_config
 from app.services.bundle import forget_job as forget_export_job
 from app.services.bundle import job_status as export_job_status
 from app.services.project_files import (
+    _natural_key,
     default_map,
     default_tour,
     delete_project_files,
@@ -62,6 +63,34 @@ class LanguagesPayload(BaseModel):
     """Body för POST /projects/{slug}/languages - rör ENBART default.languages."""
 
     languages: list[str] = []
+
+
+@router.get("/link-targets")
+def link_targets(
+    user: User = Depends(require_user),
+    db: Session = Depends(get_db),
+) -> JSONResponse:
+    """Turer användaren kan länka en cross-tour-hotspot till (egna + teamets, designval D).
+    Klienten exkluderar den aktuella turen själv."""
+    rows = db.query(Project).filter(visible_projects_clause(user)).order_by(Project.name).all()
+    return JSONResponse({"tours": [{"slug": p.slug, "name": p.name} for p in rows]})
+
+
+@router.get("/projects/{slug}/scene-ids")
+def scene_ids(
+    slug: str,
+    project: Project = Depends(get_project_or_404),
+) -> JSONResponse:
+    """Målturens scen-id + titlar för scen-dropdownen i cross-tour-väljaren."""
+    scenes = read_tour(slug).get("scenes", {})
+    out = []
+    for sid, s in scenes.items():
+        title = s.get("title")
+        if isinstance(title, dict):  # i18n -> första icke-tomma
+            title = next((v for v in title.values() if v), "")
+        out.append({"id": sid, "title": title or ""})
+    out.sort(key=lambda x: _natural_key(x["id"]))
+    return JSONResponse({"scenes": out})
 
 
 @router.get("/", response_class=HTMLResponse)

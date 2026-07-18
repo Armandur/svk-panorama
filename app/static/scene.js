@@ -631,6 +631,10 @@
 	const hsFieldSceneMode = document.getElementById("hs-field-scene-mode");
 	const hsFieldNewtab = document.getElementById("hs-field-newtab");
 	const hsNewtab = document.getElementById("hs-newtab");
+	const hsFieldTour = document.getElementById("hs-field-tour");
+	const hsTour = document.getElementById("hs-tour");
+	const hsFieldTourScene = document.getElementById("hs-field-tour-scene");
+	const hsTourScene = document.getElementById("hs-tour-scene");
 	const hsFieldSceneTop = document.getElementById("hs-field-scene-top");
 	const hsFieldSceneDir = document.getElementById("hs-field-scene-dir");
 	const hsText = document.getElementById("hs-text");
@@ -800,13 +804,52 @@
 	}
 	function setTyaw(v) { v = (v == null) ? 0 : Math.round(v); hsTyaw.value = v; hsTyawNum.value = v; }
 	function tyawNote(cur) { hsTyawNote.textContent = (computeTargetYaw(cur, hsSceneSel.value) == null) ? "Auto-beräknas när båda scenerna är kalibrerade." : ""; }
-	// Scen-hotspotens läge: intern målscen (sceneId) eller extern länk till annan tur (URL).
+	// Scen-hotspotens läge: intern målscen (sceneId) eller extern länk till annan tur.
 	function applySceneMode(mode) {
 		const ext = mode === "external";
 		hsFieldSceneTop.hidden = ext;   // målscen-väljare + preview bara internt
 		hsFieldSceneDir.hidden = ext;   // riktning/dubbelriktning bara internt
-		hsFieldUrl.hidden = !ext;       // återanvänder URL-fältet för den externa länken
+		hsFieldTour.hidden = !ext;      // Måltur-dropdown bara externt
 		hsFieldNewtab.hidden = !ext;
+		if (ext) { applyTourPick(); }
+		else { hsFieldUrl.hidden = true; hsFieldTourScene.hidden = true; }
+	}
+	// Måltur vald i dropdownen -> visa scen-dropdown; "Egen URL" (tomt) -> visa URL-fältet.
+	function applyTourPick() {
+		const custom = !hsTour.value;
+		hsFieldUrl.hidden = !custom;
+		hsFieldTourScene.hidden = custom;
+	}
+	// Ladda turer att länka till (egna/teamets) i Måltur-dropdownen (en gång, cachad promise).
+	let tourOptsPromise = null;
+	function loadTourOptions() {
+		if (tourOptsPromise) return tourOptsPromise;
+		tourOptsPromise = fetch("/link-targets", { headers: { "Accept": "application/json" } })
+			.then(function (r) { return r.ok ? r.json() : { tours: [] }; })
+			.then(function (d) {
+				(d.tours || []).forEach(function (t) {
+					if (t.slug === slug) return;  // inte länka till sig själv
+					const o = document.createElement("option");
+					o.value = t.slug; o.textContent = t.name + " (" + t.slug + ")";
+					hsTour.appendChild(o);
+				});
+			}).catch(function () { /* offline - dropdownen blir bara "Egen URL" */ });
+		return tourOptsPromise;
+	}
+	// Ladda målturens scener i scen-dropdownen och markera `selected`.
+	function loadTourScenes(tourSlug, selected) {
+		hsTourScene.innerHTML = '<option value="">Startscen</option>';
+		if (!tourSlug) return;
+		fetch("/projects/" + encodeURIComponent(tourSlug) + "/scene-ids", { headers: { "Accept": "application/json" } })
+			.then(function (r) { return r.ok ? r.json() : { scenes: [] }; })
+			.then(function (d) {
+				(d.scenes || []).forEach(function (s) {
+					const o = document.createElement("option");
+					o.value = s.id; o.textContent = "Scen " + s.id + (s.title ? " - " + s.title : "");
+					if (selected != null && String(selected) === String(s.id)) o.selected = true;
+					hsTourScene.appendChild(o);
+				});
+			}).catch(function () { /* ignore */ });
 	}
 
 	function openHsModal(ctx) {
@@ -833,11 +876,18 @@
 		showTab("teaser");
 		hsUrl.value = (ctx.hs && ctx.hs.URL) || "";
 		if (ctx.type === "scene") {
-			// En scen-hotspot kan antingen peka på en scen i turen (sceneId) ELLER
-			// länka externt (URL, ser ut som en scen-pil men tar användaren till en annan tur).
-			const external = !!(ctx.hs && ctx.hs.URL);
+			// En scen-hotspot kan peka på en scen i turen (sceneId), på en ANNAN tur i
+			// verktyget (tourRef {slug,scene}) eller på en godtycklig URL - de två senare
+			// ser ut som en scen-pil men navigerar bort.
+			const hs = ctx.hs;
+			const external = !!(hs && (hs.URL || hs.tourRef));
 			document.querySelector('input[name="hs-scene-mode"][value="' + (external ? "external" : "internal") + '"]').checked = true;
-			hsNewtab.checked = !!(ctx.hs && ctx.hs.attributes && ctx.hs.attributes.target === "_blank");
+			hsNewtab.checked = !!(hs && hs.attributes && hs.attributes.target === "_blank");
+			// Måltur-dropdown: tourRef -> vald tur (+ scen), annars "Egen URL". Options
+			// laddas async -> sätt värdet när de finns.
+			const refSlug = hs && hs.tourRef && hs.tourRef.slug;
+			loadTourOptions().then(function () { hsTour.value = refSlug || ""; applyTourPick(); });
+			loadTourScenes(refSlug, hs && hs.tourRef ? hs.tourRef.scene : null);
 			// Målscen/riktning fylls alltid (för internt läge + om man växlar tillbaka).
 			const target = (ctx.hs && ctx.hs.sceneId) || sceneIds().filter(function (id) { return id !== ctx.cur; })[0];
 			hsCtx.target = target;
@@ -854,7 +904,7 @@
 		if (hsTextEditor) hsTextEditor.codemirror.refresh();
 		const sceneExternal = ctx.type === "scene" && document.querySelector('input[name="hs-scene-mode"]:checked').value === "external";
 		if (ctx.type === "scene" && !sceneExternal) hsSceneSel.focus();
-		else if (sceneExternal) hsUrl.focus();
+		else if (sceneExternal) hsTour.focus();
 		else if (hsTextEditor) hsTextEditor.codemirror.focus();
 		else hsText.focus();
 		if (ctx.type === "scene" && !sceneExternal) showHsPreview(hsCtx.target);
@@ -933,12 +983,21 @@
 		} else { // scene
 			const mode = document.querySelector('input[name="hs-scene-mode"]:checked').value;
 			if (mode === "external") {
-				const url = hsUrl.value.trim();
-				if (!url) { alert("URL till målturen krävs."); return; }
-				// Extern scen-hotspot: pannellum-nativt (URL + attributes.target). Ser ut
-				// som en scen-pil men navigerar till en annan tur. Inga interna scen-fält.
-				hs.type = "scene"; hs.URL = url;
+				// Extern scen-hotspot: ser ut som en scen-pil men navigerar till en ANNAN tur.
+				hs.type = "scene";
 				hs.attributes = { target: hsNewtab.checked ? "_blank" : "_self" };
+				if (hsTour.value) {
+					// Tur i verktyget -> tur-referens (resolveras per kontext server-side).
+					hs.tourRef = { slug: hsTour.value };
+					if (hsTourScene.value) hs.tourRef.scene = hsTourScene.value; else delete hs.tourRef.scene;
+					delete hs.URL;
+				} else {
+					// Egen URL (godtycklig extern länk).
+					const url = hsUrl.value.trim();
+					if (!url) { alert("Välj en måltur eller ange en egen URL."); return; }
+					hs.URL = url;
+					delete hs.tourRef;
+				}
 				if (teaserI18n) hs.text = teaserI18n; else delete hs.text;
 				if (hsTooltipWidth && hsTooltipWidth.value) hs.tooltipWidth = hsTooltipWidth.value;
 				else delete hs.tooltipWidth;
@@ -951,7 +1010,7 @@
 				if (teaserI18n) hs.text = teaserI18n; else delete hs.text;
 				if (hsTooltipWidth && hsTooltipWidth.value) hs.tooltipWidth = hsTooltipWidth.value;
 				else delete hs.tooltipWidth;
-				delete hs.URL; delete hs.attributes;
+				delete hs.URL; delete hs.attributes; delete hs.tourRef;
 				const two = document.querySelector('input[name="hs-dir"]:checked').value === "two";
 				hs.twoway = two;
 				// Tvåväg: säkerställ en retur-hotspot. Enkelriktad: lämna ev. befintlig
@@ -986,9 +1045,14 @@
 		r.addEventListener("change", function () {
 			if (!hsCtx || hsCtx.type !== "scene") return;
 			applySceneMode(r.value);
-			if (r.value === "external") { destroyHsPreview(); hsUrl.focus(); }
+			if (r.value === "external") { destroyHsPreview(); loadTourOptions(); hsTour.focus(); }
 			else { showHsPreview(hsCtx.target); hsSceneSel.focus(); }
 		});
+	});
+	// Måltur-val: byt mellan scen-dropdown (tur vald) och Egen URL-fältet, ladda scener.
+	if (hsTour) hsTour.addEventListener("change", function () {
+		applyTourPick();
+		if (hsTour.value) loadTourScenes(hsTour.value, null); else hsUrl.focus();
 	});
 	if (hsSceneSel) hsSceneSel.addEventListener("change", function () {
 		if (!hsCtx) return;
