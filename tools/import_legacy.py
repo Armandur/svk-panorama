@@ -277,6 +277,61 @@ def import_one(db, admin: User, legacy: dict, force: bool) -> str:
     return f"OK   {legacy['dir']:14} -> {slug:28} ({len(tour['scenes'])} scener, {map_note}, kalibrerade {cal}/{tot}){warn}"
 
 
+def _rewrite_urls_existing(only: str | None) -> int:
+    """Skriv om importerade legacy cross-tour-hotspots rå `URL` (gamla domänen) -> `tourRef
+    {slug, scene?}` som TASK-28:s resolver översätter per kontext. Externa (icke-tur) URL:er
+    lämnas orörda. Idempotent: bara hotspots med `URL` rörs (redan omskrivna har tourRef)."""
+    from urllib.parse import parse_qs, urlparse
+    from app.database import Project, SessionLocal
+
+    # Mappning: legacy HTML-path (ho/hokg.html) -> ny slug (via titel -> Project.slug,
+    # robust mot ev. slug-kollision).
+    db = SessionLocal()
+    html_to_slug: dict[str, str] = {}
+    try:
+        for t in discover():
+            row = db.query(Project).filter(Project.name == t["title"]).first()
+            if row:
+                html_to_slug[t["html"]] = row.slug
+    finally:
+        db.close()
+
+    root = config.PROJECTS_DIR
+    if not root.exists():
+        print("Ingen projects-katalog."); return 1
+    total = 0
+    for pd in sorted(root.iterdir()):
+        if not pd.is_dir() or (only and only not in pd.name):
+            continue
+        tj = pd / "tour.json"
+        if not tj.exists():
+            continue
+        tour = json.loads(tj.read_text(encoding="utf-8"))
+        n = 0
+        for scene in tour.get("scenes", {}).values():
+            for hs in scene.get("hotSpots", []):
+                url = hs.get("URL")
+                if not url:
+                    continue
+                parsed = urlparse(url)
+                slug = html_to_slug.get(parsed.path.lstrip("/"))
+                if not slug:
+                    continue  # extern (icke-tur) URL -> orörd
+                ref = {"slug": slug}
+                sc = parse_qs(parsed.query).get("scene", [None])[0]
+                if sc:
+                    ref["scene"] = sc
+                hs["tourRef"] = ref
+                hs.pop("URL", None)
+                n += 1
+        if n:
+            tj.write_text(json.dumps(tour, indent="\t", ensure_ascii=False), encoding="utf-8")
+        total += n
+        print(f"{pd.name:28} omskrivna {n}")
+    print(f"\nTotalt omskrivna cross-tour-URL:er -> tourRef: {total}")
+    return 0
+
+
 def _recalibrate_existing(only: str | None) -> int:
     """Backfill: härled northOffset ur befintliga projekts tour.json + map.json (in-place).
     För turer som redan finns (t.ex. tidigare importerade) så de anses kalibrerade."""
@@ -304,10 +359,14 @@ def main() -> int:
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--recalibrate", action="store_true",
                     help="backfill: härled northOffset för REDAN importerade projekt (rör ej legacy)")
+    ap.add_argument("--rewrite-urls", action="store_true",
+                    help="backfill: skriv om importerade cross-tour-URL:er (gamla domänen) -> tourRef")
     args = ap.parse_args()
 
     if args.recalibrate:
         return _recalibrate_existing(args.only)
+    if args.rewrite_urls:
+        return _rewrite_urls_existing(args.only)
 
     tours = discover()
     if args.only:
