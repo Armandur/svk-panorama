@@ -141,6 +141,11 @@
 		}
 		// Etikett nedanför hotspoten (t.ex. scen-hotspotens mål). CSS positionerar den.
 		if (belowLabel) {
+			// Göm hela hotspoten tills pannellum projicerat den (renderloopens Ca sätter
+			// visibility visible/hidden utifrån position). Utan detta blinkar etiketten i
+			// (0,0) uppe till vänster innan första render-ticken hunnit sätta transformen.
+			// Bara belowLabel-fallet (scen-editorn) berörs - preview/runtime saknar belowLabel.
+			div.style.visibility = "hidden";
 			var lbl = document.createElement("span");
 			lbl.className = "hs-scenelabel";
 			lbl.textContent = belowLabel;
