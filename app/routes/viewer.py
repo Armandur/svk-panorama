@@ -9,6 +9,7 @@ from app.deps import get_project_or_404, request_origin, templates
 from app.services import i18n
 from app.services.project_files import map_image_path, read_map, read_tour
 from app.services.tiling import apply_multires, read_manifest
+from app.services.tourlinks import apply_tour_links
 
 router = APIRouter()
 
@@ -23,6 +24,7 @@ def view_tour(
     manifest = read_manifest(slug)
     if manifest:
         apply_multires(tour, manifest)
+    apply_tour_links(tour, "view")  # cross-tour-hotspots -> /projects/<slug>/view#scene=
     has_map = map_image_path(slug).exists()
     origin = request_origin(request)
     return templates.TemplateResponse(

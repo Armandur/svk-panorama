@@ -18,8 +18,14 @@ from app.deps import request_origin, templates
 from app.services import i18n
 from app.services.project_files import map_image_path, project_dir, read_map, read_tour
 from app.services.tiling import apply_multires, read_manifest
+from app.services.tourlinks import apply_tour_links
 
 router = APIRouter()
+
+
+def _share_token_of(db: Session, slug: str) -> str | None:
+    """Målturens share_token (för cross-tour-länkar i /s-kontext), None om odelad."""
+    return db.query(Project.share_token).filter(Project.slug == slug).scalar()
 
 
 def _project_by_token(db: Session, token: str) -> Project:
@@ -41,6 +47,8 @@ def public_view(request: Request, token: str, db: Session = Depends(get_db)) -> 
     # Skriv om absoluta /projects/{slug}/-paths (panorama, multiRes.basePath) till
     # den publika basen så pannellum hämtar via token-routen i stället.
     tour = json.loads(json.dumps(tour).replace(f"/projects/{slug}/", base))
+    # Cross-tour-hotspots -> /s/<måltoken>#scene= (odelad måltur -> länken utelämnas).
+    apply_tour_links(tour, "share", share_token_of=lambda s: _share_token_of(db, s))
     has_map = map_image_path(slug).exists()
     page_url = f"{request_origin(request)}/s/{token}"
     return templates.TemplateResponse(

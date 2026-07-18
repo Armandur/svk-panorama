@@ -50,6 +50,8 @@ def preview_view(
     project: Project = Depends(get_project_or_404),
 ) -> HTMLResponse:
     tour = read_tour(slug)
+    from app.services.tourlinks import apply_tour_links
+    apply_tour_links(tour, "view")  # cross-tour-hotspots navigerar som i publicerad tur
     # Multires appliceras klient-side i tour-preview.js (defaultar multires) så
     # användaren kan byta upplösning preview/multires/full - därför bäddas rå tur
     # + manifest in, inte en multires-mergad tur.

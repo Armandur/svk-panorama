@@ -408,6 +408,35 @@ def test_media_pool():
         config.MEDIA_DIR, config.PROJECTS_DIR = old_media, old_projects
 
 
+def test_tourlinks():
+    from app.services.tourlinks import (resolve_tour_ref as r, apply_tour_links,
+                                        unresolved_share_targets)
+    check("view-URL med scen", r({"slug": "b", "scene": "3"}, "view") == "/projects/b/view#scene=3")
+    check("view-URL utan scen", r({"slug": "b"}, "view") == "/projects/b/view")
+    check("bundle-URL relativ", r({"slug": "b", "scene": "3"}, "bundle") == "../b/index.html#scene=3")
+    check("share delad", r({"slug": "b", "scene": "3"}, "share", share_token="tok") == "/s/tok#scene=3")
+    check("share odelad -> None", r({"slug": "b"}, "share", share_token=None) is None)
+    check("saknar slug -> None", r({}, "view") is None)
+    check("okänd kontext -> None", r({"slug": "b"}, "nope") is None)
+    t = {"scenes": {"1": {"hotSpots": [
+        {"type": "scene", "tourRef": {"slug": "b", "scene": "2"}},
+        {"type": "scene", "URL": "https://ex.com", "attributes": {"target": "_blank"}},
+        {"type": "scene", "sceneId": "3"},
+    ]}}}
+    apply_tour_links(t, "view")
+    hs = t["scenes"]["1"]["hotSpots"]
+    check("apply: tourRef -> URL", hs[0].get("URL") == "/projects/b/view#scene=2")
+    check("apply: tourRef droppad", "tourRef" not in hs[0])
+    check("apply: rå URL orörd", hs[1].get("URL") == "https://ex.com" and hs[1]["attributes"]["target"] == "_blank")
+    check("apply: intern sceneId orörd", hs[2].get("sceneId") == "3" and "URL" not in hs[2])
+    t2 = {"scenes": {"1": {"hotSpots": [{"type": "scene", "tourRef": {"slug": "b"}}]}}}
+    apply_tour_links(t2, "share", share_token_of=lambda s: None)
+    check("apply share odelad -> ingen URL", "URL" not in t2["scenes"]["1"]["hotSpots"][0])
+    check("unresolved_share_targets", unresolved_share_targets(
+        {"scenes": {"1": {"hotSpots": [{"type": "scene", "tourRef": {"slug": "x"}}]}}},
+        lambda s: None) == ["x"])
+
+
 def test_hex():
     check("giltig hex", _hex("#a1b2c3", "#000000") == "#a1b2c3")
     check("versal hex ok", _hex("#ABCDEF", "#000000") == "#ABCDEF")
@@ -1095,6 +1124,7 @@ def main() -> int:
         test_joblog,
         test_demo_guard,
         test_settings_int,
+        test_tourlinks,
         test_hex,
         test_slug_and_upload_safety,
         test_atomic_write,

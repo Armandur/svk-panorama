@@ -585,7 +585,7 @@
 			// Extern scen-hotspot (URL): stripa URL i EDITORNS klon så pannellum inte gör
 			// den till en <a> som navigerar bort vid klick i editorn. `_external` låter
 			// attachHsTooltips sätta en "→ annan tur"-etikett i stället för en scentitel.
-			if (c.type === "scene" && c.URL) { c._external = true; delete c.URL; delete c.attributes; }
+			if (c.type === "scene" && (c.URL || c.tourRef)) { c._external = true; delete c.URL; delete c.attributes; }
 			return c;
 		});
 		if (window.attachHsTooltips) window.attachHsTooltips(cloned, sceneNamesMap(), sceneLang, langs, { sceneLabel: true });

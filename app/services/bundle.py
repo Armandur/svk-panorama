@@ -125,6 +125,9 @@ def _relativize_field(value: Any) -> Any:
 def _relativize(slug: str, tour: dict) -> dict:
     """Applicera multires och gör alla asset-sökvägar relativa till bundle-roten."""
     apply_multires(tour, read_manifest(slug))
+    # Cross-tour-hotspots -> ../<slug>/index.html#scene= (sibling-mapp-konvention, se README).
+    from app.services.tourlinks import apply_tour_links
+    apply_tour_links(tour, "bundle")
     for scene_id, scene in tour.get("scenes", {}).items():
         if scene.get("type") == "multires" and scene.get("multiRes"):
             scene["multiRes"]["basePath"] = f"tiles/{scene_id}"
@@ -162,6 +165,10 @@ def _readme(project_name: str, slug: str) -> str:
         "  Lokalt test: kor en enkel statisk server i mappen, t.ex.\n"
         "    python3 -m http.server 8000\n"
         "  och oppna http://localhost:8000/\n\n"
+        "Lankar till andra turer:\n"
+        "  Om turen har hotspots som leder till en ANNAN tur forvantas den turens\n"
+        "  bundle ligga som en SYSKON-mapp bredvid denna (../<slug>/index.html).\n"
+        "  Lagg alltsa alla turers bundles under samma foraldermapp.\n\n"
         "Skapad med SVK Panorama.\n"
     )
 
