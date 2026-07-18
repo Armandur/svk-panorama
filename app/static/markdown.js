@@ -141,11 +141,17 @@
 		}
 		// Etikett nedanför hotspoten (t.ex. scen-hotspotens mål). CSS positionerar den.
 		if (belowLabel) {
-			// Göm hela hotspoten tills pannellum projicerat den (renderloopens Ca sätter
-			// visibility visible/hidden utifrån position). Utan detta blinkar etiketten i
-			// (0,0) uppe till vänster innan första render-ticken hunnit sätta transformen.
-			// Bara belowLabel-fallet (scen-editorn) berörs - preview/runtime saknar belowLabel.
-			div.style.visibility = "hidden";
+			// Scen-etiketten är alltid synlig (app.css: `.pnlm-scene span { visibility:
+			// visible !important }`), så innan pannellum hunnit projicera hotspoten blinkar
+			// den i (0,0) uppe till vänster. `hs-await-pos` (högre specificitet) gömmer
+			// span:en tills pannellums renderloop satt en transform (positionerat den);
+			// rAF-poll tar bort klassen då. Endast belowLabel-fallet (scen-editorn) berörs.
+			div.classList.add("hs-await-pos");
+			var reveal = function () {
+				if (div.style.transform) div.classList.remove("hs-await-pos");
+				else requestAnimationFrame(reveal);
+			};
+			requestAnimationFrame(reveal);
 			var lbl = document.createElement("span");
 			lbl.className = "hs-scenelabel";
 			lbl.textContent = belowLabel;

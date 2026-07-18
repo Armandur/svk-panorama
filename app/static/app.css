@@ -1773,6 +1773,11 @@ details.storage-user table { margin-bottom: 0.6rem; }
 /* Scen-hotspots visar alltid vilken scen de länkar till (editorn) */
 #panorama .pnlm-scene > span,
 #panorama .pnlm-hotspot.pnlm-scene span { visibility: visible !important; }
+/* ...men INTE förrän pannellum projicerat hotspoten (satt en transform) - annars
+   blinkar etiketten i (0,0) uppe till vänster vid load. Högre specificitet (+klass)
+   slår regeln ovan; markdown.js tar bort klassen vid första positionering. */
+#panorama .pnlm-hotspot.pnlm-scene.hs-await-pos > span,
+#panorama .pnlm-hotspot.pnlm-scene.hs-await-pos span { visibility: hidden !important; }
 
 /* Pass 2: ring på närmaste hotspot + grab-markör */
 #panorama .hs-nearest {
