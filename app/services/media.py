@@ -215,10 +215,14 @@ def delete(owner: str, name: str) -> bool:
 
 
 def scan_usage(owner: str, projects: list[tuple[str, str]]) -> dict[str, list[dict[str, Any]]]:
-    """Härled var varje poolbild används, PER SCEN. `projects` = [(slug, project_name)].
-    Räknar förekomster av `/media/<owner>/<fil>` i varje scens hotspot-text/body.
-    Returnerar {filnamn: [{slug, project, scene_id, scene_title, count}]} - en post
-    per (tur, scen) som refererar bilden, för breadcrumbs i biblioteket."""
+    """Härled var varje poolbild används, PER SCEN (+ en särskild "Branding"-post).
+    `projects` = [(slug, project_name)]. Räknar förekomster av `/media/<owner>/<fil>`
+    i varje scens hotspot-text/body, OCH i `tour.default.branding.content` (i ALLA
+    i18n-varianter, som bundle/backup `_media_refs`) - annars rapporteras en poolbild
+    som bara används som logotyp felaktigt som oanvänd. Returnerar {filnamn:
+    [{slug, project, scene_id, scene_title, count}]} - en post per (tur, scen) som
+    refererar bilden, för breadcrumbs i biblioteket. Branding-träffar får
+    scene_id="_branding" (ingen riktig scen)."""
     pattern = re.compile(re.escape(f"/media/{owner}/") + f"({_NAME_CHARS})")
     usage: dict[str, list[dict[str, Any]]] = {}
     for slug, pname in projects:
@@ -241,4 +245,17 @@ def scan_usage(owner: str, projects: list[tuple[str, str]]) -> dict[str, list[di
                     "scene_title": scene.get("title") or "",
                     "count": count,
                 })
+        branding = ((tour.get("default") or {}).get("branding") or {})
+        brand_counts: dict[str, int] = {}
+        for val in i18n_text_values(branding.get("content")):
+            for m in pattern.finditer(val):
+                brand_counts[m.group(1)] = brand_counts.get(m.group(1), 0) + 1
+        for name, count in brand_counts.items():
+            usage.setdefault(name, []).append({
+                "slug": slug,
+                "project": pname,
+                "scene_id": "_branding",
+                "scene_title": "Branding",
+                "count": count,
+            })
     return usage
