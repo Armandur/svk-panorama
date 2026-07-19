@@ -120,7 +120,12 @@
 	}
 
 	function apply(res) {
-		if (!res || res.locking === false) { locking = false; if (banner) banner.hidden = true; reserveSpace(); document.body.classList.remove("editor-locked"); return; }
+		// checkoutPost() gav null vid ett misslyckat/nätverksfel-svar (inte ett giltigt
+		// serversvar) -> lämna nuvarande visade låsstate orört i stället för att tolka
+		// det som "ingen låsning" (annars kan ett transient heartbeat-fel kortvarigt
+		// låsa upp UI:t för en användare som egentligen är i läsläge).
+		if (!res) return;
+		if (res.locking === false) { locking = false; if (banner) banner.hidden = true; reserveSpace(); document.body.classList.remove("editor-locked"); return; }
 		locking = true;
 		if (res.acquired) {
 			holding = true; warned = false; showHolding();
