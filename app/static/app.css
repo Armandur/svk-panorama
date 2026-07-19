@@ -818,10 +818,7 @@ tr[data-preview-scene] { cursor: help; }
    ikonerna blir vita. Toolbaren är transparent -> kortytan är tema-styrd, sätt därför
    explicit tema-medveten färg (fast #2c3e50 var osynlig i dark mode, mörk-på-mörk).
    Samma mönster som hotspot-modalen (#hs-field-text). Hover-bg är fast ljus -> mörk. */
-.planner-side .editor-toolbar button, .planner-side .editor-toolbar button i { color: #373c44; }
-@media (prefers-color-scheme: dark) {
-	.planner-side .editor-toolbar button, .planner-side .editor-toolbar button i { color: #c2c7d0; }
-}
+.planner-side .editor-toolbar button, .planner-side .editor-toolbar button i { color: var(--svk-editor-icon); }
 .planner-side .editor-toolbar button:hover, .planner-side .editor-toolbar button.active,
 .planner-side .editor-toolbar button:hover i, .planner-side .editor-toolbar button.active i { color: #1f2937; }
 
@@ -1117,6 +1114,10 @@ details.storage-user table { margin-bottom: 0.6rem; }
 .nav-right { display: flex; align-items: center; gap: 0.6rem; margin: 0; }
 .nav-right li { margin: 0; }
 .nav-btn { margin: 0; padding: 0.4rem 0.9rem; font-size: 0.9rem; }
+/* Temaväxel (theme.js): cyklar sol/måne/dator. Ärver nav-textfärgen. */
+.tema-btn { background: none; border: none; color: inherit; cursor: pointer; padding: 0.2rem;
+	margin: 0; line-height: 0; opacity: 0.85; display: inline-flex; align-items: center; width: auto; }
+.tema-btn:hover { opacity: 1; }
 .account { position: relative; }
 
 .avatar {
@@ -1749,10 +1750,7 @@ details.storage-user table { margin-bottom: 0.6rem; }
    Toolbaren är transparent (kortytan är tema-styrd), så sätt explicit tema-medveten
    färg (kan inte använda var(--pico-color) - knappen har kapat den till vitt).
    Hover/active-bakgrunden är fast ljus (#fcfcfc, EasyMDE) -> alltid mörk då. */
-#hs-field-text .editor-toolbar button, #hs-field-text .editor-toolbar button i { color: #373c44; }
-@media (prefers-color-scheme: dark) {
-	#hs-field-text .editor-toolbar button, #hs-field-text .editor-toolbar button i { color: #c2c7d0; }
-}
+#hs-field-text .editor-toolbar button, #hs-field-text .editor-toolbar button i { color: var(--svk-editor-icon); }
 #hs-field-text .editor-toolbar button:hover, #hs-field-text .editor-toolbar button.active,
 #hs-field-text .editor-toolbar button:hover i, #hs-field-text .editor-toolbar button.active i { color: #1f2937; }
 .hs-btn { flex: 1; margin: 0; padding: 0.25rem 0.3rem; font-size: 0.78rem; }

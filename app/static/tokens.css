@@ -1,9 +1,11 @@
-/* Identitet ovanpå Pico: accentfärg + statusfärger, ljust/mörkt via
-   prefers-color-scheme. Inga data-theme-attribut - Pico sköter grunden. */
+/* Identitet ovanpå Pico: accentfärg + statusfärger. Tre lägen: auto (följer
+   prefers-color-scheme), tvingat ljust ([data-theme=light]) och tvingat mörkt
+   ([data-theme=dark]) - temaväxeln (theme.js) sätter data-theme, auto = inget attribut. */
 
 :root {
 	--svk-accent: #2f6f4f;
 	--svk-accent-hover: #24583e;
+	--svk-accent-focus: rgba(47, 111, 79, 0.375);
 	--svk-ok: #2f6f4f;
 	--svk-warn: #b5872b;
 	--svk-danger: #b5342f;
@@ -11,12 +13,16 @@
 	--svk-marker-armed: #2f6f4f;
 	--svk-edge: #2f6f4f;
 	--svk-rubber: #b5872b;
+	--svk-editor-icon: #373c44;   /* EasyMDE-toolbar-ikoner (page-text, ej Pico:s knapp-kapade --pico-color) */
 }
 
+/* Effektivt mörkt = auto-dark (systemet mörkt, inte tvingat ljust) ELLER tvingat mörkt.
+   Värdena dupliceras i båda selektorerna (en @media kan inte OR:as med ett attribut). */
 @media (prefers-color-scheme: dark) {
-	:root {
+	:root:not([data-theme="light"]) {
 		--svk-accent: #4fa87a;
 		--svk-accent-hover: #6cc297;
+		--svk-accent-focus: rgba(79, 168, 122, 0.375);
 		--svk-ok: #4fa87a;
 		--svk-warn: #d6a94a;
 		--svk-danger: #d9635c;
@@ -24,32 +30,33 @@
 		--svk-marker-armed: #4fa87a;
 		--svk-edge: #4fa87a;
 		--svk-rubber: #d6a94a;
+		--svk-editor-icon: #c2c7d0;
 	}
 }
+:root[data-theme="dark"] {
+	--svk-accent: #4fa87a;
+	--svk-accent-hover: #6cc297;
+	--svk-accent-focus: rgba(79, 168, 122, 0.375);
+	--svk-ok: #4fa87a;
+	--svk-warn: #d6a94a;
+	--svk-danger: #d9635c;
+	--svk-marker: #f07a52;
+	--svk-marker-armed: #4fa87a;
+	--svk-edge: #4fa87a;
+	--svk-rubber: #d6a94a;
+	--svk-editor-icon: #c2c7d0;
+}
 
-/* Pico-primary-familjen -> vår gröna accent. Måste matcha Pico:s EGNA selektor-
-   specificitet (0,2,0), annars vinner Pico:s standardblå trots att tokens.css laddas
-   efter (Pico sätter dem på ':root:not([data-theme=dark])' resp. dark-mediats
-   ':root:not([data-theme])' - båda slår en enkel ':root').
+/* Pico-primary-familjen -> vår accent, i ALLA lägen. Värdet resolvar --svk-accent
+   (som sätts per effektivt läge ovan), så samma tre selektorer täcker auto/ljust/mörkt.
+   Måste matcha Pico:s EGNA specificitet (0,2,0) - annars vinner Pico:s standardblå.
    VIKTIGT: -background/-hover-background styr KNAPPARS bakgrund (inte --pico-primary,
-   som bara är länk-/textfärg) - remappa hela familjen annars blir knappar kvar blå.
-   -border och -hover-border ärver -background via Pico:s egna var()-def, -inverse (vit
-   text på knapp) lämnas. */
-:root:not([data-theme=dark]), [data-theme=light] {
+   som bara är länk-/textfärg) - remappa hela familjen annars blir knappar kvar blå. */
+:root:not([data-theme=dark]), :root[data-theme=light], :root[data-theme=dark] {
 	--pico-primary: var(--svk-accent);
 	--pico-primary-hover: var(--svk-accent-hover);
 	--pico-primary-underline: var(--svk-accent);
 	--pico-primary-background: var(--svk-accent);
 	--pico-primary-hover-background: var(--svk-accent-hover);
-	--pico-primary-focus: rgba(47, 111, 79, 0.375);
-}
-@media (prefers-color-scheme: dark) {
-	:root:not([data-theme]) {
-		--pico-primary: var(--svk-accent);
-		--pico-primary-hover: var(--svk-accent-hover);
-		--pico-primary-underline: var(--svk-accent);
-		--pico-primary-background: var(--svk-accent);
-		--pico-primary-hover-background: var(--svk-accent-hover);
-		--pico-primary-focus: rgba(79, 168, 122, 0.375);
-	}
+	--pico-primary-focus: var(--svk-accent-focus);
 }
