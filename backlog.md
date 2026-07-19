@@ -253,21 +253,22 @@ Cross-tour-hotspoten (MVP, redan byggd) har ett rått URL-fält där man klistra
 
 ## [P3][todo] [svk-panorama] Inför global samtidighetsgräns för tunga bakgrundsjobb (tiling/export/backup)
 
+## BESLUT (2026-07-19)
+Vald ansats: **Alt (b) - riktig FIFO-jobbkö med N workers + samlad status-vy** (inte den enkla semaforen i alt a). Ger köad-status i UI, förutsägbar ordning och en samlad vy över alla körande/köade jobb - bättre långsiktigt, särskilt inför Fas 4 (flera team). UPPSKJUTET - implementeras inte nu, tas när jobb-kontention faktiskt skaver (bulk-import eller flera aktiva team).
+
 ## Context
-Det finns ingen global samtidighetsgräns över turer. `tiling.start_job(slug)` (app/services/tiling.py) startar en egen daemon-tråd per tur, och `TILE_CONCURRENCY` (default 2) begränsar bara scener INOM en tur. Startar man tiling på M turer -> M × TILE_CONCURRENCY samtidiga Docker-processer (nona/generate.py på 20-25 MB-bilder) -> kan dränka värden (CPU/RAM/disk-I/O). Export (`bundle._build`) och backup (`backup._build`) är också fristående, okoordinerade trådar. Blir mer akut vid bulk (12 importerade turer) och i Fas 4 (flera team triggar jobb).
+Det finns ingen global samtidighetsgräns över turer. tiling.start_job(slug) (app/services/tiling.py:369) startar en egen daemon-tråd per tur, och TILE_CONCURRENCY (default 2) begränsar bara scener INOM en tur. Startar man tiling på M turer -> M x TILE_CONCURRENCY samtidiga Docker-processer (nona/generate.py, _run_docker tiling.py:211) -> kan dranka värden (CPU/RAM/disk-I/O). Export (bundle._build bundle.py:283) och backup (backup._build backup.py:145) är också fristående, okoordinerade trådar. Blir mer akut vid bulk (12 importerade turer) och i Fas 4.
 
 ## Acceptance criteria
-- [ ] Totalt antal samtidiga tunga Docker-jobb är bundet av en global gräns, oavsett hur många turer/jobb som startas
-- [ ] Gränsen komponerar med per-tur `TILE_CONCURRENCY`
-- [ ] Gäller tiling + export + backup (delad pool)
+- [ ] Totalt antal samtidiga tunga jobb bundet av en global gräns, oavsett hur många turer/jobb som startas
+- [ ] Gränsen komponerar med per-tur TILE_CONCURRENCY
+- [ ] Gäller tiling + export + backup (delad kö)
+- [ ] Köad-status synlig i UI + samlad vy över körande/köade jobb (kärnan i alt b)
 - [ ] Fortfarande single-instans (in-process), ingen extern kö-tjänst
-- [ ] Konfigurerbar (t.ex. `SVK_GLOBAL_TILE_SLOTS`)
+- [ ] Konfigurerbar (t.ex. SVK_GLOBAL_TILE_SLOTS / antal workers)
 
-## Implementation hints
-- Alt (a): en global `threading.Semaphore` som varje tung op tar en slot ur före Docker-anropet (`tiling._tile_one`/`_run_docker`, `bundle._build`, `backup._build`).
-- Alt (b): en riktig FIFO-jobbkö med N workers + samlad status-vy (alla körande/köade jobb på ett ställe).
-- OBS: ROADMAP:s Fas 3-not "ingen jobbkö (in-process räcker)" gäller MULTI-INSTANS-kö; detta är en in-process GLOBAL gräns.
-- ROADMAP.md ~rad 91.
+## Implementation (alt b, vald)
+FIFO-kö + fast worker-pool (N workers) som drar jobb ur kön; tiling/export/backup lägger jobb i kön i stället för att spawna egna trådar. Samlad status-modell (körande/köade/klara) + UI-vy. OBS: ROADMAP Fas 3-not 'ingen jobbkö' gäller MULTI-INSTANS-kö; detta är in-process. ROADMAP.md ~rad 91.
 
 - ID: `01KXV9CVTQK812WNB30J2RCCTR`
 - Type: improvement
