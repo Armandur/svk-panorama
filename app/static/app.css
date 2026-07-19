@@ -1254,7 +1254,9 @@ details.storage-user table { margin-bottom: 0.6rem; }
 .export-readiness ul { margin: 0.3rem 0 0.2rem; padding-left: 1.2rem; font-size: 0.85rem; }
 .export-readiness li { margin: 0.15rem 0; }
 .export-originals { display: block; margin: 0.4rem 0 0.6rem; font-size: 0.9rem; }
-.export-originals .hint { display: block; margin: 0.1rem 0 0 1.7rem; }
+/* Indrag via padding (inte margin) så texten håller sig inom border-box och inte
+   klipps av panelbredden (margin-left krympte inte blockets bredd -> overflow). */
+.export-originals .hint { display: block; margin: 0.1rem 0 0; padding-left: 1.7rem; }
 
 /* Tema-/inställningsförinställningar (preview-steget). */
 .preset-row { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-bottom: 0.4rem; }
