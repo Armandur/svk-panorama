@@ -39,6 +39,19 @@
 			{% endfor %}
 		</div>
 	</details>
+	{#- Alltid synlig stegindikator (desktop): var man är + hela flödet. Hamburgaren
+	    ovan bär Huvudmeny/Versionshistorik + samma steg för mobil (steppern döljs där). -#}
+	<ol class="step-indicator" aria-label="Steg">
+		{% for s in _steps %}
+		{% if s.key == current_step %}
+		<li class="step-item current" aria-current="step"><span class="step-dot">{{ loop.index }}</span><span class="step-label">{{ s.title }}</span></li>
+		{% elif s.enabled %}
+		<li class="step-item"><a href="{{ s.url }}"><span class="step-dot">{{ loop.index }}</span><span class="step-label">{{ s.title }}</span></a></li>
+		{% else %}
+		<li class="step-item disabled"><span title="{% if s.key == 'plan' %}Kräver scener och en uppladdad kartbild (kartan är valfri för turen){% else %}Ladda upp minst en scen först{% endif %}"><span class="step-dot">{{ loop.index }}</span><span class="step-label">{{ s.title }}</span></span></li>
+		{% endif %}
+		{% endfor %}
+	</ol>
 	{% if current_step != 'upload' %}
 	{% if nav.prev %}<a href="{{ nav.prev.url }}" class="step-arrow" role="button" title="Föregående: {{ nav.prev.title }}" aria-label="Föregående: {{ nav.prev.title }}">&larr;</a>{% endif %}
 	{% if nav.next %}<a href="{{ nav.next.url }}" class="step-arrow" role="button" title="Nästa: {{ nav.next.title }}" aria-label="Nästa: {{ nav.next.title }}">&rarr;</a>{% endif %}
