@@ -88,7 +88,7 @@ Klart nar: man kan tvinga ljust/mörkt/system på /theme-preview och BÅDE Pico-
 
 ---
 
-## [P3][todo] [svk-panorama] Trailing-slash-URL:er 404:ar (/projects/{slug}/)
+## [P3][done] [svk-panorama] Trailing-slash-URL:er 404:ar (/projects/{slug}/)
 
 /projects/{slug}/ (med avslutande slash) ger 404; utan slash fungerar. En bokmärkt/delad länk med slash (browsers lägger ibland till den) landar på felsida. Klart nar: trailing-slash redirectar till kanonisk URL (eller båda accepteras). Fix: 302-redirect trailing-slash -> utan, eller FastAPI redirect_slashes. Verifiera: curl -I /projects/hemso-kyrkogard/ ska ge 200 eller 30x, inte 404.
 
@@ -98,7 +98,7 @@ Klart nar: man kan tvinga ljust/mörkt/system på /theme-preview och BÅDE Pico-
 
 ---
 
-## [P3][todo] [svk-panorama] Publicera & dela gömt i kollapsad sektion längst ner på sista steget
+## [P3][done] [svk-panorama] Publicera & dela gömt i kollapsad sektion längst ner på sista steget
 
 Export, säkerhetskopiering och delningslänk (WORKFLOW.md steg 5 Publicera - hela poängen med sista steget) ligger i en ihopfälld ackordion längst ner i en lång sidopanel, under Tema/Branding/Kartstorlek/Autorotate/Övergång. Måste scrolla och aktivt fälla upp. Klart nar: publicera/dela är synligt utan att scrolla förbi alla inställningar. Förslag: ha sektionen uppfälld som default eller flytta den högre. Verifiera: shot av preview-steget, dela-ytan syns utan interaktion.
 
@@ -108,7 +108,7 @@ Export, säkerhetskopiering och delningslänk (WORKFLOW.md steg 5 Publicera - he
 
 ---
 
-## [P3][todo] [svk-panorama] Textklippning i exportsektionens förklaringstext
+## [P3][done] [svk-panorama] Textklippning i exportsektionens förklaringstext
 
 Hjälptexten under 'Inkludera originalbilder' på preview/export klipps i högerkanten ('...åter-till...' -> resten försvinner) - det indragna <p> matchar inte containerbredden och wrappar inte utan klipps av overflow. Skärmdump: tmp/ux-review/desktop-preview-export-text.png. Klart nar: hela hjälptexten wrappar och syns. Fix: box-sizing/bredd på det indragna hjälptext-elementet. Verifiera: shot vid 1280px, ingen avklippt text.
 
