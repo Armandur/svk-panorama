@@ -55,6 +55,7 @@ async def upload_images(
 
     ensure_project_structure(slug)
     scene_ids = []
+    quota_hit = False
 
     for upload in files:
         filename = safe_upload_name(upload.filename or "")
@@ -83,7 +84,25 @@ async def upload_images(
             write_tour(slug, tour, editor=editor)
         scene_ids.append(scene_id)
 
-    storage.invalidate(project_dir(slug))  # kvot-grinden ska se den nya storleken direkt
+        # Kvoten kollades bara en gång ovan, men en batch med flera filer i SAMMA
+        # request kan pusha användningen förbi den däremellan - per-fil-skrivningar
+        # blev annars aldrig omkontrollerade mitt i requesten. Invalidera projektets
+        # cachade storlek direkt (skrivningen ovan ändrade den) och kolla på nytt så
+        # grinden ser den växande användningen; träffas den, sluta ta emot fler filer
+        # i den här batchen (redan sparade filer/scener ligger kvar).
+        storage.invalidate(project_dir(slug))
+        if team_over_quota(db, project.team_id):
+            quota_hit = True
+            break
+
+    if quota_hit and len(scene_ids) < len(files):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"{QUOTA_MSG} {len(scene_ids)} av {len(files)} bilder hann sparas "
+                "innan gränsen nåddes."
+            ),
+        )
 
     # Fetch-anrop (async uppladdning i webbläsaren) får JSON med scen-id:n så
     # klienten kan för-generera previews med progress. Vanlig formulärpost
