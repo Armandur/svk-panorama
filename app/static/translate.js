@@ -296,30 +296,10 @@
 	}
 
 	// --- Markdown-editor (delad, som scene.js/tour-preview.js) för hotspot-text/
-	// läs mer/branding - mediebiblioteks-knapp infogar bild-markdown. ---
-	function uploadImg(file, onSuccess, onError) {
-		const fd = new FormData();
-		fd.append("file", file);
-		// slug -> turens arbetsyta (personlig/team-pool), inte användarens primära.
-		fetch("/media/upload?slug=" + encodeURIComponent(slug), {
-			method: "POST",
-			headers: { "X-CSRF-Token": window.getCsrfToken ? getCsrfToken() : "" },
-			body: fd,
-		}).then(function (r) {
-			if (!r.ok) return r.json().then(function (d) { throw new Error(d.detail || "Uppladdning misslyckades"); });
-			return r.json();
-		}).then(function (d) { onSuccess(d.url); })
-			.catch(function (e) { onError(e.message || "Uppladdning misslyckades"); });
-	}
-	function mediaAction(editor) {
-		if (!window.openMediaLibrary) return;
-		window.openMediaLibrary(slug, function (url) {
-			const cm = editor.codemirror;
-			cm.replaceSelection("![](" + url + ")");
-			cm.focus();
-		});
-	}
-	const mediaBtn = { name: "media", action: mediaAction, className: "fa fa-th", title: "Mediebibliotek" };
+	// läs mer/branding - uppladdning + mediebiblioteks-knapp är en delad helper
+	// (media-library.js). ---
+	function uploadImg(file, onSuccess, onError) { window.mediaUploadForEditor(slug, file, onSuccess, onError); }
+	const mediaBtn = window.mediaLibraryToolbarBtn(slug);
 	let mdEditor = null;
 	function ensureMdEditor() {
 		if (mdEditor || !window.EasyMDE) return;

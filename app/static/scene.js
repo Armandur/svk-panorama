@@ -651,33 +651,10 @@
 	const hsLangsWrap = document.getElementById("hs-langs-wrap");
 	const hsLangsBoxes = document.getElementById("hs-langs-boxes");
 
-	// Bilduppladdning för EasyMDE: postar till den delade mediepoolen och infogar
-	// markdown-bildlänken. Funkar i både teaser och läs mer (oavsett expanderbar).
-	function uploadHsImage(file, onSuccess, onError) {
-		const fd = new FormData();
-		fd.append("file", file);
-		// slug -> turens arbetsyta (personlig/team-pool), inte användarens primära.
-		fetch("/media/upload?slug=" + encodeURIComponent(slug), {
-			method: "POST",
-			headers: { "X-CSRF-Token": window.getCsrfToken ? getCsrfToken() : "" },
-			body: fd,
-		}).then(function (r) {
-			if (!r.ok) return r.json().then(function (d) { throw new Error(d.detail || "Uppladdning misslyckades"); });
-			return r.json();
-		}).then(function (d) { onSuccess(d.url); })
-			.catch(function (e) { onError(e.message || "Uppladdning misslyckades"); });
-	}
-
-	// Mediebibliotek-knapp: bläddra bland/välj turens uppladdade bilder.
-	function mediaAction(editor) {
-		if (!window.openMediaLibrary) return;
-		window.openMediaLibrary(slug, function (url) {
-			const cm = editor.codemirror;
-			cm.replaceSelection("![](" + url + ")");
-			cm.focus();
-		});
-	}
-	const mediaBtn = { name: "media", action: mediaAction, className: "fa fa-th", title: "Mediebibliotek" };
+	// Bilduppladdning för EasyMDE + mediebibliotek-knapp: delad helper
+	// (media-library.js), funkar i både teaser och läs mer (oavsett expanderbar).
+	function uploadHsImage(file, onSuccess, onError) { window.mediaUploadForEditor(slug, file, onSuccess, onError); }
+	const mediaBtn = window.mediaLibraryToolbarBtn(slug);
 
 	// Samma markdown-editor som i admin: EasyMDE med vår sanerade preview. Teasern
 	// får en kompakt toolbar, läs mer-innehållet en fylligare. Initieras en gång;

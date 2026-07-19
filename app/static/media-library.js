@@ -12,6 +12,47 @@
 
 	function csrf() { return window.getCsrfToken ? getCsrfToken() : ""; }
 
+	// --- Delad EasyMDE-integration mot mediepoolen ---------------------------
+	// Uppladdning + mediebibliotek-knapp för EasyMDE-instanser utanför denna
+	// komponent (hotspot-teaser/läs mer i scene.js, branding i tour-preview.js,
+	// översättningsfältet i translate.js). Tidigare dubblerad identiskt i alla
+	// tre filer - samlad här då den hör tematiskt hemma i mediepool-koden.
+
+	// EasyMDE imageUploadFunction: postar filen till mediepoolen och anropar
+	// onSuccess(url)/onError(msg). slug -> turens arbetsyta (personlig/team-
+	// pool), inte användarens primära - måste alltid skickas med.
+	window.mediaUploadForEditor = function (slug, file, onSuccess, onError) {
+		var fd = new FormData();
+		fd.append("file", file);
+		fetch("/media/upload?slug=" + encodeURIComponent(slug), {
+			method: "POST",
+			headers: { "X-CSRF-Token": csrf() },
+			body: fd,
+		}).then(function (r) {
+			if (!r.ok) return r.json().then(function (d) { throw new Error(d.detail || "Uppladdning misslyckades"); });
+			return r.json();
+		}).then(function (d) { onSuccess(d.url); })
+			.catch(function (e) { onError(e.message || "Uppladdning misslyckades"); });
+	};
+
+	// EasyMDE-toolbarknapp som öppnar mediebiblioteket och infogar vald bilds
+	// markdown i editorns aktiva CodeMirror-instans.
+	window.mediaLibraryToolbarBtn = function (slug) {
+		return {
+			name: "media",
+			action: function (editor) {
+				if (!window.openMediaLibrary) return;
+				window.openMediaLibrary(slug, function (url) {
+					var cm = editor.codemirror;
+					cm.replaceSelection("![](" + url + ")");
+					cm.focus();
+				});
+			},
+			className: "fa fa-th",
+			title: "Mediebibliotek",
+		};
+	};
+
 	function fmtSize(n) {
 		if (n == null) return "";
 		if (n >= 1048576) return (n / 1048576).toFixed(1) + " MB";

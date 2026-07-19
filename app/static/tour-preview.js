@@ -175,31 +175,11 @@
 	if (brandingPos) brandingPos.value = POSES.indexOf(brand.position) !== -1 ? brand.position : "bottom-right";
 
 	// Markdown-editor (EasyMDE) för branding-innehållet - samma som hotspot-editorn,
-	// med en toolbar-knapp mot mediebiblioteket. Faller tillbaka på textarean om
-	// EasyMDE saknas. value() sätts/läses via helpers nedan.
-	function uploadBrandImage(file, onSuccess, onError) {
-		var fd = new FormData();
-		fd.append("file", file);
-		// slug -> turens arbetsyta (personlig/team-pool), inte användarens primära.
-		fetch("/media/upload?slug=" + encodeURIComponent(slug), {
-			method: "POST",
-			headers: { "X-CSRF-Token": window.getCsrfToken ? getCsrfToken() : "" },
-			body: fd,
-		}).then(function (r) {
-			if (!r.ok) return r.json().then(function (dd) { throw new Error(dd.detail || "Uppladdning misslyckades"); });
-			return r.json();
-		}).then(function (dd) { onSuccess(dd.url); })
-			.catch(function (e) { onError(e.message || "Uppladdning misslyckades"); });
-	}
-	function brandMediaAction(editor) {
-		if (!window.openMediaLibrary) return;
-		window.openMediaLibrary(slug, function (url) {
-			var cm = editor.codemirror;
-			cm.replaceSelection("![](" + url + ")");
-			cm.focus();
-		});
-	}
-	var brandMediaBtn = { name: "media", action: brandMediaAction, className: "fa fa-th", title: "Mediebibliotek" };
+	// med en toolbar-knapp mot mediebiblioteket (delad helper, media-library.js).
+	// Faller tillbaka på textarean om EasyMDE saknas. value() sätts/läses via
+	// helpers nedan.
+	function uploadBrandImage(file, onSuccess, onError) { window.mediaUploadForEditor(slug, file, onSuccess, onError); }
+	var brandMediaBtn = window.mediaLibraryToolbarBtn(slug);
 	var brandingEditor = null;
 
 	// Branding per språk: state {kod: text} + EN delad EasyMDE-instans som byter
