@@ -299,7 +299,7 @@ De 12 importerade legacy-turernas cross-tour-hotspots (`type:scene` + `URL`, ing
 
 ---
 
-## [P4][todo] [svk-panorama] Plan-tomtext antar att scener redan finns
+## [P4][done] [svk-panorama] Plan-tomtext antar att scener redan finns
 
 På projekt utan varken scener eller karta säger plan-tomtexten bara 'ladda upp en karta på uppladdningssteget' och länkar till scenhanteringen som om den vore redo - nämner inte att inga scener är uppladdade. Bara nåbart via direkt URL (normal nav gate:ar /plan tills scener finns), låg påverkan. Skärmdump: tmp/ux-review/desktop-empty-plan.png. Klart nar: tomtexten speglar faktiskt tillstånd (inga scener + ingen karta). Verifiera: öppna /plan på tomt projekt.
 
@@ -309,7 +309,7 @@ På projekt utan varken scener eller karta säger plan-tomtexten bara 'ladda upp
 
 ---
 
-## [P4][todo] [svk-panorama] Pannellums engelska felruta läcker in i svenskt gränssnitt
+## [P4][done] [svk-panorama] Pannellums engelska felruta läcker in i svenskt gränssnitt
 
 En scen utan uppladdad bild visar Pannellums inbyggda engelska felruta 'No panorama image was specified.' mitt i ett annars helsvenskt gränssnitt (nåbart via direkt URL till tomt projekt; normal nav gate:ar det). Klart nar: läget visar en svensk platshållartext. Fix: fånga tomt-läget i editorn eller konfigurera Pannellums strings. Verifiera: öppna en scen utan bild, ingen engelsk text.
 
