@@ -268,12 +268,20 @@ def remove_scene(slug: str, scene_id: str, *, editor: dict | None = None) -> Non
     default = tour.setdefault("default", default_tour()["default"])
     if default.get("firstScene") == scene_id:
         default["firstScene"] = next(iter(scenes), "")
-    write_tour(slug, tour, editor=editor)
 
     map_data = read_map(slug)
     map_data["scenes"] = [s for s in map_data.get("scenes", []) if s.get("id") != scene_id]
     map_data["edges"] = [e for e in map_data.get("edges", []) if scene_id not in e]
-    write_map(slug, map_data, editor=editor)
+
+    # Snapshotta PRE-overwrite-läget (tour+map ihop) EN gång innan någon av filerna
+    # skrivs över - annars kan write_maps egna snapshot-hook (om coalesce inte
+    # slår till) arkivera ett mellanläge med NY tour.json men GAMMAL map.json, ett
+    # par som aldrig existerade koherent på disk. Samma mönster som
+    # history.restore_version: en samlad snapshot, sedan båda skrivningarna med
+    # snapshot=False så write_tour/write_map inte snapshottar var för sig.
+    history.snapshot(project_dir(slug))
+    write_tour(slug, tour, snapshot=False, editor=editor)
+    write_map(slug, map_data, snapshot=False, editor=editor)
 
 
 def merge_scene_into_tour(tour: dict[str, Any], scene_id: str, panorama_url: str) -> None:
