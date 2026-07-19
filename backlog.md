@@ -60,6 +60,21 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
+## [P3][done] [svk-panorama] Tre-lägesväxel (ljus/mörk/system) på tema-preview
+
+Att växla ljust/mörkt via OS/webbläsaren är krångligt när man synar temat. Bygg en tre-stegs segment-knapp (sol=ljust, måne=mörkt, dator=system) på /theme-preview som växlar läget direkt, persistad i localStorage.
+
+TEKNISK HAKE (varför det inte är helt trivialt): appen/tokens.css använder prefers-color-scheme, INTE data-theme. Pico stödjer [data-theme=light|dark] för sina basfärger, MEN tokens.css kopplar --svk-* till @media(prefers-color-scheme:dark). Tvingar man data-theme=dark får man Pico:s mörka bas men FEL (ljus) --svk-accent. Ren lösning: refaktorera tokens.css så mörkvärdena svarar på BÅDE @media(prefers-color-scheme:dark) OCH [data-theme=dark], plus [data-theme=light]-override (standard 3-vägs-temamönster). Då sätter växeln bara data-theme (eller tar bort det = system) och både Pico och --svk följer med korrekt. Bonus: samma mönster möjliggör en global temaväxel i appen senare.
+
+Omfång: (1) tokens.css 3-vägs-refaktor, (2) sol/måne/dator-segmentknapp + localStorage på theme_preview.html, (3) folda in samma växel i theme-preview-SKILLENS gallery.html så alla projekt får den.
+Klart nar: man kan tvinga ljust/mörkt/system på /theme-preview och BÅDE Pico-bas och --svk-accent stämmer i alla tre lägena.
+
+- ID: `01KXX5KD1GAVJEBPPFJQYX05BB`
+- Type: improvement
+- Actor: human:rasmus
+
+---
+
 ## [P3][todo] [svk-panorama] Trailing-slash-URL:er 404:ar (/projects/{slug}/)
 
 /projects/{slug}/ (med avslutande slash) ger 404; utan slash fungerar. En bokmärkt/delad länk med slash (browsers lägger ibland till den) landar på felsida. Klart nar: trailing-slash redirectar till kanonisk URL (eller båda accepteras). Fix: 302-redirect trailing-slash -> utan, eller FastAPI redirect_slashes. Verifiera: curl -I /projects/hemso-kyrkogard/ ska ge 200 eller 30x, inte 404.
