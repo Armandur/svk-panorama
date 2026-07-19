@@ -74,6 +74,7 @@ app/
     media.py         # /media delad mediepool per ägare (upload/list/delete + capability-serve)
     translate.py     # Översätt-steget: gap-scan + guidad granulär översättningsspar (flerspråkigt)
     history.py       # /history versionslista + /history/restore (återställ tidigare version)
+    theme.py         # /theme-preview: dev-/designyta, komponent-galleri för temat (Pico+tokens, ljus/mörk, live accent-väljare)
   services/
     project_files.py # filsystemslager: slug, mappar, tour.json/map.json, previews
     tiling.py        # trådat tiling-jobb + manifest + apply_multires()
