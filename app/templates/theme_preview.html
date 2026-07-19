@@ -2,6 +2,8 @@
 {% block title %}Tema-förhandsvisning - {{ site_name() }}{% endblock %}
 
 {% block head %}
+<link rel="stylesheet" href="/static/vendor/coloris/coloris.min.css">
+<script src="/static/vendor/coloris/coloris.min.js"></script>
 <style>
 	.theme-bar { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; padding: 0.8rem 1rem;
 		border: 1px solid var(--pico-muted-border-color); border-radius: 0.5rem; margin-bottom: 1.5rem; }
@@ -26,8 +28,8 @@
 </hgroup>
 
 <div class="theme-bar">
-	<label>Accent (live)<br><input type="color" id="accent-pick" value="#2f6f4f"></label>
-	<label>Accent hover (live)<br><input type="color" id="accent-hover-pick" value="#24583e"></label>
+	<label>Accent (live)<br><input type="text" id="accent-pick" class="coloris-input" data-coloris value="#2f6f4f"></label>
+	<label>Accent hover (live)<br><input type="text" id="accent-hover-pick" class="coloris-input" data-coloris value="#24583e"></label>
 	<button type="button" class="secondary" id="accent-reset">Återställ</button>
 	<span class="theme-note" id="accent-readout"></span>
 </div>
@@ -95,24 +97,43 @@
 	var pick = document.getElementById("accent-pick");
 	var pickH = document.getElementById("accent-hover-pick");
 	var readout = document.getElementById("accent-readout");
+	var suppress = false;
+
+	// Coloris om projektet vendorar den; annars fall tillbaka på native färgväljare.
+	if (window.Coloris) Coloris({ el: "[data-coloris]", format: "hex", alpha: false });
+	else { pick.type = "color"; pickH.type = "color"; }
 
 	function cssVar(name) { return getComputedStyle(root).getPropertyValue(name).trim(); }
 
+	// Live-preview: Pico registrerar sina --pico-primary*-vars via @property, så de
+	// re-resolvar INTE reaktivt när upstream --svk-accent ändras vid runtime - därför
+	// sätter vi hela familjen inline (annars uppdateras knappar inte, bara swatches).
+	var LIVE_KEYS = ["--svk-accent", "--svk-accent-hover", "--pico-primary", "--pico-primary-hover",
+		"--pico-primary-background", "--pico-primary-hover-background"];
 	function apply() {
-		root.style.setProperty("--svk-accent", pick.value);
-		root.style.setProperty("--svk-accent-hover", pickH.value);
-		readout.textContent = "accent " + pick.value + " · hover " + pickH.value +
+		if (suppress) return; // programmatisk värdesättning (reset) ska inte pinna accenten
+		var a = pick.value, h = pickH.value;
+		root.style.setProperty("--svk-accent", a);
+		root.style.setProperty("--svk-accent-hover", h);
+		root.style.setProperty("--pico-primary", a);
+		root.style.setProperty("--pico-primary-hover", h);
+		root.style.setProperty("--pico-primary-background", a);
+		root.style.setProperty("--pico-primary-hover-background", h);
+		readout.textContent = "accent " + a + " · hover " + h +
 			" (fokusringen bakas separat i tokens.css)";
 		renderSwatches();
 	}
 	pick.addEventListener("input", apply);
 	pickH.addEventListener("input", apply);
 	document.getElementById("accent-reset").addEventListener("click", function () {
-		root.style.removeProperty("--svk-accent");
-		root.style.removeProperty("--svk-accent-hover");
-		// Läs tillbaka de temastyrda värdena (ljus/mörk) och spegla i väljarna.
+		LIVE_KEYS.forEach(function (k) { root.style.removeProperty(k); });
+		// Läs tillbaka de temastyrda värdena (ljus/mörk) och spegla i väljarna. suppress
+		// -> input-eventet uppdaterar Coloris-swatchen men apply() åter-pinnar inte.
 		var a = cssVar("--svk-accent"); var h = cssVar("--svk-accent-hover");
-		if (a) pick.value = toHex(a); if (h) pickH.value = toHex(h);
+		suppress = true;
+		if (a) { pick.value = toHex(a); pick.dispatchEvent(new Event("input", { bubbles: true })); }
+		if (h) { pickH.value = toHex(h); pickH.dispatchEvent(new Event("input", { bubbles: true })); }
+		suppress = false;
 		readout.textContent = "återställt till temat (" + a + ")";
 		renderSwatches();
 	});
@@ -140,7 +161,10 @@
 
 	// Init: spegla temats faktiska (ljus/mörk-upplösta) accent i väljarna.
 	var a0 = cssVar("--svk-accent"); var h0 = cssVar("--svk-accent-hover");
-	if (a0) pick.value = toHex(a0); if (h0) pickH.value = toHex(h0);
+	suppress = true;
+	if (a0) { pick.value = toHex(a0); pick.dispatchEvent(new Event("input", { bubbles: true })); }
+	if (h0) { pickH.value = toHex(h0); pickH.dispatchEvent(new Event("input", { bubbles: true })); }
+	suppress = false;
 	readout.textContent = "tema: accent " + a0;
 	renderSwatches();
 })();
