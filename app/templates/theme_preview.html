@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Tema-förhandsvisning - {{ site_name() }}{% endblock %}
+
+{% block head %}
+<style>
+	.theme-bar { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; padding: 0.8rem 1rem;
+		border: 1px solid var(--pico-muted-border-color); border-radius: 0.5rem; margin-bottom: 1.5rem; }
+	.theme-bar label { margin: 0; font-size: 0.85rem; }
+	.theme-bar input[type=color] { width: 3rem; height: 2.2rem; padding: 0; }
+	.theme-sec { margin: 1.6rem 0; }
+	.theme-row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+	.swatches { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+	.swatch { display: flex; flex-direction: column; gap: 0.25rem; align-items: center; font-size: 0.72rem; }
+	.swatch .chip { width: 4.5rem; height: 3rem; border-radius: 0.4rem; border: 1px solid var(--pico-muted-border-color); }
+	.theme-note { font-size: 0.82rem; color: var(--pico-muted-color); }
+	.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<hgroup>
+	<h1>Tema-förhandsvisning</h1>
+	<p>Alla vanliga komponenter med appens tema. Växla mörkt/ljust via operativsystemets/webbläsarens läge
+	(sidan följer <code>prefers-color-scheme</code>, precis som appen). Prova en accentfärg live nedan - baka
+	sedan in valda ljus- och mörkvärden i <code>static/tokens.css</code> (<code>--svk-accent</code>).</p>
+</hgroup>
+
+<div class="theme-bar">
+	<label>Accent (live)<br><input type="color" id="accent-pick" value="#2f6f4f"></label>
+	<label>Accent hover (live)<br><input type="color" id="accent-hover-pick" value="#24583e"></label>
+	<button type="button" class="secondary" id="accent-reset">Återställ</button>
+	<span class="theme-note" id="accent-readout"></span>
+</div>
+
+<section class="theme-sec">
+	<h3>Knappar</h3>
+	<div class="theme-row">
+		<button type="button">Primär</button>
+		<button type="button" class="secondary">Sekundär</button>
+		<button type="button" class="contrast">Kontrast</button>
+		<button type="button" class="outline">Primär outline</button>
+		<button type="button" class="secondary outline">Sekundär outline</button>
+		<button type="button" class="contrast outline">Kontrast outline</button>
+		<button type="button" disabled>Inaktiv</button>
+	</div>
+	<div class="theme-row" style="margin-top:0.6rem">
+		<a href="#" role="button">Länk-knapp</a>
+		<a href="#" role="button" class="secondary">Länk sekundär</a>
+		<input type="submit" value="Submit-input">
+		<button type="button" class="hs-danger">Fara (svk-danger)</button>
+	</div>
+</section>
+
+<section class="theme-sec">
+	<h3>Länkar & text</h3>
+	<p>En vanlig <a href="#">textlänk</a> i brödtext, en <a href="#" class="secondary">sekundär länk</a>,
+	och <mark>markerad text</mark>. Fokusera fälten nedan med Tab för att se fokusringen.</p>
+</section>
+
+<section class="theme-sec">
+	<h3>Formulär</h3>
+	<div class="form-grid">
+		<label>Textfält <input type="text" placeholder="Skriv..."></label>
+		<label>Val
+			<select><option>Alternativ 1</option><option>Alternativ 2</option></select>
+		</label>
+		<label>Textarea <textarea rows="2" placeholder="..."></textarea></label>
+		<fieldset>
+			<label><input type="checkbox" checked> Kryssruta</label>
+			<label><input type="radio" name="r" checked> Radio A</label>
+			<label><input type="radio" name="r"> Radio B</label>
+			<label><input type="checkbox" role="switch" checked> Switch</label>
+		</fieldset>
+		<label>Reglage <input type="range" min="0" max="100" value="60"></label>
+		<label>Ogiltigt <input type="text" aria-invalid="true" value="fel"></label>
+		<label>Giltigt <input type="text" aria-invalid="false" value="ok"></label>
+	</div>
+</section>
+
+<section class="theme-sec">
+	<h3>Accent- & primärtokens</h3>
+	<div class="swatches" id="accent-swatches"></div>
+</section>
+
+<section class="theme-sec">
+	<h3>Statusfärger (--svk-*)</h3>
+	<div class="swatches" id="status-swatches"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+	var root = document.documentElement;
+	var pick = document.getElementById("accent-pick");
+	var pickH = document.getElementById("accent-hover-pick");
+	var readout = document.getElementById("accent-readout");
+
+	function cssVar(name) { return getComputedStyle(root).getPropertyValue(name).trim(); }
+
+	function apply() {
+		root.style.setProperty("--svk-accent", pick.value);
+		root.style.setProperty("--svk-accent-hover", pickH.value);
+		readout.textContent = "accent " + pick.value + " · hover " + pickH.value +
+			" (fokusringen bakas separat i tokens.css)";
+		renderSwatches();
+	}
+	pick.addEventListener("input", apply);
+	pickH.addEventListener("input", apply);
+	document.getElementById("accent-reset").addEventListener("click", function () {
+		root.style.removeProperty("--svk-accent");
+		root.style.removeProperty("--svk-accent-hover");
+		// Läs tillbaka de temastyrda värdena (ljus/mörk) och spegla i väljarna.
+		var a = cssVar("--svk-accent"); var h = cssVar("--svk-accent-hover");
+		if (a) pick.value = toHex(a); if (h) pickH.value = toHex(h);
+		readout.textContent = "återställt till temat (" + a + ")";
+		renderSwatches();
+	});
+
+	function toHex(c) {
+		// "#rrggbb" passerar; "rgb(r,g,b)" -> hex
+		if (c.charAt(0) === "#") return c;
+		var m = c.match(/\d+/g); if (!m) return "#000000";
+		return "#" + m.slice(0, 3).map(function (n) { return ("0" + parseInt(n, 10).toString(16)).slice(-2); }).join("");
+	}
+
+	function swatch(label, varName) {
+		var v = cssVar(varName) || "-";
+		return '<div class="swatch"><span class="chip" style="background:' + v + '"></span>' +
+			varName + '<br>' + v + '</div>';
+	}
+	function renderSwatches() {
+		document.getElementById("accent-swatches").innerHTML =
+			["--svk-accent", "--svk-accent-hover", "--pico-primary", "--pico-primary-background",
+			 "--pico-primary-hover-background", "--pico-primary-focus"].map(function (n) { return swatch(n, n); }).join("");
+		document.getElementById("status-swatches").innerHTML =
+			["--svk-ok", "--svk-warn", "--svk-danger", "--svk-marker", "--svk-marker-armed",
+			 "--svk-edge", "--svk-rubber"].map(function (n) { return swatch(n, n); }).join("");
+	}
+
+	// Init: spegla temats faktiska (ljus/mörk-upplösta) accent i väljarna.
+	var a0 = cssVar("--svk-accent"); var h0 = cssVar("--svk-accent-hover");
+	if (a0) pick.value = toHex(a0); if (h0) pickH.value = toHex(h0);
+	readout.textContent = "tema: accent " + a0;
+	renderSwatches();
+})();
+</script>
+{% endblock %}

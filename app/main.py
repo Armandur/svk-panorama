@@ -30,6 +30,7 @@ from app.routes import (
     public,
     scenes,
     teams,
+    theme,
     tiling,
     translate,
     uploads,
@@ -113,6 +114,7 @@ app.include_router(backup.router)
 app.include_router(viewer.router)
 app.include_router(public.router)
 app.include_router(media.router)  # delad mediepool (före assets-catchall)
+app.include_router(theme.router)
 # SIST: catch-all för råa projektfiler (ägar-koll). Måste ligga efter alla
 # specifika /projects/{slug}/...-routes så de matchar först.
 app.include_router(assets.router)
