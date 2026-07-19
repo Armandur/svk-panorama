@@ -43,6 +43,8 @@ def password_error(password: str) -> str | None:
     Minst 8 tecken, inte enbart siffror, inte ett uppenbart svagt lösenord."""
     if len(password) < 8:
         return "Lösenordet måste vara minst 8 tecken."
+    if len(password.encode("utf-8")) > 72:
+        return "Lösenordet är för långt (max 72 tecken)."
     if password.isdigit():
         return "Lösenordet får inte bestå av enbart siffror."
     if password.strip().lower() in _WEAK_PASSWORDS:
