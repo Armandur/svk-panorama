@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse, Response
 
 from app.database import Project
 from app.deps import get_project_or_404
@@ -23,7 +23,11 @@ def serve_project_file(
     slug: str,
     file_path: str,
     project: Project = Depends(get_project_or_404),  # inloggning + ägarskap
-) -> FileResponse:
+) -> Response:
+    # Tom sökväg = trailing-slash på uppladdningssidan (/projects/{slug}/). Catch-allen
+    # fångar den före FastAPI:s redirect_slashes -> 302:a till den kanoniska URL:en.
+    if not file_path:
+        return RedirectResponse(url=f"/projects/{slug}", status_code=302)
     base = project_dir(slug).resolve()
     target = (base / file_path).resolve()
     # Path traversal-skydd: målet måste ligga under projektmappen.
