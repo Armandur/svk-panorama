@@ -19,7 +19,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
-from app import config
 from app.services.project_files import (
     _atomic_write_text,
     _natural_key,
