@@ -60,7 +60,7 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
-## [P3][todo] [svk-panorama] Byt tema-previewns accent-väljare till Coloris (från input type=color)
+## [P3][done] [svk-panorama] Byt tema-previewns accent-väljare till Coloris (från input type=color)
 
 Tema-preview (och theme-preview-skillens gallery.html) använder native <input type=color>. Byt till Coloris - lätt färgväljare svk-panorama redan vendorar (app/static/vendor/coloris/), används för dotColor/currentColor på preview-steget. Enhetligt färgval i hela appen + snyggare picker (swatch, hex-fält).
 
