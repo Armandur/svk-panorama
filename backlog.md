@@ -30,7 +30,7 @@ hash_password() anropar bcrypt.hashpw utan längdguard, och password_error() avv
 
 ---
 
-## [P2][todo] [svk-panorama] save() överskriver in-flight-redigering -> tyst dataförlust
+## [P2][done] [svk-panorama] save() överskriver in-flight-redigering -> tyst dataförlust
 
 plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden korrekt före await, men efter await sätts savedSnapshot/dirty ovillkorligt till NUVARANDE in-memory-state. Redigerar användaren medan POST är i flykten absorberas ändringen tyst: UI visar sparat, beforeunload-varningen släpps, och plan.js clearDraft() raderar sista crash-recovery-kopian. Reload -> ändringen borta utan spår. Klart när: en redigering gjord under pågående spar inte längre markeras som sparad/ren. Verifiera: dra en scenmarkör medan spar-POST pågår, ladda om, ändringen ska kvarstå eller dirty-flaggan vara kvar.
 
