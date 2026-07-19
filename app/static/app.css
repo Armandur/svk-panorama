@@ -1738,6 +1738,18 @@ details.storage-user table { margin-bottom: 0.6rem; }
 .hs-tabpanel[hidden] { display: none; }
 #hs-field-text .EasyMDEContainer { margin-bottom: 0.5rem; }
 #hs-field-text .editor-toolbar { border-radius: 0.3rem 0.3rem 0 0; }
+/* EasyMDE-toolbaren i hotspot-modalen: Pico gör <button> till en primärknapp och
+   sätter DÄR om --pico-color till primary-inverse (vit) - så ikonerna blir vita,
+   osynliga mot den ljusa kortbakgrunden i light mode (syns bara i dark mode).
+   Toolbaren är transparent (kortytan är tema-styrd), så sätt explicit tema-medveten
+   färg (kan inte använda var(--pico-color) - knappen har kapat den till vitt).
+   Hover/active-bakgrunden är fast ljus (#fcfcfc, EasyMDE) -> alltid mörk då. */
+#hs-field-text .editor-toolbar button, #hs-field-text .editor-toolbar button i { color: #373c44; }
+@media (prefers-color-scheme: dark) {
+	#hs-field-text .editor-toolbar button, #hs-field-text .editor-toolbar button i { color: #c2c7d0; }
+}
+#hs-field-text .editor-toolbar button:hover, #hs-field-text .editor-toolbar button.active,
+#hs-field-text .editor-toolbar button:hover i, #hs-field-text .editor-toolbar button.active i { color: #1f2937; }
 .hs-btn { flex: 1; margin: 0; padding: 0.25rem 0.3rem; font-size: 0.78rem; }
 .hs-danger { color: var(--svk-danger); border-color: var(--svk-danger); }
 
