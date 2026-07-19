@@ -118,7 +118,7 @@ Hjälptexten under 'Inkludera originalbilder' på preview/export klipps i höger
 
 ---
 
-## [P3][todo] [svk-panorama] Ingen persistent steg-/framstegsindikator i editor-flödet
+## [P3][done] [svk-panorama] Ingen persistent steg-/framstegsindikator i editor-flödet
 
 Hela arbetsflödesnavigeringen (Uppladdning -> Placering -> Scener -> [Översätt] -> Förhandsvisning) ligger dold bakom en textlös hamburgermeny (_step_nav). Ingen synlig 'steg 2 av 4'-känsla; en förstagångsfotograf ser inte hela resan eller var i den man är utan att öppna menyn. Klart nar: aktuellt steg + hela flödet syns alltid. Förslag: tunn alltid-synlig breadcrumb/stegindikator med aktivt steg markerat. Verifiera: shot av valfritt editor-steg, stegen ska synas utan att öppna meny.
 
