@@ -355,6 +355,7 @@
 	let mode = "gaps"; // "gaps" (default) eller "all"
 	let gaps = buildEntries();
 	let activeIndex = -1;
+	let saving = false; // spärrar överlappande spar-requests (dubbelklick/Enter-mash)
 	let langFilter = ""; // "" = alla målspråk
 	let activeGroupKey = null; // scenId, eller "__branding__" - gruppen som hålls utfälld
 	const openKeys = new Set(); // manuellt/aktivt utfällda grupper, överlever om-render
@@ -717,10 +718,15 @@
 	}
 
 	document.getElementById("translate-save-btn").addEventListener("click", function () {
+		if (saving) return; // en spar-request pågår redan - ignorera dubbelklick/Enter-mash
 		if (activeIndex < 0 || !gaps[activeIndex]) return;
 		const g = gaps[activeIndex];
+		const savedIndex = activeIndex; // bind gap:et som sparas till DETTA klick, inte till
+		// den module-globala activeIndex vid tiden requesten resolvar (som kan ha hunnit ändras)
 		const value = isMarkdownKind(g.kind) ? (mdEditor ? mdEditor.value() : targetMd.value) : targetInput.value;
 		const btn = this;
+		saving = true;
+		btn.disabled = true;
 		btn.setAttribute("aria-busy", "true");
 		apiFetch("/projects/" + encodeURIComponent(slug) + "/translate", {
 			method: "POST",
@@ -742,12 +748,16 @@
 				// var föräldralöst. Bygg om gap-listan så de dyker upp.
 				rebuildEntries();
 			} else {
-				gaps.splice(activeIndex, 1);
+				gaps.splice(savedIndex, 1);
 				advanceAfterSave();
 			}
 		}).catch(function (e) {
 			if (window.showToast) showToast(e.message, "error");
-		}).then(function () { btn.removeAttribute("aria-busy"); });
+		}).then(function () {
+			btn.removeAttribute("aria-busy");
+			btn.disabled = false;
+			saving = false;
+		});
 	});
 
 	// Enter i det vanliga textfältet (scentitlar m.fl. icke-markdown-luckor) =
