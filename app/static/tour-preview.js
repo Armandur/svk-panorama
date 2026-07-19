@@ -302,6 +302,7 @@
 		if (curLabel) curLabel.textContent = "Scen " + startId; // visa direkt, inte "Scen -"
 		viewer = pannellum.viewer("panorama", {
 			escapeHTML: true, // säkerhet: escapa titel/hotspot-text (top-level, se viewer.js)
+			strings: window.PNLM_STRINGS, // svenska fel-/laddningstexter (markdown.js)
 			default: {
 				firstScene: startId,
 				autoLoad: true,

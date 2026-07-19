@@ -30,6 +30,23 @@
 		fi: "Suomi", no: "Norsk", da: "Dansk",
 	};
 
+	// Svenska överstyrningar av Pannellums inbyggda (engelska) strängar. Skickas som
+	// `strings` till pannellum.viewer(...) i scene/tour-preview/viewer.js så fel-/
+	// laddningstexter inte läcker engelska i det svenska gränssnittet. Markdown.js är
+	// laddad överallt pannellum körs (även bundlen), därav hemvisten här. %s bevaras.
+	window.PNLM_STRINGS = {
+		noPanoramaError: "Ingen panoramabild angavs.",
+		fileAccessError: "Filen %s kunde inte läsas.",
+		malformedURLError: "Något är fel med panoramats URL.",
+		genericWebGLError: "Din webbläsare saknar det WebGL-stöd som krävs för att visa panoramat.",
+		iOS8WebGLError: "På grund av iOS 8:s bristfälliga WebGL-stöd fungerar bara progressivt kodade JPEG-bilder på din enhet (det här panoramat använder standardkodning).",
+		textureSizeError: "Panoramat är för stort för din enhet. Det är %spx brett, men enheten stödjer bara bilder upp till %spx breda.",
+		unknownError: "Okänt fel. Se utvecklarkonsolen.",
+		loadButtonLabel: "Klicka för att<br>ladda<br>panorama",
+		loadingLabel: "Laddar...",
+		bylineLabel: "av %s",
+	};
+
 	// Flaggor: vendorade SVG:er (flag-icons, MIT) som data-URI:er -> renderas
 	// IDENTISKT på alla enheter (till skillnad från flagg-emoji som Windows inte
 	// stödjer). Delas av runtime-vieweren, branding-editorn och /mallar. Språk ->

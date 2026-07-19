@@ -202,6 +202,7 @@
 		updateHotspotTooltips();
 		updateBranding();
 		updateUiChrome();
+		if (window.PNLM_STRINGS) tour.strings = window.PNLM_STRINGS; // svenska fel-/laddningstexter
 		viewer = pannellum.viewer("panorama", tour);
 		attachViewerEvents();
 	}
