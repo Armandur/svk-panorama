@@ -249,8 +249,17 @@ def _reset_demo_locked(db: Session) -> dict:
         with tour_lock:
             delete_project_files(slug)  # ren mapp
             _copy_gold(config.DEMO_SEED_DIR / "projects" / slug, project_dir(slug))
-        db.add(Project(slug=slug, name=t["name"], owner_id=t.get("owner_id") or owner_id,
-                       team_id=tid, share_token=None))
+        if row is not None:
+            # Raden finns redan (team_id == tid) - den överlevde steg 1 för att
+            # tiling pågick då. db.add skulle krocka mot unik-constraint på slug;
+            # uppdatera den befintliga raden i stället.
+            row.name = t["name"]
+            row.owner_id = t.get("owner_id") or owner_id
+            row.team_id = tid
+            row.share_token = None
+        else:
+            db.add(Project(slug=slug, name=t["name"], owner_id=t.get("owner_id") or owner_id,
+                           team_id=tid, share_token=None))
         storage.invalidate(project_dir(slug))
         restored += 1
     db.commit()
