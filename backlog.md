@@ -231,7 +231,7 @@ applyFilters slug:-gren (filter.indexOf('slug:')===0) är dead code - buildFilte
 
 ---
 
-## [P4][todo] [svk-panorama] Duplicerade media-upload-helpers i tre editor-JS-filer
+## [P4][done] [svk-panorama] Duplicerade media-upload-helpers i tre editor-JS-filer
 
 uploadHsImage/uploadBrandImage/uploadImg (media-pool-upload via fetch /media/upload?slug=) och deras parade mediaAction/brandMediaAction (öppna mediebibliotek, infoga ![]()-markdown i aktiv EasyMDE) är byte-för-byte identisk logik duplicerad i scene.js, tour-preview.js och translate.js. En framtida ändring av upload-kontraktet måste upprepas på tre ställen. Kandidat för gemensam helper (t.ex. bredvid media-library.js). Klart när: upload/insert-logiken finns på ett ställe. Verifiera: kodgranskning.
 
@@ -241,7 +241,7 @@ uploadHsImage/uploadBrandImage/uploadImg (media-pool-upload via fetch /media/upl
 
 ---
 
-## [P4][todo] [svk-panorama] create_project unik-slug-loop är TOCTOU -> 500 vid samtidig skapa
+## [P4][done] [svk-panorama] create_project unik-slug-loop är TOCTOU -> 500 vid samtidig skapa
 
 Unik-slug-loopen i create_project (read-then-check db.query().first() följt av db.add/commit) är TOCTOU: två samtidiga POST /projects med samma namn kan båda passera unikhetskollen, och andra commit:en faller på unik-constraint som ohanterat 500 i stället för att falla tillbaka till nästa suffix. Låg confidence - behöver verifieras mot faktisk constraint/felhantering. Klart när: samtidiga skapa med samma namn ger unika slugs utan 500. Verifiera: två parallella POST /projects med samma namn.
 
@@ -251,7 +251,7 @@ Unik-slug-loopen i create_project (read-then-check db.query().first() följt av 
 
 ---
 
-## [P4][todo] [svk-panorama] editor_home gör N+1 fil-/DB-läsningar per /editor-laddning
+## [P4][done] [svk-panorama] editor_home gör N+1 fil-/DB-läsningar per /editor-laddning
 
 editor_home läser read_tour(p.slug) (JSON-fil) för varje synlig tur, plus history.pending_editor (fil) och checkout.current_holder (db.get(User)) per team-tur, ocachat. En användare/team med dussintals turer triggar dussintals fil-läsningar och per-rad-DB-lookups på varje hemsideladdning; svarstid skalar linjärt med turantal (jfr storage.py:s medvetna TTL-cache för samma problemklass). Klart när: /editor-laddning inte skalar linjärt med diskläsningar per tur. Verifiera: mät /editor-laddtid med många turer före/efter cache.
 
