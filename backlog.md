@@ -1,5 +1,25 @@
 # Backlog Export
 
+## [P2][todo] [svk-panorama] Appens accentfärg blir Pico-blå i stället för grön (CSS-specificitet)
+
+tokens.css:15 mappar --pico-primary till --svk-accent (#2f6f4f grön), men Pico:s ':root:not([data-theme=dark]),[data-theme=light]' sätter --pico-primary:#0172ad med HÖGRE specificitet än tokens.css:s enkla ':root' -> blå vinner i light mode (computed --pico-primary = #0172ad). Alla primärknappar/fokusramar/länkar i inloggade appen blir blå i stället för den avsedda gröna. (Landningssidan är en separat beige/röd sida - 'grönt' kommer ur tokens.css, appens avsedda accent.) Klart nar: --pico-primary renderar grönt (#2f6f4f light / #4fa87a dark) i appen. Fix: matcha Pico:s selektor-specificitet i tokens.css (':root:not([data-theme=dark]),[data-theme=light]' + dark-motsvarigheten) eller !important på --pico-primary. Ev. följd-beslut: dra in landningssidan i samma gröna palett för genomgående identitet. Verifiera: computed style av --pico-primary på /editor ska vara grön.
+
+- ID: `01KXX41BHV6YWY7QZVC4X25QZJ`
+- Type: bug
+- Actor: ai:ux-review
+
+---
+
+## [P2][todo] [svk-panorama] EasyMDE-toolbaren osynlig i hotspot-modalen (light mode)
+
+Verktygsraden (fetstil/länk/Infoga bild ur mediebiblioteket) i hotspot-textredigeraren (#hs-field-text .editor-toolbar) har osynliga ikoner i LIGHT mode - de syns i dark mode. Rotorsak bekräftad: app.css rad ~817-820 fixar exakt detta ('ikonerna ärver annars vit text -> osynliga på ljus toolbar') men BARA scopeat till .planner-side. Hotspot-modalen omfattas inte -> ikonerna ärver vit text, osynliga på ljus toolbar, syns mot mörk bakgrund i dark mode. Knappen 'Infoga bild ur mediebiblioteket' (enda vägen till poolbilder i en hotspot) blir odiscoverable. Klart nar: toolbar-ikonerna syns i BÅDE light och dark mode i hotspot-modalen. Fix: utöka den läsbara-färg-regeln (color: #2c3e50 el. tokenbaserad) till #hs-field-text .editor-toolbar button/i, eller gör den container-oberoende. Verifiera: shot av hotspot-modalen i light mode, ikonerna ska synas.
+
+- ID: `01KXX41BHD8C6FAVED0QT0CRX1`
+- Type: bug
+- Actor: ai:ux-review
+
+---
+
 ## [P2][done] [svk-panorama] scan_usage missar branding-bilder -> raderbar bild som används
 
 scan_usage() skannar bara hotspot text/body efter /media/<owner>/<name>, aldrig tour.default.branding.content. En poolbild som bara används som branding/logga rapporteras som Oanvänd i mediebiblioteket och kan raderas utan serverguard. Radering 404:ar live branding-overlay i editor-preview och aktiva /s-delningslänkar direkt. bundle._media_refs och backup._media_refs skannar BÅDA branding.content - scan_usage är den avvikande. Klart när: en bild som används i branding rapporteras som använd och skyddas mot radering. Verifiera: lägg en poolbild i branding, kolla /media/list -> usage ska visa branding, inte 'oanvänd'.
@@ -37,6 +57,46 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 - ID: `01KXVNF5BCG8ZNEJRF9GE3FT56`
 - Type: bug
 - Actor: ai:code-review
+
+---
+
+## [P3][todo] [svk-panorama] Trailing-slash-URL:er 404:ar (/projects/{slug}/)
+
+/projects/{slug}/ (med avslutande slash) ger 404; utan slash fungerar. En bokmärkt/delad länk med slash (browsers lägger ibland till den) landar på felsida. Klart nar: trailing-slash redirectar till kanonisk URL (eller båda accepteras). Fix: 302-redirect trailing-slash -> utan, eller FastAPI redirect_slashes. Verifiera: curl -I /projects/hemso-kyrkogard/ ska ge 200 eller 30x, inte 404.
+
+- ID: `01KXX41BKGT9631A21RFNC1B6N`
+- Type: improvement
+- Actor: ai:ux-review
+
+---
+
+## [P3][todo] [svk-panorama] Publicera & dela gömt i kollapsad sektion längst ner på sista steget
+
+Export, säkerhetskopiering och delningslänk (WORKFLOW.md steg 5 Publicera - hela poängen med sista steget) ligger i en ihopfälld ackordion längst ner i en lång sidopanel, under Tema/Branding/Kartstorlek/Autorotate/Övergång. Måste scrolla och aktivt fälla upp. Klart nar: publicera/dela är synligt utan att scrolla förbi alla inställningar. Förslag: ha sektionen uppfälld som default eller flytta den högre. Verifiera: shot av preview-steget, dela-ytan syns utan interaktion.
+
+- ID: `01KXX41BK330SMV8N6D98JB5MF`
+- Type: improvement
+- Actor: ai:ux-review
+
+---
+
+## [P3][todo] [svk-panorama] Textklippning i exportsektionens förklaringstext
+
+Hjälptexten under 'Inkludera originalbilder' på preview/export klipps i högerkanten ('...åter-till...' -> resten försvinner) - det indragna <p> matchar inte containerbredden och wrappar inte utan klipps av overflow. Skärmdump: tmp/ux-review/desktop-preview-export-text.png. Klart nar: hela hjälptexten wrappar och syns. Fix: box-sizing/bredd på det indragna hjälptext-elementet. Verifiera: shot vid 1280px, ingen avklippt text.
+
+- ID: `01KXX41BJPC0BMJHMC8B6PYX08`
+- Type: bug
+- Actor: ai:ux-review
+
+---
+
+## [P3][todo] [svk-panorama] Ingen persistent steg-/framstegsindikator i editor-flödet
+
+Hela arbetsflödesnavigeringen (Uppladdning -> Placering -> Scener -> [Översätt] -> Förhandsvisning) ligger dold bakom en textlös hamburgermeny (_step_nav). Ingen synlig 'steg 2 av 4'-känsla; en förstagångsfotograf ser inte hela resan eller var i den man är utan att öppna menyn. Klart nar: aktuellt steg + hela flödet syns alltid. Förslag: tunn alltid-synlig breadcrumb/stegindikator med aktivt steg markerat. Verifiera: shot av valfritt editor-steg, stegen ska synas utan att öppna meny.
+
+- ID: `01KXX41BJAHXRNDBPT4VAH9MRP`
+- Type: improvement
+- Actor: ai:ux-review
 
 ---
 
@@ -208,6 +268,36 @@ De 12 importerade legacy-turernas cross-tour-hotspots (`type:scene` + `URL`, ing
 - ID: `01KXV9CVT829AS30BVRFD3P47X`
 - Type: chore
 - Actor: ai:claude-opus-4-8
+
+---
+
+## [P4][todo] [svk-panorama] Plan-tomtext antar att scener redan finns
+
+På projekt utan varken scener eller karta säger plan-tomtexten bara 'ladda upp en karta på uppladdningssteget' och länkar till scenhanteringen som om den vore redo - nämner inte att inga scener är uppladdade. Bara nåbart via direkt URL (normal nav gate:ar /plan tills scener finns), låg påverkan. Skärmdump: tmp/ux-review/desktop-empty-plan.png. Klart nar: tomtexten speglar faktiskt tillstånd (inga scener + ingen karta). Verifiera: öppna /plan på tomt projekt.
+
+- ID: `01KXX41BMNV0EBJRDMBTH75BR0`
+- Type: improvement
+- Actor: ai:ux-review
+
+---
+
+## [P4][todo] [svk-panorama] Pannellums engelska felruta läcker in i svenskt gränssnitt
+
+En scen utan uppladdad bild visar Pannellums inbyggda engelska felruta 'No panorama image was specified.' mitt i ett annars helsvenskt gränssnitt (nåbart via direkt URL till tomt projekt; normal nav gate:ar det). Klart nar: läget visar en svensk platshållartext. Fix: fånga tomt-läget i editorn eller konfigurera Pannellums strings. Verifiera: öppna en scen utan bild, ingen engelsk text.
+
+- ID: `01KXX41BM973GYSQFVV409YVWB`
+- Type: improvement
+- Actor: ai:ux-review
+
+---
+
+## [P4][todo] [svk-panorama] Mobil: kontroller renderas före kartan/panoramat (scroll-förbi)
+
+På plan- och scenvyn renderas hela sidopanelens kontroller FÖRE den interaktiva ytan (karta/panorama) i DOM-ordning -> på 390px måste man scrolla långt förbi text/formulär innan man ser bilden man ska jobba med. Projektet är desktop-först så låg prioritet, men noterat. Skärmdumpar: tmp/ux-review/mobile-plan.png, mobile-scenes.png. Klart nar: på mobil syns den interaktiva ytan utan lång scroll (t.ex. CSS order/flex-reorder). Verifiera: shot 390px, panorama/karta inom första skärmen.
+
+- ID: `01KXX41BKXV9J9AZG56V9D1Q3T`
+- Type: improvement
+- Actor: ai:ux-review
 
 ---
 
