@@ -69,15 +69,11 @@ def _bring_solo_to_team(db: Session, user: User, team: Team) -> int:
             if not target.exists():
                 shutil.move(str(entry), str(target))
 
-    # Skriv om media-referenser (textsub som backup._rewrite_refs; `/`-gränsen hindrar
-    # att /media/1/ råkar träffa /media/10/).
-    ref_re = re.compile(r"/media/" + re.escape(old_key) + "/")
+    # Skriv om media-referenser (samma rå textsub som _rewrite_tour_media_key, under
+    # tour_lock - annars kan en samtidig scen-/kartspar race:a mot omskrivningen).
     for p in solo:
         p.team_id = team.id
-        for path in (tour_json_path(p.slug), manifest_path(p.slug)):
-            if path.exists():
-                txt = ref_re.sub(f"/media/{new_key}/", path.read_text(encoding="utf-8"))
-                _atomic_write_text(path, txt)
+        _rewrite_tour_media_key(p.slug, old_key, new_key)
     db.commit()
     return len(solo)
 
