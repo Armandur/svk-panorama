@@ -6,8 +6,10 @@ import secrets
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app import config
 from app.auth import require_user
 from app.database import Project, Team, User
 from app.deps import (
@@ -48,7 +50,6 @@ from app.services.project_files import (
     write_map,
     write_tour,
 )
-from app.services import checkout
 from app.services import history
 from app.services import settings as site_settings
 from app.services import storage
@@ -139,19 +140,32 @@ def editor_home(
             seen_ws.add(key)
     # Per tur: senast ändrad (mtime) + ändrad av (team-turer, ur historik-attributionen).
     import datetime as _dt
-    # Skapar-namn för team-turer gjorda av NÅGON ANNAN (radera-varning "skapad av X").
+    stale_cutoff = _dt.datetime.utcnow() - _dt.timedelta(seconds=config.CHECKOUT_STALE_SEC)
+    # Skapar-namn ("skapad av X") + namn på den som håller ett FÄRSKT redigeringslås
+    # (checkout) är båda User-uppslag - samla ID:na och slå upp i EN query i stället
+    # för en `checkout.current_holder`-query (db.get(User, ...)) per tur (N+1).
     other_owner_ids = {p.owner_id for p in projects if p.team_id is not None and p.owner_id != user.id}
-    owner_names = {}
-    if other_owner_ids:
-        owner_names = {u.id: (u.name or u.email)
-                       for u in db.query(User).filter(User.id.in_(other_owner_ids)).all()}
+    holder_ids = {
+        p.checked_out_by for p in projects
+        if p.team_id is not None and p.checked_out_by is not None
+        and p.checked_out_at is not None and p.checked_out_at >= stale_cutoff
+    }
+    user_names = {}
+    wanted_ids = other_owner_ids | holder_ids
+    if wanted_ids:
+        user_names = {u.id: (u.name or u.email)
+                      for u in db.query(User).filter(User.id.in_(wanted_ids)).all()}
     meta = {}
     for p in projects:
         mt = last_modified(p.slug)
         editor = history.pending_editor(project_dir(p.slug)) if p.team_id is not None else None
-        # Redigeringslås: vem (om någon) har turen utcheckad just nu. Bara team-turer
-        # låses; current_holder respekterar stale-timeouten (None om fritt/övergivet).
-        holder = checkout.current_holder(db, p) if p.team_id is not None else None
+        # Redigeringslås: vem (om någon) har turen utcheckad just nu. Replikerar
+        # checkout.current_holder (bara team-turer, stale-timeout mot stale_cutoff)
+        # inline mot den batchade User-uppslagningen ovan.
+        holder = None
+        if p.team_id is not None and p.checked_out_by is not None \
+                and p.checked_out_at is not None and p.checked_out_at >= stale_cutoff:
+            holder = {"id": p.checked_out_by, "name": user_names.get(p.checked_out_by, "?")}
         # Kort-vyns tumnagel: turens första scen (preview, snurrbar vid hover) ->
         # kartbild -> tom. first_scene = None om ingen scen.
         tour = read_tour(p.slug)
@@ -170,7 +184,8 @@ def editor_home(
             "editor": (editor or {}).get("name"),
             "first_scene": first_scene,
             "thumb": thumb,
-            "creator": owner_names.get(p.owner_id),  # bara andras team-turer
+            # bara andras team-turer
+            "creator": user_names.get(p.owner_id) if p.team_id is not None and p.owner_id != user.id else None,
             "locked_by": holder["name"] if holder else None,
             "locked_by_me": bool(holder and holder["id"] == user.id),
         }
@@ -215,17 +230,30 @@ async def create_project(
     if not ok:
         raise HTTPException(status_code=400, detail="Ogiltig arbetsyta")
 
+    # Unik slug: den läs-sedan-skriv-kollen nedan är bara en snabb gissning, inte
+    # garantin - två samtidiga POST med samma namn kan båda passera den och krocka
+    # på UNIK-constrainten. IntegrityError-retryn nedan är den faktiska garantin:
+    # vid krock rullas sessionen tillbaka (det gamla Project-objektet är då ogiltigt
+    # -> ett NYTT skapas) och nästa lediga slug söks upp igen.
     base_slug = slugify(name)
-    slug = base_slug
     suffix = 2
-    while db.query(Project).filter(Project.slug == slug).first() is not None:
-        slug = f"{base_slug}-{suffix}"
-        suffix += 1
-
-    # owner_id bevaras alltid som "skapad av"; team_id avgör ytan (None = personlig).
-    project = Project(slug=slug, name=name, owner_id=user.id, team_id=team_id)
-    db.add(project)
-    db.commit()
+    slug = base_slug
+    for _attempt in range(5):
+        while db.query(Project).filter(Project.slug == slug).first() is not None:
+            slug = f"{base_slug}-{suffix}"
+            suffix += 1
+        # owner_id bevaras alltid som "skapad av"; team_id avgör ytan (None = personlig).
+        project = Project(slug=slug, name=name, owner_id=user.id, team_id=team_id)
+        db.add(project)
+        try:
+            db.commit()
+            break
+        except IntegrityError:
+            db.rollback()
+            suffix += 1
+            slug = f"{base_slug}-{suffix}"
+    else:
+        raise HTTPException(status_code=409, detail="Kunde inte skapa turen, försök igen")
 
     ensure_project_structure(slug)
     tour = default_tour()
