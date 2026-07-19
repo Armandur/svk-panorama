@@ -129,12 +129,6 @@
 
 	function applyFilter(items, filter) {
 		if (filter === "unused") return items.filter(function (it) { return !(it.usage && it.usage.length); });
-		if (filter && filter.indexOf("slug:") === 0) {
-			var slug = filter.slice(5);
-			return items.filter(function (it) {
-				return (it.usage || []).some(function (u) { return u.slug === slug; });
-			});
-		}
 		return items; // "all"
 	}
 
