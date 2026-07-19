@@ -11,7 +11,6 @@
 	--svk-marker-armed: #2f6f4f;
 	--svk-edge: #2f6f4f;
 	--svk-rubber: #b5872b;
-
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,19 +27,29 @@
 	}
 }
 
-/* --pico-primary måste matcha Pico:s EGNA selektor-specificitet (0,2,0), annars
-   vinner Pico:s standardblå trots att tokens.css laddas efter (Pico sätter primary
-   på ':root:not([data-theme=dark])' resp. dark-mediats ':root:not([data-theme])' -
-   båda slår en enkel ':root'). Värdet resolvar --svk-accent, som sätts per läge ovan. */
+/* Pico-primary-familjen -> vår gröna accent. Måste matcha Pico:s EGNA selektor-
+   specificitet (0,2,0), annars vinner Pico:s standardblå trots att tokens.css laddas
+   efter (Pico sätter dem på ':root:not([data-theme=dark])' resp. dark-mediats
+   ':root:not([data-theme])' - båda slår en enkel ':root').
+   VIKTIGT: -background/-hover-background styr KNAPPARS bakgrund (inte --pico-primary,
+   som bara är länk-/textfärg) - remappa hela familjen annars blir knappar kvar blå.
+   -border och -hover-border ärver -background via Pico:s egna var()-def, -inverse (vit
+   text på knapp) lämnas. */
 :root:not([data-theme=dark]), [data-theme=light] {
 	--pico-primary: var(--svk-accent);
 	--pico-primary-hover: var(--svk-accent-hover);
 	--pico-primary-underline: var(--svk-accent);
+	--pico-primary-background: var(--svk-accent);
+	--pico-primary-hover-background: var(--svk-accent-hover);
+	--pico-primary-focus: rgba(47, 111, 79, 0.375);
 }
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme]) {
 		--pico-primary: var(--svk-accent);
 		--pico-primary-hover: var(--svk-accent-hover);
 		--pico-primary-underline: var(--svk-accent);
+		--pico-primary-background: var(--svk-accent);
+		--pico-primary-hover-background: var(--svk-accent-hover);
+		--pico-primary-focus: rgba(79, 168, 122, 0.375);
 	}
 }
