@@ -40,7 +40,7 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
-## [P3][todo] [svk-panorama] Backup-import validerar inte .tif/.tiff-innehåll (bara jpg/png)
+## [P3][done] [svk-panorama] Backup-import validerar inte .tif/.tiff-innehåll (bara jpg/png)
 
 Import magic-byte-koll (_check_extracted_image) körs bara för .jpg/.jpeg/.png (_IMAGE_EXT), medan _ALLOWED_EXT även släpper in .tif/.tiff utan innehålls- eller dimensionsvalidering. Ett riggat project.zip (passerar _validate_members) kan lägga godtyckliga bytes på tiles/<scen>/*.tif upp till MAX_PANORAMA_MB per fil, oskannat och otäckt av MAX_IMAGE_MEGAPIXELS. Exploaterbarhet beror på om serverkod senare öppnar/serverar .tif-vägarna (ej verifierat). Klart när: .tif/.tiff genomgår samma innehållsvalidering som jpg/png vid import. Verifiera: importera zip med skräp-.tif, ska avvisas eller valideras.
 
@@ -50,7 +50,7 @@ Import magic-byte-koll (_check_extracted_image) körs bara för .jpg/.jpeg/.png 
 
 ---
 
-## [P3][todo] [svk-panorama] Reverse-tabnabbing i hotspot-tooltip/ark (saknar rel=noopener)
+## [P3][done] [svk-panorama] Reverse-tabnabbing i hotspot-tooltip/ark (saknar rel=noopener)
 
 renderMarkdown-output injiceras via innerHTML i mdHotspotTooltip och openHsSheet utan ankar-härdningen (rel=noopener noreferrer) som renderBrandingInto uttryckligen sätter. En redigerare som skriver rå HTML-ankare med target=_blank i hotspot-text (marked släpper igenom, DOMPurify default strippar inte target/rel) får en länk som öppnas med window.opener intakt -> destinationssidan kan navigera ursprungsfliken till phishing. Klart när: länkar i hotspot-tooltip/ark får rel=noopener noreferrer som branding. Verifiera: hotspot-text med <a target=_blank>, öppnad länk ska ha rel=noopener.
 
@@ -60,7 +60,7 @@ renderMarkdown-output injiceras via innerHTML i mdHotspotTooltip och openHsSheet
 
 ---
 
-## [P3][todo] [svk-panorama] horizon-roll debounce applicerar mot fel scen vid snabbt scenbyte
+## [P3][done] [svk-panorama] horizon-roll debounce applicerar mot fel scen vid snabbt scenbyte
 
 Horisont-roll-slidern debounce:ar scen-reload med setTimeout(applyRoll,900), men applyRoll läser viewer.getScene() vid fire-tid i stället för att fånga scenen draget gjordes på. Byter man scen inom 900ms-fönstret lämnas den dragna scenens live pannellum-config stale (sparad tour.json-värde är dock korrekt eftersom save() läser tour.scenes direkt). Scen A:s 3D-preview visar gammal tilt tills sidan laddas om. Klart när: roll-ändring appliceras på rätt scen även vid snabbt scenbyte. Verifiera: dra roll på scen A, byt genast till B, gå tillbaka - A ska visa rätt tilt utan reload.
 
@@ -70,7 +70,7 @@ Horisont-roll-slidern debounce:ar scen-reload med setTimeout(applyRoll,900), men
 
 ---
 
-## [P3][todo] [svk-panorama] editor-lock nollställer låsstate vid nätverksfel i heartbeat
+## [P3][done] [svk-panorama] editor-lock nollställer låsstate vid nätverksfel i heartbeat
 
 apply() behandlar varje misslyckat/non-OK checkoutPost()-svar (nätverksblip, transient 5xx) identiskt med 'projektet har ingen låsning': locking=false, banner döljs, editor-locked tas bort från body - även för en användare som är i läsläge för att någon ANNAN håller låset. Vid heartbeat (60s) kan en transient error därför kortvarigt re-enabla UI som om turen vore olåst tills nästa lyckade heartbeat. Ingen dataförlust (server 409:ar skrivningar) men vilseledande transient state. Klart när: ett misslyckat heartbeat-svar inte ändrar visad låsstate. Verifiera: simulera nätverksfel under heartbeat, låsbanner ska inte försvinna.
 
@@ -80,7 +80,7 @@ apply() behandlar varje misslyckat/non-OK checkoutPost()-svar (nätverksblip, tr
 
 ---
 
-## [P3][todo] [svk-panorama] translate.js dubbel-submit splice:ar bort fel gap
+## [P3][done] [svk-panorama] translate.js dubbel-submit splice:ar bort fel gap
 
 Spara-knappen i översätt-steget markeras bara aria-busy (inte disabled), så snabb dubbelklick/Enter avfyrar två överlappande POST /translate för samma gap. När första resolvar avancerar activeIndex via advanceAfterSave/selectGap, så andra resolutionens gaps.splice(activeIndex,1) tar bort ett ANNAT (oöversatt) gap vid det nya indexet. Det försvinner tyst ur listan och räknaren tills sidan laddas om. Ingen serverdata förloras. Klart när: dubbelklick på Spara inte kan ta bort fel gap. Verifiera: dubbelklicka Spara på ett översättningsfält, nästa gap ska inte försvinna oöversatt (disabla knappen medan request pågår).
 
@@ -90,7 +90,7 @@ Spara-knappen i översätt-steget markeras bara aria-busy (inte disabled), så s
 
 ---
 
-## [P3][todo] [svk-panorama] Team-kvot kontrolleras en gång per request, inte per fil -> overshoot
+## [P3][done] [svk-panorama] Team-kvot kontrolleras en gång per request, inte per fil -> overshoot
 
 team_over_quota kollas en gång före upload-loopen. En enda multi-fil-request kan därför pusha användningen långt förbi kvoten eftersom per-fil-skrivningar aldrig omkontrolleras mid-request. Ett team strax under kvoten laddar upp N panoramabilder (var upp till max_panorama_mb) i ett POST -> alla landar, overshoot upp till hela batchstorleken innan nästa request blockeras. Klart när: kvot kontrolleras löpande så en batch inte kan överskrida gränsen väsentligt. Verifiera: ladda upp flera stora filer i en request nära kvottaket, användningen ska inte kunna gå långt över.
 
@@ -100,7 +100,7 @@ team_over_quota kollas en gång före upload-loopen. En enda multi-fil-request k
 
 ---
 
-## [P3][todo] [svk-panorama] remove_scene snapshottar inkonsistent tour+map-par
+## [P3][done] [svk-panorama] remove_scene snapshottar inkonsistent tour+map-par
 
 remove_scene anropar write_tour sedan write_map back-to-back, båda med default snapshot=True. Om coalesce inte slår till (SVK_HISTORY_COALESCE_SEC lågt/0 eller föregående snapshot äldre än fönstret) arkiverar write_maps hook ett läge där disk har NYA tour.json men GAMLA map.json - ett par som aldrig existerade koherent. Restore till den versionen återinför en map-post för en redan raderad scen. Bryter mot dokumenterade 'unified snapshot, desync omöjlig'; restore skyddar med snapshot=False men remove_scene gör inte det. Klart när: scenradering inte kan arkivera ett desync:at par. Verifiera: kodgranskning - skriv båda med snapshot=False + en samlad snapshot, som restore.
 
@@ -120,7 +120,7 @@ capture_seed och reset_demo håller process-globala project_files.tour_lock runt
 
 ---
 
-## [P3][todo] [svk-panorama] Demo-reset kan krascha med unik-slug IntegrityError vid pågående tiling
+## [P3][done] [svk-panorama] Demo-reset kan krascha med unik-slug IntegrityError vid pågående tiling
 
 _reset_demo_locked steg 1 hoppar över radering av Project-rad om _tile_running(slug) är True (tur hamnar i skipped). Steg 2 avgör skip bara via row.team_id != tid, inte om raden fortfarande finns med team_id == tid. Om tiling hinner bli klar i gapet mellan passen hittar steg 2 den kvarvarande raden, wipe:ar/kopierar filer och gör db.add(Project(slug=...)) för en slug som redan har en rad -> commit kastar IntegrityError, reset kraschar, filsystem out-of-sync med DB. Klart när: reset hanterar kvarvarande rad med samma slug utan dubblettinsert. Verifiera: kodgranskning - steg 2 ska uppdatera befintlig rad eller hoppa slugs som skippades i steg 1.
 
@@ -130,7 +130,7 @@ _reset_demo_locked steg 1 hoppar över radering av Project-rad om _tile_running(
 
 ---
 
-## [P3][todo] [svk-panorama] _bring_solo_to_team skriver tour.json utan tour_lock (race -> dataförlust)
+## [P3][done] [svk-panorama] _bring_solo_to_team skriver tour.json utan tour_lock (race -> dataförlust)
 
 _bring_solo_to_team gör read-modify-write av tour.json/manifest utan tour_lock, till skillnad från syskonet _rewrite_tour_media_key som wrappar samma op i 'with tour_lock'. Sparar användaren scen-/hotspot-edit (scenes.py/plan.py tar tour_lock) samtidigt som POST /teams med bring_tours=1 migrerar samma tur, skriver sista skrivningen över den andra tyst: antingen tappas scenedit, eller media-ref-omskrivningen (stale /media/<old_uid>/-refs -> trasiga bilder). Klart när: media-ref-omskrivningen vid solo->team sker under tour_lock. Verifiera: kodgranskning - omslut read-modify-write med tour_lock som _rewrite_tour_media_key.
 
