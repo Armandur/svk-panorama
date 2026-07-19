@@ -40,9 +40,13 @@ _STORED_EXT = {".jpg", ".jpeg", ".png", ".tif"}
 # Import: whitelist filtyper (blockar .html/.svg/.js m.m. som annars kunde serveras
 # same-origin via capability-URL:er) + magic-koll på bilder + zip-bomb-tak.
 _ALLOWED_EXT = {".json", ".jpg", ".jpeg", ".png", ".tif", ".tiff"}
-_IMAGE_EXT = {".jpg", ".jpeg", ".png"}
+# .tif/.tiff ingår (kubfas-tiles nona skriver under tiling) - måste magic-/megapixel-
+# kollas som övriga bilder, annars slinker oskannade bytes igenom under den ändelsen.
+_IMAGE_EXT = {".jpg", ".jpeg", ".png", ".tif", ".tiff"}
 _JPEG_MAGIC = b"\xff\xd8\xff"
 _PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
+_TIFF_MAGIC_LE = b"\x49\x49\x2a\x00"  # little-endian ("II*\x00")
+_TIFF_MAGIC_BE = b"\x4d\x4d\x00\x2a"  # big-endian ("MM\x00*")
 MAX_BACKUP_MB = int(os.environ.get("SVK_MAX_BACKUP_MB", "3000"))
 
 _jobs: dict[str, dict[str, Any]] = {}
@@ -272,7 +276,12 @@ def _extract(z: zipfile.ZipFile, slug: str, owner: str) -> None:
         ext = os.path.splitext(n)[1].lower()
         with z.open(info) as srcf:
             head = srcf.read(8)
-            if ext in _IMAGE_EXT and not (head.startswith(_JPEG_MAGIC) or head.startswith(_PNG_MAGIC)):
+            if ext in _IMAGE_EXT and not (
+                head.startswith(_JPEG_MAGIC)
+                or head.startswith(_PNG_MAGIC)
+                or head.startswith(_TIFF_MAGIC_LE)
+                or head.startswith(_TIFF_MAGIC_BE)
+            ):
                 raise ValueError(f"{n} är inte en giltig bild.")
             with open(dest, "wb") as out:
                 out.write(head)
