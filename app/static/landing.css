@@ -1,12 +1,13 @@
 /* Landningssida (/) - editoriell/arkitektonisk stillhet: varm sten/pergament,
-   liturgisk röd accent, Spectral (serif) display + DM Sans body. Self-hostade
-   typsnitt (fonts.css). Laddas bara på landningssidan. */
+   GRÖN accent (app-temat, --svk-accent) + guld som sekundär, Spectral (serif)
+   display + DM Sans body. Self-hostade typsnitt (fonts.css). Laddas bara här.
+   3-vägs (auto/ljust/mörkt via [data-theme]) så headerns temaväxel temar sidan. */
 .landing-body {
 	--l-bg: #f6f2ea;
 	--l-bg2: #efe8db;
 	--l-ink: #241f1b;
 	--l-muted: #6f6456;
-	--l-accent: #8b1a1a;
+	--l-accent: var(--svk-accent);   /* app-grönt, redan 3-vägs -> följer temavalet */
 	--l-accent-ink: #fff;
 	--l-gold: #a9884f;
 	--l-card: #fffdf8;
@@ -17,24 +18,34 @@
 	background: var(--l-bg);
 	color: var(--l-ink);
 }
+/* Mörka NEUTRALER (ej accenten - den följer --svk-accent). Effektivt mörkt =
+   auto-dark (ej tvingat ljust) ELLER tvingat mörkt; dupliceras i två selektorer. */
 @media (prefers-color-scheme: dark) {
-	.landing-body {
+	:root:not([data-theme="light"]) .landing-body {
 		--l-bg: #17130f;
 		--l-bg2: #1f1a14;
 		--l-ink: #efe8dc;
 		--l-muted: #a79a86;
-		--l-accent: #e08a72;
-		--l-accent-ink: #1a1109;
 		--l-gold: #c7a568;
 		--l-card: #201a14;
 		--l-border: #342c22;
 		--l-shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 34px rgba(0,0,0,.35);
 	}
 }
+:root[data-theme="dark"] .landing-body {
+	--l-bg: #17130f;
+	--l-bg2: #1f1a14;
+	--l-ink: #efe8dc;
+	--l-muted: #a79a86;
+	--l-gold: #c7a568;
+	--l-card: #201a14;
+	--l-border: #342c22;
+	--l-shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 34px rgba(0,0,0,.35);
+}
 
-/* Header smälter in i hero-bakgrunden; nav-knappar bläck i stället för Pico-blått
-   (bara på landningen - app-sidorna behåller sin blå identitet). Brand-wordmarken
-   är borttagen på landningen (block brand tom i landing.html) - hero bär identiteten. */
+/* Header smälter in i hero-bakgrunden; nav-knappar bläck i stället för Pico-primär
+   (bara på landningen). Brand-wordmarken är borttagen (block brand tom i landing.html)
+   - hero bär identiteten. */
 .landing-body .site-header { background: transparent; border-bottom: 0; }
 .landing-body .site-header .nav-btn { color: var(--l-ink); border-color: var(--l-border); }
 .landing-body .site-header .nav-btn:hover { border-color: var(--l-accent); color: var(--l-accent); }
@@ -51,11 +62,15 @@
 		radial-gradient(120% 80% at 50% -20%, rgba(255,255,255,.55), transparent 60%),
 		linear-gradient(180deg, var(--l-bg) 0%, var(--l-bg2) 100%);
 }
+/* Mörkt hero: grönt sken (ur accenten) i stället för vitt. 3-vägs. */
 @media (prefers-color-scheme: dark) {
-	.hero { background:
-		radial-gradient(120% 80% at 50% -20%, rgba(224,138,114,.14), transparent 62%),
+	:root:not([data-theme="light"]) .hero { background:
+		radial-gradient(120% 80% at 50% -20%, color-mix(in srgb, var(--l-accent) 16%, transparent), transparent 62%),
 		linear-gradient(180deg, var(--l-bg) 0%, var(--l-bg2) 100%); }
 }
+:root[data-theme="dark"] .hero { background:
+	radial-gradient(120% 80% at 50% -20%, color-mix(in srgb, var(--l-accent) 16%, transparent), transparent 62%),
+	linear-gradient(180deg, var(--l-bg) 0%, var(--l-bg2) 100%); }
 .hero-inner { position: relative; max-width: 62rem; margin: 0 auto; }
 .eyebrow {
 	font-family: var(--l-sans);
@@ -97,7 +112,7 @@
 	box-shadow: var(--l-shadow);
 	transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
-.hero-cta .cta-primary:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 8px 26px rgba(139,26,26,.28); }
+.hero-cta .cta-primary:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 8px 26px color-mix(in srgb, var(--l-accent) 30%, transparent); }
 .hero-cta .cta-secondary {
 	font-family: var(--l-sans);
 	font-weight: 500;
