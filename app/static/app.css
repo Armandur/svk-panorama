@@ -814,11 +814,16 @@ tr[data-preview-scene] { cursor: help; }
 .branding-opts { display: flex; gap: 0.8rem; margin-top: 0.4rem; }
 .branding-opts label { flex: 1; margin-bottom: 0; }
 .branding-sep { margin: 1rem 0 0.6rem; border: none; border-top: 1px solid var(--pico-muted-border-color, rgba(115, 130, 140, 0.3)); }
-/* EasyMDE i preview-sidopanelen: toolbar-ikonerna ärver annars vit text från
-   plan-chromet -> osynliga på den ljusa toolbaren. Tvinga läsbar färg. */
-.planner-side .editor-toolbar button, .planner-side .editor-toolbar button i { color: #2c3e50; }
-.planner-side .editor-toolbar button:hover { color: #000; }
-.planner-side .editor-toolbar button.active { color: #000; }
+/* EasyMDE i preview-sidopanelen: Pico kapar --pico-color till vit på <button>, så
+   ikonerna blir vita. Toolbaren är transparent -> kortytan är tema-styrd, sätt därför
+   explicit tema-medveten färg (fast #2c3e50 var osynlig i dark mode, mörk-på-mörk).
+   Samma mönster som hotspot-modalen (#hs-field-text). Hover-bg är fast ljus -> mörk. */
+.planner-side .editor-toolbar button, .planner-side .editor-toolbar button i { color: #373c44; }
+@media (prefers-color-scheme: dark) {
+	.planner-side .editor-toolbar button, .planner-side .editor-toolbar button i { color: #c2c7d0; }
+}
+.planner-side .editor-toolbar button:hover, .planner-side .editor-toolbar button.active,
+.planner-side .editor-toolbar button:hover i, .planner-side .editor-toolbar button.active i { color: #1f2937; }
 
 /* --- Mall-bibliotek (preset-library.js): /mallar-sidan + väljar-modal --- */
 /* Bredare än login-formulär (ärver annars .login-section 26rem), som /media. */
