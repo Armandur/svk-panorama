@@ -60,6 +60,19 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
+## [P3][todo] [svk-panorama] Byt tema-previewns accent-väljare till Coloris (från input type=color)
+
+Tema-preview (och theme-preview-skillens gallery.html) använder native <input type=color>. Byt till Coloris - lätt färgväljare svk-panorama redan vendorar (app/static/vendor/coloris/), används för dotColor/currentColor på preview-steget. Enhetligt färgval i hela appen + snyggare picker (swatch, hex-fält).
+
+Omfång: (1) theme_preview.html: ladda coloris CSS/JS i {% block head %}, byt de två accent-inputarna till <input type=text class=coloris-input data-coloris>, init Coloris({el:'[data-coloris]',format:'hex',alpha:false}). JS läser fortfarande .value (hex) + input-eventet fyrar från Coloris -> apply() funkar oförändrat. (2) Skillens gallery.html: använd Coloris NÄR projektet vendorar det (Rasmus default), annars fall tillbaka på <input type=color>; dokumentera i SKILL.md. 'Det kan bli det generella' = Coloris som standard-färgväljaren i skillen.
+Klart nar: accent-väljaren på /theme-preview är en Coloris-picker, och skillen använder Coloris som default.
+
+- ID: `01KXX69QE0RBST7ZBGQ39JM781`
+- Type: improvement
+- Actor: human:rasmus
+
+---
+
 ## [P3][done] [svk-panorama] Tre-lägesväxel (ljus/mörk/system) på tema-preview
 
 Att växla ljust/mörkt via OS/webbläsaren är krångligt när man synar temat. Bygg en tre-stegs segment-knapp (sol=ljust, måne=mörkt, dator=system) på /theme-preview som växlar läget direkt, persistad i localStorage.
