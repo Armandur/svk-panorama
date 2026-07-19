@@ -712,14 +712,20 @@
 
 	async function saveMap() {
 		saveBtn.setAttribute("aria-busy", "true");
+		// Frys det som skickas FÖRE await. Redigerar användaren medan requesten är i
+		// flykten får nuläget inte tyst markeras som sparat (TASK-88).
+		const sent = { scenes: mapData.scenes, edges: mapData.edges };
+		const sentSnapshot = JSON.stringify(sent);
 		try {
 			await apiFetch("/projects/" + encodeURIComponent(slug) + "/map", {
 				method: "POST",
-				body: { scenes: mapData.scenes, edges: mapData.edges },
+				body: sent,
 			});
-			savedSnapshot = JSON.stringify({ scenes: mapData.scenes, edges: mapData.edges });
-			setDirty(false);
-			clearDraft();
+			savedSnapshot = sentSnapshot;
+			// Ändrades något under flykten? Då != skickat läge -> förbli dirty, behåll utkastet.
+			const stillClean = JSON.stringify({ scenes: mapData.scenes, edges: mapData.edges }) === sentSnapshot;
+			setDirty(!stillClean);
+			if (stillClean) clearDraft();
 			showToast("Kartan sparad", "ok");
 			return true;
 		} catch (err) {

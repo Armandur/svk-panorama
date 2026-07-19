@@ -486,31 +486,39 @@
 	if (prevBtn) prevBtn.addEventListener("click", function () { step(-1); });
 	if (nextBtn) nextBtn.addEventListener("click", function () { step(1); });
 
+	// Bygger inställnings-payloaden ur nuvarande kontrollvärden (delas av save + snapshot-jämförelse).
+	function settingsBody() {
+		var brandingNow = currentBranding();
+		return {
+			autoLoad: true,
+			autoRotateEnabled: arEnabled.checked,
+			autoRotateSpeed: parseFloat(arSpeed.value) || 2,
+			autoRotateDir: dirVal(),
+			autoRotateInactivityDelay: Math.round((parseFloat(arDelay.value) || 0) * 1000),
+			sceneFadeDuration: Math.round((parseFloat(fade.value) || 0) * 1000),
+			firstScene: firstScene,
+			mapSize: mapSizeVal(),
+			showMap: showMapCb ? showMapCb.checked : true,
+			themeFont: themeFont.value,
+			themeDotColor: themeDot.value,
+			themeCurrentColor: themeCurrent.value,
+			brandingContent: brandingNow ? brandingNow.content : "",
+			brandingSize: brandingSize ? brandingSize.value : "medium",
+			brandingPosition: brandingPos ? brandingPos.value : "bottom-right",
+		};
+	}
+
 	// Returnerar HELA kedjan (inkl. setDirty) så check-in kan await:a den innan re-check.
 	function save() {
 		saveBtn.setAttribute("aria-busy", "true");
-		var brandingNow = currentBranding();
+		// Frys skickat läge FÖRE requesten - en ändring under flykten får inte tyst
+		// nollställa dirty (TASK-88).
+		var sent = JSON.stringify(settingsBody());
 		return apiFetch("/projects/" + encodeURIComponent(slug) + "/tour-settings", {
 			method: "POST",
-			body: {
-				autoLoad: true,
-				autoRotateEnabled: arEnabled.checked,
-				autoRotateSpeed: parseFloat(arSpeed.value) || 2,
-				autoRotateDir: dirVal(),
-				autoRotateInactivityDelay: Math.round((parseFloat(arDelay.value) || 0) * 1000),
-				sceneFadeDuration: Math.round((parseFloat(fade.value) || 0) * 1000),
-				firstScene: firstScene,
-				mapSize: mapSizeVal(),
-				showMap: showMapCb ? showMapCb.checked : true,
-				themeFont: themeFont.value,
-				themeDotColor: themeDot.value,
-				themeCurrentColor: themeCurrent.value,
-				brandingContent: brandingNow ? brandingNow.content : "",
-				brandingSize: brandingSize ? brandingSize.value : "medium",
-				brandingPosition: brandingPos ? brandingPos.value : "bottom-right",
-			},
+			body: JSON.parse(sent),
 		}).then(function () {
-			setDirty(false);
+			setDirty(JSON.stringify(settingsBody()) !== sent);
 			if (window.showToast) showToast("Inställningar sparade", "ok");
 		}).catch(function (e) {
 			if (window.showToast) showToast(e.message, "error");

@@ -1294,9 +1294,11 @@
 					hotSpots: tour.scenes[id].hotSpots || [],
 				};
 			});
+			// Frys skickat läge FÖRE await; ändras något under flykten förblir det dirty (TASK-88).
+			const sent = snapshot();
 			await apiFetch("/projects/" + encodeURIComponent(slug) + "/tour", { method: "POST", body: payload });
-			savedSnapshot = snapshot();
-			setDirty(false);
+			savedSnapshot = sent;
+			setDirty(snapshot() !== sent);
 			showToast("Sparat", "ok");
 		} catch (err) {
 			showToast("Kunde inte spara: " + err.message, "error");
