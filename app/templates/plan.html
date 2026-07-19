@@ -5,13 +5,18 @@
 {% block main_attrs %} class="plan-app"{% endblock %}
 {% block content %}
 
+{% set has_scenes = (tour.scenes | length) > 0 %}
 {% if not has_map_image %}
 <article class="notice">
+	{% if not has_scenes %}
+	<p>Den här turen har <strong>inga scener än</strong>. <a href="/projects/{{ project.slug }}">Ladda upp bilder på uppladdningssteget</a> först - sedan placerar du scenerna på en karta här (kartan är valfri; utan den navigerar besökaren mellan scener via hotspots).</p>
+	{% else %}
 	<p>Den här turen har ingen kartbild. En karta är <strong>valfri</strong> - utan den navigerar besökaren mellan scener via hotspots, och du kan gå direkt till <a href="/projects/{{ project.slug }}/scenes">scenhanteringen</a>. Vill du ha ett översiktskort att placera scenerna på, <a href="/projects/{{ project.slug }}">ladda upp en karta på uppladdningssteget</a>.</p>
+	{% endif %}
 </article>
 {% else %}
 <aside class="planner-side">
-	{% set current_step = 'plan' %}{% set has_scenes = (tour.scenes | length) > 0 %}
+	{% set current_step = 'plan' %}
 	{% include "_step_nav.html" %}
 	<hgroup class="plan-heading">
 		<h2>Placering</h2>
