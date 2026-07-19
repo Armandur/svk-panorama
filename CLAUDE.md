@@ -432,6 +432,17 @@ antingen en **ren sträng** (monospråkigt / default-språk / äldre turer) elle
 - `form-validate.js` - inline fältvalidering för lösenordspar (`<form data-pw-form>`
   med `[data-pw-new]`/`[data-pw-confirm]`): röd outline (`aria-invalid`) + `.field-hint`
   vid fältet, servern validerar som fallback. UX-mönster för all fältvalidering.
+- `theme.js` - tema-cykelknapp (`#temavaljare` i navet, laddad globalt i base.html):
+  auto -> ljust -> mörkt. Sätter `data-theme` på `<html>` (auto = inget attribut,
+  följer `prefers-color-scheme`), sparar i localStorage `svk-theme`. Inline-head-script
+  i base.html applicerar sparat läge FÖRE render (mot flash). **`tokens.css` är 3-vägs**
+  (identitet/accent/status): ljusa värden på `:root`, mörka i BÅDE
+  `@media(prefers-color-scheme:dark) :root:not([data-theme=light])` OCH `:root[data-theme=dark]`;
+  Pico-primary-FAMILJEN (`-background`/`-hover-background`/`-focus`, inte bara
+  `--pico-primary`) remappas till `--svk-accent` i `:root:not([data-theme=dark]),
+  [data-theme=light],[data-theme=dark]` (matchar Pico:s specificitet). EasyMDE-toolbar-
+  ikoner använder 3-vägs-token `--svk-editor-icon` (Pico kapar annars `--pico-color` till
+  vitt på knappar). Återanvändbar via `theme-preview`-skillen (`/theme-preview`-route).
 
 ## Team & multi-tenancy (Fas 4.1, routes/teams.py)
 
