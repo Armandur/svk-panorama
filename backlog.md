@@ -1,6 +1,6 @@
 # Backlog Export
 
-## [P2][todo] [svk-panorama] Appens accentfärg blir Pico-blå i stället för grön (CSS-specificitet)
+## [P2][done] [svk-panorama] Appens accentfärg blir Pico-blå i stället för grön (CSS-specificitet)
 
 tokens.css:15 mappar --pico-primary till --svk-accent (#2f6f4f grön), men Pico:s ':root:not([data-theme=dark]),[data-theme=light]' sätter --pico-primary:#0172ad med HÖGRE specificitet än tokens.css:s enkla ':root' -> blå vinner i light mode (computed --pico-primary = #0172ad). Alla primärknappar/fokusramar/länkar i inloggade appen blir blå i stället för den avsedda gröna. (Landningssidan är en separat beige/röd sida - 'grönt' kommer ur tokens.css, appens avsedda accent.) Klart nar: --pico-primary renderar grönt (#2f6f4f light / #4fa87a dark) i appen. Fix: matcha Pico:s selektor-specificitet i tokens.css (':root:not([data-theme=dark]),[data-theme=light]' + dark-motsvarigheten) eller !important på --pico-primary. Ev. följd-beslut: dra in landningssidan i samma gröna palett för genomgående identitet. Verifiera: computed style av --pico-primary på /editor ska vara grön.
 
@@ -10,7 +10,7 @@ tokens.css:15 mappar --pico-primary till --svk-accent (#2f6f4f grön), men Pico:
 
 ---
 
-## [P2][todo] [svk-panorama] EasyMDE-toolbaren osynlig i hotspot-modalen (light mode)
+## [P2][done] [svk-panorama] EasyMDE-toolbaren osynlig i hotspot-modalen (light mode)
 
 Verktygsraden (fetstil/länk/Infoga bild ur mediebiblioteket) i hotspot-textredigeraren (#hs-field-text .editor-toolbar) har osynliga ikoner i LIGHT mode - de syns i dark mode. Rotorsak bekräftad: app.css rad ~817-820 fixar exakt detta ('ikonerna ärver annars vit text -> osynliga på ljus toolbar') men BARA scopeat till .planner-side. Hotspot-modalen omfattas inte -> ikonerna ärver vit text, osynliga på ljus toolbar, syns mot mörk bakgrund i dark mode. Knappen 'Infoga bild ur mediebiblioteket' (enda vägen till poolbilder i en hotspot) blir odiscoverable. Klart nar: toolbar-ikonerna syns i BÅDE light och dark mode i hotspot-modalen. Fix: utöka den läsbara-färg-regeln (color: #2c3e50 el. tokenbaserad) till #hs-field-text .editor-toolbar button/i, eller gör den container-oberoende. Verifiera: shot av hotspot-modalen i light mode, ikonerna ska synas.
 
