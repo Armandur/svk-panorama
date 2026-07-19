@@ -9,6 +9,18 @@
 		return window.DOMPurify ? window.DOMPurify.sanitize(html) : html;
 	};
 
+	// Härda alla <a>-länkar inuti `el` mot reverse tabnabbing: en redigerare kan
+	// skriva rå HTML-ankare med target="_blank" i markdown-källan (marked släpper
+	// igenom, DOMPurify saneras men strippar inte target/rel) - utan noopener kan
+	// destinationssidan navigera ursprungsfliken (window.opener). Körs EFTER varje
+	// innerHTML-tilldelning av renderMarkdown-output (branding, hotspot-tooltip,
+	// hotspot-ark) så alla tre renderingsvägar härdas likadant.
+	function _hardenLinks(el) {
+		if (!el) return;
+		var links = el.getElementsByTagName("a");
+		for (var i = 0; i < links.length; i++) { links[i].target = "_blank"; links[i].rel = "noopener noreferrer"; }
+	}
+
 	// --- Flerspråkighet -----------------------------------------------------
 	// Kanoniska språk editorn kan välja bland (kod -> visningsnamn på eget språk).
 	// SAMMA uppsättning som config.LANGUAGES (Python) - håll dem i synk. Turen
@@ -91,8 +103,7 @@
 		var pos = _BR_POS[branding.position] ? branding.position : "bottom-right";
 		el.classList.add("branding-" + size, "branding-" + pos);
 		el.innerHTML = window.renderMarkdown(content);
-		var links = el.getElementsByTagName("a");
-		for (var i = 0; i < links.length; i++) { links[i].target = "_blank"; links[i].rel = "noopener noreferrer"; }
+		_hardenLinks(el);
 		el.hidden = false;
 	};
 
@@ -113,7 +124,7 @@
 		if (text || body) {
 			var span = document.createElement("span");
 			span.className = "hs-md";
-			if (text) span.innerHTML = window.renderMarkdown(text);
+			if (text) { span.innerHTML = window.renderMarkdown(text); _hardenLinks(span); }
 			if (body) {
 				var more = document.createElement("button");
 				more.type = "button";
@@ -185,6 +196,7 @@
 		var fs = document.fullscreenElement || document.webkitFullscreenElement;
 		(fs || document.body).appendChild(_sheet);
 		_sheetBody.innerHTML = window.renderMarkdown(md);
+		_hardenLinks(_sheetBody);
 		_sheetBody.scrollTop = 0;
 		_sheet.hidden = false;
 	};
