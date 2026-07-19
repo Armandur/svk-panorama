@@ -10,6 +10,7 @@ import os
 import sys
 import tempfile
 from pathlib import Path
+from urllib.parse import unquote
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -489,6 +490,9 @@ def test_auth():
     check("safe_next extern -> /editor", _safe_next("//evil.com") == "/editor")
     check("safe_next absolut-url -> /editor", _safe_next("http://evil.com") == "/editor")
     check("safe_next None -> /editor", _safe_next(None) == "/editor")
+    # Backslash normaliseras av browsers till // -> samma open-redirect-skydd krävs.
+    check("safe_next backslash -> /editor", _safe_next("/\\evil.com") == "/editor")
+    check("safe_next url-avkodad backslash -> /editor", _safe_next(unquote("/%5Cevil.com")) == "/editor")
     # Inbjudnings-token (signerad, stateless).
     tok = make_invite_token(42)
     check("invite round-trip", read_invite_token(tok) == 42)

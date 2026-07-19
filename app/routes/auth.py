@@ -15,9 +15,13 @@ router = APIRouter()
 
 def _safe_next(next_url: str | None) -> str:
     """Bara lokala relativa vägar (skydd mot open redirect). Tom/ogiltig -> editorns
-    hemsida (/ är den publika landningssidan, inte inloggningsmålet)."""
-    if next_url and next_url.startswith("/") and not next_url.startswith("//"):
-        return next_url
+    hemsida (/ är den publika landningssidan, inte inloggningsmålet). Browsers
+    normaliserar en ledande /\\ till // (protokoll-relativ extern URL), så backslash
+    behandlas som slash vid kontrollen."""
+    if next_url:
+        normalized = next_url.replace("\\", "/")
+        if normalized.startswith("/") and not normalized.startswith("//"):
+            return next_url
     return "/editor"
 
 
