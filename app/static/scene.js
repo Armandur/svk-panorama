@@ -99,9 +99,11 @@
 		if (rollNum) rollNum.value = v;
 		setDirty(true);
 		// Applicera först när man slutat justera (pannellum måste ladda om scenen
-		// för att sätta roll; att göra det per drag-tick blir hackigt).
+		// för att sätta roll; att göra det per drag-tick blir hackigt). Scenen
+		// dragningen gjordes på fångas HÄR (inte vid fire-tid) - annars applicerar
+		// debouncen mot fel scen om användaren hunnit byta scen under fönstret.
 		if (rollTimer) clearTimeout(rollTimer);
-		rollTimer = setTimeout(applyRoll, 900);
+		rollTimer = setTimeout(function () { applyRoll(cur); }, 900);
 	}
 
 	// resMode: "preview" | "multires" | "full". Multires används bara för scener
@@ -145,14 +147,19 @@
 			resHint.textContent = "Preview är en nedskalad bild (snabbt). Multires använder de genererade tiles-kaklen. Full laddar originalbilden (kan vara stor).";
 		}
 	}
-	// Applicera horizonRoll på aktuell scen (kräver omladdning; behåll vyn).
-	function applyRoll() {
-		const cur = viewer.getScene();
-		const cfg = viewer.getConfig().scenes[cur];
-		if (!cfg) return;
-		cfg.horizonRoll = tour.scenes[cur].horizonRoll || 0;
+	// Applicera horizonRoll på scenen dragningen gjordes på (id, inte nödvändigtvis
+	// den just nu synliga scenen om användaren hunnit byta under debounce-fönstret).
+	// Är den fortfarande aktiv: ladda om för att visa roll:en live. Är den inte
+	// längre aktiv: patcha bara dess liggande pannellum-config (samma objekt
+	// återanvänds vid varje scenbyte) så den inte är stale nästa gång man går dit -
+	// utan att rycka bort den synliga scenen under användaren.
+	function applyRoll(id) {
+		const cfg = viewer.getConfig().scenes[id];
+		if (!cfg || !tour.scenes[id]) return;
+		cfg.horizonRoll = tour.scenes[id].horizonRoll || 0;
+		if (viewer.getScene() !== id) return;
 		applyingRes = true; // hindra res-omladdning i scenechange-hanteraren
-		viewer.loadScene(cur, viewer.getPitch(), viewer.getYaw(), viewer.getHfov());
+		viewer.loadScene(id, viewer.getPitch(), viewer.getYaw(), viewer.getHfov());
 	}
 	function updateTitleLabel(id) {
 		if (sceneTitleLabel) sceneTitleLabel.textContent = resolveDefault(tour.scenes[id] && tour.scenes[id].title);
