@@ -60,6 +60,31 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
+## [P3][todo] [svk-panorama] Omdesign stegnavigering: Alt C full-bredd topbar + Alt D städning
+
+BESLUT (2026-07-23): vald riktning = Alt C (flytta stegnav ut ur den smala .planner-side-panelen till en egen full-bredd topbar över hela editorn) + Alt D:s städning (ta bort hamburgare/stepper-dubbleringen). Underlag: backlog-doc 'Stegnavigering - UX-underlag' (01KY7WPE, HTML med renderade mockups bifogad) + docs/ux/stegnavigering.md/.html i repot.
+
+Bakgrund: nuvarande horisontella stepper klämd i den fasta 21rem-panelen skaver strukturellt (radbrott beror på variabel stegnamnslängd; ~52px överflöde på steg 2). Se rapporten.
+
+## Acceptanskriterier
+- [ ] Stegnavigeringen (steg + pilar + ev. Helskärm) ligger i en egen rad som spänner HELA editor-bredden, inte i .planner-side
+- [ ] Alla steg visas med fulla etiketter samtidigt, ingen klippning/radbrytning oavsett stegnamnslängd (inkl. Översätt-steget)
+- [ ] Aktivt steg tydligt markerat; nåbara steg klickbara; inaktiverade dämpade
+- [ ] Samspelar korrekt med lås-banderollen (.editor-lock-banner) - staplad eller kombinerad, ingen z-index/höjd-krock; fullscreen-layouten (100vh) intakt
+- [ ] Hamburgaren trimmad till Huvudmeny + Versionshistorik (steg-dubbleringen borttagen)
+- [ ] Mobil (<768px) oförändrad (hamburgaren bär stegen)
+- [ ] Panelen får tillbaka höjden (~83px) som topnav-raden åt
+- [ ] Verifierad i browser vid desktop (1280/1440) OCH mobil (390), inga layoutbuggar; testa alla steg inkl. en flerspråkig tur (Översätt aktivt)
+
+## Öppna delbeslut (se rapportens avsnitt 6)
+- topbar staplad ovanpå lås-banderollen vs kombinerad rad; fixed vs normalt flöde.
+
+- ID: `01KY7WQMYRQV2Z10DN56YREDWN`
+- Type: improvement
+- Actor: ai:ux-review
+
+---
+
 ## [P3][todo] [svk-panorama] Re-exportera legacyturerna i full upplösning från .afphoto + tila (multires)
 
 Legacyturerna (~13 gamla produktionsturer: js/app.js + <xx>/*.html, EJ migrerade till editorn) använder nedskalade enkel-bild-equirektangulära panoraman (fanns ingen tiling när de byggdes -> full storlek var för tung att servera som EN bild). Nu när editorn kör multires/tiling (pannellum-multires via Docker) kan full upplösning serveras effektivt (zoombart, skarpt).
