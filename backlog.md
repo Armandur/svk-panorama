@@ -389,7 +389,7 @@ De 12 importerade legacy-turernas cross-tour-hotspots (`type:scene` + `URL`, ing
 
 ---
 
-## [P4][todo] [svk-panorama] Gallra jobqueue-registret (done/error-jobb växer obundet i minnet)
+## [P4][done] [svk-panorama] Gallra jobqueue-registret (done/error-jobb växer obundet i minnet)
 
 Funnen under TASK-376. jobqueue._registry (app/services/jobqueue.py) tar ALDRIG bort done/error-poster - det växer obundet för processens livstid (varje scen-tiling-jobb, export, backup, någonsin). /admin/jobs-vyn visar bara senaste ~20 klara klient-side, men underliggande dict behåller allt i minnet -> långsam minnesläcka på en långkörande instans.
 
@@ -403,7 +403,7 @@ Prio: P4 (ingen akut påverkan förrän processen kört länge med många jobb; 
 
 ---
 
-## [P4][todo] [svk-panorama] joblog.append återskapar en raderad projektmapp (mkdir parents=True)
+## [P4][done] [svk-panorama] joblog.append återskapar en raderad projektmapp (mkdir parents=True)
 
 Funnen under TASK-27-implementationen (av Sonnet-implementeraren, out-of-scope för den tasken, PRE-EXISTING - inte en regression).
 
