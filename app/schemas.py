@@ -5,8 +5,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class ScenePosition(BaseModel):
-    x: int
-    y: int
+    # Naturliga kartpixlar - får vara sub-pixel (drag ger bråktal, och prickarna
+    # renderas ändå i procent av naturlig storlek). int-krav avvisade annars både
+    # nya drag OCH befintliga map.json med bråkdels-positioner (int_from_float).
+    x: float
+    y: float
 
 
 class MapScene(BaseModel):

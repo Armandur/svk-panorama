@@ -1103,8 +1103,19 @@ def test_settings_int():
         settings._cache.pop(key, None)
 
 
+def test_map_payload_position():
+    from app.schemas import MapPayload
+    # Kartpositioner får vara bråktal (drag ger sub-pixel; äldre map.json kan ha bråktal).
+    # int-schema avvisade dem (int_from_float) och blockerade HELA map-sparningen.
+    p = MapPayload(scenes=[{"id": "1", "position": {"x": 3460.3, "y": 590.8}}], edges=[])
+    check("map-position bråktal accepteras", p.scenes[0].position.x == 3460.3)
+    q = MapPayload(scenes=[{"id": "2", "position": {"x": 100, "y": 200}}], edges=[])
+    check("map-position heltal accepteras", q.scenes[0].position.y == 200.0)
+
+
 def main() -> int:
     for fn in (
+        test_map_payload_position,
         test_expected_tile_count,
         test_apply_multires,
         test_relativize,
