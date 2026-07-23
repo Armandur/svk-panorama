@@ -1040,6 +1040,9 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 		display: inline-flex; align-items: center; gap: 0.4rem; height: 2.4rem; padding: 0 0.35rem;
 		font-size: 0.88rem; text-decoration: none; white-space: nowrap; color: var(--pico-color);
 	}
+	/* Kompakt: bara aktivt steg visar etikett (hela flödet ryms i den smala sidopanelen);
+	   övriga är numrerade prickar med title-tooltip. */
+	.step-item:not(.current) .step-label { display: none; }
 	.step-dot {
 		display: inline-flex; align-items: center; justify-content: center; flex: none;
 		width: 1.5rem; height: 1.5rem; border-radius: 50%; font-size: 0.78rem; font-weight: 600;

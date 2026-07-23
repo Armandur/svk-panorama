@@ -46,7 +46,7 @@
 		{% if s.key == current_step %}
 		<li class="step-item current" aria-current="step"><span><span class="step-dot">{{ loop.index }}</span><span class="step-label">{{ s.title }}</span></span></li>
 		{% elif s.enabled %}
-		<li class="step-item"><a href="{{ s.url }}"><span class="step-dot">{{ loop.index }}</span><span class="step-label">{{ s.title }}</span></a></li>
+		<li class="step-item"><a href="{{ s.url }}" title="{{ s.title }}"><span class="step-dot">{{ loop.index }}</span><span class="step-label">{{ s.title }}</span></a></li>
 		{% else %}
 		<li class="step-item disabled"><span title="{% if s.key == 'plan' %}Kräver scener och en uppladdad kartbild (kartan är valfri för turen){% else %}Ladda upp minst en scen först{% endif %}"><span class="step-dot">{{ loop.index }}</span><span class="step-label">{{ s.title }}</span></span></li>
 		{% endif %}
