@@ -1,0 +1,40 @@
+{% extends "admin_base.html" %}
+{% block title %}Jobb - Admin{% endblock %}
+{% block admin_content %}
+
+<hgroup>
+	<h1>Jobb</h1>
+	<p>Operativ vy över den globala jobbkön (tiling per scen, export, backup) - vad som kör och köar just nu, plus de senaste avslutade. Uppdateras automatiskt.</p>
+</hgroup>
+
+<p id="jobs-empty" class="hint" hidden>Inga jobb just nu.</p>
+
+<article id="jobs-running-section">
+	<h2>Kör <small id="jobs-running-count" class="hint"></small></h2>
+	<table>
+		<thead><tr><th scope="col">Typ</th><th scope="col">Tur</th><th scope="col">Scen</th><th scope="col">Status</th><th scope="col">Startad</th></tr></thead>
+		<tbody id="jobs-running-body"><tr><td colspan="5" class="hint">Laddar...</td></tr></tbody>
+	</table>
+</article>
+
+<article id="jobs-queued-section">
+	<h2>Köade <small id="jobs-queued-count" class="hint"></small></h2>
+	<table>
+		<thead><tr><th scope="col">Typ</th><th scope="col">Tur</th><th scope="col">Scen</th><th scope="col">Status</th><th scope="col">Köad</th></tr></thead>
+		<tbody id="jobs-queued-body"><tr><td colspan="5" class="hint">Laddar...</td></tr></tbody>
+	</table>
+</article>
+
+<article id="jobs-recent-section">
+	<h2>Nyligen klara <small class="hint">(senaste 20)</small></h2>
+	<table>
+		<thead><tr><th scope="col">Typ</th><th scope="col">Tur</th><th scope="col">Scen</th><th scope="col">Status</th><th scope="col">Klar</th></tr></thead>
+		<tbody id="jobs-recent-body"><tr><td colspan="5" class="hint">Laddar...</td></tr></tbody>
+	</table>
+</article>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/admin-jobs.js"></script>
+{% endblock %}

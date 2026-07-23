@@ -4,7 +4,7 @@ from __future__ import annotations
 from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -21,6 +21,7 @@ from app.deps import (
 )
 from app.routes.profile import _process_avatar
 from app.routes.teams import _ORPHAN_MSG, _would_orphan_admin
+from app.services import jobqueue
 from app.services import settings as site_settings
 from app.services import storage
 from app.services.project_files import validate_image_magic, validate_size
@@ -233,6 +234,26 @@ def storage_refresh(
     """Töm diskanvändnings-cachen -> nästa laddning räknar om från disk."""
     storage.invalidate()
     return RedirectResponse(url="/admin/storage?msg=Räknade+om+diskanvändningen", status_code=302)
+
+
+@router.get("/admin/jobs", response_class=HTMLResponse)
+def jobs_page(
+    request: Request,
+    admin: User = Depends(require_admin),
+) -> HTMLResponse:
+    """Samlad operativ vy över den globala jobbkön (tiling/export/backup): vad
+    som kör/köar just nu + senaste klara. Data hämtas av admin-jobs.js via
+    /admin/jobs.json (pollning) - sidan renderar bara skelettet."""
+    return templates.TemplateResponse(request, "admin_jobs.html", {"active": "jobs"})
+
+
+@router.get("/admin/jobs.json")
+def jobs_json(admin: User = Depends(require_admin)) -> JSONResponse:
+    """Ögonblicksbild av jobqueue-registret som lista (id inbäddat per post,
+    lättare för klienten att sortera/rendera än dict-of-dicts). Ren läsning -
+    rör aldrig jobqueue:s tillstånd."""
+    jobs = [{"id": job_id, **info} for job_id, info in jobqueue.all_jobs().items()]
+    return JSONResponse(jobs)
 
 
 @router.get("/admin/teams", response_class=HTMLResponse)
