@@ -60,7 +60,7 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
-## [P3][todo] [svk-panorama] Samlad jobb-status-vy (körande/köade/klara) i UI - Fas 2 (efter jobbkön)
+## [P3][done] [svk-panorama] Samlad jobb-status-vy (körande/köade/klara) i UI - Fas 2 (efter jobbkön)
 
 Fas 2, BEROR PÅ backend-jobbkön (TASK-27). När alla tunga jobb går genom en global kö med ett centralt jobb-register (job_id -> {kind, slug, status: queued|running|done|error}) kan vi visa en SAMLAD vy över alla körande/köade/klara jobb på ett ställe - i stället för dagens per-tur, per-tjänst-status utspridd.
 
@@ -385,6 +385,20 @@ De 12 importerade legacy-turernas cross-tour-hotspots (`type:scene` + `URL`, ing
 
 - ID: `01KXV9CVT829AS30BVRFD3P47X`
 - Type: chore
+- Actor: ai:claude-opus-4-8
+
+---
+
+## [P4][todo] [svk-panorama] Gallra jobqueue-registret (done/error-jobb växer obundet i minnet)
+
+Funnen under TASK-376. jobqueue._registry (app/services/jobqueue.py) tar ALDRIG bort done/error-poster - det växer obundet för processens livstid (varje scen-tiling-jobb, export, backup, någonsin). /admin/jobs-vyn visar bara senaste ~20 klara klient-side, men underliggande dict behåller allt i minnet -> långsam minnesläcka på en långkörande instans.
+
+Fix-riktning: kapa/gallra registret - t.ex. droppa done/error-poster när de blir äldre än 'nyligen' (ts-baserat) eller när dicten överstiger N poster (behåll de N senaste). Görs i jobqueue (t.ex. i _worker efter markering, eller en periodisk trim). Bevara queued/running orörda.
+Klart nar: registret slutar växa obundet (döda poster gallras); /admin/jobs opåverkad för nyliga jobb.
+Prio: P4 (ingen akut påverkan förrän processen kört länge med många jobb; single-instans).
+
+- ID: `01KY8MSPJB8S86Z6AJ6H53KD4B`
+- Type: bug
 - Actor: ai:claude-opus-4-8
 
 ---
