@@ -60,6 +60,27 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
+## [P3][todo] [svk-panorama] Re-exportera legacyturerna i full upplösning från .afphoto + tila (multires)
+
+Legacyturerna (~13 gamla produktionsturer: js/app.js + <xx>/*.html, EJ migrerade till editorn) använder nedskalade enkel-bild-equirektangulära panoraman (fanns ingen tiling när de byggdes -> full storlek var för tung att servera som EN bild). Nu när editorn kör multires/tiling (pannellum-multires via Docker) kan full upplösning serveras effektivt (zoombart, skarpt).
+
+Mål: re-exportera panoramana i FULL bredd/storlek ur Affinity-.afphoto-källfilerna och köra dem genom tiling-skriptet -> skarpa, zoombara multires-panoraman i de gamla produktionsturerna.
+
+## Öppna beslut FÖRE detta är actionable
+1. **Migreras legacyturerna in i editorn** (som redan gör tiling + multires-viewer + full-res-uppladdning) eller ska tiling bolt:as på den gamla legacy-viewern (js/app.js) manuellt? Editor-migrering är sannolikt LÄGST insats OCH pensionerar legacy-koden på köpet.
+2. **.afphoto-export:** Affinity Photo är en desktop-GUI-app - finns .afphoto-filerna nåbara på VM:en, och kan de batch-exporteras HEADLESS? Troligen ett MANUELLT steg (Rasmus exporterar equirect JPEG/TIFF ur Affinity), sedan tar Claude tiling + wiring. Claude kan inte köra Affinity headless.
+3. Omfång: ~13 turer x N scener. Per tur: export (manuellt) -> tila -> koppla in multires.
+
+Klart nar: legacyturerna serverar full-upplösta multires-panoraman i stället för nedskalade enkel-bilder.
+
+Prioritet: kvalitetslyft för den FAKTISKA live-produkten (de gamla turerna är det som faktiskt visas), men medelstort jobb med beroenden -> P3 tills scope/afphoto-åtkomst är klarlagt.
+
+- ID: `01KY6VJJRYBMEAECW94272G4YT`
+- Type: improvement
+- Actor: human:rasmus
+
+---
+
 ## [P3][done] [svk-panorama] Byt tema-previewns accent-väljare till Coloris (från input type=color)
 
 Tema-preview (och theme-preview-skillens gallery.html) använder native <input type=color>. Byt till Coloris - lätt färgväljare svk-panorama redan vendorar (app/static/vendor/coloris/), används för dotColor/currentColor på preview-steget. Enhetligt färgval i hela appen + snyggare picker (swatch, hex-fält).
