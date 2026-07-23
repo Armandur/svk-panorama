@@ -3,9 +3,13 @@
  *
  * Vid sidladdning checkas turen ut. Håller du låset -> du redigerar (heartbeat
  * håller det färskt, "Checka in"-knapp). Håller någon ANNAN det -> läsläge med
- * banner + "Tvinga incheck" (funkar bara för team-admin/super-admin, servern
+ * en pill + "Tvinga incheck" (funkar bara för team-admin/super-admin, servern
  * avgör). Servern är garantin (skriv-endpoints ger 409); den här ger UX + släpper
  * låset vid unload. Solo-turer (locking=false) rör vi inte.
+ *
+ * Renderas in i #editor-lock-slot (en tom slot i _step_nav.html/.editor-topbar) -
+ * INTE en egen fixed banner. Baren finns alltid på fullscreen-sidorna -> dess
+ * höjd (--topbar-h) mäts alltid, inte bara när sloten har innehåll.
  */
 (function () {
 	"use strict";
@@ -16,7 +20,7 @@
 	var base = "/projects/" + encodeURIComponent(slug);
 	var HEARTBEAT_MS = 60000;
 
-	var locking = false, holding = false, warned = false, hbTimer = null, banner = null;
+	var locking = false, holding = false, warned = false, hbTimer = null, lockSlot = null;
 
 	function checkoutPost() {
 		return fetch(base + "/checkout", {
@@ -30,32 +34,33 @@
 		return fetch(base + "/checkin", { method: "POST", body: fd });
 	}
 
-	function ensureBanner() {
-		if (banner) return banner;
-		banner = document.createElement("div");
-		banner.className = "editor-lock-banner";
-		banner.hidden = true;
-		document.body.appendChild(banner);
-		return banner;
+	function lockSlotEl() {
+		if (!lockSlot) lockSlot = document.getElementById("editor-lock-slot");
+		return lockSlot;
 	}
-	function renderBanner(html, cls) {
-		var b = ensureBanner();
-		b.className = "editor-lock-banner " + cls;
-		b.innerHTML = html;
-		b.hidden = false;
-		return b;
+	function renderPill(html, cls) {
+		var el = lockSlotEl();
+		if (!el) return null;
+		el.className = "editor-topbar-lock lock-pill " + cls;
+		el.innerHTML = html;
+		reserveSpace();
+		return el;
+	}
+	function clearPill() {
+		var el = lockSlotEl();
+		if (!el) return;
+		el.className = "editor-topbar-lock";
+		el.innerHTML = "";
+		reserveSpace();
 	}
 
-	// Baren är fixed (top:0) -> reservera dess höjd så den inte täcker stegens verktygsfält.
-	// Höjden mäts (text+knapp kan radbrytas på mobil); plan-fullscreen krymps via CSS på main.
+	// Topbaren finns ALLTID på fullscreen-sidorna (inte bara vid lås) -> mät dess
+	// höjd alltid, inte gate:at på om sloten har innehåll. Höjden mäts på nytt vid
+	// lås-render (pillen kan radbryta på mobil) och vid fönster-resize.
 	function reserveSpace() {
-		if (banner && !banner.hidden) {
-			document.documentElement.style.setProperty("--lock-banner-h", banner.offsetHeight + "px");
-			document.body.classList.add("has-lock-banner");
-		} else {
-			document.body.classList.remove("has-lock-banner");
-			document.documentElement.style.removeProperty("--lock-banner-h");
-		}
+		var bar = document.querySelector(".editor-topbar");
+		if (!bar) return;
+		document.documentElement.style.setProperty("--topbar-h", bar.offsetHeight + "px");
 	}
 
 	// Släpp låset + gå till /editor. holding=false FÖRE navigering så pagehide-handlern
@@ -100,7 +105,8 @@
 
 	function showHolding() {
 		document.body.classList.remove("editor-locked");
-		var b = renderBanner('<span>Du redigerar den här turen.</span>', "lock-mine");
+		var b = renderPill('<span>Du redigerar den här turen.</span>', "lock-mine");
+		if (!b) return;
 		var btn = document.createElement("button");
 		btn.type = "button"; btn.className = "lock-btn"; btn.textContent = "Checka in";
 		btn.addEventListener("click", checkinFlow);
@@ -110,8 +116,9 @@
 	function showReadonly(holder) {
 		document.body.classList.add("editor-locked");
 		var who = holder && holder.name ? holder.name : "någon annan";
-		var b = renderBanner('<span>🔒 Utcheckad av ' + (window.escapeHtml ? escapeHtml(who) : who) +
+		var b = renderPill('<span>🔒 Utcheckad av ' + (window.escapeHtml ? escapeHtml(who) : who) +
 			' – du kan bara titta.</span>', "lock-other");
+		if (!b) return;
 		var btn = document.createElement("button");
 		btn.type = "button"; btn.className = "lock-btn"; btn.textContent = "Tvinga incheck";
 		btn.addEventListener("click", forceCheckin);
@@ -125,7 +132,7 @@
 		// det som "ingen låsning" (annars kan ett transient heartbeat-fel kortvarigt
 		// låsa upp UI:t för en användare som egentligen är i läsläge).
 		if (!res) return;
-		if (res.locking === false) { locking = false; if (banner) banner.hidden = true; reserveSpace(); document.body.classList.remove("editor-locked"); return; }
+		if (res.locking === false) { locking = false; clearPill(); document.body.classList.remove("editor-locked"); return; }
 		locking = true;
 		if (res.acquired) {
 			holding = true; warned = false; showHolding();
@@ -152,6 +159,11 @@
 	}
 
 	function heartbeat() { checkoutPost().then(apply); }
+
+	// Mät baren DIREKT (inte bara efter att checkout-svaret kommit) - den finns
+	// alltid på fullscreen-sidorna, så main.plan-app ska aldrig hamna under en
+	// omätt (--topbar-h: 0) bar även om checkout-anropet är långsamt/misslyckas.
+	reserveSpace();
 
 	// Start: checka ut, sätt igång heartbeat om turen låses.
 	checkoutPost().then(function (res) {

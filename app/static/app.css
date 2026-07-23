@@ -114,27 +114,43 @@
 .member-switch { display: flex; align-items: center; gap: .5rem; padding: .4rem .8rem; margin: 0; cursor: pointer; }
 .member-switch input { margin: 0; }
 
-/* --- Redigeringslås (check-out/check-in) ------------------------------ */
-.editor-lock-banner {
+/* --- Redigerings-topbar (stegnav + lås-pill i EN full-bredd bar) ------- */
+.editor-topbar {
+	display: flex; align-items: center; flex-wrap: wrap; gap: .3rem .6rem;
+	padding: .4rem .8rem;
+	background: var(--pico-background-color);
+	border-bottom: 1px solid var(--pico-muted-border-color);
+}
+/* Fullscreen-stegen (plan/scenes/preview/translate) döljer site-header -> baren
+   fixeras överst i stället. Upload ligger kvar i normalt dokumentflöde under
+   site-header. */
+body.plan-fullscreen .editor-topbar {
 	position: fixed; top: 0; left: 0; right: 0; z-index: 2000;
-	display: flex; align-items: center; justify-content: center; gap: 1rem;
-	padding: .35rem .8rem; font-size: .85rem; color: #fff;
 }
-/* Reservera barens höjd (JS sätter --lock-banner-h) så den inte täcker verktygsfältet. */
-body.has-lock-banner { padding-top: var(--lock-banner-h, 0); }
-/* Plan är fullscreen (main.plan-app = 100vh, overflow hidden) -> padding funkar inte, krymp i stället. */
-body.plan-fullscreen.has-lock-banner { padding-top: 0; }
-body.plan-fullscreen.has-lock-banner main.plan-app {
-	margin-top: var(--lock-banner-h, 0); height: calc(100vh - var(--lock-banner-h, 0px));
+/* Baren finns ALLTID på fullscreen-sidorna (inte bara vid lås) -> reservera dess
+   höjd alltid. JS mäter offsetHeight -> --topbar-h (radbryter t.ex. lås-pillen på
+   smala skärmar, höjden varierar). */
+body.plan-fullscreen main.plan-app {
+	margin-top: var(--topbar-h, 0); height: calc(100vh - var(--topbar-h, 0px));
 }
-.editor-lock-banner.lock-mine { background: rgba(47, 111, 79, .92); }      /* du redigerar */
-.editor-lock-banner.lock-other { background: rgba(181, 52, 47, .95); font-weight: 600; }  /* låst av annan */
-.editor-lock-banner .lock-btn {
-	margin: 0; width: auto; padding: .1rem .7rem; font-size: .8rem;
+/* flex: 0 1 auto + min-width: 0 (inte "none") -> pillen FÅR krympa/radbryta sin
+   text på smala skärmar i stället för att tvinga fram horisontell overflow
+   (den längre "Utcheckad av X"-texten ryms annars inte vid 390px). */
+.editor-topbar-lock { margin-left: auto; flex: 0 1 auto; min-width: 0; max-width: 100%; }
+.editor-topbar-lock:empty { display: none; }
+.lock-pill {
+	display: flex; align-items: center; flex-wrap: wrap; gap: .3rem .5rem;
+	max-width: 100%; box-sizing: border-box;
+	padding: .3rem .7rem; border-radius: 1rem; font-size: .8rem; color: #fff;
+}
+.lock-pill.lock-mine { background: rgba(47, 111, 79, .92); }      /* du redigerar */
+.lock-pill.lock-other { background: rgba(181, 52, 47, .95); font-weight: 600; }  /* låst av annan */
+.lock-pill .lock-btn {
+	margin: 0; width: auto; padding: .1rem .6rem; font-size: .75rem;
 	background: rgba(255, 255, 255, .18); color: #fff; border: 1px solid rgba(255, 255, 255, .5);
 	border-radius: 1rem; cursor: pointer;
 }
-.editor-lock-banner .lock-btn:hover { background: rgba(255, 255, 255, .3); }
+.lock-pill .lock-btn:hover { background: rgba(255, 255, 255, .3); }
 /* Läsläge: tona ner + spärra formulär-spar (servern ger 409 som riktig garanti). */
 body.editor-locked button[type="submit"] { opacity: .5; pointer-events: none; }
 
@@ -334,11 +350,13 @@ main.plan-app {
 
 .plan-topnav {
 	display: flex;
+	flex: 1 1 auto;
+	min-width: 0;
 	flex-wrap: wrap;
 	align-items: center;
 	justify-content: flex-start; /* Pico ger nav space-between - packa vänster i stället */
 	gap: 0.4rem;
-	margin-bottom: 0.75rem;
+	margin: 0;
 }
 .plan-heading { margin-bottom: 1rem; }
 .plan-heading h2 { margin-bottom: 0.1rem; }
@@ -1016,46 +1034,41 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 .step-menu-item.current { font-weight: 700; background: var(--pico-secondary-background); }
 .step-menu-item.disabled { color: var(--pico-muted-color); cursor: not-allowed; }
 .step-menu-home { font-weight: 600; }
-.step-menu-sep { height: 1px; background: var(--pico-muted-border-color); margin: 0.3rem 0.2rem; }
 
-/* Alltid synlig stegindikator (desktop) - orientering utan att öppna hamburgaren.
-   Döljs på mobil (< 768px), där hamburgaren bär stegen. */
-.step-indicator { display: none; }
-@media (min-width: 768px) {
-	.step-indicator {
-		display: flex; align-items: center; margin: 0; padding: 0; list-style: none;
-		flex: 0 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden; height: 2.4rem;
-		scrollbar-width: none; /* Firefox: dölj skrollbaren så den inte äter av höjden */
-	}
-	/* WebKit/Chromium: samma - annars klipper den horisontella skrollbaren toppen av
-	   cirklarna. Fortfarande skrollbar (trackpad/hjul) + aktivt steg skrollas in i vy. */
-	.step-indicator::-webkit-scrollbar { display: none; }
-	/* padding: 0 nollar Picos li-padding (16px topp/botten) - annars blir li:n högre
-	   än indikatorns 2.4rem-box och overflow-x:auto (som gör overflow-y till auto) ger
-	   en vertikal skrollbar. */
-	.step-item { display: flex; align-items: center; flex: none; padding: 0; }
-	/* Kopplingslinje mellan stegen. */
-	.step-item:not(:last-child)::after { content: ""; width: 0.9rem; height: 1px; flex: none; background: var(--pico-muted-border-color); }
-	.step-item > a, .step-item > span {
-		display: inline-flex; align-items: center; gap: 0.4rem; height: 2.4rem; padding: 0 0.35rem;
-		font-size: 0.88rem; text-decoration: none; white-space: nowrap; color: var(--pico-color);
-	}
-	/* Kompakt: bara aktivt steg visar etikett (hela flödet ryms i den smala sidopanelen);
-	   övriga är numrerade prickar med title-tooltip. */
-	.step-item:not(.current) .step-label { display: none; }
-	.step-dot {
-		display: inline-flex; align-items: center; justify-content: center; flex: none;
-		width: 1.5rem; height: 1.5rem; border-radius: 50%; font-size: 0.78rem; font-weight: 600;
-		border: 1px solid var(--pico-primary); color: var(--pico-primary); background: transparent;
-	}
-	.step-item > a:hover { color: var(--pico-primary); }
-	.step-item > a:hover .step-dot { background: var(--pico-primary); color: var(--pico-primary-inverse); }
-	/* Aktivt steg: fylld accent + fet etikett. */
-	.step-item.current > span { font-weight: 700; color: var(--pico-primary); }
-	.step-item.current .step-dot { background: var(--pico-primary); border-color: var(--pico-primary); color: var(--pico-primary-inverse); }
-	/* Inaktiverat (förutsättning saknas): dämpat. */
-	.step-item.disabled > span { color: var(--pico-muted-color); cursor: not-allowed; }
-	.step-item.disabled .step-dot { border-color: var(--pico-muted-border-color); color: var(--pico-muted-color); }
+/* Alltid synlig stegindikator: var man är + hela flödet, med fulla etiketter -
+   baren är nu full bredd så platsbrist inte längre är ett problem på desktop.
+   Etiketter göms på smal mobil (se media-query nedan); hamburgaren bär då bara
+   Huvudmeny/Versionshistorik, inte stegen (de finns redan här som prickar). */
+.step-indicator {
+	display: flex; align-items: center; margin: 0; padding: 0; list-style: none;
+	flex: 1 1 auto; min-width: 0; flex-wrap: wrap; row-gap: 0.2rem;
+}
+.step-item { display: flex; align-items: center; flex: none; }
+/* Kopplingslinje mellan stegen. */
+.step-item:not(:last-child)::after { content: ""; width: 0.9rem; height: 1px; flex: none; background: var(--pico-muted-border-color); }
+.step-item > a, .step-item > span {
+	display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.35rem;
+	font-size: 0.88rem; text-decoration: none; white-space: nowrap; color: var(--pico-color);
+}
+.step-dot {
+	display: inline-flex; align-items: center; justify-content: center; flex: none;
+	width: 1.5rem; height: 1.5rem; border-radius: 50%; font-size: 0.78rem; font-weight: 600;
+	border: 1px solid var(--pico-primary); color: var(--pico-primary); background: transparent;
+}
+.step-item > a:hover { color: var(--pico-primary); }
+.step-item > a:hover .step-dot { background: var(--pico-primary); color: var(--pico-primary-inverse); }
+/* Aktivt steg: fylld accent + fet etikett. */
+.step-item.current > span { font-weight: 700; color: var(--pico-primary); }
+.step-item.current .step-dot { background: var(--pico-primary); border-color: var(--pico-primary); color: var(--pico-primary-inverse); }
+/* Inaktiverat (förutsättning saknas): dämpat. */
+.step-item.disabled > span { color: var(--pico-muted-color); cursor: not-allowed; }
+.step-item.disabled .step-dot { border-color: var(--pico-muted-border-color); color: var(--pico-muted-color); }
+/* Smal mobil: platsbrist -> visa bara prickar+kopplingslinjer, göm etiketterna.
+   Hamburgaren dubblerar då INTE stegen (borttaget ur menyn) - steppern bär dem
+   själv, bara kompaktare. */
+@media (max-width: 479.98px) {
+	.step-item:not(:last-child)::after { width: 0.5rem; }
+	.step-item .step-label { display: none; }
 }
 
 /* Byt slug: diskret utfällbar sektion på uppladdningssidan. */

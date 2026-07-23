@@ -1,7 +1,10 @@
-{#- Stegnavigering: hamburgermeny (Huvudmeny + steg) + fram/bak-pilar.
+{#- Full-bredd redigerings-topbar: stegnav (hamburgermeny med Huvudmeny/
+    Versionshistorik + alltid synlig stegindikator med fulla etiketter) +
+    fram/bak-pilar + en tom lås-slot (#editor-lock-slot) som editor-lock.js
+    fyller med en kompakt lås-pill (mine/other) för team-turer.
     Kräver i context: project, has_map_image, current_step, has_scenes.
     is_multilingual (valfri, default falsy) lägger till Översätt-steget.
-    Steg gate:as på förutsättningar. Renderar hela topnav-raden. -#}
+    Steg gate:as på förutsättningar. Renderar hela .editor-topbar. -#}
 {% set _slug = project.slug %}
 {% set _steps = [
     {'key': 'upload', 'title': 'Uppladdning', 'url': '/projects/' ~ _slug, 'enabled': true},
@@ -21,40 +24,35 @@
 {% set nav = namespace(prev=none, next=none) %}
 {% for s in _steps %}{% if loop.index0 < ns.idx and s.enabled %}{% set nav.prev = s %}{% endif %}{% endfor %}
 {% for s in _steps %}{% if loop.index0 > ns.idx and s.enabled and nav.next is none %}{% set nav.next = s %}{% endif %}{% endfor %}
-<nav class="plan-topnav" aria-label="Arbetssteg">
-	<details class="step-menu">
-		<summary class="step-menu-btn" title="Meny" aria-label="Meny">&#9776;</summary>
-		<div class="step-menu-list">
-			<a href="/editor" class="step-menu-item step-menu-home">Huvudmeny</a>
-			<a href="/projects/{{ _slug }}/history" class="step-menu-item">Versionshistorik</a>
-			<div class="step-menu-sep"></div>
+<div class="editor-topbar">
+	<nav class="plan-topnav" aria-label="Arbetssteg">
+		<details class="step-menu">
+			<summary class="step-menu-btn" title="Meny" aria-label="Meny">&#9776;</summary>
+			<div class="step-menu-list">
+				<a href="/editor" class="step-menu-item step-menu-home">Huvudmeny</a>
+				<a href="/projects/{{ _slug }}/history" class="step-menu-item">Versionshistorik</a>
+			</div>
+		</details>
+		{#- Alltid synlig stegindikator: var man är + hela flödet, med fulla etiketter
+		    (baren är nu full bredd - ingen platsbrist). Etiketter göms bara på smal
+		    mobil (se CSS), då bär den bara prickar+linjer. Hamburgaren ovan bär bara
+		    Huvudmeny/Versionshistorik - stegen finns redan här, ingen duplicering. -#}
+		<ol class="step-indicator" aria-label="Steg">
 			{% for s in _steps %}
 			{% if s.key == current_step %}
-			<span class="step-menu-item current" aria-current="step">{{ s.title }}</span>
+			<li class="step-item current" aria-current="step"><span><span class="step-dot">{{ loop.index }}</span><span class="step-label">{{ s.title }}</span></span></li>
 			{% elif s.enabled %}
-			<a href="{{ s.url }}" class="step-menu-item">{{ s.title }}</a>
+			<li class="step-item"><a href="{{ s.url }}" title="{{ s.title }}"><span class="step-dot">{{ loop.index }}</span><span class="step-label">{{ s.title }}</span></a></li>
 			{% else %}
-			<span class="step-menu-item disabled" title="{% if s.key == 'plan' %}Kräver scener och en uppladdad kartbild (kartan är valfri för turen){% else %}Ladda upp minst en scen först{% endif %}">{{ s.title }}</span>
+			<li class="step-item disabled"><span title="{% if s.key == 'plan' %}Kräver scener och en uppladdad kartbild (kartan är valfri för turen){% else %}Ladda upp minst en scen först{% endif %}"><span class="step-dot">{{ loop.index }}</span><span class="step-label">{{ s.title }}</span></span></li>
 			{% endif %}
 			{% endfor %}
-		</div>
-	</details>
-	{#- Alltid synlig stegindikator (desktop): var man är + hela flödet. Hamburgaren
-	    ovan bär Huvudmeny/Versionshistorik + samma steg för mobil (steppern döljs där). -#}
-	<ol class="step-indicator" aria-label="Steg">
-		{% for s in _steps %}
-		{% if s.key == current_step %}
-		<li class="step-item current" aria-current="step"><span><span class="step-dot">{{ loop.index }}</span><span class="step-label">{{ s.title }}</span></span></li>
-		{% elif s.enabled %}
-		<li class="step-item"><a href="{{ s.url }}" title="{{ s.title }}"><span class="step-dot">{{ loop.index }}</span><span class="step-label">{{ s.title }}</span></a></li>
-		{% else %}
-		<li class="step-item disabled"><span title="{% if s.key == 'plan' %}Kräver scener och en uppladdad kartbild (kartan är valfri för turen){% else %}Ladda upp minst en scen först{% endif %}"><span class="step-dot">{{ loop.index }}</span><span class="step-label">{{ s.title }}</span></span></li>
+		</ol>
+		{% if current_step != 'upload' %}
+		{% if nav.prev %}<a href="{{ nav.prev.url }}" class="step-arrow" role="button" title="Föregående: {{ nav.prev.title }}" aria-label="Föregående: {{ nav.prev.title }}">&larr;</a>{% endif %}
+		{% if nav.next %}<a href="{{ nav.next.url }}" class="step-arrow" role="button" title="Nästa: {{ nav.next.title }}" aria-label="Nästa: {{ nav.next.title }}">&rarr;</a>{% endif %}
 		{% endif %}
-		{% endfor %}
-	</ol>
-	{% if current_step != 'upload' %}
-	{% if nav.prev %}<a href="{{ nav.prev.url }}" class="step-arrow" role="button" title="Föregående: {{ nav.prev.title }}" aria-label="Föregående: {{ nav.prev.title }}">&larr;</a>{% endif %}
-	{% if nav.next %}<a href="{{ nav.next.url }}" class="step-arrow" role="button" title="Nästa: {{ nav.next.title }}" aria-label="Nästa: {{ nav.next.title }}">&rarr;</a>{% endif %}
-	{% endif %}
-	{% if current_step == 'preview' %}<a href="/projects/{{ _slug }}/view" class="step-action" role="button" target="_blank" rel="noopener" title="Öppna turen i helskärm">Helskärm</a>{% endif %}
-</nav>
+		{% if current_step == 'preview' %}<a href="/projects/{{ _slug }}/view" class="step-action" role="button" target="_blank" rel="noopener" title="Öppna turen i helskärm">Helskärm</a>{% endif %}
+	</nav>
+	<div class="editor-topbar-lock" id="editor-lock-slot"></div>
+</div>

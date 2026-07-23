@@ -6,6 +6,8 @@
 {% block content %}
 
 {% set has_scenes = (tour.scenes | length) > 0 %}
+{% set current_step = 'plan' %}
+{% include "_step_nav.html" %}
 {% if not has_map_image %}
 <article class="notice">
 	{% if not has_scenes %}
@@ -16,8 +18,6 @@
 </article>
 {% else %}
 <aside class="planner-side">
-	{% set current_step = 'plan' %}
-	{% include "_step_nav.html" %}
 	<hgroup class="plan-heading">
 		<h2>Placering</h2>
 		<p>{{ project.name }}</p>

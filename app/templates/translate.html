@@ -5,14 +5,14 @@
 {% block main_attrs %} class="plan-app"{% endblock %}
 {% block content %}
 
+{% set current_step = 'translate' %}{% set has_scenes = (tour.scenes | length) > 0 %}
+{% include "_step_nav.html" %}
 {% if not tour.scenes %}
 <article class="notice">
 	<p>Inga scener ännu. <a href="/projects/{{ project.slug }}">Ladda upp bilder</a> först.</p>
 </article>
 {% else %}
 <aside class="planner-side">
-	{% set current_step = 'translate' %}{% set has_scenes = (tour.scenes | length) > 0 %}
-	{% include "_step_nav.html" %}
 	<hgroup class="plan-heading">
 		<h2>Översätt</h2>
 		<p>{{ project.name }}</p>

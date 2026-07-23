@@ -7,9 +7,9 @@
 
 {# Scenhantering funkar utan karta (hotspots + startriktning). Kalibrering och
    minikartan kräver dock kartpositioner -> de gömts när ingen kartbild finns. #}
+{% set current_step = 'scenes' %}{% set has_scenes = (tour.scenes | length) > 0 %}
+{% include "_step_nav.html" %}
 <aside class="planner-side">
-	{% set current_step = 'scenes' %}{% set has_scenes = (tour.scenes | length) > 0 %}
-	{% include "_step_nav.html" %}
 	<hgroup class="plan-heading">
 		<h2>Scenhantering</h2>
 		<p>{{ project.name }}</p>
