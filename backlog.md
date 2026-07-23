@@ -60,7 +60,7 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
-## [P3][todo] [svk-panorama] Omdesign stegnavigering: Alt C full-bredd topbar + Alt D städning
+## [P3][done] [svk-panorama] Omdesign stegnavigering: Alt C full-bredd topbar + Alt D städning
 
 BESLUT (2026-07-23): vald riktning = Alt C (flytta stegnav ut ur den smala .planner-side-panelen till en egen full-bredd topbar över hela editorn) + Alt D:s städning (ta bort hamburgare/stepper-dubbleringen). Underlag: backlog-doc 'Stegnavigering - UX-underlag' (01KY7WPE, HTML med renderade mockups bifogad) + docs/ux/stegnavigering.md/.html i repot.
 
