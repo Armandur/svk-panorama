@@ -3,7 +3,10 @@
 
 :root { font-size: 100%; }
 
-.site-header nav { padding-block: 0.5rem; }
+/* align-items: flex-start så brand-länken stannar högst upp när .nav-right
+   radbryter till flera rader på smal mobil, i stället för att centreras
+   in bland de omslagna knapparna. */
+.site-header nav { padding-block: 0.5rem; align-items: flex-start; }
 
 .guide-text {
 	white-space: pre-wrap;
@@ -179,7 +182,11 @@ body.editor-locked button[type="submit"] { opacity: .5; pointer-events: none; }
 .ws-empty { color: var(--pico-muted-color); padding: 1.5rem 0; text-align: center; }
 .ws-hidden { display: none !important; }  /* slår .tour-card { display: flex } (samma specificitet, senare i filen) */
 @media (max-width: 720px) {
-	.editor-layout { flex-direction: column; }
+	/* align-items: flex-start styr normalt korsaxeln (vertikalt) i radläge, men i
+	   kolumnläge blir det horisontellt -> .editor-main krymper till innehållets
+	   bredd (t.ex. den breda tabellen) i stället för att sträckas till full
+	   bredd, vilket blåser ut hela sidan. Sträck ut i kolumnläge. */
+	.editor-layout { flex-direction: column; align-items: stretch; }
 	.editor-side { width: 100%; }
 	.ws-tabs { flex-direction: row; flex-wrap: wrap; position: static; }
 	.ws-tab { width: auto; }
@@ -197,6 +204,9 @@ body.editor-locked button[type="submit"] { opacity: .5; pointer-events: none; }
 
 #projects-views[data-view="table"] .tour-cards { display: none; }
 #projects-views[data-view="cards"] .projects-table { display: none; }
+/* Tabellen ryms inte på smal mobil (flera kolumner) - låt den skrolla
+   horisontellt inom sig själv i stället för att blåsa ut hela sidan. */
+#projects-views[data-view="table"] { overflow-x: auto; }
 
 .tour-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
 .tour-card {
@@ -1164,7 +1174,7 @@ details.storage-user table { margin-bottom: 0.6rem; }
 .profile-ok { background: var(--svk-ok); color: #fff; padding: 0.5rem 0.7rem; border-radius: 0.3rem; font-size: 0.9rem; }
 
 /* --- Nav höger: Admin-knapp + kontokort (M365-stil) --- */
-.nav-right { display: flex; align-items: center; gap: 0.6rem; margin: 0; }
+.nav-right { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 0.6rem; margin: 0; }
 .nav-right li { margin: 0; }
 .nav-btn { margin: 0; padding: 0.4rem 0.9rem; font-size: 0.9rem; }
 /* Temaväxel (theme.js): cyklar sol/måne/dator. Ärver nav-textfärgen. */
