@@ -1025,7 +1025,11 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 	.step-indicator {
 		display: flex; align-items: center; margin: 0; padding: 0; list-style: none;
 		flex: 0 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden; height: 2.4rem;
+		scrollbar-width: none; /* Firefox: dölj skrollbaren så den inte äter av höjden */
 	}
+	/* WebKit/Chromium: samma - annars klipper den horisontella skrollbaren toppen av
+	   cirklarna. Fortfarande skrollbar (trackpad/hjul) + aktivt steg skrollas in i vy. */
+	.step-indicator::-webkit-scrollbar { display: none; }
 	/* padding: 0 nollar Picos li-padding (16px topp/botten) - annars blir li:n högre
 	   än indikatorns 2.4rem-box och overflow-x:auto (som gör overflow-y till auto) ger
 	   en vertikal skrollbar. */
