@@ -504,7 +504,12 @@ Slug fortsatt globalt unik (per-team-slug + disk-namespace = Fas 4b).
 - **Redigeringslås (check-out/check-in, `services/checkout.py` + `routes/checkout.py`):** skydd mot
   att två teammedlemmar skriver över varandra. En TEAM-tur checkas ut när man öppnar ett redigerings-
   steg (`editor-lock.js` på upload/plan/scenes/preview/translate) -> andra ser läsläge. Solo-turer
-  (team_id NULL) låses INTE. **Atomär acquire:** EN villkorad `UPDATE ... WHERE checked_out_by IS NULL
+  (team_id NULL) låses INTE. **Lås-status renderas som en inline-pill i den delade
+  `.editor-topbar`** (`#editor-lock-slot`, fylls av editor-lock.js) - INTE en egen banderoll.
+  `_step_nav.html` = den full-bredd topbaren (stegnav + lås-slot): `position:fixed` på
+  fullscreen-stegen (plan/scenes/preview/translate, site-header dold), i normalt flöde på upload
+  (site-header synlig). Barens höjd mäts alltid av JS -> `--topbar-h`, som `main.plan-app` krymps
+  mot (`height: calc(100vh - var(--topbar-h))`). Se `docs/ux/stegnavigering.md` för designbeslutet. **Atomär acquire:** EN villkorad `UPDATE ... WHERE checked_out_by IS NULL
   OR = me OR checked_out_at < stale` + rowcount (aldrig läs-sedan-skriv). **Write-guard**
   (`deps.require_edit_access` på alla muterande edit-routes): en team-turs skrivning tillåts BARA om
   skrivaren HÅLLER ett färskt lås -> annars 409 (inte bara "ingen annan håller"). History-restore är
