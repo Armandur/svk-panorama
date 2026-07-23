@@ -321,6 +321,19 @@ De 12 importerade legacy-turernas cross-tour-hotspots (`type:scene` + `URL`, ing
 
 ---
 
+## [P4][todo] [svk-panorama] Auto-skrolla stegindikatorn till aktivt steg vid sidladdning
+
+När stegindikatorn (_step_nav.html, desktop) är horisontellt skrollbar (smal desktop, 5 steg med Översätt, eller man är på sista steget) kan aktivt steg ligga utanför synfältet efter att en ny sida laddats. Den borde skrolla så aktivt steg syns.
+
+Fix: ~3 rader JS på sidladdning - skrolla indikatorn så .step-item.current syns/centreras: document.querySelector('.step-indicator .step-item.current')?.scrollIntoView({inline:'center', block:'nearest'}) (block:'nearest' så sidan inte skrollar vertikalt). Hemvist: step-menu.js (laddad globalt där stegnav:en finns). Låg risk, liten insats.
+Klart nar: efter navigering till ett steg är det steget synligt i indikatorn utan manuell skroll.
+
+- ID: `01KY6WD50JZ1V63QSDVX89CSKM`
+- Type: improvement
+- Actor: human:rasmus
+
+---
+
 ## [P4][done] [svk-panorama] Plan-tomtext antar att scener redan finns
 
 På projekt utan varken scener eller karta säger plan-tomtexten bara 'ladda upp en karta på uppladdningssteget' och länkar till scenhanteringen som om den vore redo - nämner inte att inga scener är uppladdade. Bara nåbart via direkt URL (normal nav gate:ar /plan tills scener finns), låg påverkan. Skärmdump: tmp/ux-review/desktop-empty-plan.png. Klart nar: tomtexten speglar faktiskt tillstånd (inga scener + ingen karta). Verifiera: öppna /plan på tomt projekt.
