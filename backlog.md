@@ -389,6 +389,24 @@ De 12 importerade legacy-turernas cross-tour-hotspots (`type:scene` + `URL`, ing
 
 ---
 
+## [P4][todo] [svk-panorama] joblog.append återskapar en raderad projektmapp (mkdir parents=True)
+
+Funnen under TASK-27-implementationen (av Sonnet-implementeraren, out-of-scope för den tasken, PRE-EXISTING - inte en regression).
+
+joblog.append() (app/services/joblog.py:33) gör p.parent.mkdir(parents=True, exist_ok=True) innan den skriver _jobs.log. Om ett scen-tiling-jobb (eller export/backup-jobb) FELAR och når joblog.append EFTER att projektet raderats mitt under körningen (t.ex. användaren raderar turen medan tiling pågår), återskapas den tomma projektmappen. Resultat: en spök-projektmapp utan projekt i DB.
+
+Obskyr (kräver radering exakt medan ett jobb felar), men reell. Blir något mer sannolik nu med jobbkön (jobb kan ligga köade och köra långt efter att de startades). Original _run_job hade en 'if _jobs.get(slug) is None: return'-guard men den täckte bara en top-level-kraschväg, inte den här.
+
+Fix-riktning: joblog.append ska inte ÅTERSKAPA projektmappen - skriv bara loggen om projektmappen fortfarande finns (t.ex. exist_ok utan parents=True, eller en tidig 'if not project_dir(slug).exists(): return'-guard). Verifiera: radera en tur medan ett jobb felar (eller simulera: ta bort mappen, anropa joblog.append) -> mappen ska INTE återuppstå.
+
+Prio: P4 (obskyr edge-case, ingen dataförlust - bara en tom spökmapp).
+
+- ID: `01KY88WWQM3NDSFWHMM0V8XG0P`
+- Type: bug
+- Actor: ai:claude-opus-4-8
+
+---
+
 ## [P4][done] [svk-panorama] Horisontell overflow på uppladdningssidan vid 390px (site-header account-meny)
 
 Sonnet-agenten hittade under stegnav-omdesignen (TASK-348) en PRE-EXISTING bugg (orelaterad, inte orsakad av omdesignen): upload-sidan har horisontell sidoverflow vid 390px (scrollWidth 656 vs 390), spårad till .nav-right (kontomenyn) i site-headern. Ej fixad (utanför omdesignens scope). Klart nar: /projects/{slug} (upload) vid 390px har ingen horisontell overflow (scrollWidth <= 390). Verifiera: shot/Playwright vid 390px, mät document.documentElement.scrollWidth.
