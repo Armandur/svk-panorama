@@ -414,6 +414,7 @@ def project_home(
 ) -> HTMLResponse:
     """Steg 1: ladda upp bilder + karta och hantera scenlistan."""
     scenes = list_scenes(slug)
+    tiling_done = project_tile_state(slug).get("status") == "done"
     tour = read_tour(slug)
     token = new_csrf_token()
     # Flytt mellan ytor: dropdown över användarens ytor (bara vid >1), samt status för
@@ -426,6 +427,7 @@ def project_home(
         {
             "project": project,
             "scenes": scenes,
+            "tiling_done": tiling_done,
             "has_map_image": map_image_path(slug).exists(),
             "csrf_token": token,
             "slug_error": request.query_params.get("slug_error"),

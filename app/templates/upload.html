@@ -92,39 +92,43 @@
 </section>
 
 <section>
-	<h2>Uppladdade scener ({{ scenes | length }})</h2>
-	{% if scenes %}
-	<table>
-		<thead>
-			<tr>
-				<th scope="col">Scen</th>
-				<th scope="col">Fil</th>
-				<th scope="col">Storlek</th>
-				<th scope="col"></th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for s in scenes %}
-			<tr data-preview-scene="{{ s.id }}" data-preview-slug="{{ project.slug }}">
-				<td><strong>{{ s.id }}</strong></td>
-				<td><code>{{ s.filename }}</code></td>
-				<td>{{ (s.size / 1048576) | round(1) }} MB</td>
-				<td>
-					<form method="post" action="/projects/{{ project.slug }}/images/{{ s.id }}/delete"
-						data-confirm="Ta bort scen {{ s.id }}? Detta raderar bilden." data-confirm-danger data-confirm-ok="Ta bort">
-						<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-						<button type="submit" class="secondary outline delete-btn">Ta bort</button>
-					</form>
-				</td>
-			</tr>
-			{% endfor %}
-		</tbody>
-	</table>
-	<p class="hint">Valde du fel bild? Ta bort den, eller ladda upp en ny med samma filnamn för att ersätta den. Hovra en rad för att förhandsvisa panoramat.</p>
-	<div class="settings-inline">{% include "_settings_modal.html" %}</div>
-	{% else %}
-	<p><em>Inga scener uppladdade ännu.</em></p>
-	{% endif %}
+	<details class="panel-group" data-group="up-scener"{% if not tiling_done %} open{% endif %}>
+		<summary>Uppladdade scener ({{ scenes | length }})</summary>
+		<div class="panel-group-body">
+			{% if scenes %}
+			<table>
+				<thead>
+					<tr>
+						<th scope="col">Scen</th>
+						<th scope="col">Fil</th>
+						<th scope="col">Storlek</th>
+						<th scope="col"></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for s in scenes %}
+					<tr data-preview-scene="{{ s.id }}" data-preview-slug="{{ project.slug }}">
+						<td><strong>{{ s.id }}</strong></td>
+						<td><code>{{ s.filename }}</code></td>
+						<td>{{ (s.size / 1048576) | round(1) }} MB</td>
+						<td>
+							<form method="post" action="/projects/{{ project.slug }}/images/{{ s.id }}/delete"
+								data-confirm="Ta bort scen {{ s.id }}? Detta raderar bilden." data-confirm-danger data-confirm-ok="Ta bort">
+								<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+								<button type="submit" class="secondary outline delete-btn">Ta bort</button>
+							</form>
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			<p class="hint">Valde du fel bild? Ta bort den, eller ladda upp en ny med samma filnamn för att ersätta den. Hovra en rad för att förhandsvisa panoramat.</p>
+			<div class="settings-inline">{% include "_settings_modal.html" %}</div>
+			{% else %}
+			<p><em>Inga scener uppladdade ännu.</em></p>
+			{% endif %}
+		</div>
+	</details>
 </section>
 
 <section id="tile-section" hidden>
@@ -180,5 +184,20 @@
 <script src="/static/markdown.js"></script>
 <script src="/static/lang-picker.js"></script>
 <script src="/static/upload-lang.js"></script>
+<script>
+	// Hopfällbara panelgrupper: kom ihåg öppet/stängt per grupp (localStorage).
+	// Mallens open-attribut är default; sparat val vinner över det.
+	document.querySelectorAll(".panel-group[data-group]").forEach(function (d) {
+		var key = "pv-group:" + d.dataset.group;
+		try {
+			var saved = localStorage.getItem(key);
+			if (saved === "open") d.open = true;
+			else if (saved === "closed") d.open = false;
+		} catch (e) { /* privatläge */ }
+		d.addEventListener("toggle", function () {
+			try { localStorage.setItem(key, d.open ? "open" : "closed"); } catch (e) { /* ignore */ }
+		});
+	});
+</script>
 <script src="/static/editor-lock.js"></script>
 {% endblock %}
