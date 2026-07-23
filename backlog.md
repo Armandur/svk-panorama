@@ -321,7 +321,7 @@ De 12 importerade legacy-turernas cross-tour-hotspots (`type:scene` + `URL`, ing
 
 ---
 
-## [P4][todo] [svk-panorama] Auto-skrolla stegindikatorn till aktivt steg vid sidladdning
+## [P4][done] [svk-panorama] Auto-skrolla stegindikatorn till aktivt steg vid sidladdning
 
 När stegindikatorn (_step_nav.html, desktop) är horisontellt skrollbar (smal desktop, 5 steg med Översätt, eller man är på sista steget) kan aktivt steg ligga utanför synfältet efter att en ny sida laddats. Den borde skrolla så aktivt steg syns.
 
