@@ -60,7 +60,7 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
-## [P3][todo] [svk-panorama] Fäll ihop 'Uppladdade scener'-listan på uppladdningssteget för mogna turer
+## [P3][done] [svk-panorama] Fäll ihop 'Uppladdade scener'-listan på uppladdningssteget för mogna turer
 
 På uppladdningssteget (upload.html, sektionen 'Uppladdade scener (N)', rad ~94-127) tar scen-tabellen väldigt mycket plats på turer med många scener (t.ex. 22). När man återvänder till steget på en MOGEN tur (all uppladdning + tiling klar) borde listan vara ihopfälld i en accordion i stället för att dominera sidan.
 
