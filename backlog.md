@@ -364,7 +364,7 @@ De 12 importerade legacy-turernas cross-tour-hotspots (`type:scene` + `URL`, ing
 
 ---
 
-## [P4][todo] [svk-panorama] Horisontell overflow på uppladdningssidan vid 390px (site-header account-meny)
+## [P4][done] [svk-panorama] Horisontell overflow på uppladdningssidan vid 390px (site-header account-meny)
 
 Sonnet-agenten hittade under stegnav-omdesignen (TASK-348) en PRE-EXISTING bugg (orelaterad, inte orsakad av omdesignen): upload-sidan har horisontell sidoverflow vid 390px (scrollWidth 656 vs 390), spårad till .nav-right (kontomenyn) i site-headern. Ej fixad (utanför omdesignens scope). Klart nar: /projects/{slug} (upload) vid 390px har ingen horisontell overflow (scrollWidth <= 390). Verifiera: shot/Playwright vid 390px, mät document.documentElement.scrollWidth.
 
