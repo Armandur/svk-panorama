@@ -1253,6 +1253,22 @@ def test_map_payload_position():
     check("map-position heltal accepteras", q.scenes[0].position.y == 200.0)
 
 
+def test_jobqueue_registry_prune():
+    from app.services import jobqueue
+    jobqueue._reset_for_tests()
+    orig = jobqueue._MAX_TERMINAL
+    jobqueue._MAX_TERMINAL = 5  # litet tak för testet
+    try:
+        for _ in range(30):
+            jobqueue.submit(lambda: None, kind="tiling", slug="x")
+        jobqueue._queue.join()  # vänta tills alla klara
+        terminal = [v for v in jobqueue.all_jobs().values() if v["status"] in ("done", "error")]
+        check("registret gallras: <= _MAX_TERMINAL klara poster", len(terminal) <= 5)
+    finally:
+        jobqueue._MAX_TERMINAL = orig
+        jobqueue._reset_for_tests()
+
+
 def main() -> int:
     for fn in (
         test_map_payload_position,
@@ -1288,6 +1304,7 @@ def main() -> int:
         test_history,
         test_history_attribution,
         test_history_diff,
+        test_jobqueue_registry_prune,
     ):
         fn()
     print(f"\n{_passed} passed, {_failed} failed")

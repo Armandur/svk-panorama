@@ -32,8 +32,20 @@ _registry: dict[str, dict[str, Any]] = {}
 _registry_lock = threading.Lock()
 _id_seq = itertools.count(1)
 
+_MAX_TERMINAL = 200  # tak för klara (done/error) poster i registret; äldsta gallras
+
 _workers_lock = threading.Lock()
 _workers_started = False
+
+
+def _prune_locked() -> None:
+    # Antar _registry_lock hålls. Behåll som mest _MAX_TERMINAL done/error-poster
+    # (äldsta efter ts droppas); queued/running rörs aldrig.
+    terminal = [(jid, v) for jid, v in _registry.items() if v["status"] in ("done", "error")]
+    if len(terminal) > _MAX_TERMINAL:
+        terminal.sort(key=lambda kv: kv[1]["ts"])  # äldst först
+        for jid, _ in terminal[: len(terminal) - _MAX_TERMINAL]:
+            _registry.pop(jid, None)
 
 
 def _worker() -> None:
@@ -49,11 +61,13 @@ def _worker() -> None:
                 info = _registry.get(job_id)
                 if info is not None:
                     info["status"] = "done"
+                    _prune_locked()
         except Exception:  # noqa: BLE001 - en worker får ALDRIG dö, annars krymper poolen
             with _registry_lock:
                 info = _registry.get(job_id)
                 if info is not None:
                     info["status"] = "error"
+                    _prune_locked()
         finally:
             _queue.task_done()
 
