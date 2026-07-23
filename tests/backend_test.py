@@ -1103,6 +1103,146 @@ def test_settings_int():
         settings._cache.pop(key, None)
 
 
+def test_jobqueue_concurrency():
+    """Global jobbkö (TASK-27): N daemon-workers = det GLOBALA samtidighetstaket
+    för tunga jobb, oavsett hur många turer/jobbtyper som startar samtidigt.
+    Monkeypatchar den tunga jobb-kroppen (tiling: _run_docker, export/backup:
+    _build helt) med en delad, trådsäker räknare (öka/sova kort/minska, spåra
+    observerad max-samtidiga), startar RIKTIGA tiling.start_job/bundle.start_job/
+    backup.start_export för flera turer (K >> N jobb blandat tiling-scen/export/
+    backup) och assertar att observerad max ALDRIG överstiger N. Körs för N=2
+    OCH N=1 - fångar fällan att en kvarlämnad per-tur ThreadPoolExecutor skulle
+    ge N x tile_concurrency samtidiga jobb i stället för N."""
+    import threading
+    import time
+
+    from app import config
+    from app.services import backup, bundle, jobqueue, project_files, tiling
+
+    tmp = Path(tempfile.mkdtemp())
+    old_projects = config.PROJECTS_DIR
+    old_job_workers = config.JOB_WORKERS
+    orig_run_docker = tiling._run_docker
+    orig_bundle_build = bundle._build
+    orig_backup_build = backup._build
+    config.PROJECTS_DIR = tmp / "projects"
+
+    state_lock = threading.Lock()
+    state = {"current": 0, "peak": 0}
+
+    def _heavy(*_a, **_kw):
+        with state_lock:
+            state["current"] += 1
+            state["peak"] = max(state["peak"], state["current"])
+        time.sleep(0.05)
+        with state_lock:
+            state["current"] -= 1
+        return {"multiRes": {}}
+
+    def _fake_docker(image_fs, out_dir, quality, on_progress=None):
+        return _heavy()
+
+    def _fake_bundle_build(slug, project_name, include_originals=False):
+        _heavy()
+        bundle._jobs[slug]["status"] = "done"
+
+    def _fake_backup_build(slug, name):
+        _heavy()
+        backup._jobs[slug]["status"] = "done"
+
+    tiling._run_docker = _fake_docker
+    bundle._build = _fake_bundle_build
+    backup._build = _fake_backup_build
+
+    def _make_project(slug: str, n_scenes: int) -> None:
+        project_files.ensure_project_structure(slug)
+        scenes = {}
+        for j in range(n_scenes):
+            sid = str(j)
+            Image.new("RGB", (16, 8), (1, 1, 1)).save(
+                project_files.images_dir(slug) / f"{sid}.jpg", "JPEG"
+            )
+            scenes[sid] = {"type": "equirectangular", "panorama": f"{sid}.jpg"}
+        project_files.write_tour(slug, {
+            "schemaVersion": 1,
+            "default": {"languages": ["sv"], "firstScene": "0"},
+            "scenes": scenes,
+        })
+
+    def _run(n_workers: int) -> tuple[int, list[str]]:
+        state["current"] = 0
+        state["peak"] = 0
+        config.JOB_WORKERS = n_workers
+        jobqueue._reset_for_tests()
+
+        slugs = [f"jq{n_workers}-{i}" for i in range(3)]
+        for slug in slugs:
+            _make_project(slug, n_scenes=3)  # -> 3x3 = 9 tiling-scen-jobb
+
+        for slug in slugs:
+            tiling.start_job(slug, quality=80)
+            bundle.start_job(slug, "Test")
+            backup.start_export(slug, "Test")
+        # 9 tiling-scen + 3 export + 3 backup = 15 jobb, K >> N för N=1/2.
+
+        jobqueue._queue.join()  # blockera tills ALLA enqueue:ade jobb är klara
+        return state["peak"], slugs
+
+    try:
+        import json
+
+        peak2, slugs2 = _run(2)
+        # >=2 (inte bara >=1) bevisar att jobb FAKTISKT körde parallellt - med
+        # 15 jobb/2 workers/50ms styck är seriell körning uteslutet i praktiken.
+        check("N=2: minst 2 jobb kördes samtidigt (bevisar parallellitet)", peak2 >= 2)
+        check("N=2: aldrig fler än 2 samtidiga jobb", peak2 <= 2)
+        # Aggregations-korrekthet (ur specen): overall-status "done" ENDAST när
+        # ALLA en turs scen-jobb är klara, oavsett i vilken ordning kön körde dem.
+        for slug in slugs2:
+            j = tiling.job_status(slug)
+            check(f"{slug}: tiling nådde done", j["status"] == "done")
+            check(f"{slug}: done == total == 3", j["done"] == 3 and j["total"] == 3)
+            check(f"{slug}: manifestet har alla 3 scener", len(tiling.read_manifest(slug)) == 3)
+            check(f"{slug}: export klar", bundle._jobs[slug]["status"] == "done")
+            check(f"{slug}: backup klar", backup._jobs[slug]["status"] == "done")
+            # Status-endpointen (/tile-job/status) returnerar job-dicten RAKT AV som
+            # JSON - måste vara serialiserbar (fångar t.ex. ett Lock-objekt i dicten).
+            check(f"{slug}: job-dict JSON-serialiserbar (status-endpoint-formen)",
+                  isinstance(json.dumps(j), str))
+
+        peak1, _slugs1 = _run(1)
+        check("N=1: minst ett jobb kördes", peak1 >= 1)
+        check("N=1: aldrig fler än 1 samtidigt jobb (strikt serialiserat)", peak1 <= 1)
+
+        # Felvägen (samma krav, andra halvan): "error om NÅGON" scen misslyckas -
+        # måste aggregeras korrekt oavsett i vilken ordning de andra scenerna klarar
+        # sig. Låt scen "1" alltid krascha, de andra lyckas.
+        def _flaky_docker(image_fs, out_dir, quality, on_progress=None):
+            if out_dir.name == "1":
+                raise RuntimeError("docker kraschade (simulerat)")
+            return _heavy()
+
+        tiling._run_docker = _flaky_docker
+        config.JOB_WORKERS = 2
+        jobqueue._reset_for_tests()
+        slug = "jq-err-0"
+        _make_project(slug, n_scenes=3)
+        tiling.start_job(slug, quality=80)
+        jobqueue._queue.join()
+        j = tiling.job_status(slug)
+        check("felväg: overall-status blir error", j["status"] == "error")
+        check("felväg: done < total (bara de lyckade scenerna räknas)", j["done"] == 2 and j["total"] == 3)
+        check("felväg: felmeddelandet pekar ut scenen", "scen 1" in (j["error"] or ""))
+        check("felväg: manifestet har bara de 2 lyckade scenerna", len(tiling.read_manifest(slug)) == 2)
+    finally:
+        tiling._run_docker = orig_run_docker
+        bundle._build = orig_bundle_build
+        backup._build = orig_backup_build
+        config.PROJECTS_DIR = old_projects
+        config.JOB_WORKERS = old_job_workers
+        jobqueue._reset_for_tests()
+
+
 def test_map_payload_position():
     from app.schemas import MapPayload
     # Kartpositioner får vara bråktal (drag ger sub-pixel; äldre map.json kan ha bråktal).
@@ -1139,6 +1279,7 @@ def main() -> int:
         test_joblog,
         test_demo_guard,
         test_settings_int,
+        test_jobqueue_concurrency,
         test_tourlinks,
         test_hex,
         test_slug_and_upload_safety,

@@ -78,7 +78,7 @@ def settings_page(
 
 # Etiketter + hjälptext för prestanda/gräns-inställningarna (ordningen styr formuläret).
 _INT_SETTING_LABELS = [
-    ("tile_concurrency", "Tiling-parallellitet", "Scener som tilas samtidigt. Gäller nästa jobb."),
+    ("tile_concurrency", "Tiling-parallellitet (avvecklad)", "Styr inte längre samtidighet - se SVK_JOB_WORKERS (global jobbkö)."),
     ("tile_quality", "Tile-kvalitet (JPEG)", "1-100. Gäller nästa tiling-jobb."),
     ("preview_max_width", "Förhandsvisning: max bredd (px)", "Gäller NYA uppladdningar."),
     ("preview_quality", "Förhandsvisning: JPEG-kvalitet", "10-100. Gäller NYA uppladdningar."),

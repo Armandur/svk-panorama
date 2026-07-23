@@ -6,7 +6,9 @@ multires på disk - `apply_multires()` lägger på blocken först vid visning
 eller export, så tour.json förblir en ren equirektangulär sanningskälla och
 hotspot-ändringar inte kräver om-tiling.
 
-Jobbet körs i en bakgrundstråd; status pollas via `job_status()`."""
+Varje scen läggs som ett eget jobb i den globala jobbkön (app/services/jobqueue.py)
+- SVK_JOB_WORKERS är den globala samtidighetsgränsen, delad med export/backup.
+Status pollas via `job_status()`."""
 from __future__ import annotations
 
 import json
@@ -15,10 +17,10 @@ import os
 import shutil
 import subprocess
 import threading
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
+from app.services import jobqueue
 from app.services.project_files import (
     _atomic_write_text,
     _natural_key,
@@ -33,6 +35,11 @@ DOCKER_IMAGE = "pannellum-multires"
 _jobs: dict[str, dict[str, Any]] = {}
 _start_lock = threading.Lock()
 _manifest_lock = threading.Lock()
+# Skyddar _finalize_job:s läs-modifiera-skriv av job["status"]. EN global lock
+# (inte per-job) - job-dicten returneras rakt av som JSON via /tile-job/status
+# (routes/tiling.py), så den får INTE innehålla ett Lock-objekt (osserialiserbart).
+# Finalize är billigt -> en delad global lock kostar ingen märkbar genomströmning.
+_finalize_lock = threading.Lock()
 
 
 def tiles_dir(slug: str) -> Path:
@@ -296,54 +303,54 @@ def _tile_one(slug: str, quality: int, scene_id: str, image_fs: Path, entry: dic
     entry["stage"] = "klar"
 
 
-def _run_job(slug: str, quality: int, scenes: list[tuple[str, Path]]) -> None:
-    # HELA kroppen omsluten (symmetriskt med bundle/backup): även `_jobs[slug]`,
-    # settings.get_int, executor-konstruktionen och storage.invalidate kan kasta -
-    # annars dör tråden tyst och jobbet fastnar på "running" utan spår.
-    try:
-        job = _jobs[slug]
-        entries = {s["id"]: s for s in job["scenes"]}
-        errors: list[str] = []
-        # Läs vid jobbstart -> super-admins parallellitets-inställning (env-default +
-        # DB-override) gäller nästa jobb utan omstart.
-        from app.services import settings
-        workers = max(1, settings.get_int("tile_concurrency"))
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            futures = {
-                pool.submit(_tile_one, slug, quality, sid, img, entries[sid], job): sid
-                for sid, img in scenes
-            }
-            for fut in as_completed(futures):
-                sid = futures[fut]
-                try:
-                    fut.result()
-                except Exception as exc:  # noqa: BLE001 - visa felet i UI:t
-                    entries[sid]["status"] = "error"
-                    entries[sid]["stage"] = "fel"
-                    detail = getattr(exc, "output", None) or exc
-                    errors.append(f"scen {sid}: {detail}")
+def _finalize_job(slug: str, job: dict) -> None:
+    """Anropas efter VARJE scen-jobb (av en jobqueue-worker - kan hända för
+    flera scener "samtidigt" och i GODTYCKLIG ordning, kön ger inga garantier).
+    Sätter turens overall-status EXAKT EN GÅNG, när ALLA dess scen-jobb är
+    terminal (done/error) - skyddat av jobbets egna lås så out-of-order-
+    slutförande aldrig race:ar eller dubbel-finaliserar."""
+    entries = job["scenes"]
+    with _finalize_lock:
+        if job["status"] != "running":
+            return  # redan finaliserat av en annan scens worker
+        if any(e["status"] not in ("done", "error") for e in entries):
+            return  # väntar fortfarande på andra scener i kön
+        errors = [f"scen {e['id']}: {e['error_detail']}" for e in entries if e["status"] == "error"]
         job["status"] = "error" if errors else "done"
         if errors:
             job["error"] = "; ".join(errors)
-            from app.services import joblog
-            joblog.append(slug, "tiling", job["error"])  # persistent så felet överlever omstart
-        # Kakel skrevs -> töm diskcachen så kvot-grinden ser den nya storleken direkt.
-        from app.services import storage
-        storage.invalidate(project_dir(slug))
-    except Exception as exc:  # noqa: BLE001 - jobbet får aldrig dö tyst
-        j = _jobs.get(slug)
-        if j is None:
-            return  # jobbet glömdes (turen raderas) -> inget att rapportera, rör inte disken
-        j["status"] = "error"
-        j["error"] = str(exc)
+    if errors:
         from app.services import joblog
-        joblog.append(slug, "tiling", f"Tiling-jobbet kraschade: {exc}")
+        joblog.append(slug, "tiling", job["error"])  # persistent så felet överlever omstart
+    # Kakel skrevs -> töm diskcachen så kvot-grinden ser den nya storleken direkt.
+    from app.services import storage
+    storage.invalidate(project_dir(slug))
+
+
+def _run_scene_job(slug: str, quality: int, scene_id: str, image_fs: Path, entry: dict, job: dict) -> None:
+    """EN jobqueue-arbetsenhet: tila en enda scen. Körs av en worker-tråd i den
+    globala kön (fire-and-forget - blockerar aldrig på ett annat kö-jobb).
+    Fångar ALLA fel själv (annars dör workern tyst och entry/job fastnar på
+    'running' utan spår) och finaliserar turens overall-status när sista scenen
+    i turen är klar."""
+    try:
+        _tile_one(slug, quality, scene_id, image_fs, entry, job)
+    except Exception as exc:  # noqa: BLE001 - visa felet i UI:t
+        entry["status"] = "error"
+        entry["stage"] = "fel"
+        entry["error_detail"] = str(getattr(exc, "output", None) or exc)
+    finally:
+        _finalize_job(slug, job)
 
 
 def start_job(slug: str, quality: int | None = None) -> dict[str, Any]:
-    """Starta ett tiling-jobb för scener som saknar tiles. Redan tilade
-    scener hoppas över, så om-uppladdning av en scen inte re-tilar allt.
-    quality=None -> super-admins inställning (env-default + DB-override)."""
+    """Starta tiling för scener som saknar tiles. Redan tilade scener hoppas
+    över, så om-uppladdning av en scen inte re-tilar allt. quality=None ->
+    super-admins inställning (env-default + DB-override).
+
+    Varje scen läggs som ETT EGET jobb i den globala jobbkön (jobqueue.py) -
+    INGEN egen per-tur trådpool längre, så den globala samtidighetsgränsen
+    (SVK_JOB_WORKERS) gäller oavsett hur många turer som tilar samtidigt."""
     if quality is None:
         from app.services import settings
         quality = settings.get_int("tile_quality")
@@ -366,5 +373,13 @@ def start_job(slug: str, quality: int | None = None) -> dict[str, Any]:
     if not scenes:
         job["status"] = "done"
         return job
-    threading.Thread(target=_run_job, args=(slug, quality, scenes), daemon=True).start()
+    entries = {s["id"]: s for s in job["scenes"]}
+    for sid, img in scenes:
+        entry = entries[sid]
+        jobqueue.submit(
+            lambda sid=sid, img=img, entry=entry: _run_scene_job(slug, quality, sid, img, entry, job),
+            kind="tiling",
+            slug=slug,
+            scene_id=sid,
+        )
     return job

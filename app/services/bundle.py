@@ -13,7 +13,7 @@ from typing import Any
 
 from app import config
 from app.deps import templates
-from app.services import i18n, media
+from app.services import i18n, jobqueue, media
 from app.services.presets import i18n_text_values
 from app.services.project_files import (
     _natural_key,
@@ -280,7 +280,13 @@ def start_job(slug: str, project_name: str, include_originals: bool = False) -> 
             return existing
         job = {"status": "running", "total": 0, "done": 0, "error": None}
         _jobs[slug] = job
-    threading.Thread(target=_build, args=(slug, project_name, include_originals), daemon=True).start()
+    # Delar den globala jobbkön (jobqueue.py) med tiling/backup - SVK_JOB_WORKERS
+    # är den globala samtidighetsgränsen, inte en egen tråd per export.
+    jobqueue.submit(
+        lambda: _build(slug, project_name, include_originals),
+        kind="export",
+        slug=slug,
+    )
     return job
 
 

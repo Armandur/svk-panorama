@@ -63,9 +63,19 @@ MAP_IMAGE_FILENAME = "map.png"
 PREVIEW_MAX_WIDTH = int(os.environ.get("SVK_PREVIEW_MAX_WIDTH", "2048"))
 PREVIEW_QUALITY = int(os.environ.get("SVK_PREVIEW_QUALITY", "82"))
 
-# Tiling: antal scener som tilas parallellt. Lågt default för delad VM. Env-default;
-# super-admin kan override:a i DB (services/settings.py) utan omstart.
+# DEPRECERAD som samtidighetskontroll (Fas 1 jobbkö, TASK-27): tiling-scener körs
+# numera som enskilda jobb i den globala kön (app/services/jobqueue.py) och delar
+# JOB_WORKERS samtidighetstak med export/backup - TILE_CONCURRENCY styr inget
+# längre. Kvar bara för bakåtkompat (settings.py:s _INT_SETTINGS/admin-UI läser
+# den fortfarande, ofarligt no-op). Env-default; super-admin-override i DB
+# (services/settings.py) utan omstart.
 TILE_CONCURRENCY = max(1, int(os.environ.get("SVK_TILE_CONCURRENCY", "2")))
+
+# Global jobbkö (app/services/jobqueue.py): antal daemon-workers = MAX antal
+# samtidiga tunga bakgrundsjobb (tiling-scen, export, backup) TOTALT, oavsett
+# hur många turer som startar jobb samtidigt. Ersätter TILE_CONCURRENCY som
+# samtidighetskontroll. Lågt default för delad VM.
+JOB_WORKERS = max(1, int(os.environ.get("SVK_JOB_WORKERS", "2")))
 
 # Tiling: JPEG-kvalitet på kaklen (1-100). Env-default; admin-override utan omstart.
 TILE_QUALITY = int(os.environ.get("SVK_TILE_QUALITY", "80"))

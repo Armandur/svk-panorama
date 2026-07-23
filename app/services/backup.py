@@ -19,7 +19,7 @@ from typing import Any
 
 from app.config import MAX_IMAGE_MEGAPIXELS, MAX_PANORAMA_MB, SCHEMA_VERSION
 from app.database import Project
-from app.services import media
+from app.services import jobqueue, media
 from app.services.presets import i18n_text_values
 from app.services.project_files import (
     ensure_project_structure,
@@ -142,7 +142,9 @@ def start_export(slug: str, name: str) -> dict[str, Any]:
             return existing
         job = {"status": "running", "total": 0, "done": 0, "error": None}
         _jobs[slug] = job
-    threading.Thread(target=_build, args=(slug, name), daemon=True).start()
+    # Delar den globala jobbkön (jobqueue.py) med tiling/export - SVK_JOB_WORKERS
+    # är den globala samtidighetsgränsen, inte en egen tråd per backup.
+    jobqueue.submit(lambda: _build(slug, name), kind="backup", slug=slug)
     return job
 
 
