@@ -60,6 +60,21 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
+## [P3][todo] [svk-panorama] Samlad jobb-status-vy (körande/köade/klara) i UI - Fas 2 (efter jobbkön)
+
+Fas 2, BEROR PÅ backend-jobbkön (TASK-27). När alla tunga jobb går genom en global kö med ett centralt jobb-register (job_id -> {kind, slug, status: queued|running|done|error}) kan vi visa en SAMLAD vy över alla körande/köade/klara jobb på ett ställe - i stället för dagens per-tur, per-tjänst-status utspridd.
+
+Innehåll: en vy (troligen på huvudmenyn /editor eller /admin) som listar aktuella jobb (tiling per scen/tur, export, backup) med kind, tur, status (köad/kör/klar/fel), och köposition för köade. Läser jobqueue:s centrala register (ny read-endpoint, t.ex. GET /jobs).
+
+EJ loop-bar på samma sätt som Fas 1: kräver browser-verifiering (Judge kan inte automatisera det bra) -> köra som vanlig delegering/manuell verifiering, inte backlog-loop.
+Klart nar: en användare ser alla körande + köade + nyligen klara jobb i EN vy, som uppdateras (polling) medan jobb kör.
+
+- ID: `01KY8744KCPK9PY9XTZFJGY4DS`
+- Type: improvement
+- Actor: human:rasmus
+
+---
+
 ## [P3][done] [svk-panorama] Fäll ihop 'Uppladdade scener'-listan på uppladdningssteget för mogna turer
 
 På uppladdningssteget (upload.html, sektionen 'Uppladdade scener (N)', rad ~94-127) tar scen-tabellen väldigt mycket plats på turer med många scener (t.ex. 22). När man återvänder till steget på en MOGEN tur (all uppladdning + tiling klar) borde listan vara ihopfälld i en accordion i stället för att dominera sidan.
@@ -315,24 +330,34 @@ Cross-tour-hotspoten (MVP, redan byggd) har ett rått URL-fält där man klistra
 
 ---
 
-## [P3][todo] [svk-panorama] Inför global samtidighetsgräns för tunga bakgrundsjobb (tiling/export/backup)
+## [P3][todo] [svk-panorama] Global in-process jobbkö + samtidighetsgräns för tunga jobb - backend (Fas 1, loop-bar)
 
-## BESLUT (2026-07-19)
-Vald ansats: **Alt (b) - riktig FIFO-jobbkö med N workers + samlad status-vy** (inte den enkla semaforen i alt a). Ger köad-status i UI, förutsägbar ordning och en samlad vy över alla körande/köade jobb - bättre långsiktigt, särskilt inför Fas 4 (flera team). UPPSKJUTET - implementeras inte nu, tas när jobb-kontention faktiskt skaver (bulk-import eller flera aktiva team).
+## BESLUT (2026-07-19, modell låst 2026-07-23)
+Alt (b) FIFO-jobbkö. LÅST modell: EN global in-process kö med N workers; N = den globala gränsen (max N samtidiga tunga jobb oavsett hur många turer/jobb som startas). Tiling läggs som ETT jobb PER SCEN (inte per tur) -> N workers = max N samtidiga Docker/nona-processer. Export + backup = ett jobb var i samma kö. SVK_JOB_WORKERS (default 2) ERSÄTTER per-tur tile_concurrency. UI-vyn är EGEN task (Fas 2) - DENNA task är backend + gräns bara.
 
-## Context
-Det finns ingen global samtidighetsgräns över turer. tiling.start_job(slug) (app/services/tiling.py:369) startar en egen daemon-tråd per tur, och TILE_CONCURRENCY (default 2) begränsar bara scener INOM en tur. Startar man tiling på M turer -> M x TILE_CONCURRENCY samtidiga Docker-processer (nona/generate.py, _run_docker tiling.py:211) -> kan dranka värden (CPU/RAM/disk-I/O). Export (bundle._build bundle.py:283) och backup (backup._build backup.py:145) är också fristående, okoordinerade trådar. Blir mer akut vid bulk (12 importerade turer) och i Fas 4.
+## Nuläge (rotorsak)
+- tiling.start_job (app/services/tiling.py:343) spawnar en egen daemon-tråd per tur; _run_job (:299) kör ThreadPoolExecutor(tile_concurrency) över _tile_one (:274) -> _run_docker (:211, tung Docker/nona). Ingen global gräns -> M turer = M x tile_concurrency samtidiga Docker-processer -> dränker värden.
+- bundle.start_job (bundle.py:276) + backup.start_export (backup.py:138) = egna fristående daemon-trådar, okoordinerade.
+- Var tjänst har eget in-memory _jobs[slug]-dict, pollat av egen status-endpoint: /tile-job/status (routes/tiling.py:43), /export/status (routes/export.py:27), /backup/status (routes/backup.py:32). tile-status.js/export.js/backup.js pollar dessa.
 
-## Acceptance criteria
-- [ ] Totalt antal samtidiga tunga jobb bundet av en global gräns, oavsett hur många turer/jobb som startas
-- [ ] Gränsen komponerar med per-tur TILE_CONCURRENCY
-- [ ] Gäller tiling + export + backup (delad kö)
-- [ ] Köad-status synlig i UI + samlad vy över körande/köade jobb (kärnan i alt b)
-- [ ] Fortfarande single-instans (in-process), ingen extern kö-tjänst
-- [ ] Konfigurerbar (t.ex. SVK_GLOBAL_TILE_SLOTS / antal workers)
+## Implementation (prescriptiv)
+1. NYTT `app/services/jobqueue.py`: modul-global `queue.Queue` + N daemon-worker-trådar (starta i app/main.py lifespan, eller lazily vid första submit). API t.ex. `submit(fn, *, kind, slug, scene_id=None, label=None) -> job_id`. Varje worker plockar ETT item och kör `fn()` -> som mest N tunga jobb samtidigt. Ett centralt jobb-register (dict job_id -> {kind, slug, scene_id, status: queued|running|done|error, ts}) byggs här (Fas 2-UI läser det; Fas 1 behöver det för testet). Markera status queued->running->done/error; ALLTID done/error i finally (annars läcker en worker-slot).
+2. tiling: byt `threading.Thread(_run_job).start()` (tiling.py:369) mot att `jobqueue.submit` ETT jobb per scen (varje kör _tile_one för en scen). Turens `_jobs[slug]` (status/done/total/entries) uppdateras när scen-jobben klarar (done++, entry-status) SÅ ATT job_status/project_tile_state + /tile-job/status ger OFÖRÄNDRAD svar-form för klienten. Ta bort per-tur ThreadPoolExecutor(tile_concurrency). VIKTIGT: manifest.json-skrivningen (under _manifest_lock) och turens overall-status (done när ALLA dess scen-jobb klara, error om någon) måste vara korrekt även när scen-jobb klarar i annan ordning via kön.
+3. bundle + backup: byt sina `threading.Thread(_build).start()` (bundle.py:283, backup.py:145) mot `jobqueue.submit(_build, kind=...)` - ett jobb var i samma kö. Deras _jobs[slug] + status-endpoints OFÖRÄNDRADE.
+4. config.py: `SVK_JOB_WORKERS` (int, default 2). Ta bort/deprecera tile_concurrency SOM samtidighetskontroll (worker-antalet styr nu global concurrency).
 
-## Implementation (alt b, vald)
-FIFO-kö + fast worker-pool (N workers) som drar jobb ur kön; tiling/export/backup lägger jobb i kön i stället för att spawna egna trådar. Samlad status-modell (körande/köade/klara) + UI-vy. OBS: ROADMAP Fas 3-not 'ingen jobbkö' gäller MULTI-INSTANS-kö; detta är in-process. ROADMAP.md ~rad 91.
+## Acceptanskriterier (objektiva)
+- [ ] Deterministiskt test i tests/backend_test.py (plain-assert-stil, ingen pytest) bevisar att aldrig fler än N jobb kör samtidigt: monkeypatcha den tunga jobb-kroppen (jobqueue-workerns fn / _run_docker) att öka en trådsäker delad räknare, sova kort, minska den, och spåra observerad max-samtidiga. Enqueue:a K >> N jobb (blanda tiling-scen + export + backup). Assert observerad max <= N. Kör för N=2 OCH N=1.
+- [ ] Alla tre jobbtyper (tiling per scen, export, backup) går genom den GEMENSAMMA kön (inga egna threading.Thread(_build/_run_job) kvar) - verifierbart i kod + testet.
+- [ ] Befintliga status-endpoints (/tile-job/status, /export/status, /backup/status) + project_tile_state ger SAMMA svar-form som förr (tile-status.js/export.js/backup.js oförändrade). Verifiera: starta tiling, polla status -> done/total räknar upp, blir "done".
+- [ ] SVK_JOB_WORKERS styr N (default 2); single-instans/in-process (ingen extern kö-tjänst/broker).
+- [ ] Hela tests/backend_test.py grönt (inkl. nya testet).
+
+## Klart när (loop-exit)
+Samtidighetstestet passerar (max <= N för N=1 och N=2), alla tre jobbtyper går via kön, status-endpoints oförändrade, hela backend_test.py grön. Verifiera: `.venv/bin/python tests/backend_test.py`.
+
+## För backlog-loop / Sonnet
+Rent backend, deterministiskt testbart -> Judge-grinden = samtidighetstestet + backend_test.py. Rör INTE UI/status-vy (Fas 2, egen task). Bevara status-endpoint-formen exakt (bryt inte klient-polling). Deadlock-akta: en worker får aldrig blockera på ett annat jobb i samma kö (t.ex. vänta på tiling inifrån ett export-jobb) -> alla submits är fire-and-forget. Fällan att undvika: att bara flytta trådstarten in i kön men behålla per-tur ThreadPoolExecutor -> då blir global concurrency N x tile_concurrency, inte N. ROADMAP Fas 3-not "ingen jobbkö" gäller MULTI-instans; detta är in-process.
 
 - ID: `01KXV9CVTQK812WNB30J2RCCTR`
 - Type: improvement
