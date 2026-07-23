@@ -30,7 +30,8 @@ def append(slug: str, kind: str, message: str, level: str = "fel") -> None:
     line = f"{ts}\t{kind}\t{level}\t{msg}\n"
     with _lock:
         p = _log_path(slug)
-        p.parent.mkdir(parents=True, exist_ok=True)
+        if not p.parent.exists():
+            return  # projektet raderat (t.ex. mitt under ett jobb) - återskapa inte mappen
         with p.open("a", encoding="utf-8") as f:
             f.write(line)
         try:
