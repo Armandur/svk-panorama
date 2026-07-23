@@ -330,7 +330,7 @@ Cross-tour-hotspoten (MVP, redan byggd) har ett rått URL-fält där man klistra
 
 ---
 
-## [P3][todo] [svk-panorama] Global in-process jobbkö + samtidighetsgräns för tunga jobb - backend (Fas 1, loop-bar)
+## [P3][done] [svk-panorama] Global in-process jobbkö + samtidighetsgräns för tunga jobb - backend (Fas 1, loop-bar)
 
 ## BESLUT (2026-07-19, modell låst 2026-07-23)
 Alt (b) FIFO-jobbkö. LÅST modell: EN global in-process kö med N workers; N = den globala gränsen (max N samtidiga tunga jobb oavsett hur många turer/jobb som startas). Tiling läggs som ETT jobb PER SCEN (inte per tur) -> N workers = max N samtidiga Docker/nona-processer. Export + backup = ett jobb var i samma kö. SVK_JOB_WORKERS (default 2) ERSÄTTER per-tur tile_concurrency. UI-vyn är EGEN task (Fas 2) - DENNA task är backend + gräns bara.
