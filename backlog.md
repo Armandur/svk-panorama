@@ -60,6 +60,24 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
+## [P3][todo] [svk-panorama] Fäll ihop 'Uppladdade scener'-listan på uppladdningssteget för mogna turer
+
+På uppladdningssteget (upload.html, sektionen 'Uppladdade scener (N)', rad ~94-127) tar scen-tabellen väldigt mycket plats på turer med många scener (t.ex. 22). När man återvänder till steget på en MOGEN tur (all uppladdning + tiling klar) borde listan vara ihopfälld i en accordion i stället för att dominera sidan.
+
+Önskat beteende: default UTFÄLLD på en färsk tur (medan man laddar upp / tiling pågår - man vill se scenerna + progressen), default IHOPFÄLLD när bearbetningen är klar (man har 'lämnat steget en gång'). Manuellt val kommer ihåg (som preview-stegets panelgrupper).
+
+Implementation (litet-medel): wrappa sektionen i en <details class='panel-group' data-group='up-scener'> och återanvänd det BEFINTLIGA accordion-mönstret (preview.html + localStorage-persistens-scriptet som minns öppet/stängt per data-group). Default-state: sätt 'open' bara om turen är färsk/bearbetar; annars ihopfälld. 'Bearbetning klar' kan härledas ur tiling-status (alla scener tilade -> #tile-section är klar/dold). localStorage-valet vinner över default (som på preview).
+
+Klart nar: på en tur där alla scener är tilade visas 'Uppladdade scener'-listan ihopfälld som default på uppladdningssteget; på en tur mitt i uppladdning/tiling är den utfälld; manuellt toggle-val kommer ihåg.
+
+Prio: P3 - reell declutter på mogna turer, litet jobb (återanvänder panel-group-mönstret).
+
+- ID: `01KY7ZBZ2JWDN5K8GFQPYDSZYP`
+- Type: improvement
+- Actor: ai:ux-review
+
+---
+
 ## [P3][done] [svk-panorama] Omdesign stegnavigering: Alt C full-bredd topbar + Alt D städning
 
 BESLUT (2026-07-23): vald riktning = Alt C (flytta stegnav ut ur den smala .planner-side-panelen till en egen full-bredd topbar över hela editorn) + Alt D:s städning (ta bort hamburgare/stepper-dubbleringen). Underlag: backlog-doc 'Stegnavigering - UX-underlag' (01KY7WPE, HTML med renderade mockups bifogad) + docs/ux/stegnavigering.md/.html i repot.
