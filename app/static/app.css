@@ -6,7 +6,12 @@
 /* align-items: flex-start så brand-länken stannar högst upp när .nav-right
    radbryter till flera rader på smal mobil, i stället för att centreras
    in bland de omslagna knapparna. */
-.site-header nav { padding-block: 0.5rem; align-items: flex-start; }
+/* Trimma headerhöjden: Pico ger <header> ~1rem vertikal padding och varje nav-<li>
+   ~1rem (bara marginalen nollades, inte paddingen) -> headern blev ~128px hög. Nolla
+   li-paddingen och stram åt header/nav-paddingen till en normal höjd. */
+.site-header { padding-block: 0.35rem; }
+.site-header nav { padding-block: 0.25rem; align-items: flex-start; }
+.site-header nav li { padding-block: 0; }
 
 .guide-text {
 	white-space: pre-wrap;
