@@ -1024,9 +1024,12 @@ a.step-menu-item:hover { background: var(--pico-secondary-background); }
 @media (min-width: 768px) {
 	.step-indicator {
 		display: flex; align-items: center; margin: 0; padding: 0; list-style: none;
-		flex: 0 1 auto; min-width: 0; overflow-x: auto; height: 2.4rem;
+		flex: 0 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden; height: 2.4rem;
 	}
-	.step-item { display: flex; align-items: center; flex: none; }
+	/* padding: 0 nollar Picos li-padding (16px topp/botten) - annars blir li:n högre
+	   än indikatorns 2.4rem-box och overflow-x:auto (som gör overflow-y till auto) ger
+	   en vertikal skrollbar. */
+	.step-item { display: flex; align-items: center; flex: none; padding: 0; }
 	/* Kopplingslinje mellan stegen. */
 	.step-item:not(:last-child)::after { content: ""; width: 0.9rem; height: 1px; flex: none; background: var(--pico-muted-border-color); }
 	.step-item > a, .step-item > span {
