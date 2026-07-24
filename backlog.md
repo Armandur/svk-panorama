@@ -587,6 +587,16 @@ De 12 importerade legacy-turernas cross-tour-hotspots (`type:scene` + `URL`, ing
 
 ---
 
+## [P4][todo] [svk-panorama] Egna domäner: wildcard-cert för plattform-subdomäner (Option A, när DNS-token finns)
+
+Optimering av subdoman-fallbacken (TASK-399). Idag provisioneras varje team-subdoman per-host via HTTP-01 (Option B, funkar, rimligt vid fa team). Option A: en enda NPM wildcard-proxy-host *.<plattformsdoman> + ett DNS-01-wildcard-cert -> tacker alla subdomaner utan per-team-cert (renare vid skala, undviker LE-rate-limits). KRAVER DNS-providerns API-token (idag Cloudflare for pettersson-vik.se) sa NPM kan gora _acme-challenge TXT for DNS-01. Byggs nar en sadan token finns OCH plattformsdomanen ar bestamd (kan byta fran pettersson-vik.se). Da: skapa wildcard-host+cert, ta bort provision-anropet i use-subdomain-endpointen (wildcard-hosten serverar direkt).
+
+- ID: `01KYACY06NK29RYYW226BDZM3H`
+- Type: improvement
+- Actor: ai:claude-opus-4-8
+
+---
+
 ## [P4][todo] [svk-panorama] Egna domäner: utred flytt till egen box + Caddy on-demand vid SLA-krav
 
 ## Context
