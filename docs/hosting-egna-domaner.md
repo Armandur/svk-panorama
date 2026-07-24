@@ -6,10 +6,19 @@ Proxy Manager (NPM) på en hemuppkoppling. Frågan: kör vi först på TERVO2, o
 kostar/kräver en flytt till Hetzner?
 
 **Grundpremiss (Rasmus 2026-07-24):** plattformen (tjänsten) kör på sin **egen
-domän** (t.ex. `svk-panorama.se` - namn ej beslutat). En organisation som
-`svenskakyrkanharnosand.se` är en **KUND**, inte plattformens domän. Alltså är
-äkta kunddomäner en kärnfunktion, inte ett specialfall - men plattformens egna
-subdomäner täcker de team som inte behöver egen domän.
+domän**. En organisation som `svenskakyrkanharnosand.se` är en **KUND**, inte
+plattformens domän. Alltså är äkta kunddomäner en kärnfunktion, inte ett
+specialfall - men plattformens egna subdomäner täcker de team som inte behöver
+egen domän.
+
+**Startpunkt (Rasmus 2026-07-24):** till att börja med kör plattformen på en
+**subdomän under `pettersson-vik.se`** (t.ex. `svk-panorama.pettersson-vik.se`)
+**på TERVO2**. Det är en enkel single-host-deploy: en NPM-proxy-host med per-host
+HTTP-01-cert, precis som de ~55 befintliga. Inga per-team-domäner, ingen Caddy,
+ingen ny hårdvara. Team når sina turer via appen (path/`/view`/`/s/{token}`) på
+den enda hosten. Wildcard-subdomäner (avsnitt 1) och äkta kunddomäner (avsnitt 2)
+är BÅDA framtida steg ovanpå detta - resten av utredningen beskriver den vägen när
+den blir aktuell.
 
 ## TL;DR - de två besluten du behöver ta
 
@@ -177,11 +186,15 @@ Detaljer:
 
 ## 6. Rekommenderad sekvens
 
-**Steg 0 - nu, på TERVO2 (nästan gratis):** plattform-subdomäner. Skaffa en
-plattformsdomän, engångs DNS-01-wildcard-cert för `*.svk-panorama.se` (eller vad
-domänen döps till). `Team.base_url` -> subdomän, host-baserad tenant-resolution.
-Ingen ny hårdvara, ingen Caddy, NPM orört. Täcker de team som inte behöver egen
-domän.
+**Steg 0 - nu, på TERVO2 (valt startläge):** single-host under en subdomän till
+`pettersson-vik.se` (t.ex. `svk-panorama.pettersson-vik.se`). En NPM-proxy-host,
+per-host HTTP-01-cert som de befintliga. Ingen multi-tenant-domänlogik, ingen
+Caddy, ingen ny hårdvara. Alla team på samma host.
+
+**Steg 0b - plattform-subdomäner (när per-team-domän önskas, billigt):** wildcard
+för `*.svk-panorama.pettersson-vik.se` via DNS-01 (kräver DNS-providerns
+API-token för `pettersson-vik.se` - engångssetup i NPM). `Team.base_url` ->
+subdomän, host-baserad tenant-resolution. NPM orört i övrigt.
 
 **Steg 1 - första kunddomänerna, fortfarande på TERVO2 (om du vill):**
 NPM-API-eager provisionering (2b). Bygg domänverifiering (TXT-record) +
