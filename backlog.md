@@ -185,6 +185,16 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
+## [P3][todo] [svk-panorama] Byt standard-tjänstenamn (SVK_SITE_NAME) till 'Pano'
+
+Default-tjänstenamnet (config.SVK_SITE_NAME, exponeras som Jinja-globalen site_name -> brand + titlar, redigerbart pa /admin/settings) bor vara 'Pano' i stallet for nuvarande default. Matchar produktnamnet (pano.pettersson-vik.se, _pano-verify). En-radare i config.py; DB-override pa /admin/settings vinner fortfarande over defaulten. Kontrollera om den korande instansen har en DB-override satt (visar 'SVK Panorama') - i sa fall behovs aven den uppdateras eller nollas for att defaulten ska synas.
+
+- ID: `01KYAAGBD9PGNEWW3E2QDN9J6E`
+- Type: chore
+- Actor: ai:claude-opus-4-8
+
+---
+
 ## [P3][todo] [svk-panorama] Egna domäner: paketera editorn som produktions-container på TERVO2
 
 ## Context
