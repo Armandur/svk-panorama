@@ -227,7 +227,7 @@ DNS-01 kräver DNS-providerns API-token för `pettersson-vik.se` (engångskonfig
 
 ---
 
-## [P3][todo] [svk-panorama] Egna domäner: bygg UI för att sätta/nolla teamets domän på /team
+## [P3][done] [svk-panorama] Egna domäner: bygg UI för att sätta/nolla teamets domän på /team
 
 ## Context
 Team-admin behöver kunna koppla (och koppla bort) sitt teams egna domän utan att super-admin rör infra per kund. UI:t binder ihop domänverifiering (TASK-396) och provisionering (TASK-397): mata in domän -> få TXT-instruktion -> verifiera -> aktivera. ROADMAP: domän-delen av team-livscykeln = Fas 4.3.
