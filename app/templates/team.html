@@ -113,6 +113,8 @@
 		<article class="notice"><p>Domänen togs bort.</p></article>
 		{% elif request.query_params.get('domain') == 'subdomain' %}
 		<article class="notice"><p>Subdomänen är aktiv: turerna nås på din {{ team.slug }}-subdomän.</p></article>
+		{% elif request.query_params.get('domain') == 'subdomain_no_cert' %}
+		<article class="notice"><p>Subdomänen är tilldelad, men certifikatet kunde inte skapas automatiskt - kontakta support.</p></article>
 		{% endif %}
 		{% if request.query_params.get('domain_error') %}
 		<p class="login-error">{{ request.query_params.get('domain_error') }}</p>

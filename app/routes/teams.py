@@ -460,17 +460,25 @@ async def use_subdomain(
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:
     """Tilldela teamet plattformens subdomän-fallback (TASK-399): ingen egen
-    domän behövs, ingen TXT-verifiering, ingen per-domän NPM-provisionering
-    (en manuellt satt wildcard-proxy-host `*.<PLATFORM_DOMAIN>` serverar alla
-    team-subdomäner)."""
+    domän behövs, ingen TXT-verifiering (vi äger plattformsdomänen). Subdomänen
+    provisioneras per-host via HTTP-01 (samma väg som en kunddomän, TASK-397)
+    eftersom den redan resolvar till servern - ingen wildcard-infra krävs."""
     if admin.team_id is None:
         raise HTTPException(status_code=400, detail="Du tillhör inget team")
     team = db.get(Team, admin.team_id)
     try:
-        domains_svc.assign_subdomain(db, team, config.PLATFORM_DOMAIN)
+        subdomain = domains_svc.assign_subdomain(db, team, config.PLATFORM_DOMAIN)
     except ValueError as exc:
         return RedirectResponse(url=f"/team?domain_error={quote(str(exc))}", status_code=303)
-    return RedirectResponse(url="/team?domain=subdomain", status_code=303)
+    result = npm.provision_domain(subdomain)
+    if result["ok"] or result["skipped"]:
+        return RedirectResponse(url="/team?domain=subdomain", status_code=303)
+    # Subdomänen är satt (base_url) men certifikatet gick inte att skapa
+    # automatiskt - egen flagg så mallen kan varna utan att dölja subdomänen.
+    return RedirectResponse(
+        url=f"/team?domain=subdomain_no_cert&domain_error={quote(result['error'] or 'Okänt fel')}",
+        status_code=303,
+    )
 
 
 @router.post("/team/leave")
