@@ -22,7 +22,7 @@ NPM REST-API (odokumenterat): `POST /api/tokens` -> bearer, `POST /api/nginx/cer
 
 ---
 
-## [P2][todo] [svk-panorama] Egna domäner: kräv domänverifiering (TXT-token) innan aktivering
+## [P2][done] [svk-panorama] Egna domäner: kräv domänverifiering (TXT-token) innan aktivering
 
 ## Context
 Innan en kunddomän aktiveras (proxy-host + cert utfärdas) måste teamet bevisa att det äger domänen. Utan verifiering kan team A claima team B:s domän, eller trigga cert-utfärdande för godtyckliga hostar (missbruk/rate-limit-bränning mot Let's Encrypt). Verifieringen är gemensam grund för både NPM-API-vägen (TASK-397) och en framtida Caddy ask-endpoint (som läser samma tillstånd).
