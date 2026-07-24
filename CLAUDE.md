@@ -40,6 +40,15 @@ i bakgrunden (login admin/admin överlever mot delad svk.db) -> `svc update
 svk-panorama-skiva3 --pid <ny>`. Starta om efter Python/mall-ändringar (CSS/JS
 syns direkt). Okej att starta om mellan `/clear` - instansen är efemär.
 
+**Bakom en reverse proxy (NPM/Caddy, TLS-terminerad):** appen har
+`ProxyHeadersMiddleware` (uvicorn) inlagd i `app/main.py`, yttersta middleware, som
+rättar `request.url.scheme`/`base_url` från `X-Forwarded-Proto` - annars blir
+OG-taggar och delningslänkar `http` trots TLS. Den litar bara på headern från IP:er
+i `SVK_TRUSTED_PROXIES` (komma-separerad lista, default `127.0.0.1`) -> sätt den
+till proxyns IP (t.ex. NPM/TERVO2:s interna IP) i produktion. NPM sätter
+`X-Forwarded-Proto`/`X-Forwarded-For` men INTE `X-Forwarded-Host` - originalhost
+bärs redan i `Host`-headern, ingen ytterligare hantering behövs för den.
+
 ## Två separata delar i repot
 
 - **`app/`** - den nya editorn (allt aktivt arbete sker här). Projektdata i
@@ -650,8 +659,9 @@ kopierar bara de refererade poolbilderna. Usage härleds - ingen DB-tabell.
 TTL i sek, 0=av), `SVK_HISTORY_MAX` (50), `SVK_HISTORY_FLOOR_DAYS` (7),
 `SVK_HISTORY_COALESCE_SEC` (20; versionshistorikens retention/coalesce),
 `SVK_BASE_URL` (tom; för framtida export/
-delningslänkar). `TILE_CONCURRENCY` läses per jobbstart -> justerbart utan
-omstart (tänkt admin-UI).
+delningslänkar), `SVK_TRUSTED_PROXIES` (127.0.0.1; komma-separerad lista IP:er
+`ProxyHeadersMiddleware` litar på för X-Forwarded-Proto/-For, se "Köra").
+`TILE_CONCURRENCY` läses per jobbstart -> justerbart utan omstart (tänkt admin-UI).
 
 ## Fällor att känna till
 

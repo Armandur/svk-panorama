@@ -45,6 +45,13 @@ Docker single-container, publiceras av GitHub Actions till
 `ghcr.io/armandur/svk-panorama`. Se **[DOCKER.md](DOCKER.md)** för Unraid-setup
 (env-variabler, port-/path-mappningar och tiling via docker-socket).
 
+**Bakom en TLS-terminerande reverse proxy** (Nginx Proxy Manager, Caddy): sätt
+`SVK_TRUSTED_PROXIES` till proxyns IP (komma-separerad lista, default `127.0.0.1`)
+så uvicorns `ProxyHeadersMiddleware` litar på `X-Forwarded-Proto`/`X-Forwarded-For`
+och rättar schema/klient-IP - annars blir delningslänkar och OG-taggar `http`
+trots TLS. NPM sätter inte `X-Forwarded-Host`; originalhost bärs redan i
+`Host`-headern.
+
 ## Demo-team
 
 Ett team folk kan testa editorn i utan att röra riktig data. Administreras på

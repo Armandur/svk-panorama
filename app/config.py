@@ -44,6 +44,14 @@ SECRET_KEY = os.environ.get("SVK_SECRET_KEY") or secrets.token_hex(32)
 # den AV så en klient inte kan spoofa sin IP via headern.
 TRUST_PROXY = os.environ.get("SVK_TRUST_PROXY", "").strip().lower() in ("1", "true", "yes", "on")
 
+# Betrodda proxy-IP:er för uvicorns ProxyHeadersMiddleware (app/main.py): appen
+# litar BARA på X-Forwarded-Proto/-For från dessa IP:er för att korrigera
+# request.url.scheme/base_url bakom en TLS-terminerande reverse proxy (NPM/Caddy).
+# Komma-separerad lista, default = bara localhost (lokal drift utan proxy).
+TRUSTED_PROXIES = [
+    p.strip() for p in os.environ.get("SVK_TRUSTED_PROXIES", "127.0.0.1").split(",") if p.strip()
+]
+
 # Uppladdning: panoramabilder.
 ALLOWED_PANORAMA_EXT = {".jpg", ".jpeg", ".png"}
 MAX_PANORAMA_MB = int(os.environ.get("SVK_MAX_PANORAMA_MB", "80"))

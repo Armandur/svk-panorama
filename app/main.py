@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app import config
 from app.database import init_db
@@ -52,6 +53,14 @@ app = FastAPI(title="SVK Panorama", lifespan=lifespan)
 
 # Signerad session-cookie (bär bara användarens id).
 app.add_middleware(SessionMiddleware, secret_key=config.SECRET_KEY, same_site="lax")
+
+# Bakom en TLS-terminerande reverse proxy (NPM/Caddy) rättar denna request.scope
+# ["scheme"] + klient-IP ur X-Forwarded-Proto/-For INNAN routrar/deps.request_origin
+# läser request.url/base_url - annars blir OG-taggar/delningslänkar http. Tillagd
+# SIST -> sitter ytterst av user-middlewaren (Starlette wrappar sist tillagd ytterst),
+# så korrigeringen sker före allt annat. trusted_hosts (config.TRUSTED_PROXIES)
+# begränsar vilka avsändar-IP:er headern litas på (aldrig "*" i drift).
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=config.TRUSTED_PROXIES)
 
 
 @app.exception_handler(StarletteHTTPException)
