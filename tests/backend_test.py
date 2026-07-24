@@ -1524,6 +1524,69 @@ def test_npm_provisioning():
         ) = saved
 
 
+def test_team_delete_deprovisions_domain():
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    from app.database import Base, Project, Team
+    from app.routes import teams
+    from app.services import npm
+
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    db = Session()
+    orig_deprovision = npm.deprovision_domain
+    calls = []
+    try:
+        npm.deprovision_domain = lambda host: (calls.append(host) or {"ok": True, "skipped": False, "error": None})
+
+        team_with_domain = Team(name="Team A", slug="team-a", base_url="panorama.exempel.se")
+        db.add(team_with_domain)
+        db.commit()
+        team_id = team_with_domain.id
+        ok = teams.delete_team_by_id(db, team_id)
+        check("delete_team_by_id: med base_url -> True", ok is True)
+        check("delete_team_by_id: med base_url -> deprovision anropad med rätt host", calls == ["panorama.exempel.se"])
+        check("delete_team_by_id: med base_url -> team-raden borta", db.get(Team, team_id) is None)
+
+        calls.clear()
+        team_no_domain = Team(name="Team B", slug="team-b")
+        db.add(team_no_domain)
+        db.commit()
+        ok = teams.delete_team_by_id(db, team_no_domain.id)
+        check("delete_team_by_id: utan base_url -> True", ok is True)
+        check("delete_team_by_id: utan base_url -> ingen deprovision", calls == [])
+
+        # Deprovision som "misslyckas" (returnerar fel-dict, kastar inte) ska ändå
+        # ge True - raderingen är redan skedd och får inte ångras.
+        calls.clear()
+        npm.deprovision_domain = lambda host: (calls.append(host) or {"ok": False, "skipped": False, "error": "boom"})
+        team_fail = Team(name="Team C", slug="team-c", base_url="fel.exempel.se")
+        db.add(team_fail)
+        db.commit()
+        team_fail_id = team_fail.id
+        ok = teams.delete_team_by_id(db, team_fail_id)
+        check("delete_team_by_id: deprovision-fel -> ändå True", ok is True)
+        check("delete_team_by_id: deprovision-fel -> ändå borta", db.get(Team, team_fail_id) is None)
+
+        # Team som äger turer blockeras helt - raderingen sker aldrig, så
+        # deprovision ska inte anropas.
+        calls.clear()
+        npm.deprovision_domain = lambda host: (calls.append(host) or {"ok": True, "skipped": False, "error": None})
+        team_with_project = Team(name="Team D", slug="team-d", base_url="upptagen.exempel.se")
+        db.add(team_with_project)
+        db.commit()
+        db.add(Project(slug="proj-d", name="Proj D", team_id=team_with_project.id))
+        db.commit()
+        ok = teams.delete_team_by_id(db, team_with_project.id)
+        check("delete_team_by_id: team äger turer -> False", ok is False)
+        check("delete_team_by_id: team äger turer -> ingen deprovision", calls == [])
+    finally:
+        npm.deprovision_domain = orig_deprovision
+        db.close()
+
+
 def test_request_origin():
     import types
 
@@ -1598,6 +1661,7 @@ def main() -> int:
         test_domain_verification,
         test_platform_subdomain,
         test_npm_provisioning,
+        test_team_delete_deprovisions_domain,
         test_request_origin,
     ):
         fn()

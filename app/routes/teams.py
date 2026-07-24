@@ -515,10 +515,15 @@ def delete_team_by_id(db: Session, team_id: int) -> bool:
     db.query(ThemePreset).filter(ThemePreset.team_id == team_id).delete(synchronize_session=False)
     db.query(BrandingPreset).filter(BrandingPreset.team_id == team_id).delete(synchronize_session=False)
     team = db.get(Team, team_id)
+    base_url = team.base_url if team else None
     if team:
         db.delete(team)
     db.commit()
     shutil.rmtree(media_svc.owner_dir(f"team-{team_id}"), ignore_errors=True)
+    if base_url:
+        # Deprovision-fel ska aldrig blockera/ångra raderingen - team-raden är
+        # redan borta. npm.py loggar internt vid fel.
+        npm.deprovision_domain(base_url)
     return True
 
 
