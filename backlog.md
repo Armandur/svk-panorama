@@ -43,7 +43,7 @@ Datamodell: verifieringstoken + status per domän (på Team.base_url eller en se
 
 ---
 
-## [P2][todo] [svk-panorama] Egna domäner: låt request_origin läsa Team.base_url för per-team origin
+## [P2][done] [svk-panorama] Egna domäner: låt request_origin läsa Team.base_url för per-team origin
 
 ## Context
 Absoluta URL:er (OG `og:url`/`og:image`, publika delningslänkar, invite-länkar) byggs idag ur en enda seam, `deps.request_origin(request)` (redan konsoliderad från 5 call sites: public.py, viewer.py, preview.py, projects.py, admin.py). I multi-tenant måste dessa peka på RÄTT tenant-domän per request, annars läcker förhandsvisningar/länkar mellan kunder eller pekar på plattformsdomänen. Global `SVK_BASE_URL` är en foot-gun (vinner över request-host -> alla tenants får samma origin).
@@ -64,7 +64,7 @@ Absoluta URL:er (OG `og:url`/`og:image`, publika delningslänkar, invite-länkar
 
 ---
 
-## [P2][todo] [svk-panorama] Egna domäner: inför host-baserad tenant-resolution (Host -> Team)
+## [P2][done] [svk-panorama] Egna domäner: inför host-baserad tenant-resolution (Host -> Team)
 
 ## Context
 Publicerade turer ska serveras på varje teams egna domän (`panorama.<org>.se`) från samma FastAPI-app. För att avgöra vilket teams innehåll en request gäller behöver appen slå upp request-Host mot ett Team. Utan detta kan appen inte servera rätt tur på en kunddomän. Grund för hela kunddomän-featuren (TASK-396/397 hänger på den).
@@ -85,7 +85,7 @@ Ny middleware i app/main.py (registreras i rätt ordning). Slå upp mot `Team.ba
 
 ---
 
-## [P2][todo] [svk-panorama] Egna domäner: aktivera proxy-headers på uvicorn bakom reverse proxy
+## [P2][done] [svk-panorama] Egna domäner: aktivera proxy-headers på uvicorn bakom reverse proxy
 
 ## Context
 uvicorn startas idag UTAN `--proxy-headers`/`ProxyHeadersMiddleware` (verifierat i app/main.py). Bakom en TLS-terminerande reverse proxy (NPM nu, Caddy senare) ser uvicorn en ren HTTP-connection, så `request.base_url` får scheme `http` och kan få fel host. Det bryter alla absoluta URL:er (OG-taggar, delningslänkar, invite-länkar) så snart appen körs bakom proxyn på en riktig domän. Prereq för hela egna-domäner-spåret.
