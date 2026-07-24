@@ -99,6 +99,62 @@
 	</article>
 	{% endif %}
 
+	<article>
+		<h3>Egen domän</h3>
+		<p class="hint">Peka din domän (A/CNAME) mot oss och verifiera ägarskap via TXT-posten. Turerna blir sedan nåbara på din egen domän.</p>
+
+		{% if request.query_params.get('domain') == 'requested' %}
+		<article class="notice"><p>Domän tillagd. Skapa TXT-posten nedan och klicka Verifiera.</p></article>
+		{% elif request.query_params.get('domain') == 'verified' %}
+		<article class="notice"><p>Domänen är verifierad och aktiv.</p></article>
+		{% elif request.query_params.get('domain') == 'cleared' %}
+		<article class="notice"><p>Domänen togs bort.</p></article>
+		{% endif %}
+		{% if request.query_params.get('domain_error') %}
+		<p class="login-error">{{ request.query_params.get('domain_error') }}</p>
+		{% endif %}
+
+		{% if team.base_url %}
+		<p>Aktiv domän: <code>{{ team.base_url }}</code></p>
+		{% if is_team_admin %}
+		<form method="post" action="/team/domain/clear"
+			data-confirm="Ta bort domänen {{ team.base_url }}? Turerna blir bara nåbara på ordinarie adress igen." data-confirm-danger data-confirm-ok="Ta bort domän">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<button type="submit" class="secondary outline">Ta bort domän</button>
+		</form>
+		{% endif %}
+
+		{% elif team.pending_domain %}
+		<p>Väntar på verifiering: <code>{{ team.pending_domain }}</code></p>
+		{% if is_team_admin %}
+		<p class="hint">Skapa en TXT-post hos din domänleverantör:</p>
+		<p>Namn/host: <code>_svk-verify.{{ team.pending_domain }}</code><br>
+		Värde: <code>{{ team.domain_token }}</code></p>
+		<form method="post" action="/team/domain/verify">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<button type="submit">Verifiera nu</button>
+		</form>
+		<form method="post" action="/team/domain/clear">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<button type="submit" class="secondary outline">Avbryt</button>
+		</form>
+		{% endif %}
+
+		{% else %}
+		{% if is_team_admin %}
+		<form method="post" action="/team/domain/request" class="domain-form">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<label>Domän
+				<input type="text" name="domain" required autocomplete="off" placeholder="panorama.dinforsamling.se">
+			</label>
+			<button type="submit">Lägg till domän</button>
+		</form>
+		{% else %}
+		<p class="hint">Ingen egen domän kopplad. Be en team-admin lägga till en.</p>
+		{% endif %}
+		{% endif %}
+	</article>
+
 	{% if activity %}
 	<article>
 		<h3>Senaste aktivitet</h3>
