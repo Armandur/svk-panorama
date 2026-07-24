@@ -1,6 +1,7 @@
 """App-uppstart: FastAPI-instans, lifespan, statiska mounts, routrar."""
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -10,8 +11,10 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-from app import config
-from app.database import init_db
+from app import config, deps
+from app.database import SessionLocal, init_db
+
+logger = logging.getLogger(__name__)
 from app.routes import (
     admin,
     assets,
@@ -50,6 +53,31 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="SVK Panorama", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def resolve_tenant(request: Request, call_next):
+    """Host-baserad tenant-resolution (Fas 4.3): slår upp request-Host mot ett
+    Team (Team.base_url) och sätter request.state.team - läs via deps.current_team.
+    Noll-team-invariant: inget Team.base_url matchar (dagens normalfall, alla
+    base_url NULL) -> team=None, beteendet oförändrat. Hoppar DB-slagningen för
+    statiska tillgångar (undviker en DB-hit per CSS/JS-request). Tillagd FÖRE
+    SessionMiddleware/ProxyHeadersMiddleware nedan -> hamnar innerst (Starlette
+    wrappar sist tillagd ytterst) -> kör EFTER dem, precis före routrarna."""
+    request.state.team = None
+    if not request.url.path.startswith(("/static", "/js")):
+        host = deps._normalize_host(request.url.hostname)
+        if host:
+            db = SessionLocal()
+            try:
+                request.state.team = deps.team_for_host(db, host)
+            except Exception:
+                logger.exception("Tenant-uppslag mot Host misslyckades (host=%s)", host)
+                request.state.team = None
+            finally:
+                db.close()
+    return await call_next(request)
+
 
 # Signerad session-cookie (bär bara användarens id).
 app.add_middleware(SessionMiddleware, secret_key=config.SECRET_KEY, same_site="lax")

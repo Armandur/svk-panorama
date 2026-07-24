@@ -1269,6 +1269,41 @@ def test_jobqueue_registry_prune():
         jobqueue._reset_for_tests()
 
 
+def test_tenant_host_resolution():
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    from app.database import Base, Team
+    from app.deps import _normalize_host, team_for_host
+
+    check("_normalize_host: schema+versaler+port+trailing slash",
+          _normalize_host("https://Panorama.Foo.SE:443/") == "panorama.foo.se")
+    check("_normalize_host: redan ren host oförändrad", _normalize_host("panorama.foo.se") == "panorama.foo.se")
+    check("_normalize_host: tom sträng", _normalize_host("") == "")
+    check("_normalize_host: None", _normalize_host(None) == "")
+    check("_normalize_host: http-schema utan port", _normalize_host("http://Exempel.se/nagot") == "exempel.se")
+
+    # Isolerad in-memory-DB för uppslaget - rör inte den riktiga svk.db.
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    db = Session()
+    try:
+        team_utan_url = Team(name="Utan domän", slug="utan-domain", base_url=None)
+        team_med_url = Team(name="Med domän", slug="med-domain", base_url="https://Panorama.Exempel.SE/")
+        db.add_all([team_utan_url, team_med_url])
+        db.commit()
+
+        match = team_for_host(db, "panorama.exempel.se")
+        check("team_for_host: matchar case/schema-okänsligt", match is not None and match.id == team_med_url.id)
+        check("team_for_host: okänd host -> None", team_for_host(db, "okand.se") is None)
+        check("team_for_host: tom host -> None", team_for_host(db, "") is None)
+        check("team_for_host: team utan base_url matchar aldrig",
+              db.query(Team).filter(Team.base_url.isnot(None), Team.base_url != "").count() == 1)
+    finally:
+        db.close()
+
+
 def main() -> int:
     for fn in (
         test_map_payload_position,
@@ -1305,6 +1340,7 @@ def main() -> int:
         test_history_attribution,
         test_history_diff,
         test_jobqueue_registry_prune,
+        test_tenant_host_resolution,
     ):
         fn()
     print(f"\n{_passed} passed, {_failed} failed")

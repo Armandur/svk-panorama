@@ -33,6 +33,50 @@ CSRF_COOKIE_NAME = "csrf_token"
 __all__ = ["get_db", "templates", "CSRF_COOKIE_NAME", "request_origin"]  # get_db re-exporteras här
 
 
+# --- Host-baserad tenant-resolution (Fas 4.3) -----------------------------
+# Publicerade turer ska kunna servas på ett teams egen domän (Team.base_url).
+# Middleware i app/main.py slår upp request-Host mot ett Team och sätter
+# request.state.team - noll-team-invariant: matchar inget (dagens normalfall,
+# alla base_url NULL) -> team=None, beteendet oförändrat.
+
+
+def _normalize_host(value: str | None) -> str:
+    """Normaliserar en host för jämförelse: ta bort ev. scheme, lowercase,
+    ta bort port och trailing slash/path. Används på BÅDE request-Host och
+    lagrad Team.base_url innan jämförelse så de är jämförbara oavsett hur
+    base_url skrevs in (med/utan schema, versaler, trailing slash)."""
+    if not value:
+        return ""
+    host = value.strip().lower()
+    if "://" in host:
+        host = host.split("://", 1)[1]
+    host = host.split("/", 1)[0]  # trailing path
+    host = host.rsplit(":", 1)[0] if host.count(":") == 1 else host  # port (inte IPv6)
+    return host
+
+
+def team_for_host(db: Session, host: str | None):
+    """Team vars base_url matchar host (normaliserat, case-/schema-okänsligt),
+    annars None. Litet table -> laddar kandidater (icke-tom base_url) och
+    matchar i Python i stället för SQL-normalisering."""
+    from app.database import Team
+
+    normalized = _normalize_host(host)
+    if not normalized:
+        return None
+    candidates = db.query(Team).filter(Team.base_url.isnot(None), Team.base_url != "").all()
+    for team in candidates:
+        if _normalize_host(team.base_url) == normalized:
+            return team
+    return None
+
+
+def current_team(request: Request):
+    """Läser teamet som tenant-middlewaren slog upp ur Host-headern (Fas 4.3).
+    None = ingen tenant-domän matchade (dagens normalfall)."""
+    return getattr(request.state, "team", None)
+
+
 def request_origin(request: Request) -> str:
     """Absolut origin (schema + host, utan avslutande /) för externa länkar:
     delningslänkar, OG-taggar, inbjudningslänkar. `SVK_BASE_URL` vinner om satt,
