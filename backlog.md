@@ -204,9 +204,18 @@ Idag kör editorn som en efemär dev-instans på ubuntu-ai-VM:en (`192.168.1.42`
 - [ ] Editorn paketerad som Docker-container på TERVO2 (dockyard/Unraid)
 - [ ] Persistent volym för `projects/`, `media/`, `svk.db` (överlever omstart/uppdatering)
 - [ ] Riktiga admin-creds (inte admin/admin); `SVK_SECRET_KEY` satt persistent
-- [ ] Egen port + svc-registrering; NPM-hosten pano.pettersson-vik.se (TASK-392) pekas om från `.42` (VM) till `.2` (container)
+- [ ] Egen port + svc-registrering; NPM-hosten pano.pettersson-vik.se (TASK-392, host id 60) pekas om från `.42` (VM) till `.2:<port>` (container)
 - [ ] Startas med proxy-headers (TASK-393)
+- [ ] Kunddomän-provisionering (TASK-397/399) fungerar från containern (se nedan)
 - [ ] Verifierat: editor + turer fungerar mot containern via pano.pettersson-vik.se
+
+## Kunddomän-provisionering i prod (ingen kodändring - services/npm.py är konfig-driven)
+Flödet är identiskt (NPM äger :443, appen anropar NPM:s REST-API, HTTP-01). Bara adresser + env-plats ändras:
+- **Forward-target:** `SVK_APP_FORWARD_HOST=192.168.1.2` + `SVK_APP_FORWARD_PORT=<containerns publicerade port>` (TERVO2 host-IP, samma konvention som övriga TERVO2-containrar) i stället för VM `192.168.1.42:8005`.
+- **NPM-API-URL:** behåll `http://192.168.1.2:8181/api` (container når värdens LAN-IP, normalfall). Fallback om blockerat: lägg app-containern på NPM:s Docker-nätverk och använd `http://nginx-proxy-manager:81/api` (containernamn + NPM:s INTERNA port 81, inte host-mappade 8181).
+- **Env-plats:** `SVK_NPM_API_URL/USER/PASS` + `SVK_APP_FORWARD_HOST/PORT` + `SVK_PLATFORM_DOMAIN` + `SVK_TRUSTED_PROXIES` sätts i Docker/Unraid-env (NPM-creds som secret i templaten, ALDRIG i image/repo). `secrets.fish` gäller bara VM:ens fish-shell.
+- **FINLIR - proxy-headers:** när både NPM och appen är containrar på TERVO2 är källan appen ser sannolikt en docker-bridge-IP (`172.x`), inte `192.168.1.2` -> `SVK_TRUSTED_PROXIES` kan behöva den IP:n i stället/också. Verifiera i browser/loggar när containern kör (annars blir og:url/scheme fel).
+- **Bekräfta i prod:** att app-containern faktiskt NÅR NPM:s API (host-IP `:8181` eller shared-network `:81`).
 
 ## Implementation hints
 Hosting-mognad: VM-dev (nu) -> prod-container TERVO2 (denna) -> Hetzner (TASK-400, vid behov). Använd `skapa-unraid-container`-skillen (dockyard). Skilt från TASK-400 (extern box, bara vid SLA-krav). Docker single-container-mönstret i CLAUDE.md.
