@@ -185,6 +185,23 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
+## [P3][done] [svk-panorama] Egna domäner: avprovisionera NPM-host vid team-radering (orphan-lucka)
+
+## Context
+npm.deprovision_domain anropas idag BARA i clear_domain (explicit Ta bort doman-knapp). Raderas ett team med aktiv doman (Team.base_url satt -> provisionerad NPM-proxy-host + cert) blir de foraldralosa: hosten pekar kvar pa appen (tenant-resolution hittar inget team) och certet auto-fornyas for evigt pa en dod doman.
+
+## Fix
+delete_team_by_id (app/routes/teams.py, delad av /team/delete OCH /admin/teams-radering) har redan team-objektet + npm ar importerat. Fanga team.base_url och anropa npm.deprovision_domain efter lyckad radering (logga fel, blockera INTE raderingen - samma princip som clear_domain). En punkt tacker bada raderingsvagarna.
+
+## Scope
+Bara team-radering. Per-tur-flytt/agarbyte ror INTE team.base_url (domanen ar team-niva) -> utanfor scope.
+
+- ID: `01KYAK4JERH7ACPRVK4NF6X7W6`
+- Type: bug
+- Actor: ai:claude-opus-4-8
+
+---
+
 ## [P3][done] [svk-panorama] Byt standard-tjänstenamn (SVK_SITE_NAME) till 'Pano'
 
 Default-tjänstenamnet (config.SVK_SITE_NAME, exponeras som Jinja-globalen site_name -> brand + titlar, redigerbart pa /admin/settings) bor vara 'Pano' i stallet for nuvarande default. Matchar produktnamnet (pano.pettersson-vik.se, _pano-verify). En-radare i config.py; DB-override pa /admin/settings vinner fortfarande over defaulten. Kontrollera om den korande instansen har en DB-override satt (visar 'SVK Panorama') - i sa fall behovs aven den uppdateras eller nollas for att defaulten ska synas.
