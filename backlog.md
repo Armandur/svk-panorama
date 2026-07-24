@@ -105,7 +105,7 @@ Antingen uvicorn-flaggor eller Starlette `ProxyHeadersMiddleware` i app/main.py.
 
 ---
 
-## [P2][todo] [svk-panorama] Egna domäner: driftsätt editorn bakom NPM-hosten pano.pettersson-vik.se
+## [P2][done] [svk-panorama] Egna domäner: driftsätt editorn bakom NPM-hosten pano.pettersson-vik.se
 
 ## Context
 Editor-/admin-appen (där fotografer loggar in och bygger turer) behöver en stabil publik adress. Startläget är en NPM-proxy-host på plattformsdomänen `pano.pettersson-vik.se`, per-host HTTP-01-cert som de ~55 befintliga hostarna. Trivialt och rör inte multi-tenant-domänlogiken.
