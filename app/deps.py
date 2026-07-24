@@ -79,14 +79,22 @@ def current_team(request: Request):
 
 def request_origin(request: Request) -> str:
     """Absolut origin (schema + host, utan avslutande /) för externa länkar:
-    delningslänkar, OG-taggar, inbjudningslänkar. `SVK_BASE_URL` vinner om satt,
-    annars härleds den ur requesten (Host + schema).
+    delningslänkar, OG-taggar, inbjudningslänkar. SINGLE SEAM (Fas 4.3) - alla
+    5 call sites följer med automatiskt.
 
-    SINGLE SEAM (Fas 4): när team kör på egna domäner ska detta bli per-team
-    (`Team.base_url`) - byt HÄR så alla call sites följer med. Se ROADMAP
-    "OG + absoluta URL:er i multi-tenant". Bakom reverse proxy (Caddy) krävs
-    proxy-headers (`--proxy-headers` + X-Forwarded-Proto/Host) för att
-    `request.base_url` ska ge korrekt https-schema och tenant-host."""
+    Prioritet: (1) en resolverad tenant (`current_team`, satt av host-middlewaren)
+    med eget `Team.base_url` -> teamets egen https-origin (per-tenant, för
+    white-label - varje kund äger sin egen OG-förhandsvisning/länk). (2) annars
+    dagens beteende: `SVK_BASE_URL` om satt, annars härleds ur requesten
+    (Host + schema). `SVK_BASE_URL` är alltså bara en fallback UTANFÖR
+    tenant-kontext - den kapar inte längre en tenants origin. Bakom reverse
+    proxy (Caddy) krävs proxy-headers (`--proxy-headers` +
+    X-Forwarded-Proto/Host) för att `request.base_url` ska ge korrekt
+    https-schema och tenant-host."""
+    team = current_team(request)
+    base_url = getattr(team, "base_url", None) if team is not None else None
+    if base_url and base_url.strip():
+        return "https://" + _normalize_host(base_url)
     return config.BASE_URL or str(request.base_url).rstrip("/")
 
 

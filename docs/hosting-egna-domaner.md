@@ -235,10 +235,11 @@ komma igång, och domänkoden skrivs inte om.
 
 ## 7. Kodpåverkan (mestadels redan förberett)
 
-- **`deps.request_origin(request)`** är redan single seam (5 call sites
-  konsoliderade). Byts till att läsa `Team.base_url` före request-host -> per-team
-  origin på ETT ställe. Gäller alla domänspår, och gör en framtida TERVO2 ->
-  Hetzner-flytt transparent för domänlogiken.
+- **`deps.request_origin(request)`** är single seam (5 call sites konsoliderade)
+  och läser (TASK-395, klart) `current_team(request).base_url` FÖRE
+  request-host/`SVK_BASE_URL` -> per-team origin på ETT ställe. `SVK_BASE_URL`
+  är nu bara fallback UTANFÖR tenant-kontext. Gäller alla domänspår, och gör en
+  framtida TERVO2 -> Hetzner-flytt transparent för domänlogiken.
 - **Proxy-headers saknas idag** (verifierat: ingen `--proxy-headers`/
   `ProxyHeadersMiddleware`). Bakom vilken reverse proxy som helst (NPM eller
   Caddy) måste uvicorn startas med `--proxy-headers --forwarded-allow-ips=<proxy-ip>`
@@ -255,9 +256,9 @@ komma igång, och domänkoden skrivs inte om.
 - **NPM-API-integration (bara för steg 1 på TERVO2):** provisioneringsskript mot
   NPM:s REST-API (skapa proxy-host + cert vid verifierad domän). Slängs om/när
   plattformen flyttar till Caddy - Caddy behöver ingen sådan kod.
-- **og:url-policy:** per-domän (request/`Team.base_url`) är rätt för white-label -
-  varje kund äger sin egen förhandsvisning. Dokumenteras när `Team.base_url`
-  införs.
+- **og:url-policy:** per-domän (`request_origin` läser `Team.base_url`) är rätt
+  för white-label - varje kund äger sin egen förhandsvisning. Implementerat
+  (TASK-395).
 
 ## Källor
 

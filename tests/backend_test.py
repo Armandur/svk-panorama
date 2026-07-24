@@ -1304,6 +1304,40 @@ def test_tenant_host_resolution():
         db.close()
 
 
+def test_request_origin():
+    import types
+
+    from app import config
+    from app.deps import request_origin
+
+    def fake_request(team=None, base_url="http://editor.local/"):
+        return types.SimpleNamespace(state=types.SimpleNamespace(team=team), base_url=base_url)
+
+    orig_base_url = config.BASE_URL
+    try:
+        team = types.SimpleNamespace(base_url="https://Panorama.Foo.SE/")
+        check("request_origin: tenant med base_url -> normaliserad https-origin",
+              request_origin(fake_request(team=team)) == "https://panorama.foo.se")
+
+        config.BASE_URL = ""
+        check("request_origin: ingen tenant -> faller tillbaka på request.base_url",
+              request_origin(fake_request(team=None)) == "http://editor.local")
+
+        team_utan_url = types.SimpleNamespace(base_url=None)
+        check("request_origin: tenant utan base_url -> fallback",
+              request_origin(fake_request(team=team_utan_url)) == "http://editor.local")
+
+        team_tom_url = types.SimpleNamespace(base_url="  ")
+        check("request_origin: tenant med tom/whitespace base_url -> fallback",
+              request_origin(fake_request(team=team_tom_url)) == "http://editor.local")
+
+        config.BASE_URL = "https://global.exempel.se"
+        check("request_origin: ingen tenant men SVK_BASE_URL satt -> global vinner",
+              request_origin(fake_request(team=None)) == "https://global.exempel.se")
+    finally:
+        config.BASE_URL = orig_base_url
+
+
 def main() -> int:
     for fn in (
         test_map_payload_position,
@@ -1341,6 +1375,7 @@ def main() -> int:
         test_history_diff,
         test_jobqueue_registry_prune,
         test_tenant_host_resolution,
+        test_request_origin,
     ):
         fn()
     print(f"\n{_passed} passed, {_failed} failed")
