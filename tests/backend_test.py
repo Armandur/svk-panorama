@@ -1304,6 +1304,59 @@ def test_tenant_host_resolution():
         db.close()
 
 
+def test_domain_verification():
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    from app.database import Base, Team
+    from app.services import domains
+
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    db = Session()
+    try:
+        team = Team(name="Team A", slug="team-a")
+        db.add(team)
+        db.commit()
+
+        token = domains.request_domain(db, team, "https://Panorama.Exempel.SE/")
+        check("request_domain: sätter pending_domain normaliserad",
+              team.pending_domain == "panorama.exempel.se")
+        check("request_domain: token icke-tom", bool(token) and team.domain_token == token)
+
+        domains.lookup_txt = lambda name: ["fel-token"]
+        ok = domains.verify_domain(db, team)
+        check("verify_domain: fel TXT -> False", ok is False)
+        check("verify_domain: fel TXT -> base_url oförändrad", team.base_url is None)
+        check("verify_domain: fel TXT -> pending kvar", team.pending_domain == "panorama.exempel.se")
+
+        domains.lookup_txt = lambda name: [team.domain_token]
+        ok = domains.verify_domain(db, team)
+        check("verify_domain: rätt TXT -> True", ok is True)
+        check("verify_domain: base_url satt normaliserad", team.base_url == "panorama.exempel.se")
+        check("verify_domain: pending_domain nollad", team.pending_domain is None)
+        check("verify_domain: domain_token nollad", team.domain_token is None)
+
+        # Unikhet: ett annat team har redan domänen som aktiv base_url.
+        other = Team(name="Team B", slug="team-b", base_url="upptagen.se")
+        challenger = Team(name="Team C", slug="team-c")
+        db.add_all([other, challenger])
+        db.commit()
+        domains.request_domain(db, challenger, "upptagen.se")
+        domains.lookup_txt = lambda name: [challenger.domain_token]
+        ok = domains.verify_domain(db, challenger)
+        check("verify_domain: upptagen domän -> False", ok is False)
+        check("verify_domain: upptagen domän -> base_url ej satt", challenger.base_url is None)
+
+        domains.clear_domain(db, team)
+        check("clear_domain: nollar base_url", team.base_url is None)
+        check("clear_domain: nollar pending_domain", team.pending_domain is None)
+        check("clear_domain: nollar domain_token", team.domain_token is None)
+    finally:
+        db.close()
+
+
 def test_request_origin():
     import types
 
@@ -1375,6 +1428,7 @@ def main() -> int:
         test_history_diff,
         test_jobqueue_registry_prune,
         test_tenant_host_resolution,
+        test_domain_verification,
         test_request_origin,
     ):
         fn()

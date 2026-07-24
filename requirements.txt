@@ -6,3 +6,4 @@ sqlalchemy==2.0.51
 pillow==12.3.0
 bcrypt==5.0.0
 itsdangerous==2.2.0
+dnspython==2.8.0

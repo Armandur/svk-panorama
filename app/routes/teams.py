@@ -33,6 +33,7 @@ from app.deps import (
     verify_csrf_header,
 )
 from app.services import checkout
+from app.services import domains as domains_svc
 from app.services import history
 from app.services import media as media_svc
 from app.services import storage
@@ -376,6 +377,61 @@ async def rename_team(
         team.name = name
         db.commit()
     return RedirectResponse(url="/team", status_code=303)
+
+
+@router.post("/team/domain/request")
+async def request_domain(
+    request: Request,
+    db: Session = Depends(get_db),
+    domain: str = Form(...),
+    admin: User = Depends(require_team_admin),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Registrera en domän som väntar på TXT-verifiering (TASK-396). Team-admin
+    lägger sedan `_svk-verify.<domän>` TXT = token, verifierar via /verify."""
+    if admin.team_id is None:
+        raise HTTPException(status_code=400, detail="Du tillhör inget team")
+    team = db.get(Team, admin.team_id)
+    try:
+        domains_svc.request_domain(db, team, domain)
+    except ValueError as exc:
+        return RedirectResponse(url=f"/team?domain_error={quote(str(exc))}", status_code=303)
+    return RedirectResponse(url="/team?domain=requested", status_code=303)
+
+
+@router.post("/team/domain/verify")
+async def verify_domain(
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_team_admin),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Slå upp TXT-posten och aktivera domänen (base_url) vid match (TASK-396)."""
+    if admin.team_id is None:
+        raise HTTPException(status_code=400, detail="Du tillhör inget team")
+    team = db.get(Team, admin.team_id)
+    ok = domains_svc.verify_domain(db, team)
+    if ok:
+        return RedirectResponse(url="/team?domain=verified", status_code=303)
+    return RedirectResponse(
+        url=f"/team?domain_error={quote('Kunde inte verifiera domänen - TXT-posten hittades inte eller stämmer inte.')}",
+        status_code=303,
+    )
+
+
+@router.post("/team/domain/clear")
+async def clear_domain(
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_team_admin),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Avaktivera teamets domän (nollar base_url + ev. väntande verifiering)."""
+    if admin.team_id is None:
+        raise HTTPException(status_code=400, detail="Du tillhör inget team")
+    team = db.get(Team, admin.team_id)
+    domains_svc.clear_domain(db, team)
+    return RedirectResponse(url="/team?domain=cleared", status_code=303)
 
 
 @router.post("/team/leave")
