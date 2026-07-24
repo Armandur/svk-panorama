@@ -148,3 +148,18 @@ DEMO_RESET_TOKEN = os.environ.get("SVK_DEMO_RESET_TOKEN", "").strip()
 # PRE-PRODUKTION: default admin/admin. BYT (via env) innan produktion.
 ADMIN_EMAIL = os.environ.get("SVK_ADMIN_EMAIL", "admin").strip().lower()
 ADMIN_PASSWORD = os.environ.get("SVK_ADMIN_PASSWORD", "admin")
+
+# NPM-autoprovisionering (TASK-397): när ett team verifierat sin domän (base_url)
+# skapas automatiskt en Nginx Proxy Manager-proxy-host + Let's Encrypt-cert som
+# forward:ar till appen. Okonfigurerat (default, tomma värden) = no-op - se
+# services/npm.py:is_configured(). NPM_API_URL pekar mot NPM:s REST-API (t.ex.
+# http://192.168.1.2:8181/api). APP_FORWARD_HOST/PORT = vart NPM ska forwarda
+# (appens egen adress, inte klientens).
+NPM_API_URL = os.environ.get("SVK_NPM_API_URL", "").rstrip("/")
+NPM_API_USER = os.environ.get("SVK_NPM_API_USER", "")
+NPM_API_PASS = os.environ.get("SVK_NPM_API_PASS", "")
+APP_FORWARD_HOST = os.environ.get("SVK_APP_FORWARD_HOST", "")
+try:
+    APP_FORWARD_PORT = int(os.environ.get("SVK_APP_FORWARD_PORT", "0"))
+except ValueError:
+    APP_FORWARD_PORT = 0

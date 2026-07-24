@@ -1357,6 +1357,133 @@ def test_domain_verification():
         db.close()
 
 
+def test_npm_provisioning():
+    from app import config
+    from app.services import npm
+
+    saved = (
+        config.NPM_API_URL,
+        config.NPM_API_USER,
+        config.NPM_API_PASS,
+        config.APP_FORWARD_HOST,
+        config.APP_FORWARD_PORT,
+    )
+    orig_api = npm._api
+    try:
+        config.NPM_API_URL = ""
+        config.NPM_API_USER = ""
+        config.NPM_API_PASS = ""
+        config.APP_FORWARD_HOST = ""
+        config.APP_FORWARD_PORT = 0
+        check("is_configured: False när okonfigurerat", npm.is_configured() is False)
+
+        config.NPM_API_URL = "http://npm.test/api"
+        config.NPM_API_USER = "u"
+        config.NPM_API_PASS = "p"
+        config.APP_FORWARD_HOST = "10.0.0.5"
+        config.APP_FORWARD_PORT = 8002
+        check("is_configured: True när allt satt", npm.is_configured() is True)
+
+        # Okonfigurerat -> provision/deprovision är no-op, inga _api-anrop.
+        config.NPM_API_URL = ""
+        calls_noop = []
+        npm._api = lambda *a, **kw: calls_noop.append((a, kw)) or (0, None)
+        result = npm.provision_domain("exempel.se")
+        check("provision_domain: okonfigurerat -> skipped", result == {"ok": False, "skipped": True, "error": None})
+        check("provision_domain: okonfigurerat -> inga anrop", calls_noop == [])
+        result = npm.deprovision_domain("exempel.se")
+        check("deprovision_domain: okonfigurerat -> skipped", result == {"ok": False, "skipped": True, "error": None})
+
+        config.NPM_API_URL = "http://npm.test/api"
+
+        # Happy path: inget befintligt -> skapa cert (tom meta) + proxy-host.
+        calls = []
+
+        def fake_api(method, path, token=None, body=None, timeout=120):
+            calls.append((method, path, token, body))
+            if path == "/tokens":
+                return 200, {"token": "tok"}
+            if path == "/nginx/proxy-hosts" and method == "GET":
+                return 200, []
+            if path == "/nginx/certificates":
+                return 201, {"id": 42}
+            if path == "/nginx/proxy-hosts" and method == "POST":
+                return 201, {"id": 7}
+            return 404, None
+
+        npm._api = fake_api
+        result = npm.provision_domain("panorama.exempel.se")
+        check("provision_domain: happy path -> ok True", result == {"ok": True, "skipped": False, "error": None})
+        cert_calls = [c for c in calls if c[1] == "/nginx/certificates"]
+        check("provision_domain: cert-anrop gjort", len(cert_calls) == 1)
+        check("provision_domain: cert meta tom", cert_calls[0][3]["meta"] == {})
+        check("provision_domain: cert domain_names rätt", cert_calls[0][3]["domain_names"] == ["panorama.exempel.se"])
+        host_calls = [c for c in calls if c[1] == "/nginx/proxy-hosts" and c[0] == "POST"]
+        check("provision_domain: proxy-host-anrop gjort", len(host_calls) == 1)
+        check("provision_domain: forward_host/port rätt", host_calls[0][3]["forward_host"] == "10.0.0.5" and host_calls[0][3]["forward_port"] == 8002)
+        check("provision_domain: certificate_id rätt", host_calls[0][3]["certificate_id"] == 42)
+
+        # Idempotent: _find_host hittar befintlig -> inget cert/host skapas.
+        calls2 = []
+
+        def fake_api_existing(method, path, token=None, body=None, timeout=120):
+            calls2.append((method, path, token, body))
+            if path == "/tokens":
+                return 200, {"token": "tok"}
+            if path == "/nginx/proxy-hosts" and method == "GET":
+                return 200, [{"id": 1, "domain_names": ["panorama.exempel.se"]}]
+            return 404, None
+
+        npm._api = fake_api_existing
+        result = npm.provision_domain("panorama.exempel.se")
+        check("provision_domain: idempotent -> ok True", result == {"ok": True, "skipped": False, "error": None})
+        check("provision_domain: idempotent -> inget cert skapat", all(c[1] != "/nginx/certificates" for c in calls2))
+        check("provision_domain: idempotent -> ingen POST proxy-host", all(not (c[1] == "/nginx/proxy-hosts" and c[0] == "POST") for c in calls2))
+
+        # Deprovision: hittar host -> DELETE med rätt id.
+        calls3 = []
+
+        def fake_api_delete(method, path, token=None, body=None, timeout=120):
+            calls3.append((method, path, token, body))
+            if path == "/tokens":
+                return 200, {"token": "tok"}
+            if path == "/nginx/proxy-hosts" and method == "GET":
+                return 200, [{"id": 99, "domain_names": ["panorama.exempel.se"]}]
+            if path == "/nginx/proxy-hosts/99" and method == "DELETE":
+                return 200, {}
+            return 404, None
+
+        npm._api = fake_api_delete
+        result = npm.deprovision_domain("panorama.exempel.se")
+        check("deprovision_domain: finns -> ok True", result == {"ok": True, "skipped": False, "error": None})
+        check("deprovision_domain: DELETE anropad med rätt id", any(c[0] == "DELETE" and c[1] == "/nginx/proxy-hosts/99" for c in calls3))
+
+        # Deprovision: ingen host -> ok utan DELETE.
+        calls4 = []
+
+        def fake_api_none(method, path, token=None, body=None, timeout=120):
+            calls4.append((method, path, token, body))
+            if path == "/tokens":
+                return 200, {"token": "tok"}
+            if path == "/nginx/proxy-hosts" and method == "GET":
+                return 200, []
+            return 404, None
+
+        npm._api = fake_api_none
+        result = npm.deprovision_domain("panorama.exempel.se")
+        check("deprovision_domain: ingen host -> ok True", result == {"ok": True, "skipped": False, "error": None})
+        check("deprovision_domain: ingen host -> ingen DELETE", all(c[0] != "DELETE" for c in calls4))
+    finally:
+        npm._api = orig_api
+        (
+            config.NPM_API_URL,
+            config.NPM_API_USER,
+            config.NPM_API_PASS,
+            config.APP_FORWARD_HOST,
+            config.APP_FORWARD_PORT,
+        ) = saved
+
+
 def test_request_origin():
     import types
 
@@ -1429,6 +1556,7 @@ def main() -> int:
         test_jobqueue_registry_prune,
         test_tenant_host_resolution,
         test_domain_verification,
+        test_npm_provisioning,
         test_request_origin,
     ):
         fn()

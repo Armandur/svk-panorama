@@ -107,6 +107,8 @@
 		<article class="notice"><p>Domän tillagd. Skapa TXT-posten nedan och klicka Verifiera.</p></article>
 		{% elif request.query_params.get('domain') == 'verified' %}
 		<article class="notice"><p>Domänen är verifierad och aktiv.</p></article>
+		{% elif request.query_params.get('domain') == 'verified_no_cert' %}
+		<article class="notice"><p>Domänen är verifierad, men certifikatet kunde inte skapas automatiskt - kontakta support.</p></article>
 		{% elif request.query_params.get('domain') == 'cleared' %}
 		<article class="notice"><p>Domänen togs bort.</p></article>
 		{% endif %}

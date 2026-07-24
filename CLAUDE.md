@@ -661,7 +661,12 @@ TTL i sek, 0=av), `SVK_HISTORY_MAX` (50), `SVK_HISTORY_FLOOR_DAYS` (7),
 `SVK_BASE_URL` (tom; för framtida export/
 delningslänkar), `SVK_TRUSTED_PROXIES` (127.0.0.1; komma-separerad lista IP:er
 `ProxyHeadersMiddleware` litar på för X-Forwarded-Proto/-For, se "Köra").
-`TILE_CONCURRENCY` läses per jobbstart -> justerbart utan omstart (tänkt admin-UI).
+**Kunddomän-provisionering (services/npm.py, Fas 4.3):** `SVK_NPM_API_URL`
+(NPM:s REST-API, t.ex. `http://192.168.1.2:8181/api`), `SVK_NPM_API_USER`,
+`SVK_NPM_API_PASS` (creds i secrets.fish, aldrig i repo), `SVK_APP_FORWARD_HOST`
++ `SVK_APP_FORWARD_PORT` (vart NPM forwardar = appens adress). Alla tomma =
+provisionering är no-op (verifiering sätter ändå base_url, men ingen host/cert
+skapas). `TILE_CONCURRENCY` läses per jobbstart -> justerbart utan omstart (tänkt admin-UI).
 
 ## Fällor att känna till
 

@@ -36,6 +36,7 @@ from app.services import checkout
 from app.services import domains as domains_svc
 from app.services import history
 from app.services import media as media_svc
+from app.services import npm
 from app.services import storage
 from app.services.project_files import (
     _atomic_write_text,
@@ -412,7 +413,16 @@ async def verify_domain(
     team = db.get(Team, admin.team_id)
     ok = domains_svc.verify_domain(db, team)
     if ok:
-        return RedirectResponse(url="/team?domain=verified", status_code=303)
+        result = npm.provision_domain(team.base_url)
+        if result["ok"] or result["skipped"]:
+            return RedirectResponse(url="/team?domain=verified", status_code=303)
+        # Domänen ÄR verifierad (base_url satt) - certifikatet gick bara inte
+        # att skapa automatiskt. Egen flagg så team.html kan visa en varning
+        # utan att låtsas att verifieringen misslyckades.
+        return RedirectResponse(
+            url=f"/team?domain=verified_no_cert&domain_error={quote(result['error'] or 'Okänt fel')}",
+            status_code=303,
+        )
     return RedirectResponse(
         url=f"/team?domain_error={quote('Kunde inte verifiera domänen - TXT-posten hittades inte eller stämmer inte.')}",
         status_code=303,
@@ -430,7 +440,12 @@ async def clear_domain(
     if admin.team_id is None:
         raise HTTPException(status_code=400, detail="Du tillhör inget team")
     team = db.get(Team, admin.team_id)
+    host = team.base_url
     domains_svc.clear_domain(db, team)
+    if host:
+        # Deprovision-fel ska inte blockera clear (base_url är redan nollad) -
+        # bara logga, npm.py loggar redan internt vid fel.
+        npm.deprovision_domain(host)
     return RedirectResponse(url="/team?domain=cleared", status_code=303)
 
 
