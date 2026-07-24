@@ -1,8 +1,20 @@
 # Backlog Export
 
-## [P2][todo] [svk-panorama] Egna domäner: NPM-API verify-then-provision av kunddomän-cert
+## [P2][todo] [svk-panorama] Egna domäner: automatisera kunddomän-cert via NPM-API (verify-then-provision)
 
-Steg 1 (karnan pa TERVO2). Automatisera dagens manuella NPM-process: efter verifierad doman, anropa NPM:s REST-API (nginx-proxy-skillens npm-api.sh visar monstret) for att skapa proxy-host for panorama.org.se mot appen + begara HTTP-01-cert. Idempotens/retries/felhantering; certbot/NPM skoter fornyelser. Slangs om plattformen flyttar till Caddy.
+## Context
+Idag skapas en kunddomäns proxy-host + cert manuellt i NPM (så kör legacy `panorama.svenskakyrkanharnosand.se` redan). För self-serve ska appen automatisera detta: efter verifierad domän (TASK-396) anropa NPM:s REST-API och skapa proxy-host + begära cert. NPM saknar on-demand TLS (statisk config-generator), men API:t räcker för eager provisionering utan handslags-glapp eftersom DNS redan är live vid verifieringstillfället. Kärnan i kunddomän-featuren på TERVO2.
+
+## Acceptance criteria
+- [ ] Efter verifierad domän skapar servern automatiskt en NPM-proxy-host (`panorama.<org>.se` -> app) + begär HTTP-01-cert via NPM:s API
+- [ ] Idempotent: upprepade anrop skapar inte dubbletter; befintlig host uppdateras
+- [ ] Felhantering + retries (DNS-propagation/cert-fördröjning) med tydlig status till team-admin
+- [ ] Token/credentials mot NPM hanteras säkert (inte hårdkodat; jfr npm-api.conf-mönstret)
+- [ ] Avaktivering: nolla domän -> ta bort proxy-hosten (eller inaktivera)
+- [ ] certbot/NPM sköter förnyelser (ingen egen förnyelse-logik behövs)
+
+## Implementation hints
+NPM REST-API (odokumenterat): `POST /api/tokens` -> bearer, `POST /api/nginx/certificates` (LE-cert), `POST /api/nginx/proxy-hosts` (refererar certificate_id). `nginx-proxy`-skillens `npm-api.sh` visar mönstret. Forward-host = där appen kör (VM 192.168.1.42 vid test, container 192.168.1.2 i prod - TASK-402). Trigga från domänverifieringsflödet (TASK-396). Slängs om plattformen flyttar till Caddy (TASK-400).
 
 - ID: `01KY9MR9NZZASMNVBMDHGJKBRQ`
 - Type: feature
@@ -10,9 +22,20 @@ Steg 1 (karnan pa TERVO2). Automatisera dagens manuella NPM-process: efter verif
 
 ---
 
-## [P2][todo] [svk-panorama] Egna domäner: domänverifiering (TXT-token) före aktivering
+## [P2][todo] [svk-panorama] Egna domäner: kräv domänverifiering (TXT-token) innan aktivering
 
-Steg 1. Team lagger till sin doman, verifiera agarskap via DNS TXT-token (eller att domanen redan resolvar till oss) INNAN cert/aktivering. Annars kan team A claima team B:s doman eller trigga cert for godtycklig host. Behovs for bade NPM-API- och Caddy-vagen (Caddys ask-endpoint laser samma tillstand).
+## Context
+Innan en kunddomän aktiveras (proxy-host + cert utfärdas) måste teamet bevisa att det äger domänen. Utan verifiering kan team A claima team B:s domän, eller trigga cert-utfärdande för godtyckliga hostar (missbruk/rate-limit-bränning mot Let's Encrypt). Verifieringen är gemensam grund för både NPM-API-vägen (TASK-397) och en framtida Caddy ask-endpoint (som läser samma tillstånd).
+
+## Acceptance criteria
+- [ ] Team-admin kan begära en domän och får ett verifieringstoken (DNS TXT-record att lägga upp)
+- [ ] Servern verifierar ägarskap (TXT-token matchar ELLER domänen A/CNAME-resolvar till oss) INNAN domänen markeras aktiv
+- [ ] En domän kan inte aktiveras av ett team medan ett annat team äger/verifierat den
+- [ ] Verifieringsstatus lagras på domänen/teamet och kan läsas av provisioneringssteget + en framtida tls-allowed-endpoint
+- [ ] Tydliga felmeddelanden (svenska) vid misslyckad/utebliven verifiering
+
+## Implementation hints
+Datamodell: verifieringstoken + status per domän (på Team.base_url eller en separat domän-tabell om flera domäner/team ska stödjas senare). TXT-uppslag via DNS (t.ex. dnspython). Gate:a aktivering på verifierad status. Detta tillstånd är det TASK-397:s skript och en ev. `GET /internal/tls-allowed?host=` (Caddy) frågar mot.
 
 - ID: `01KY9MR9NKE6HZEFWZPNVMH14X`
 - Type: feature
@@ -20,9 +43,20 @@ Steg 1. Team lagger till sin doman, verifiera agarskap via DNS TXT-token (eller 
 
 ---
 
-## [P2][todo] [svk-panorama] Egna domäner: request_origin till Team.base_url (per-team origin + og:url)
+## [P2][todo] [svk-panorama] Egna domäner: låt request_origin läsa Team.base_url för per-team origin
 
-Steg 1. deps.request_origin ar redan single seam (5 call sites: public/viewer/preview/projects/admin). Byt till att lasa Team.base_url fore request-host sa OG-taggar, delningslankar och invite-lankar pekar pa ratt tenant-doman. Besluta og:url-policy (per-doman for white-label). Gor TERVO2-till-Hetzner-flytt transparent.
+## Context
+Absoluta URL:er (OG `og:url`/`og:image`, publika delningslänkar, invite-länkar) byggs idag ur en enda seam, `deps.request_origin(request)` (redan konsoliderad från 5 call sites: public.py, viewer.py, preview.py, projects.py, admin.py). I multi-tenant måste dessa peka på RÄTT tenant-domän per request, annars läcker förhandsvisningar/länkar mellan kunder eller pekar på plattformsdomänen. Global `SVK_BASE_URL` är en foot-gun (vinner över request-host -> alla tenants får samma origin).
+
+## Acceptance criteria
+- [ ] `request_origin` returnerar teamets origin (ur `Team.base_url` / `request.state.team`) när en tenant är resolverad, annars dagens request-härledda origin
+- [ ] Global `SVK_BASE_URL` slutar överskugga per-tenant-origin (behålls ev. bara som fallback för icke-tenant-kontext)
+- [ ] OG-taggar + `/s`-länk + invite-länk pekar på rätt tenant-domän (verifierat på minst en kunddomän)
+- [ ] og:url-policy beslutad och dokumenterad: per-domän (request/Team.base_url) för white-label
+- [ ] Noll-team/plattformshost: oförändrat beteende
+
+## Implementation hints
+Ändra bara i `deps.request_origin` (en punkt -> når alla 5 call sites). Läs `request.state.team` (TASK-394). Kräver proxy-headers (TASK-393) för rätt scheme. Bygger vidare på ROADMAP-noten "OG + absoluta URL:er i multi-tenant".
 
 - ID: `01KY9MR9N70JNA3NC8XHQEYPAQ`
 - Type: feature
@@ -30,9 +64,20 @@ Steg 1. deps.request_origin ar redan single seam (5 call sites: public/viewer/pr
 
 ---
 
-## [P2][todo] [svk-panorama] Egna domäner: host-baserad tenant-resolution (Host till Team)
+## [P2][todo] [svk-panorama] Egna domäner: inför host-baserad tenant-resolution (Host -> Team)
 
-Steg 1. Middleware efter SessionMiddleware, fore routrar: sla upp request-Host till Team, satt request.state.team. panorama.org.se serverar ratt teams innehall. Grund for kunddomaner.
+## Context
+Publicerade turer ska serveras på varje teams egna domän (`panorama.<org>.se`) från samma FastAPI-app. För att avgöra vilket teams innehåll en request gäller behöver appen slå upp request-Host mot ett Team. Utan detta kan appen inte servera rätt tur på en kunddomän. Grund för hela kunddomän-featuren (TASK-396/397 hänger på den).
+
+## Acceptance criteria
+- [ ] En middleware slår upp `request` Host mot `Team.base_url` och sätter `request.state.team` (None om ingen match)
+- [ ] Placerad EFTER `SessionMiddleware` men FÖRE routrarna
+- [ ] En request mot `panorama.<org>.se` resolvar till rätt Team och serverar det teamets publika tur(er)
+- [ ] Plattformshosten (pano.pettersson-vik.se) och okända hostar beter sig som idag (ingen tenant -> normalt beteende)
+- [ ] Host-matchning är case-insensitiv och ignorerar port
+
+## Implementation hints
+Ny middleware i app/main.py (registreras i rätt ordning). Slå upp mot `Team.base_url` (normaliserad host). Konsumeras av `deps.request_origin` (TASK-395) och de publika viewer-routerna. Noll-team = oförändrat beteende (samma invariant som Fas 4.1-gaten). Överväg hur `/s/{token}` och `/view` samspelar med tenant-host.
 
 - ID: `01KY9MR9MXE5S1M81QAXWZ65PN`
 - Type: feature
@@ -40,9 +85,19 @@ Steg 1. Middleware efter SessionMiddleware, fore routrar: sla upp request-Host t
 
 ---
 
-## [P2][todo] [svk-panorama] Egna domäner: proxy-headers på uvicorn bakom reverse proxy
+## [P2][todo] [svk-panorama] Egna domäner: aktivera proxy-headers på uvicorn bakom reverse proxy
 
-Prereq (docs/hosting-egna-domaner.md avsnitt 7). Idag saknas --proxy-headers/ProxyHeadersMiddleware, sa request.base_url ger fel scheme (http) bakom NPM/Caddy. Starta uvicorn med --proxy-headers --forwarded-allow-ips=proxy-ip; verifiera att NPM skickar X-Forwarded-Proto (Host bar originalhost, X-Forwarded-Host saknas i NPM). Maste in fore valfritt domanspar.
+## Context
+uvicorn startas idag UTAN `--proxy-headers`/`ProxyHeadersMiddleware` (verifierat i app/main.py). Bakom en TLS-terminerande reverse proxy (NPM nu, Caddy senare) ser uvicorn en ren HTTP-connection, så `request.base_url` får scheme `http` och kan få fel host. Det bryter alla absoluta URL:er (OG-taggar, delningslänkar, invite-länkar) så snart appen körs bakom proxyn på en riktig domän. Prereq för hela egna-domäner-spåret.
+
+## Acceptance criteria
+- [ ] uvicorn startas med `--proxy-headers` och `--forwarded-allow-ips=<proxy-ip>` (inte `*`)
+- [ ] `request.base_url` ger `https` + korrekt host bakom NPM (verifierat mot pano.pettersson-vik.se)
+- [ ] `X-Forwarded-Proto` respekteras; dokumentera att NPM inte skickar `X-Forwarded-Host` (originalhost bärs i `Host`)
+- [ ] Startkommandot i CLAUDE.md ("Köra") + README uppdaterat
+
+## Implementation hints
+Antingen uvicorn-flaggor eller Starlette `ProxyHeadersMiddleware` i app/main.py. NPM (openresty) sätter `X-Forwarded-Proto/For`, `X-Real-IP` men INTE `X-Forwarded-Host`. `forwarded-allow-ips` = NPM/TERVO2-IP, aldrig `*`. Detta är samma seam som `deps.request_origin` (TASK-395) läser.
 
 - ID: `01KY9MR9MGGSJBSF2ANEA5V2YX`
 - Type: improvement
@@ -50,9 +105,19 @@ Prereq (docs/hosting-egna-domaner.md avsnitt 7). Idag saknas --proxy-headers/Pro
 
 ---
 
-## [P2][todo] [svk-panorama] Egna domäner: deploya editorn på pano.pettersson-vik.se (NPM-host)
+## [P2][todo] [svk-panorama] Egna domäner: driftsätt editorn bakom NPM-hosten pano.pettersson-vik.se
 
-Steg 0 i docs/hosting-egna-domaner.md. En NPM-proxy-host för editor-/admin-appen (pano.pettersson-vik.se mot appen på TERVO2), per-host HTTP-01-cert som de befintliga. Ingen multi-tenant-domänlogik. Fotografer loggar in och bygger här; turer nås via /view och /s/{token}.
+## Context
+Editor-/admin-appen (där fotografer loggar in och bygger turer) behöver en stabil publik adress. Startläget är en NPM-proxy-host på plattformsdomänen `pano.pettersson-vik.se`, per-host HTTP-01-cert som de ~55 befintliga hostarna. Trivialt och rör inte multi-tenant-domänlogiken.
+
+## Acceptance criteria
+- [ ] NPM-proxy-host `pano.pettersson-vik.se` -> app, med giltigt Let's Encrypt-cert
+- [ ] Inloggning + editor-flödet fungerar över https på hosten
+- [ ] Turer nås via `/view` och delas via `/s/{token}` på hosten
+- [ ] Fungerar med proxy-headers (TASK-393) så absoluta URL:er blir https
+
+## Implementation hints
+Skapa hosten via `nginx-proxy`-skillens `npm-api.sh --host-create`. Forward-host: VM `192.168.1.42` vid test (som kort/hrlon/viva idag), byts till container `192.168.1.2` när prod-containern finns (TASK-402). Ingen tenant-logik här - det är plattformens egen host.
 
 - ID: `01KY9MR9M12PEGYZBDJ9W8371N`
 - Type: chore
@@ -120,9 +185,21 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
-## [P3][todo] [svk-panorama] Egna domäner: produktions-Docker-container på TERVO2 (ersätt VM-dev-instans)
+## [P3][todo] [svk-panorama] Egna domäner: paketera editorn som produktions-container på TERVO2
 
-Idag kor editorn som en efemar dev-instans pa ubuntu-ai-VM:en (192.168.1.42, port 8005, admin/admin, delad svk.db). For produktion: paketera som en riktig Docker-container pa TERVO2 (dockyard/Unraid) med persistent volym for projects/media/svk.db, riktiga creds (inte admin/admin), egen port + svc-registrering. NPM-hosten pano.pettersson-vik.se (TASK-392) pekas da om fran 192.168.1.42 (VM) till 192.168.1.2 (container). VIKTIGT: hela egna-domaner-featuren kan TESTAS mot VM-instansen fore detta - NPM forwardar till VM likt kort/hrlon/viva idag, sa kunddoman-proxy-hosts fungerar identiskt. Skilt fran TASK-400 (extern Hetzner-box, bara vid SLA-krav). Hosting-mognad: VM-dev (nu) -> prod-container TERVO2 (denna) -> Hetzner (TASK-400, vid behov).
+## Context
+Idag kör editorn som en efemär dev-instans på ubuntu-ai-VM:en (`192.168.1.42`, port 8005, admin/admin, delad svk.db). För produktion behövs en riktig, persistent container på TERVO2. Detta är ett DRIFTsteg skilt från domänfeaturen: hela egna-domäner-featuren kan testas mot VM-instansen (NPM forwardar till VM likt kort/hrlon/viva) innan containern finns.
+
+## Acceptance criteria
+- [ ] Editorn paketerad som Docker-container på TERVO2 (dockyard/Unraid)
+- [ ] Persistent volym för `projects/`, `media/`, `svk.db` (överlever omstart/uppdatering)
+- [ ] Riktiga admin-creds (inte admin/admin); `SVK_SECRET_KEY` satt persistent
+- [ ] Egen port + svc-registrering; NPM-hosten pano.pettersson-vik.se (TASK-392) pekas om från `.42` (VM) till `.2` (container)
+- [ ] Startas med proxy-headers (TASK-393)
+- [ ] Verifierat: editor + turer fungerar mot containern via pano.pettersson-vik.se
+
+## Implementation hints
+Hosting-mognad: VM-dev (nu) -> prod-container TERVO2 (denna) -> Hetzner (TASK-400, vid behov). Använd `skapa-unraid-container`-skillen (dockyard). Skilt från TASK-400 (extern box, bara vid SLA-krav). Docker single-container-mönstret i CLAUDE.md.
 
 - ID: `01KY9NXAXGBY5CRDPEQYD0W29X`
 - Type: chore
@@ -130,9 +207,19 @@ Idag kor editorn som en efemar dev-instans pa ubuntu-ai-VM:en (192.168.1.42, por
 
 ---
 
-## [P3][todo] [svk-panorama] Egna domäner: vår subdomän som fallback (wildcard *.pano.pettersson-vik.se)
+## [P3][todo] [svk-panorama] Egna domäner: erbjud plattform-subdomän som fallback (wildcard-cert)
 
-Steg 1b (valfritt). Team utan egen doman far team.pano.pettersson-vik.se. Ett wildcard-cert via DNS-01 (DNS-providerns API-token for pettersson-vik.se, engangssetup i NPM). Team.base_url till subdoman. Vid sidan av kundens egna doman, inte i stallet.
+## Context
+Alla team har inte en egen domän. Som bekvämlighet kan de få en plattform-subdomän, `<team>.pano.pettersson-vik.se`. Ett enda wildcard-cert `*.pano.pettersson-vik.se` täcker obegränsat antal - till skillnad från kundernas egna domäner (som kräver cert per domän, TASK-397). Detta är en fallback vid sidan av huvudmodellen, inte ett substitut.
+
+## Acceptance criteria
+- [ ] Wildcard-cert `*.pano.pettersson-vik.se` finns i NPM (DNS-01, engångssetup)
+- [ ] Team utan egen domän kan tilldelas en subdomän; `Team.base_url` sätts till den
+- [ ] Subdomänen resolveras av tenant-middleware (TASK-394) och serverar teamets turer
+- [ ] Ingen per-team-provisionering behövs (wildcard täcker nya subdomäner direkt)
+
+## Implementation hints
+DNS-01 kräver DNS-providerns API-token för `pettersson-vik.se` (engångskonfig i NPM). Subdomän-tilldelning i /team-UI (TASK-398) som alternativ till egen domän. Delar tenant-resolution + request_origin-seam med kunddomän-vägen.
 
 - ID: `01KY9MR9PP6SJK5X3R0NS6JXGK`
 - Type: feature
@@ -140,9 +227,20 @@ Steg 1b (valfritt). Team utan egen doman far team.pano.pettersson-vik.se. Ett wi
 
 ---
 
-## [P3][todo] [svk-panorama] Egna domäner: UI för att sätta/nolla teamets domän (/team)
+## [P3][todo] [svk-panorama] Egna domäner: bygg UI för att sätta/nolla teamets domän på /team
 
-Steg 1. Team-admin satter/nollar Team.base_url pa /team (ROADMAP: doman-delen av team-livscykeln = Fas 4.3). Kopplar ihop domanverifiering + provisionering. require_team_admin.
+## Context
+Team-admin behöver kunna koppla (och koppla bort) sitt teams egna domän utan att super-admin rör infra per kund. UI:t binder ihop domänverifiering (TASK-396) och provisionering (TASK-397): mata in domän -> få TXT-instruktion -> verifiera -> aktivera. ROADMAP: domän-delen av team-livscykeln = Fas 4.3.
+
+## Acceptance criteria
+- [ ] Team-admin kan på /team sätta teamets domän, se verifieringsinstruktion (TXT) och verifieringsstatus
+- [ ] Aktivera domän triggar provisionering (TASK-397); status visas live (pending/verifierad/aktiv/fel)
+- [ ] Nolla domän tar bort proxy-hosten och slutar servera på den
+- [ ] Gate:at med `require_team_admin`; CSRF på POST
+- [ ] Felmeddelanden på svenska, icke-tekniska
+
+## Implementation hints
+Ny sektion på /team (routes/teams.py, require_team_admin). Skriver `Team.base_url`. Anropar verifierings- (TASK-396) och provisioneringslagret (TASK-397). Följ befintligt /team-UI-mönster (medlemslista/åtgärdsmeny).
 
 - ID: `01KY9MR9PA1NDBETC4CM3P6GQ5`
 - Type: feature
@@ -479,9 +577,20 @@ De 12 importerade legacy-turernas cross-tour-hotspots (`type:scene` + `URL`, ing
 
 ---
 
-## [P4][todo] [svk-panorama] Egna domäner: spike - flytt till egen box + Caddy on-demand vid SLA-krav
+## [P4][todo] [svk-panorama] Egna domäner: utred flytt till egen box + Caddy on-demand vid SLA-krav
 
-Steg 2 (framtid). Nar betalande kund + SLA-krav gor hemuppkopplingen (Bahnhof: ej garanterat statisk IP, ingen SLA, privat-ToS) till affarsrisk: flytta appen till egen Hetzner CX33 (~9 EUR/man), Caddy on-demand TLS ager 443 och skoter kunddoman-cert inline (NPM-API-skriptet slangs). request_origin-seamen gor flytten transparent. Se docs/hosting-egna-domaner.md avsnitt 3-6.
+## Context
+NPM-API-vägen (TASK-397) räcker för de första kunddomänerna på TERVO2, men hemuppkopplingen (Bahnhof: ej garanterat statisk IP, ingen SLA, privat-ToS) är en affärsrisk när betalande kund pekar sin domän dit. Då blir en egen box motiverad - och Caddy on-demand TLS blir renast (äger :443, utfärdar cert inline), vilket INTE går på TERVO2 där NPM äger :443 (lastbärande för ~55 hosts). Spike för att utreda/förbereda flytten.
+
+## Acceptance criteria
+- [ ] Beslut: trigger för flytt (vilken kund/SLA-nivå), och om plattformen flyttas helt eller bara kunddomän-delen
+- [ ] Caddy-config utkast: on-demand TLS + ask-endpoint `GET /internal/tls-allowed?host=` (läser verifieringstillstånd, TASK-396) + rate-limit
+- [ ] Migrationsplan: Hetzner CX33 (~9 EUR/mån), Docker, persistent volym, IPv4, backup
+- [ ] Bekräfta att `request_origin`-seamen (TASK-395) gör flytten transparent (ingen domänkod skrivs om)
+- [ ] Data-migrering (svk.db + projects/ + media/) och DNS-cutover-plan
+
+## Implementation hints
+Se docs/hosting-egna-domaner.md avsnitt 2a, 3, 5, 6. Caddy ersätter NPM-API-skriptet (som slängs). Proxy-headers (TASK-393) behövs även bakom Caddy (skickar X-Forwarded-Proto/Host). Spike -> leverera beslutsunderlag + config-utkast, inte färdig migrering.
 
 - ID: `01KY9MR9Q3E42A1VRS6TYA1FC9`
 - Type: spike
