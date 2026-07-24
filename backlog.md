@@ -185,7 +185,7 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
-## [P3][todo] [svk-panorama] Byt standard-tjänstenamn (SVK_SITE_NAME) till 'Pano'
+## [P3][done] [svk-panorama] Byt standard-tjänstenamn (SVK_SITE_NAME) till 'Pano'
 
 Default-tjänstenamnet (config.SVK_SITE_NAME, exponeras som Jinja-globalen site_name -> brand + titlar, redigerbart pa /admin/settings) bor vara 'Pano' i stallet for nuvarande default. Matchar produktnamnet (pano.pettersson-vik.se, _pano-verify). En-radare i config.py; DB-override pa /admin/settings vinner fortfarande over defaulten. Kontrollera om den korande instansen har en DB-override satt (visar 'SVK Panorama') - i sa fall behovs aven den uppdateras eller nollas for att defaulten ska synas.
 
@@ -217,7 +217,7 @@ Hosting-mognad: VM-dev (nu) -> prod-container TERVO2 (denna) -> Hetzner (TASK-40
 
 ---
 
-## [P3][todo] [svk-panorama] Egna domäner: erbjud plattform-subdomän som fallback (wildcard-cert)
+## [P3][done] [svk-panorama] Egna domäner: erbjud plattform-subdomän som fallback (wildcard-cert)
 
 ## Context
 Alla team har inte en egen domän. Som bekvämlighet kan de få en plattform-subdomän, `<team>.pano.pettersson-vik.se`. Ett enda wildcard-cert `*.pano.pettersson-vik.se` täcker obegränsat antal - till skillnad från kundernas egna domäner (som kräver cert per domän, TASK-397). Detta är en fallback vid sidan av huvudmodellen, inte ett substitut.
