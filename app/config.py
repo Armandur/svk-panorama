@@ -133,7 +133,7 @@ BASE_URL = os.environ.get("SVK_BASE_URL", "").rstrip("/")
 # Tjänstens visningsnamn (brand + sidtitlar). Env-default; super-admin kan
 # override:a i DB via /admin/settings (DB-värdet vinner). Läses genom
 # app/services/settings.py och exponeras som Jinja-global `site_name`.
-SITE_NAME = os.environ.get("SVK_SITE_NAME", "SVK Panorama")
+SITE_NAME = os.environ.get("SVK_SITE_NAME", "Pano")
 
 # Demo-team: guld-seed-katalog (gitignorad, byggs vid "lås" och kopieras tillbaka
 # vid reset) + token som en schemalagd timer autentiserar reset-endpointen med
