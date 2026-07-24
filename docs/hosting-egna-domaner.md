@@ -195,10 +195,19 @@ Detaljer:
 
 ## 6. Rekommenderad sekvens
 
-**Steg 0 - editorn på `pano.pettersson-vik.se`, TERVO2 (valt startläge):** en
+**Steg 0 - editorn på `pano.pettersson-vik.se` (valt startläge):** en
 NPM-proxy-host för editor-/admin-appen, per-host HTTP-01-cert som de befintliga.
 Ingen ny hårdvara. Fotografer loggar in och bygger här. (Turer kan visas via
 `/view` och delas via `/s/{token}` på denna host redan innan kunddomäner finns.)
+
+**Hosting-mognad (skild axel från domänerna):** VM-dev-instans (nu, ubuntu-ai
+`192.168.1.42`) -> **produktions-container på TERVO2** (`192.168.1.2`, persistent
+volym, riktiga creds - inte en efemär dev-instans) -> extern Hetzner-box (steg 2,
+bara vid SLA-krav). VIKTIGT: hela egna-domäner-featuren kan **testas mot
+VM-instansen** innan prod-containern finns - NPM forwardar till VM:en likt
+kort/hrlon/viva idag, så kunddomän-proxy-hosts fungerar identiskt oavsett om
+appen kör på VM eller container. Prod-containern är alltså ett driftsteg, inte en
+förutsättning för att bygga/testa domänfeaturen.
 
 **Steg 1 - kunddomäner för publicerade turer via NPM-API (kärnan):** automatisera
 dagens manuella process (`panorama.<org>.se` -> app) med host-baserad

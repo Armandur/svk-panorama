@@ -120,6 +120,16 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 
 ---
 
+## [P3][todo] [svk-panorama] Egna domäner: produktions-Docker-container på TERVO2 (ersätt VM-dev-instans)
+
+Idag kor editorn som en efemar dev-instans pa ubuntu-ai-VM:en (192.168.1.42, port 8005, admin/admin, delad svk.db). For produktion: paketera som en riktig Docker-container pa TERVO2 (dockyard/Unraid) med persistent volym for projects/media/svk.db, riktiga creds (inte admin/admin), egen port + svc-registrering. NPM-hosten pano.pettersson-vik.se (TASK-392) pekas da om fran 192.168.1.42 (VM) till 192.168.1.2 (container). VIKTIGT: hela egna-domaner-featuren kan TESTAS mot VM-instansen fore detta - NPM forwardar till VM likt kort/hrlon/viva idag, sa kunddoman-proxy-hosts fungerar identiskt. Skilt fran TASK-400 (extern Hetzner-box, bara vid SLA-krav). Hosting-mognad: VM-dev (nu) -> prod-container TERVO2 (denna) -> Hetzner (TASK-400, vid behov).
+
+- ID: `01KY9NXAXGBY5CRDPEQYD0W29X`
+- Type: chore
+- Actor: ai:claude-opus-4-8
+
+---
+
 ## [P3][todo] [svk-panorama] Egna domäner: vår subdomän som fallback (wildcard *.pano.pettersson-vik.se)
 
 Steg 1b (valfritt). Team utan egen doman far team.pano.pettersson-vik.se. Ett wildcard-cert via DNS-01 (DNS-providerns API-token for pettersson-vik.se, engangssetup i NPM). Team.base_url till subdoman. Vid sidan av kundens egna doman, inte i stallet.
