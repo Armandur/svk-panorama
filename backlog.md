@@ -1,5 +1,65 @@
 # Backlog Export
 
+## [P2][todo] [svk-panorama] Egna domäner: NPM-API verify-then-provision av kunddomän-cert
+
+Steg 1 (karnan pa TERVO2). Automatisera dagens manuella NPM-process: efter verifierad doman, anropa NPM:s REST-API (nginx-proxy-skillens npm-api.sh visar monstret) for att skapa proxy-host for panorama.org.se mot appen + begara HTTP-01-cert. Idempotens/retries/felhantering; certbot/NPM skoter fornyelser. Slangs om plattformen flyttar till Caddy.
+
+- ID: `01KY9MR9NZZASMNVBMDHGJKBRQ`
+- Type: feature
+- Actor: ai:claude-opus-4-8
+
+---
+
+## [P2][todo] [svk-panorama] Egna domäner: domänverifiering (TXT-token) före aktivering
+
+Steg 1. Team lagger till sin doman, verifiera agarskap via DNS TXT-token (eller att domanen redan resolvar till oss) INNAN cert/aktivering. Annars kan team A claima team B:s doman eller trigga cert for godtycklig host. Behovs for bade NPM-API- och Caddy-vagen (Caddys ask-endpoint laser samma tillstand).
+
+- ID: `01KY9MR9NKE6HZEFWZPNVMH14X`
+- Type: feature
+- Actor: ai:claude-opus-4-8
+
+---
+
+## [P2][todo] [svk-panorama] Egna domäner: request_origin till Team.base_url (per-team origin + og:url)
+
+Steg 1. deps.request_origin ar redan single seam (5 call sites: public/viewer/preview/projects/admin). Byt till att lasa Team.base_url fore request-host sa OG-taggar, delningslankar och invite-lankar pekar pa ratt tenant-doman. Besluta og:url-policy (per-doman for white-label). Gor TERVO2-till-Hetzner-flytt transparent.
+
+- ID: `01KY9MR9N70JNA3NC8XHQEYPAQ`
+- Type: feature
+- Actor: ai:claude-opus-4-8
+
+---
+
+## [P2][todo] [svk-panorama] Egna domäner: host-baserad tenant-resolution (Host till Team)
+
+Steg 1. Middleware efter SessionMiddleware, fore routrar: sla upp request-Host till Team, satt request.state.team. panorama.org.se serverar ratt teams innehall. Grund for kunddomaner.
+
+- ID: `01KY9MR9MXE5S1M81QAXWZ65PN`
+- Type: feature
+- Actor: ai:claude-opus-4-8
+
+---
+
+## [P2][todo] [svk-panorama] Egna domäner: proxy-headers på uvicorn bakom reverse proxy
+
+Prereq (docs/hosting-egna-domaner.md avsnitt 7). Idag saknas --proxy-headers/ProxyHeadersMiddleware, sa request.base_url ger fel scheme (http) bakom NPM/Caddy. Starta uvicorn med --proxy-headers --forwarded-allow-ips=proxy-ip; verifiera att NPM skickar X-Forwarded-Proto (Host bar originalhost, X-Forwarded-Host saknas i NPM). Maste in fore valfritt domanspar.
+
+- ID: `01KY9MR9MGGSJBSF2ANEA5V2YX`
+- Type: improvement
+- Actor: ai:claude-opus-4-8
+
+---
+
+## [P2][todo] [svk-panorama] Egna domäner: deploya editorn på pano.pettersson-vik.se (NPM-host)
+
+Steg 0 i docs/hosting-egna-domaner.md. En NPM-proxy-host för editor-/admin-appen (pano.pettersson-vik.se mot appen på TERVO2), per-host HTTP-01-cert som de befintliga. Ingen multi-tenant-domänlogik. Fotografer loggar in och bygger här; turer nås via /view och /s/{token}.
+
+- ID: `01KY9MR9M12PEGYZBDJ9W8371N`
+- Type: chore
+- Actor: ai:claude-opus-4-8
+
+---
+
 ## [P2][done] [svk-panorama] Appens accentfärg blir Pico-blå i stället för grön (CSS-specificitet)
 
 tokens.css:15 mappar --pico-primary till --svk-accent (#2f6f4f grön), men Pico:s ':root:not([data-theme=dark]),[data-theme=light]' sätter --pico-primary:#0172ad med HÖGRE specificitet än tokens.css:s enkla ':root' -> blå vinner i light mode (computed --pico-primary = #0172ad). Alla primärknappar/fokusramar/länkar i inloggade appen blir blå i stället för den avsedda gröna. (Landningssidan är en separat beige/röd sida - 'grönt' kommer ur tokens.css, appens avsedda accent.) Klart nar: --pico-primary renderar grönt (#2f6f4f light / #4fa87a dark) i appen. Fix: matcha Pico:s selektor-specificitet i tokens.css (':root:not([data-theme=dark]),[data-theme=light]' + dark-motsvarigheten) eller !important på --pico-primary. Ev. följd-beslut: dra in landningssidan i samma gröna palett för genomgående identitet. Verifiera: computed style av --pico-primary på /editor ska vara grön.
@@ -57,6 +117,26 @@ plan.js saveMap() (och scene.js save()/tour-preview.js save()) fryser payloaden 
 - ID: `01KXVNF5BCG8ZNEJRF9GE3FT56`
 - Type: bug
 - Actor: ai:code-review
+
+---
+
+## [P3][todo] [svk-panorama] Egna domäner: vår subdomän som fallback (wildcard *.pano.pettersson-vik.se)
+
+Steg 1b (valfritt). Team utan egen doman far team.pano.pettersson-vik.se. Ett wildcard-cert via DNS-01 (DNS-providerns API-token for pettersson-vik.se, engangssetup i NPM). Team.base_url till subdoman. Vid sidan av kundens egna doman, inte i stallet.
+
+- ID: `01KY9MR9PP6SJK5X3R0NS6JXGK`
+- Type: feature
+- Actor: ai:claude-opus-4-8
+
+---
+
+## [P3][todo] [svk-panorama] Egna domäner: UI för att sätta/nolla teamets domän (/team)
+
+Steg 1. Team-admin satter/nollar Team.base_url pa /team (ROADMAP: doman-delen av team-livscykeln = Fas 4.3). Kopplar ihop domanverifiering + provisionering. require_team_admin.
+
+- ID: `01KY9MR9PA1NDBETC4CM3P6GQ5`
+- Type: feature
+- Actor: ai:claude-opus-4-8
 
 ---
 
@@ -385,6 +465,16 @@ De 12 importerade legacy-turernas cross-tour-hotspots (`type:scene` + `URL`, ing
 
 - ID: `01KXV9CVT829AS30BVRFD3P47X`
 - Type: chore
+- Actor: ai:claude-opus-4-8
+
+---
+
+## [P4][todo] [svk-panorama] Egna domäner: spike - flytt till egen box + Caddy on-demand vid SLA-krav
+
+Steg 2 (framtid). Nar betalande kund + SLA-krav gor hemuppkopplingen (Bahnhof: ej garanterat statisk IP, ingen SLA, privat-ToS) till affarsrisk: flytta appen till egen Hetzner CX33 (~9 EUR/man), Caddy on-demand TLS ager 443 och skoter kunddoman-cert inline (NPM-API-skriptet slangs). request_origin-seamen gor flytten transparent. Se docs/hosting-egna-domaner.md avsnitt 3-6.
+
+- ID: `01KY9MR9Q3E42A1VRS6TYA1FC9`
+- Type: spike
 - Actor: ai:claude-opus-4-8
 
 ---
