@@ -5,68 +5,77 @@ förutsätter Caddy on-demand TLS, men produktionen körs idag på TERVO2 bakom 
 Proxy Manager (NPM) på en hemuppkoppling. Frågan: kör vi först på TERVO2, och vad
 kostar/kräver en flytt till Hetzner?
 
-**Grundpremiss (Rasmus 2026-07-24):** plattformen (tjänsten) kör på sin **egen
-domän**. En organisation som `svenskakyrkanharnosand.se` är en **KUND**, inte
-plattformens domän. Alltså är äkta kunddomäner en kärnfunktion, inte ett
-specialfall - men plattformens egna subdomäner täcker de team som inte behöver
-egen domän.
+**Grundpremiss (Rasmus 2026-07-24):** två skilda saker med skilda domäner.
 
-**Startpunkt (Rasmus 2026-07-24):** till att börja med kör plattformen på en
-**subdomän under `pettersson-vik.se`** (t.ex. `svk-panorama.pettersson-vik.se`)
-**på TERVO2**. Det är en enkel single-host-deploy: en NPM-proxy-host med per-host
-HTTP-01-cert, precis som de ~55 befintliga. Inga per-team-domäner, ingen Caddy,
-ingen ny hårdvara. Team når sina turer via appen (path/`/view`/`/s/{token}`) på
-den enda hosten. Wildcard-subdomäner (avsnitt 1) och äkta kunddomäner (avsnitt 2)
-är BÅDA framtida steg ovanpå detta - resten av utredningen beskriver den vägen när
-den blir aktuell.
+- **Editorn/admin-appen** (där fotografen loggar in och bygger turer) kör på EN
+  plattformshost, `pano.pettersson-vik.se`, på TERVO2. Single host, per-host
+  HTTP-01-cert som de ~55 befintliga NPM-hostarna. Trivialt, inget att utreda.
+- **De publicerade turerna** levereras på **varje teams EGNA domän** - t.ex.
+  `panorama.svenskakyrkanharnosand.se`, `panorama.<team>.se`. Godtyckliga
+  kunddomäner. Samma FastAPI-app (host-baserad tenant-resolution avgör vilket
+  teams innehåll som serveras), men på kundens domän.
+
+Detta är INTE framtida nice-to-have: det är exakt hur legacy fungerar **redan
+idag**. `panorama.svenskakyrkanharnosand.se` kör nu via NPM (proxy-host id 35 ->
+`192.168.1.2:9590`), manuellt uppsatt. Den nya plattformen ska göra samma sak men
+**self-serve**. Alltså är äkta kunddomäner kärnan från dag ett; den enda frågan är
+hur cert + routing **automatiseras** (idag: en manuell NPM-proxy-host + cert per
+domän).
+
+Wildcard-subdomän under vår egen domän (`<team>.pano.pettersson-vik.se`) är en
+**valfri fallback** för team utan egen domän - inte huvudmodellen.
 
 ## TL;DR - de två besluten du behöver ta
 
-**Beslut A (produkt): per team - platform-subdomän eller egen domän?** De flesta
-team kan börja på en plattform-subdomän; vissa vill ha sin egen. Båda lever
-sannolikt sida vid sida.
+**Beslut A (produkt): kundens egen domän eller vår subdomän?** Kundens egna domän
+(`panorama.<org>.se`) är normen och matchar legacy; vår subdomän är en fallback
+för team som saknar/inte vill ha egen domän.
 
-| | Platform-subdomän | Äkta kunddomän |
+| | Kundens egna domän (norm) | Vår subdomän (fallback) |
 |---|---|---|
-| Exempel | `harnosand.svk-panorama.se` | `virtuelltur.svenskakyrkanharnosand.se` |
-| Cert | **ETT** wildcard-cert (`*.svk-panorama.se`) | Ett cert **per kund** |
-| On-demand TLS behövs? | Nej | Ja (eller eager provisionering, se nedan) |
-| Ny infra/kostnad | ~0 kr | Beror på var plattformen bor (Beslut B) |
-| White-label-känsla | Delvis (vår domän syns) | Full (kundens egen domän) |
+| Exempel | `panorama.svenskakyrkanharnosand.se` | `harnosand.pano.pettersson-vik.se` |
+| Cert | Ett cert **per kunddomän** | **ETT** wildcard (`*.pano.pettersson-vik.se`) |
+| White-label | Full (kundens egen domän) | Delvis (vår domän syns) |
+| Matchar dagens legacy? | Ja | Nej (nytt) |
 
-**Beslut B (infra): var bor plattformen?** Detta avgör HUR kunddomäners cert
-löses:
+**Beslut B (infra): hur automatiseras cert + routing för kundens egna domäner?**
+Detta är den verkliga utredningsfrågan (Beslut A:s fallback-spalt löses av ett
+enda wildcard och är trivial).
 
-| | TERVO2 (bakom NPM) | Egen Hetzner-box (Caddy) |
+| | TERVO2 bakom NPM (nu) | Egen Hetzner-box (Caddy) |
 |---|---|---|
-| Kunddomän-cert | NPM-API-skript (eager provisionering) | Caddy on-demand (inline) |
+| Mekanism | NPM-API eager provisionering | Caddy on-demand (inline) |
+| Relation till idag | Automatiserar dagens **manuella** NPM-process | Ny box, ersätter processen |
 | Kostnad | ~0 kr | ~€9/mån |
-| Egen orkestreringskod | Ja (litet skript) | Nej (Caddy sköter allt) |
+| Egen orkestreringskod | Ja (litet skript mot NPM-API) | Nej (Caddy sköter allt) |
 | Rör produktions-NPM | Nej (bara API-anrop) | Nej (separat box) |
-| SLA / lämplig för betalande kund | Nej (hemuppkoppling) | Ja |
+| SLA / betalande kund | Nej (hemuppkoppling) | Ja |
 
-**Rekommendation:** plattform-subdomäner + wildcard-cert nu (nästan gratis, funkar
-på TERVO2 idag). För kunddomäner: NPM-API-vägen duger för de första kunderna på
-TERVO2; flytta till egen Hetzner-box + Caddy när en betalande kund + SLA-krav gör
-hemuppkopplingen till en affärsrisk.
+**Rekommendation:** editorn på `pano.pettersson-vik.se` nu (trivialt). För
+kunddomäner: **automatisera dagens manuella NPM-process via dess API** (verify ->
+skapa proxy-host + cert) - funkar på TERVO2, ingen ny hårdvara. Flytta till egen
+Hetzner-box + Caddy on-demand när en betalande kund + SLA-krav gör
+hemuppkopplingen till en affärsrisk. `request_origin`-seamen gör flytten
+transparent för domänkoden.
 
-## 1. Plattform-subdomäner - billigast, täcker de flesta
+## 1. Vår subdomän som fallback (billigt, för team utan egen domän)
 
-Ett enda wildcard-cert `*.svk-panorama.se` (plattformens egen domän) täcker
-obegränsat antal team-subdomäner. NPM stödjer detta redan - kräver bara en
-engångskonfiguration med DNS-01-challenge (DNS-providerns API-token för
-plattformsdomänen). Efter det kan `harnosand.`, `sundsvall.`, `timra.` osv. pekas
-mot instansen utan att någon rör proxyn per team. ROADMAP:en flaggar redan detta
-som "nollkonfig-default först".
+Team utan egen domän kan få `<team>.pano.pettersson-vik.se`. Ett enda
+wildcard-cert `*.pano.pettersson-vik.se` täcker obegränsat antal - kräver en
+engångskonfiguration i NPM med DNS-01-challenge (DNS-providerns API-token för
+`pettersson-vik.se`). Efter det kan `harnosand.`, `sundsvall.` osv. pekas mot
+instansen utan att någon rör proxyn per team.
 
-Detta kräver att vi äger en plattformsdomän och kan lägga DNS-01 för den. Det är
-oberoende av var plattformen bor (TERVO2 eller Hetzner - wildcard funkar på båda).
+Detta är en bekvämlighet vid sidan av huvudmodellen (kundens egna domän), inte ett
+substitut - de flesta kyrkokunder vill ha `panorama.<egen-domän>.se` för
+white-label.
 
 ## 2. Äkta kunddomäner - vad som faktiskt krävs
 
-En kund som vill köra på `svenskakyrkanharnosand.se` (eller subdomän därav) kan vi
-inte förutse -> vi behöver ett cert per kunddomän. Det finns **två** vägar, och
-valet hänger på Beslut B (var plattformen bor).
+En kund som vill köra sina turer på `panorama.<egen-domän>.se` kan vi inte förutse
+i förväg -> vi behöver ett cert per kunddomän. Detta görs redan idag för legacy,
+manuellt (en NPM-proxy-host + cert per domän). Frågan är hur det **automatiseras**
+för self-serve. Det finns **två** vägar (Beslut B):
 
 ### 2a. Caddy on-demand TLS (renast - kräver egen box)
 
@@ -151,8 +160,8 @@ TERVO2 slutar maskinen vara den "lekplats" som resten av min setup är byggd fö
   kommersiell serverdrift - en avtalsfråga att kolla explicit innan man tar betalt
   för tjänst som körs där.
 
-För hobbytester och de första kunderna på plattform-subdomän: helt acceptabelt.
-Som värd för betalande kunders egna domäner: motiverar en riktig VPS.
+För editorn och de första kunddomänerna via NPM-API: helt acceptabelt. Som värd
+för betalande kunders egna domäner med SLA-förväntan: motiverar en riktig VPS.
 
 ## 5. Hetzner - kostnad (post prishöjning juni 2026)
 
@@ -186,32 +195,34 @@ Detaljer:
 
 ## 6. Rekommenderad sekvens
 
-**Steg 0 - nu, på TERVO2 (valt startläge):** single-host under en subdomän till
-`pettersson-vik.se` (t.ex. `svk-panorama.pettersson-vik.se`). En NPM-proxy-host,
-per-host HTTP-01-cert som de befintliga. Ingen multi-tenant-domänlogik, ingen
-Caddy, ingen ny hårdvara. Alla team på samma host.
+**Steg 0 - editorn på `pano.pettersson-vik.se`, TERVO2 (valt startläge):** en
+NPM-proxy-host för editor-/admin-appen, per-host HTTP-01-cert som de befintliga.
+Ingen ny hårdvara. Fotografer loggar in och bygger här. (Turer kan visas via
+`/view` och delas via `/s/{token}` på denna host redan innan kunddomäner finns.)
 
-**Steg 0b - plattform-subdomäner (när per-team-domän önskas, billigt):** wildcard
-för `*.svk-panorama.pettersson-vik.se` via DNS-01 (kräver DNS-providerns
-API-token för `pettersson-vik.se` - engångssetup i NPM). `Team.base_url` ->
-subdomän, host-baserad tenant-resolution. NPM orört i övrigt.
+**Steg 1 - kunddomäner för publicerade turer via NPM-API (kärnan):** automatisera
+dagens manuella process (`panorama.<org>.se` -> app) med host-baserad
+tenant-resolution + `Team.base_url`. Flöde: team lägger till domän -> DNS-/TXT-
+verifiering -> skript skapar NPM-proxy-host + cert via API. Funkar på TERVO2, ingen
+ny hårdvara. Duger så länge lasten är låg och SLA-krav saknas.
 
-**Steg 1 - första kunddomänerna, fortfarande på TERVO2 (om du vill):**
-NPM-API-eager provisionering (2b). Bygg domänverifiering (TXT-record) +
-verify-then-provision-skript mot NPM:s API. Funkar med hemuppkopplingen så länge
-lasten är låg och SLA-kraven inte finns.
+**Steg 1b - vår subdomän som fallback (valfritt):** wildcard-cert
+`*.pano.pettersson-vik.se` via DNS-01 för team utan egen domän. Engångssetup i
+NPM, `Team.base_url` -> subdomän. Vid sidan av steg 1, inte i stället för.
 
 **Steg 2 - när betalande kund + SLA-krav:** egen Hetzner CX33 + Caddy on-demand
-TLS. Flytta plattformen dit; Caddy äger 443 på den boxen och sköter cert inline.
-TERVO2:s NPM påverkas inte. `request_origin`-seamen (avsnitt 7) gör att
-domänlogiken inte behöver ändras vid flytten - bara var appen körs.
+TLS. Flytta appen dit; Caddy äger 443 på den boxen och sköter kunddomän-cert
+inline (NPM-API-skriptet slängs). TERVO2:s NPM påverkas inte.
+`request_origin`-seamen (avsnitt 7) gör att domänlogiken inte behöver ändras vid
+flytten - bara var appen körs.
 
 **Steg 3 - produktion/skala:** enligt ROADMAP:s "vid produktionssättning" -
 riktiga creds, ev. Postgres, Alembic-baslinje.
 
-Poängen: **steg 0 kräver inget av det dyra.** Plattform-subdomäner levererar
-multi-tenant-domäner idag. Kunddomäner kan börja på TERVO2 via NPM-API och flytta
-till Caddy/Hetzner när affären motiverar det - utan att domänkoden skrivs om.
+Poängen: **kunddomäner (steg 1) är kärnan och kan börja på TERVO2** genom att
+automatisera den process du redan kör manuellt - flytten till Caddy/Hetzner (steg
+2) blir en driftfråga när affären motiverar det, inte en förutsättning för att
+komma igång, och domänkoden skrivs inte om.
 
 ## 7. Kodpåverkan (mestadels redan förberett)
 
