@@ -388,7 +388,7 @@ async def request_domain(
     _csrf: None = Depends(verify_csrf_form),
 ) -> RedirectResponse:
     """Registrera en domän som väntar på TXT-verifiering (TASK-396). Team-admin
-    lägger sedan `_svk-verify.<domän>` TXT = token, verifierar via /verify."""
+    lägger sedan `_pano-verify.<domän>` TXT = token, verifierar via /verify."""
     if admin.team_id is None:
         raise HTTPException(status_code=400, detail="Du tillhör inget team")
     team = db.get(Team, admin.team_id)

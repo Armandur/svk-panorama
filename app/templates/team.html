@@ -128,7 +128,7 @@
 		<p>Väntar på verifiering: <code>{{ team.pending_domain }}</code></p>
 		{% if is_team_admin %}
 		<p class="hint">Skapa en TXT-post hos din domänleverantör:</p>
-		<p>Namn/host: <code>_svk-verify.{{ team.pending_domain }}</code><br>
+		<p>Namn/host: <code>_pano-verify.{{ team.pending_domain }}</code><br>
 		Värde: <code>{{ team.domain_token }}</code></p>
 		<form method="post" action="/team/domain/verify">
 			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">

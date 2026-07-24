@@ -3,7 +3,7 @@ en DNS TXT-record INNAN den aktiveras som Team.base_url (tenant-resolution).
 Utan detta kan ett team claima ett annat teams domän.
 
 Flöde: request_domain() genererar en token -> teamet lägger
-`_svk-verify.<domän>` TXT = token -> verify_domain() slår upp TXT:en, jämför
+`_pano-verify.<domän>` TXT = token -> verify_domain() slår upp TXT:en, jämför
 och (vid unik match) sätter base_url."""
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from app.database import Team
 from app.deps import _normalize_host
 
-VERIFY_PREFIX = "_svk-verify."
+VERIFY_PREFIX = "_pano-verify."
 
 
 def lookup_txt(name: str) -> list[str]:
@@ -52,7 +52,7 @@ def request_domain(db: Session, team: Team, domain: str) -> str:
 
 
 def verify_domain(db: Session, team: Team) -> bool:
-    """Slå upp `_svk-verify.<pending_domain>` TXT och jämför med sparad token.
+    """Slå upp `_pano-verify.<pending_domain>` TXT och jämför med sparad token.
     Vid match: kolla att ingen ANNAN team redan har domänen som aktiv base_url
     (unikhet) - om upptagen, returnera False utan att aktivera. Annars sätt
     base_url, nolla pending_domain/domain_token. Ingen match -> False."""
