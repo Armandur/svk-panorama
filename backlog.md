@@ -1,6 +1,6 @@
 # Backlog Export
 
-## [P2][todo] [svk-panorama] Egna domäner: automatisera kunddomän-cert via NPM-API (verify-then-provision)
+## [P2][done] [svk-panorama] Egna domäner: automatisera kunddomän-cert via NPM-API (verify-then-provision)
 
 ## Context
 Idag skapas en kunddomäns proxy-host + cert manuellt i NPM (så kör legacy `panorama.svenskakyrkanharnosand.se` redan). För self-serve ska appen automatisera detta: efter verifierad domän (TASK-396) anropa NPM:s REST-API och skapa proxy-host + begära cert. NPM saknar on-demand TLS (statisk config-generator), men API:t räcker för eager provisionering utan handslags-glapp eftersom DNS redan är live vid verifieringstillfället. Kärnan i kunddomän-featuren på TERVO2.
