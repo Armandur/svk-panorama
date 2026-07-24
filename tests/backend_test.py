@@ -1357,6 +1357,46 @@ def test_domain_verification():
         db.close()
 
 
+def test_platform_subdomain():
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    from app.database import Base, Team
+    from app.services import domains
+
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    db = Session()
+    try:
+        team = Team(name="Svenska kyrkan Härnösand", slug="svenska-kyrkan-harnosand")
+        team.pending_domain = "gammal.se"
+        team.domain_token = "gammal-token"
+        db.add(team)
+        db.commit()
+
+        base_url = domains.assign_subdomain(db, team, "pano.pettersson-vik.se")
+        check("assign_subdomain: returnerar slug.platformsdomän",
+              base_url == "svenska-kyrkan-harnosand.pano.pettersson-vik.se")
+        check("assign_subdomain: base_url satt", team.base_url == "svenska-kyrkan-harnosand.pano.pettersson-vik.se")
+        check("assign_subdomain: nollar pending_domain", team.pending_domain is None)
+        check("assign_subdomain: nollar domain_token", team.domain_token is None)
+
+        # Tom plattformsdomän -> fallbacken avstängd, ingen tilldelning.
+        team2 = Team(name="Team utan plattform", slug="team-utan-plattform")
+        db.add(team2)
+        db.commit()
+        threw = False
+        try:
+            domains.assign_subdomain(db, team2, "")
+        except ValueError:
+            threw = True
+        check("assign_subdomain: tom platform_domain -> ValueError", threw)
+        check("assign_subdomain: tom platform_domain -> base_url oförändrad", team2.base_url is None)
+    finally:
+        db.close()
+
+
 def test_npm_provisioning():
     from app import config
     from app.services import npm
@@ -1556,6 +1596,7 @@ def main() -> int:
         test_jobqueue_registry_prune,
         test_tenant_host_resolution,
         test_domain_verification,
+        test_platform_subdomain,
         test_npm_provisioning,
         test_request_origin,
     ):

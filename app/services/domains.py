@@ -82,3 +82,19 @@ def clear_domain(db: Session, team: Team) -> None:
     team.pending_domain = None
     team.domain_token = None
     db.commit()
+
+
+def assign_subdomain(db: Session, team: Team, platform_domain: str) -> str:
+    """Tilldela teamet plattformens subdomän-fallback (TASK-399):
+    `<team.slug>.<platform_domain>` som base_url. Vi äger platform_domain
+    själva - INGEN TXT-verifiering behövs (till skillnad från request_domain/
+    verify_domain för egna kunddomäner). Nollar ev. väntande egen-domän-
+    verifiering. Tom platform_domain -> ValueError (fallbacken är avstängd)."""
+    if not platform_domain:
+        raise ValueError("Subdomän-alternativet är inte aktiverat.")
+    base_url = f"{team.slug}.{platform_domain}".lower()
+    team.base_url = base_url
+    team.pending_domain = None
+    team.domain_token = None
+    db.commit()
+    return base_url

@@ -16,6 +16,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
+from app import config
 from app.auth import make_invite_token, require_team_admin, require_user, set_user_session
 from app.database import TEAM_ROLE_ADMIN, TEAM_ROLE_MEMBER, Project, Team, User, get_db
 from app.deps import (
@@ -247,6 +248,8 @@ def team_page(
             "solo_count": solo_count, "csrf_token": token,
             "pending_moves": pending_moves, "activity": activity,
             "storage_info": storage_info,
+            "platform_domain": config.PLATFORM_DOMAIN,
+            "team_subdomain": (f"{team.slug}.{config.PLATFORM_DOMAIN}" if team and config.PLATFORM_DOMAIN else ""),
         },
     )
     set_csrf_cookie(response, token)
@@ -447,6 +450,27 @@ async def clear_domain(
         # bara logga, npm.py loggar redan internt vid fel.
         npm.deprovision_domain(host)
     return RedirectResponse(url="/team?domain=cleared", status_code=303)
+
+
+@router.post("/team/domain/use-subdomain")
+async def use_subdomain(
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_team_admin),
+    _csrf: None = Depends(verify_csrf_form),
+) -> RedirectResponse:
+    """Tilldela teamet plattformens subdomän-fallback (TASK-399): ingen egen
+    domän behövs, ingen TXT-verifiering, ingen per-domän NPM-provisionering
+    (en manuellt satt wildcard-proxy-host `*.<PLATFORM_DOMAIN>` serverar alla
+    team-subdomäner)."""
+    if admin.team_id is None:
+        raise HTTPException(status_code=400, detail="Du tillhör inget team")
+    team = db.get(Team, admin.team_id)
+    try:
+        domains_svc.assign_subdomain(db, team, config.PLATFORM_DOMAIN)
+    except ValueError as exc:
+        return RedirectResponse(url=f"/team?domain_error={quote(str(exc))}", status_code=303)
+    return RedirectResponse(url="/team?domain=subdomain", status_code=303)
 
 
 @router.post("/team/leave")

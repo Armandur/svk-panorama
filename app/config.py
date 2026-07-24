@@ -163,3 +163,10 @@ try:
     APP_FORWARD_PORT = int(os.environ.get("SVK_APP_FORWARD_PORT", "0"))
 except ValueError:
     APP_FORWARD_PORT = 0
+
+# Plattform-subdomän-fallback (TASK-399): ett team utan egen domän kan få
+# <team.slug>.<PLATFORM_DOMAIN> som base_url utan TXT-verifiering (vi äger
+# domänen). Tom = alternativet är avstängt/dolt. Kräver en manuell
+# ENGÅNGS-infra utanför appen: en wildcard-NPM-proxy-host `*.<PLATFORM_DOMAIN>`
+# + ett DNS-01-wildcard-cert (Let's Encrypt) - appen provisionerar INGET per team.
+PLATFORM_DOMAIN = os.environ.get("SVK_PLATFORM_DOMAIN", "")

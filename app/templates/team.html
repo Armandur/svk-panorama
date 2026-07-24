@@ -111,6 +111,8 @@
 		<article class="notice"><p>Domänen är verifierad, men certifikatet kunde inte skapas automatiskt - kontakta support.</p></article>
 		{% elif request.query_params.get('domain') == 'cleared' %}
 		<article class="notice"><p>Domänen togs bort.</p></article>
+		{% elif request.query_params.get('domain') == 'subdomain' %}
+		<article class="notice"><p>Subdomänen är aktiv: turerna nås på din {{ team.slug }}-subdomän.</p></article>
 		{% endif %}
 		{% if request.query_params.get('domain_error') %}
 		<p class="login-error">{{ request.query_params.get('domain_error') }}</p>
@@ -151,6 +153,13 @@
 			</label>
 			<button type="submit">Lägg till domän</button>
 		</form>
+		{% if platform_domain %}
+		<p class="hint">eller</p>
+		<form method="post" action="/team/domain/use-subdomain">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+			<button type="submit" class="secondary">Använd <code>{{ team_subdomain }}</code></button>
+		</form>
+		{% endif %}
 		{% else %}
 		<p class="hint">Ingen egen domän kopplad. Be en team-admin lägga till en.</p>
 		{% endif %}

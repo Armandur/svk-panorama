@@ -666,7 +666,13 @@ delningslänkar), `SVK_TRUSTED_PROXIES` (127.0.0.1; komma-separerad lista IP:er
 `SVK_NPM_API_PASS` (creds i secrets.fish, aldrig i repo), `SVK_APP_FORWARD_HOST`
 + `SVK_APP_FORWARD_PORT` (vart NPM forwardar = appens adress). Alla tomma =
 provisionering är no-op (verifiering sätter ändå base_url, men ingen host/cert
-skapas). `TILE_CONCURRENCY` läses per jobbstart -> justerbart utan omstart (tänkt admin-UI).
+skapas). **Plattform-subdomän-fallback (TASK-399):** `SVK_PLATFORM_DOMAIN` (tom
+= avstängd/dold) - ett team utan egen domän kan tilldelas `<team.slug>.
+<SVK_PLATFORM_DOMAIN>` som base_url UTAN TXT-verifiering (vi äger domänen) och
+UTAN per-team NPM-provisionering. Kräver en manuell ENGÅNGS-infra utanför
+appkoden: en wildcard-proxy-host `*.<SVK_PLATFORM_DOMAIN>` i NPM + ett
+DNS-01-wildcard-cert (Let's Encrypt) satta upp en gång, inte per team.
+`TILE_CONCURRENCY` läses per jobbstart -> justerbart utan omstart (tänkt admin-UI).
 
 ## Fällor att känna till
 
